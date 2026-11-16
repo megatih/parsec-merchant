@@ -17,7 +17,9 @@ struct SheetRouteView: View {
             InterimDecisionSheet(decision: decision)
         case let .shipPurchase(request):
             ShipPurchaseSheet(request: request)
-        case .openSavedGame, .gameOptions, .findSystem, .cheatConsole, .encounterInterim:
+        case .findSystem:
+            FindSystemSheet()
+        case .openSavedGame, .gameOptions, .cheatConsole, .encounterInterim:
             PlaceholderSheet(route: route)
         }
     }

@@ -17,7 +17,7 @@ struct ShipInspectorView: View {
                 cargo(m)
                 equipment(m)
                 crew(m, state: state)
-                quests
+                quests(state)
                 costs(m)
             }
             .formStyle(.grouped)
@@ -169,13 +169,20 @@ struct ShipInspectorView: View {
         }
     }
 
-    /// Active quests: filled in by the Quests owner from `GameState.questLog` (UI-SHELL-121), each row
-    /// `inspector.quest.<index>` selecting the Quests section.
-    private var quests: some View {
+    /// Active quests: the titles from `GameState.questLog` (UI-SHELL-053/121); each row selects the Quests section.
+    private func quests(_ state: GameState) -> some View {
         SwiftUI.Section("Active Quests") {
-            Button("Open Quests") { session.selectedSection = .quests }
+            let log = state.questLog
+            if log.isEmpty {
+                Text(QuestText.none).foregroundStyle(.secondary)
+            }
+            ForEach(Array(log.enumerated()), id: \.offset) { i, entry in
+                Button { session.selectedSection = .quests } label: {
+                    Text(QuestText.title(for: entry.kind, state: state)).multilineTextAlignment(.leading)
+                }
                 .buttonStyle(.link)
-                .accessibilityIdentifier(AXID.Inspector.quest(0))
+                .accessibilityIdentifier(AXID.Inspector.quest(i))
+            }
         }
     }
 
