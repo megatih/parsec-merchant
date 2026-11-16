@@ -203,7 +203,7 @@ extension GameEngine {
 
     mutating func fire(_ id: Int, _ ack: Set<WarningID>) -> StepResult {
         guard let slot = state.commander.ship.crew.firstIndex(of: id), slot > 0 else { return .rejected(.notInCrew) }
-        if [CrewID.wild, CrewID.jarek, CrewID.princess].contains(id) { return .rejected(.cannotFireSpecialCrew) }
+        if [CrewID.wild, CrewID.jarek, CrewID.princess].contains(id) { return .rejected(.cannotFireSpecialPassenger) }
         guard ack.contains(.fireMercenary) else { return .needsConfirmation(Confirmation(.fireMercenary, amounts: [id])) }
         var crew = state.commander.ship.crew
         crew.remove(at: slot)

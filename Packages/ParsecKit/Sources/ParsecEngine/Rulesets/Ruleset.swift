@@ -56,6 +56,8 @@ public struct RuleFlags: Sendable {
     public var restockUsesOwnSystemItemTraded: Bool
     /// MOD-008: in-orbit purchases are capped using the in-orbit price (C# uses the system price: ECO-068).
     public var tradeInOrbitCashCapUsesOrbitPrice: Bool
+    /// MOD-005: random skill increases can reach 10 (C# stops at 9: CRW-052).
+    public var randomSkillIncreaseReachesTen: Bool
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -98,7 +100,7 @@ public struct Ruleset: Sendable {
             centralOffset: 13, startingCash: 1000),
         flags: RuleFlags(distance: .floor, distinctShipyards: false, resourcesAffectUnvisitedSystems: false,
                          resetPriceCargoOnHoldClear: false, restockUsesOwnSystemItemTraded: false,
-                         tradeInOrbitCashCapUsesOrbitPrice: false),
+                         tradeInOrbitCashCapUsesOrbitPrice: false, randomSkillIncreaseReachesTen: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
                               hasHiddenBays: true, mercenariesPerSystem: 3),
         rngKind: .dotNet, newspaperRNG: .csharp)
@@ -113,6 +115,7 @@ public struct Ruleset: Sendable {
         r.flags.resetPriceCargoOnHoldClear = true
         r.flags.restockUsesOwnSystemItemTraded = true
         r.flags.tradeInOrbitCashCapUsesOrbitPrice = true
+        r.flags.randomSkillIncreaseReachesTen = true
         return r
     }()
 

@@ -62,9 +62,11 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case insuranceNotActive
     // Crew (CRW)
     case notForHire
+    case commanderNameRequired
+    case invalidSkillAllocation
     case noFreeQuarters
     case notInCrew
-    case cannotFireSpecialCrew
+    case cannotFireSpecialPassenger
     case gameOver
 }
 
