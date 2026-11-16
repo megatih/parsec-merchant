@@ -305,10 +305,11 @@ extension GameEngine {
         guard let quote = state.designQuote(design) else { return .rejected(.notSoldHere) }
         if let blocker = quote.blocker { return .rejected(blocker) }
         let result = tradeShip(.custom, spec: quote.spec, netPrice: quote.totalCost, accepting: wanted, ack)
-        if result.rejection == nil, result.decision == nil {
-            state.commander.shipName = quote.design.name
-        }
-        return result
+        guard result.rejection == nil, result.decision == nil, let yard = state.currentSystem.shipyard else { return result }
+        state.commander.shipName = quote.design.name
+        var r = result
+        r.events.append(.customShipBuilt(shipyard: yard))
+        return r
     }
 
     /// C# `Commander.TradeShip` (SHP-036…048) for a stock or custom spec.

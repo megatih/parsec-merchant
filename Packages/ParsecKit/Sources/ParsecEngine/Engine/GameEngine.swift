@@ -86,6 +86,7 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case cannotTransfer(TransferItem)
     case cannotAffordTransfer(TransferItem)
     case cannotAffordAllTransfers
+    case customShipBuilt(shipyard: ShipyardID)
     case boughtEscapePod(price: Int)
     case hired(crewID: Int)
     case fired(crewID: Int)

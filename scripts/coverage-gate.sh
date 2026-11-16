@@ -1,12 +1,26 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Scheduled line-coverage gate (PRD §8.1). Reads the milestone from PROGRESS.md.
+# Swift 6.4 builds one .xctest bundle per test target and SwiftPM's codecov JSON covers only one of them, so this
+# script merges every raw profile and exports coverage across all test bundles with llvm-cov.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 M="$(scripts/lib-milestone.sh)"
-JSON="$(swift test --package-path Packages/ParsecKit --show-codecov-path)"
-/usr/bin/python3 -I - "$JSON" "$M" <<'PY'
+CODECOV_JSON="$(swift test --package-path Packages/ParsecKit --show-codecov-path)"
+DIR="$(dirname "$CODECOV_JSON")"
+PRODUCTS="$(dirname "$DIR")"
+OUT="build/coverage"
+mkdir -p "$OUT"
+xcrun llvm-profdata merge -sparse "$DIR"/*.profraw -o "$OUT/merged.profdata"
+OBJECTS=()
+for bundle in "$PRODUCTS"/*.xctest; do
+  bin="$bundle/Contents/MacOS/$(basename "$bundle" .xctest)"
+  [ -f "$bin" ] && OBJECTS+=("-object" "$bin")
+done
+[ ${#OBJECTS[@]} -gt 0 ] || { echo "no test bundles found in $PRODUCTS"; exit 1; }
+xcrun llvm-cov export -summary-only -instr-profile "$OUT/merged.profdata" "${OBJECTS[@]:1}" > "$OUT/coverage.json"
+/usr/bin/python3 -I - "$OUT/coverage.json" "$M" <<'PY'
 import json, sys
 path, m = sys.argv[1], int(sys.argv[2])
 data = json.load(open(path))["data"][0]["files"]
