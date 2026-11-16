@@ -116,7 +116,7 @@ public struct EncounterState: Codable, Sendable, Equatable {
 
 /// The full game state.
 public struct GameState: Codable, Sendable, Equatable {
-    public var rulesetID: RulesetID
+    public internal(set) var rulesetID: RulesetID
     public var difficulty: Difficulty
     public var seed: UInt64
     public var rng: RNGState

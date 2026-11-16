@@ -381,7 +381,7 @@
 ## 6. Open points and discrepancies
 
 - **[verify] MOD-017 and the ship designer.** C# custom ships take fuel cost `COST_FUEL[size]` (1,1,1,3,5,10) and repair cost `COST_HULL[size]` (1,5,10,15,20,40) (`Shipyard.cs:38`, `Shipyard.cs:120`). Palm has no designer, so whether these columns are also swapped cannot be checked; Modern keeps them as in C# until the owner decides.
-- **[verify] Palm game RNG stand-in.** The ROM `SysRandom` algorithm is not in the game source; the Palm ruleset's LCG parameters are a documented stand-in (PRD §4.2).
+- **Palm game RNG stand-in (accepted assumption, docs/QA-REPORT.md).** The ROM `SysRandom` algorithm is not in the game source; the Palm ruleset's LCG parameters are a documented stand-in (PRD §4.2, RNG-026).
 - **Audit candidate (not a MOD).** In Windows 2.01 the escape pod keeps Scarab status 3, so the hull-halving rule still applies to the new Flea (`Game.cs:2031`, `Game.cs:1367`). Modern keeps this per RUL-003 (RUL-099); changing it needs a RUL audit row.
 - **Palm also has the negative-fine bug** (`Src/Encounter.c:Arrested` uses `min(80, −PoliceRecordScore)`), so RUL-102 keeps it in Palm.
 - **Transit length.** Both ports perform 20 encounter checks; Palm's `Clicks = 21` is a sentinel (RUL-069), not an extra click.

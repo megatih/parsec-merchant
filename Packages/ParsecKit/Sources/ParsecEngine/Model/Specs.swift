@@ -117,3 +117,9 @@ public struct SpecialEventSpec: Codable, Sendable, Equatable {
     public var occurrence: Int
     public var messageOnly: Bool
 }
+
+/// A special event assigned to a fixed system before any random placement (C# `PlaceSpecialEvents`, Palm `StartNewGame`).
+public struct FixedSpecialEvent: Codable, Sendable, Equatable {
+    public var system: Int
+    public var event: SpecialEventType
+}

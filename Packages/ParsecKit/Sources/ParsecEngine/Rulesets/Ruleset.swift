@@ -15,15 +15,18 @@ public struct RulesTables: Sendable {
     public var gadgets: [GadgetSpec]
     public var tradeItems: [TradeItemSpec]
     public var politicalSystems: [PoliticalSystemSpec]
+    /// Special-event table in the content pack's own index order (C# 46 events; Palm 37 entries).
     public var specialEvents: [SpecialEventSpec]
+    /// Events assigned to fixed systems before any random placement.
+    public var fixedSpecialEvents: [FixedSpecialEvent]
     public var systemNames: [String]
     public var galaxyWidth: Int
     public var galaxyHeight: Int
-    /// Systems closer than this are rejected during generation.
+    /// Minimum spacing during generation (C# `MinDistance 7`, Palm `MINDISTANCE 6`); see `GalaxyRules.minDistanceTest`.
     public var minDistance: Int
     /// Each new system needs a neighbour closer than this.
     public var closeDistance: Int
-    /// Offset range for the six central (wormhole) systems: `GetRandom(-offset+1, offset)`.
+    /// Offset range for the six central (wormhole) systems; see `GalaxyRules.centreOffsetRoll` (C# 13, Palm 6).
     public var centralOffset: Int
     public var startingCash: Int
 
@@ -33,6 +36,10 @@ public struct RulesTables: Sendable {
     public func gadget(_ t: GadgetType) -> GadgetSpec { gadgets[t.rawValue] }
     public func item(_ t: TradeItemType) -> TradeItemSpec { tradeItems[t.rawValue] }
     public func politics(_ t: PoliticalSystemType) -> PoliticalSystemSpec { politicalSystems[t.rawValue] }
+    /// False when the content pack has no such weapon (Palm: disruptors, RUL-015).
+    public func contains(_ t: WeaponType) -> Bool { t.rawValue < weapons.count }
+    /// False when the content pack has no such gadget (Palm: hidden cargo bays, RUL-016).
+    public func contains(_ t: GadgetType) -> Bool { t.rawValue < gadgets.count }
 }
 
 /// How distances between systems are computed.
@@ -91,6 +98,14 @@ public struct ContentPacks: Sendable {
     public var hasHiddenBays: Bool
     /// Maximum hireable mercenaries waiting in one system.
     public var mercenariesPerSystem: Int
+    /// Crew ids that get a random system and four random skills, generated in this (ascending) order
+    /// (C# 1…29 and 38…52; Palm 1…31, `MAXCREWMEMBER` inclusive).
+    public var randomMercenaryIDs: [Int]
+    /// Mercenary slots pre-counted at Kravat before generation (C# 1 → at most 2 there; Palm 1 with a cap of 1 → none).
+    public var kravatMercenaryPreCount: Int
+    /// Ids whose drawn system is cleared after generation: Palm Zeethibal (30, `CurSystem = 255`) and the opponent
+    /// scratch slot (31, never hireable).
+    public var unplacedMercenaryIDs: [Int]
 }
 
 /// A complete ruleset.
@@ -118,8 +133,8 @@ public struct Ruleset: Sendable {
             ships: Windows201Tables.ships, weapons: Windows201Tables.weapons, shields: Windows201Tables.shields,
             gadgets: Windows201Tables.gadgets, tradeItems: Windows201Tables.tradeItems,
             politicalSystems: Windows201Tables.politicalSystems, specialEvents: Windows201Tables.specialEvents,
-            systemNames: GameNames.systems, galaxyWidth: 154, galaxyHeight: 110, minDistance: 7, closeDistance: 13,
-            centralOffset: 13, startingCash: 1000),
+            fixedSpecialEvents: Windows201Tables.fixedSpecialEvents, systemNames: GameNames.systems,
+            galaxyWidth: 154, galaxyHeight: 110, minDistance: 7, closeDistance: 13, centralOffset: 13, startingCash: 1000),
         flags: RuleFlags(distance: .floor, distinctShipyards: false, resourcesAffectUnvisitedSystems: false,
                          resetPriceCargoOnHoldClear: false, restockUsesOwnSystemItemTraded: false,
                          tradeInOrbitCashCapUsesOrbitPrice: false, randomSkillIncreaseReachesTen: false,
@@ -128,7 +143,9 @@ public struct Ruleset: Sendable {
                          bountyCreditedRegardlessOfRecord: false, marieCelesteChecksDestination: false,
                          arrestFineNeverNegative: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
-                              hasHiddenBays: true, mercenariesPerSystem: 3),
+                              hasHiddenBays: true, mercenariesPerSystem: 3,
+                              randomMercenaryIDs: Array(1...29) + Array(38...52), kravatMercenaryPreCount: 1,
+                              unplacedMercenaryIDs: []),
         rngKind: .dotNet, newspaperRNG: .csharp)
 
     /// Modern (default): Windows 2.01 with the PRD §4.3 fixes. Remaining MOD flags land in M5.
@@ -157,12 +174,23 @@ public struct Ruleset: Sendable {
         return r
     }()
 
-    /// Original Palm 1.2.2. Content pack and flags are completed in M5; until then it reuses Windows data.
+    /// Original Palm 1.2.2: the Palm content pack (Palm122Tables) and Palm behaviour flags.
     public static let palm122: Ruleset = {
         var r = Ruleset.windows201
         r.id = .palm122
         r.rngKind = .palmLCG
         r.newspaperRNG = .palm
+        r.tables = RulesTables(
+            ships: Palm122Tables.ships, weapons: Palm122Tables.weapons, shields: Palm122Tables.shields,
+            gadgets: Palm122Tables.gadgets, tradeItems: Palm122Tables.tradeItems,
+            politicalSystems: Palm122Tables.politicalSystems, specialEvents: Palm122Tables.specialEvents,
+            fixedSpecialEvents: Palm122Tables.fixedSpecialEvents, systemNames: Palm122Tables.systemNames,
+            galaxyWidth: 150, galaxyHeight: 110, minDistance: 6, closeDistance: 13, centralOffset: 6, startingCash: 1000)
+        r.content = ContentPacks(hasShipyards: false, hasSculptureQuest: false, hasPrincessQuest: false,
+                                 hasDisruptors: false, hasHiddenBays: false, mercenariesPerSystem: 1,
+                                 randomMercenaryIDs: Array(1...31), kravatMercenaryPreCount: 1,
+                                 unplacedMercenaryIDs: [CrewID.zeethibal, CrewID.opponent])
+        r.flags.distance = .rounded
         r.flags.galaxy = .palm122
         r.flags.economy = .palm122
         r.flags.travel = .palm122
