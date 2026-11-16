@@ -264,7 +264,9 @@ extension GameEngine {
         case .moon: state.quests.moon = QuestStatus.Moon.bought
         case .moonRetirement:
             state.quests.moon = QuestStatus.Moon.done
-            return .stop(StepResult(events: [.specialEventCompleted(type), state.endGame(.boughtMoon)]))
+            // RUL-006: Modern shows the cosmetic moon-girl ending once the Princess quest is done (Game.cs:3795).
+            let girl = r.content.hasMoonGirlEnding && state.quests.princess == QuestStatus.Princess.done
+            return .stop(StepResult(events: [.specialEventCompleted(type), state.endGame(girl ? .boughtMoonGirl : .boughtMoon)]))
         default:
             return nil
         }

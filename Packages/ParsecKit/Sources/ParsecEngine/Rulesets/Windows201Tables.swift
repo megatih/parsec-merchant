@@ -137,4 +137,24 @@ public enum Windows201Tables {
         SpecialEventSpec(type: .princessQuantum, price: 0, occurrence: 0, messageOnly: false),
         SpecialEventSpec(type: .princessReturned, price: 0, occurrence: 0, messageOnly: true),
     ]
+    /// Game.cs:2885-2901 fixed placements (17, in source order; no draws).
+    public static let fixedSpecialEvents: [FixedSpecialEvent] = [
+        FixedSpecialEvent(system: SystemID.baratas, event: .dragonflyBaratas),
+        FixedSpecialEvent(system: SystemID.melina, event: .dragonflyMelina),
+        FixedSpecialEvent(system: SystemID.regulas, event: .dragonflyRegulas),
+        FixedSpecialEvent(system: SystemID.zalkon, event: .dragonflyDestroyed),
+        FixedSpecialEvent(system: SystemID.daled, event: .experimentStopped),
+        FixedSpecialEvent(system: SystemID.gemulon, event: .gemulonRescued),
+        FixedSpecialEvent(system: SystemID.japori, event: .japoriDelivery),
+        FixedSpecialEvent(system: SystemID.devidia, event: .jarekGetsOut),
+        FixedSpecialEvent(system: SystemID.utopia, event: .moonRetirement),
+        FixedSpecialEvent(system: SystemID.nix, event: .reactorDelivered),
+        FixedSpecialEvent(system: SystemID.acamar, event: .spaceMonsterKilled),
+        FixedSpecialEvent(system: SystemID.kravat, event: .wildGetsOut),
+        FixedSpecialEvent(system: SystemID.endor, event: .sculptureDelivered),
+        FixedSpecialEvent(system: SystemID.galvon, event: .princess),
+        FixedSpecialEvent(system: SystemID.centauri, event: .princessCentauri),
+        FixedSpecialEvent(system: SystemID.inthara, event: .princessInthara),
+        FixedSpecialEvent(system: SystemID.qonos, event: .princessQonos),
+    ]
 }

@@ -54,6 +54,7 @@ public extension GameState {
 
     // MARK: Equipment prices (SHP-011…013)
     func equipmentBuyPrice(weapon w: WeaponType) -> Int {
+        guard ruleset.tables.contains(w) else { return 0 }
         let s = ruleset.tables.weapon(w)
         return buyPrice(basePrice: s.price, minTech: s.minTechLevel)
     }
@@ -62,6 +63,7 @@ public extension GameState {
         return buyPrice(basePrice: spec.price, minTech: spec.minTechLevel)
     }
     func equipmentBuyPrice(gadget g: GadgetType) -> Int {
+        guard ruleset.tables.contains(g) else { return 0 }
         let spec = ruleset.tables.gadget(g)
         return buyPrice(basePrice: spec.price, minTech: spec.minTechLevel)
     }
@@ -71,10 +73,10 @@ public extension GameState {
         func tp(_ base: Int) -> Int { base * 3 / 4 * 110 / 90 }
         switch item {
         case .morgansLaser: return tp(t.weapon(.morgansLaser).price)
-        case .quantumDisruptor: return tp(t.weapon(.quantumDisruptor).price)
+        case .quantumDisruptor: return t.contains(.quantumDisruptor) ? tp(t.weapon(.quantumDisruptor).price) : 0
         case .lightningShield: return tp(t.shield(.lightning).price)
         case .fuelCompactor: return tp(t.gadget(.fuelCompactor).price)
-        case .hiddenCargoBays: return tp(t.gadget(.hiddenCargoBays).price)
+        case .hiddenCargoBays: return t.contains(.hiddenCargoBays) ? tp(t.gadget(.hiddenCargoBays).price) : 0
         case .escapePod: return 200
         }
     }
