@@ -42,6 +42,9 @@ public extension GameState {
     /// NEWS: the newspaper price (difficulty + 1), paid once per visit.
     var newspaperCost: Int { difficulty.rawValue + 1 }
 
+    /// NEWS-009: the paper once paid for in this visit, else nil.
+    var newspaperPreview: Newspaper? { paidForNewspaper ? newspaper : nil }
+
     /// C# `NewspaperHead`/`NewspaperText`: deterministic for a system and day (PieterRand seeded with system, days).
     var newspaper: Newspaper {
         let cur = currentSystem

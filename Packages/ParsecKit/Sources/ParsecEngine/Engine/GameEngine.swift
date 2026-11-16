@@ -75,6 +75,7 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case cannotPayWormholeTax
     case destinationOutOfRange
     case noSingularity
+    case singularityTargetIsCurrentSystem
     // Encounters (ENC/CMB/POL)
     case noWeapons
     case noLasers
@@ -128,6 +129,9 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case easterEgg
     case escapePodUsed(insurancePayout: Int)
     case wildLeftShip
+    /// TRV-021: the singularity was consumed on consent, then a departure check failed.
+    case singularityLost
+    case departureBlocked(CommandError)
     case gemulonInvaded
     case experimentPerformed
     case playerAttacked
@@ -214,6 +218,8 @@ public enum Command: Codable, Sendable, Equatable {
     case readNewspaper
     case selectTarget(Int)
     case track(Int?)
+    case selectWormhole(Int)
+    case selectNextTarget(forward: Bool)
 }
 
 /// The rules engine. A value type; copying it forks the game.
@@ -252,11 +258,9 @@ public struct GameEngine: Sendable {
         case let .setOptions(o):
             state.options = o
             return StepResult(events: [.optionsChanged])
-        case let .selectTarget(s):
-            guard state.galaxy.systems.indices.contains(s) else { return .rejected(.invalidArgument) }
-            state.warpSystem = s
-            state.targetWormhole = false
-            return StepResult()
+        case let .selectTarget(s): return selectTarget(s)
+        case let .selectWormhole(w): return selectWormhole(w)
+        case let .selectNextTarget(forward): return selectNextTarget(forward: forward)
         case let .track(s):
             if let s, !state.galaxy.systems.indices.contains(s) { return .rejected(.invalidArgument) }
             state.trackedSystem = s
@@ -320,7 +324,7 @@ public struct GameEngine: Sendable {
         case .plunderDone: return plunderDone()
         case let .resolveScoop(accept): return resolveScoop(accept: accept)
         case .readNewspaper: return readNewspaper(ack)
-        case .setOptions, .selectTarget, .track: return .rejected(.invalidArgument)
+        case .setOptions, .selectTarget, .track, .selectWormhole, .selectNextTarget: return .rejected(.invalidArgument)
         }
     }
 }
