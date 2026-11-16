@@ -72,8 +72,18 @@ public extension GameState {
     var artifactOnBoard: Bool { quests.artifact == QuestStatus.Artifact.onBoard }
     var sculptureOnBoard: Bool { quests.sculpture == QuestStatus.Sculpture.inTransit }
     var hagglingComputer: Bool { quests.jarek == QuestStatus.Jarek.done }
-    var wildOnBoard: Bool { commander.ship.hasCrew(CrewID.wild) }
-    var jarekOnBoard: Bool { commander.ship.hasCrew(CrewID.jarek) }
+    /// Jarek and Wild are crew members in C# (a crew slot each) and passengers in Palm (RUL-057, CRW-044): with
+    /// `passengersAsCrew` off they exist only through their status (1 = aboard) and hold no crew slot.
+    var wildOnBoard: Bool {
+        ruleset.flags.economy.passengersAsCrew ? commander.ship.hasCrew(CrewID.wild) : quests.wild == QuestStatus.Wild.started
+    }
+    var jarekOnBoard: Bool {
+        ruleset.flags.economy.passengersAsCrew ? commander.ship.hasCrew(CrewID.jarek) : quests.jarek == QuestStatus.Jarek.started
+    }
+    /// Passengers (Jarek, Wild) aboard that are not in the crew array (Palm), each taking one quarter (CRW-036).
+    var passengersOutsideCrew: Int {
+        ruleset.flags.economy.passengersAsCrew ? 0 : [jarekOnBoard, wildOnBoard].filter { $0 }.count
+    }
     var princessOnBoard: Bool { commander.ship.hasCrew(CrewID.princess) }
 
     /// C# `Ship.FilledCargoBays` for the commander's ship.

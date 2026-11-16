@@ -227,7 +227,9 @@ extension GameEngine {
         guard state.mercenariesForHire.contains(id), state.dailyRate(of: id) > 0 || id == CrewID.zeethibal else {
             return .rejected(.notForHire)
         }
-        guard let slot = state.commander.ship.crew.firstIndex(where: { $0 == nil }) else { return .rejected(.noFreeQuarters) }
+        // CRW-036: Palm passengers hold no slot but each takes a quarter (`AvailableQuarters() <= FirstFree`).
+        guard let slot = state.commander.ship.crew.firstIndex(where: { $0 == nil }),
+              slot < state.commander.ship.crew.count - state.passengersOutsideCrew else { return .rejected(.noFreeQuarters) }
         state.commander.ship.crew[slot] = id
         recalculateBuyPrices()
         return StepResult(events: [.hired(crewID: id)])
@@ -349,11 +351,12 @@ extension GameEngine {
         let palm = ruleset.flags.economy.shipTradeFlow == .palm
         if net > 0, state.commander.debt > 0 { return .rejected(.inDebt) }
         if net > state.cashToSpend { return .rejected(.insufficientFunds) }
-        if newSpec.crewQuarters < state.specialCrewCount { return .rejected(.passengersNeedQuarters) }
+        // SHP-037: a Palm passenger (not in the crew array) needs a ship with at least 2 quarters.
+        let needed = state.passengersOutsideCrew > 0 ? 2 : state.specialCrewCount
+        if newSpec.crewQuarters < needed { return .rejected(.passengersNeedQuarters) }
         // SHP-037: Palm checks the reactor before the crew count, and counts hired crew (commander + mercenaries)
-        // without the passengers.
-        let passengers = [CrewID.jarek, CrewID.wild].filter { state.commander.ship.hasCrew($0) }.count
-        let hired = state.commander.ship.crewCount - (ruleset.flags.economy.passengersAsCrew ? 0 : passengers)
+        // without the passengers, who are not in its crew array.
+        let hired = state.commander.ship.crewCount
         if palm, state.reactorOnBoard { return .rejected(.reactorOnBoard) }
         if newSpec.crewQuarters < hired { return .rejected(.notEnoughQuarters) }
         if state.reactorOnBoard { return .rejected(.reactorOnBoard) }

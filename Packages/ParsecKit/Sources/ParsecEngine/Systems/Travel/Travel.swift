@@ -236,7 +236,10 @@ public extension GameState {
     mutating func determineRandomEncounter(clicks: Int) -> EncounterState? {
         let gov = ruleset.tables.politics(galaxy.systems[warpSystem].politics)
         var mantis = false, pirate = false, police = false, trader = false
-        if warpSystem == SystemID.gemulon, quests.gemulon == QuestStatus.Gemulon.tooLate {
+        // QST-GEMULON-006/007: C# tests status 8 (9 and 10 follow a rescue); Palm's uncapped counter tests `> 7`.
+        let invaded = ruleset.flags.travel.invasionStatusCapped
+            ? quests.gemulon == QuestStatus.Gemulon.tooLate : quests.gemulon > QuestStatus.Gemulon.date
+        if warpSystem == SystemID.gemulon, invaded {
             if rng.next(below: 10) > 4 { mantis = true }
         } else {
             var roll = rng.next(below: 44 - 2 * difficulty.rawValue)

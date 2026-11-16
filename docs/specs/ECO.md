@@ -68,7 +68,7 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 | (none: ECO-070 typed-buy overflow not reproduced; see QA-REPORT accepted assumptions) | — | — | — | 04 §3 |
 | `economy.tradeInOrbitSellCap = .traderTypeBays` | false | false | true | 04 §3 |
 | `economy.skillComputation = .gadgetsThenAdjust` | false | false | true | CRW (owner) |
-| `economy.sellPriceRecalc = .onlyIfWasCriminal` | true | false | false | MOD-015 |
+| `quest.sellPriceRecalc = .onlyIfCriminal` | true | false | false | MOD-015 |
 | `economy.dumpAllConfirmShowsCostBasis` (consent `WarningID.jettisonAll`) | false | false | true | this spec |
 
 ## 2. Where items trade
@@ -108,7 +108,7 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 ## 6. RecalculateSellPrices
 
 - **ECO-023** {M2} [W][P] `RecalculateSellPrices` multiplies every sell price by 100/90 (`sell = sell*100/90`) unconditionally and does **not** recalculate buy prices. C# calls it after Erase Record and after Wild is delivered; Palm only after Erase Record. (source: Game.cs:2985-2989, 2315, 2573; Palm: Src/Skill.c:368-374, Src/SpecialEvent.c:218-221)
-- **ECO-024** {M5} [M] Modern applies the ×100/90 only if `PoliceRecordScore < -5` held immediately before the record was reset (flag `economy.sellPriceRecalc = .onlyIfWasCriminal`, MOD-015). Buy prices are left unchanged as in the source. (source: PRD MOD-015)
+- **ECO-024** {M5} [M] Modern applies the ×100/90 only if `PoliceRecordScore < -5` held immediately before the record was reset (flag `quest.sellPriceRecalc = .onlyIfCriminal`, MOD-015). Buy prices are left unchanged as in the source. (source: PRD MOD-015)
 
 ## 7. Market quantities (InitializeTradeItems)
 

@@ -60,7 +60,7 @@ public extension GameState {
                     insured: commander.insurance, currentPremium: insuranceCosts, premiumQuote: insurancePremium(noClaim: 0),
                     noClaim: min(commander.noClaim, 90),
                     // BNK-045: Palm shows "(maximum)" only at exactly 90 (its counter is stored unclamped).
-                    noClaimAtMaximum: ruleset.flags.economy.noClaimTiming == .perWarp
+                    noClaimAtMaximum: ruleset.flags.travel.noClaimTiming == .perWarp
                         ? commander.noClaim == 90 : commander.noClaim >= 90,
                     canBuyInsurance: commander.ship.escapePod && !commander.insurance,
                     repayAllAmount: ruleset.flags.economy.repayAllCap.map { min(maxRepay, $0) } ?? maxRepay)

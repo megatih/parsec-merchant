@@ -115,14 +115,7 @@ public struct EconomyRules: Sendable, Equatable {
     }
     public var insuranceFormula = InsuranceFormula.doublePrecision
 
-    /// RUL-045: when the no-claim counter grows.
-    public enum NoClaimTiming: Sendable, Equatable {
-        /// +n per IncDays(n) (jail and pod days included); stored clamped to 0…90.
-        case perDay
-        /// Palm: +1 per normal warp; stored unclamped, used as min(NoClaim, 90).
-        case perWarp
-    }
-    public var noClaimTiming = NoClaimTiming.perDay
+    // RUL-045 `noClaimTiming` lives in TravelRules (it runs in the warp and IncDays pipeline).
 
     /// RUL-046: buying insurance resets no-claim.
     public var buyInsuranceResetsNoClaim = true
@@ -224,8 +217,7 @@ public struct EconomyRules: Sendable, Equatable {
     /// CRW-048: on arrest, mercenaries leave when any is aboard (Palm) instead of only when more than one is.
     public var arrestClearsAnyMercenary = false
 
-    /// RUL-061: passenger impatience timers (C#); Palm has none.
-    public var passengerImpatience = true
+    // RUL-061 `passengerImpatience` lives in TravelRules (IncDays).
 
     /// CRW-061: Palm recalculates buy prices after Captain Huie's training (C# does not: CRW-060).
     public var recalculateBuyPricesAfterHuie = false
@@ -233,46 +225,9 @@ public struct EconomyRules: Sendable, Equatable {
     /// CRW-005: maximum commander name length (Palm `NAMELEN` 20; nil = unlimited).
     public var commanderNameMaxLength: Int?
 
-    // MARK: Quests touching prices and records (RUL-037, RUL-115)
-
-    /// RUL-037: police record after Wild's delivery.
-    public enum WildDeliveredRecord: Sendable, Equatable {
-        /// Record = 0.
-        case setToZero
-        /// Palm: record = max(record, 0).
-        case raiseToZero
-    }
-    public var wildDeliveredRecord = WildDeliveredRecord.setToZero
-
-    /// RUL-115 (MOD-015): when sell prices are multiplied by 100/90 after Erase Record or Wild's delivery.
-    public enum SellPriceRecalc: Sendable, Equatable {
-        /// Always (C#).
-        case always
-        /// Only if the record was criminal (< −5) before (Modern).
-        case onlyIfWasCriminal
-        /// Palm: always after Erase Record, never after Wild's delivery.
-        case eraseRecordOnly
-    }
-    public var sellPriceRecalc = SellPriceRecalc.always
-
-    // MARK: Arrival and departure money checks (RUL-118, BNK-048, BNK-058)
-
-    /// RUL-118 (MOD-018): debt warning and reminder on arrival.
-    public enum DebtNotices: Sendable, Equatable {
-        /// C#: the reminder only when no warning, in every `Arrival` (arrest and pod included).
-        case exclusive
-        /// Modern: both can fire, in every `Arrival`.
-        case both
-        /// Palm: both can fire, on the normal arrival path only.
-        case bothNormalArrivalOnly
-    }
-    public var debtNotices = DebtNotices.exclusive
-
-    /// BNK-048: the escape-pod sequence runs `Arrival()` first (Palm) instead of after the payout.
-    public var escapePodArrivalFirst = false
-
-    /// BNK-058: the Wild/no-laser confirmation comes before the money checks of a warp (Palm).
-    public var wildConfirmBeforeWarpChecks = false
+    // RUL-037 `wildDeliveredRecord` and RUL-115 `sellPriceRecalc` live in QuestRules; RUL-118 debt notices are
+    // `travel.debtWarningAndReminder` (+ `travel.arrivalPipelineAfterArrest`); BNK-048's pod order is
+    // `encounter.escapePodPalmSequence`; BNK-058's Wild-first check is `travel.warpCheckOrder`.
 
     public init() {}
 
@@ -282,10 +237,8 @@ public struct EconomyRules: Sendable, Equatable {
     /// Modern: Windows 2.01 with the PRD §4.3 fixes in this area (MOD-015…019).
     public static let modern: EconomyRules = {
         var r = EconomyRules()
-        r.sellPriceRecalc = .onlyIfWasCriminal
         r.lostMercenariesRelocate = true
         r.swapFuelAndRepairColumns = true
-        r.debtNotices = .both
         r.worthUsesTradeInValue = true
         return r
     }()
@@ -308,7 +261,6 @@ public struct EconomyRules: Sendable, Equatable {
         r.tradeInOrbitWhileCloaked = true
         r.tradeInOrbitItemPick = .tenTriesThenScan
         r.insuranceFormula = .integer
-        r.noClaimTiming = .perWarp
         r.buyInsuranceResetsNoClaim = false
         r.repayAllCap = 99_999
         r.fuelCompactorRule = .setsEighteen
@@ -327,14 +279,8 @@ public struct EconomyRules: Sendable, Equatable {
         r.mercenariesOfferedPerSystem = 1
         r.firedMercenaryRelocates = false
         r.arrestClearsAnyMercenary = true
-        r.passengerImpatience = false
         r.commanderNameMaxLength = 20
         r.recalculateBuyPricesAfterHuie = true
-        r.wildDeliveredRecord = .raiseToZero
-        r.sellPriceRecalc = .eraseRecordOnly
-        r.debtNotices = .bothNormalArrivalOnly
-        r.escapePodArrivalFirst = true
-        r.wildConfirmBeforeWarpChecks = true
         return r
     }()
 }

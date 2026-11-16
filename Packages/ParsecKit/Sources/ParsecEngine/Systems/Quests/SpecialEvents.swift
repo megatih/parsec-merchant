@@ -105,8 +105,13 @@ public extension GameState {
         }
     }
 
-    /// C# `Ship.Hire`: first free crew slot; buy prices follow a changed Trader skill.
+    /// C# `Ship.Hire`: first free crew slot; buy prices follow a changed Trader skill. A Palm passenger (Jarek, Wild with
+    /// `passengersAsCrew` off) boards by status only and takes no crew slot (CRW-044).
     internal mutating func hireCrew(_ id: Int) {
+        if !ruleset.flags.economy.passengersAsCrew, id == CrewID.jarek || id == CrewID.wild {
+            if id == CrewID.jarek { quests.jarek = QuestStatus.Jarek.started } else { quests.wild = QuestStatus.Wild.started }
+            return
+        }
         guard let slot = commander.ship.crew.firstIndex(where: { $0 == nil }) else { return }
         let before = skill(.trader)
         commander.ship.crew[slot] = id
@@ -227,6 +232,8 @@ extension GameEngine {
         case .jarekGetsOut:
             state.quests.jarek = QuestStatus.Jarek.done
             state.removeSpecialCrew(CrewID.jarek)
+            // QST-JAREK-015: Palm always recalculates buy prices (its passenger is not fired, so no skill comparison).
+            if !ruleset.flags.economy.passengersAsCrew { state.recalculateBuyPricesHere() }
         case .wild:
             guard hasQuarters else { return .stop(.rejected(.noFreeQuarters)) }
             guard state.hasWildQualifyingLaser else { return .stop(.rejected(.wildRequiresLaser)) }
@@ -307,14 +314,15 @@ extension GameEngine {
             state.quests.reactor = QuestStatus.Reactor.done
         case .gemulon: state.quests.gemulon = QuestStatus.Gemulon.started
         case .gemulonRescued:
-            state.quests.gemulon = QuestStatus.Gemulon.fuel
+            let reset = r.flags.quest.gemulonRescueResetsStatus
+            state.quests.gemulon = reset ? QuestStatus.Gemulon.notStarted : QuestStatus.Gemulon.fuel
             return replaceEvent(with: .gemulonFuel)
         case .gemulonFuel:
             guard state.commander.ship.freeGadgetSlots(r) > 0 else { return .stop(.rejected(.noFreeSlot)) }
             state.commander.ship.gadgets.append(.fuelCompactor)
             // RUL-172: Palm `Ship.Fuel = GetFuelTanks()`.
             if r.flags.quest.gemulonRewardRefuels { state.commander.ship.fuel = state.commander.ship.fuelTanks(r) }
-            state.quests.gemulon = QuestStatus.Gemulon.done
+            if !r.flags.quest.gemulonRescueResetsStatus { state.quests.gemulon = QuestStatus.Gemulon.done }
         case .experiment: state.quests.experiment = QuestStatus.Experiment.started
         case .experimentStopped:
             state.quests.experiment = QuestStatus.Experiment.cancelled

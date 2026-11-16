@@ -57,6 +57,9 @@ public struct QuestRules: Sendable, Equatable {
     public var japoriPickupPersists = true
     /// RUL-172: installing the Gemulon fuel compactor fills the tank to the new capacity.
     public var gemulonRewardRefuels = false
+    /// QST-GEMULON-012: the rescue sets the invasion counter back to 0 and the compactor leaves it there (Palm), instead
+    /// of the C# fuel (9) and done (10) statuses, so a Palm counter ≥ 8 always means the invasion (QST-GEMULON-007).
+    public var gemulonRescueResetsStatus = false
     /// RUL-006: retiring to the moon after the Princess quest ends with `.boughtMoonGirl`.
     public var moonGirlEnding = false
     /// RUL-037.
@@ -88,6 +91,7 @@ public struct QuestRules: Sendable, Equatable {
         q.specialEventPriceTiming = .beforeEffect
         q.japoriPickupPersists = false
         q.gemulonRewardRefuels = true
+        q.gemulonRescueResetsStatus = true
         q.wildDeliveredRecord = .raiseToZero
         q.sellPriceRecalc = .eraseRecordOnly
         q.wildRequiresRealLaser = true
