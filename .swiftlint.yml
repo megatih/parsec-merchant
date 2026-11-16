@@ -13,6 +13,7 @@ disabled_rules:
   - nesting
   - trailing_comma
   - opening_brace
+  - blanket_disable_command
 force_try: error
 force_cast: error
 force_unwrapping: error

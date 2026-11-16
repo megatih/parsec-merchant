@@ -1,0 +1,18 @@
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<!-- Differential harness (PRD §8.4). Built by scripts/harness.sh in build/harness/src together with a COPY of the
+     C# 2.01 game-logic sources. Never shipped; only its JSON output is committed as test fixtures. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Fryz.Apps.SpaceTrader</RootNamespace>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <NoWarn>$(NoWarn);SYSLIB0011;SYSLIB0003;CS0162;CS0168;CS0169;CS0219;CS0414;CS0649;CS8981;CA1416;CS0618;CS0108</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+</Project>
