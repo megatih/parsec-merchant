@@ -62,6 +62,12 @@ public struct RuleFlags: Sendable {
     public var waspOpponentReachable: Bool
     /// MOD-009: the Kravat/Wild engineer boost checks Wild aboard the player's ship (C# checks the opponent: never true).
     public var kravatEngineerChecksPlayerWild: Bool
+    /// MOD-014: the reactor damage multiplier is a real factor (C# truncates it to an integer: CMB).
+    public var reactorDamageRealFactor: Bool
+    /// MOD-004: the hardened (Scarab) hull halves damage to the player only (C# halves it for any defender).
+    public var hardenedHullProtectsPlayerOnly: Bool
+    /// Palm credits pirate bounties regardless of police record (C# only at record ≥ −5).
+    public var bountyCreditedRegardlessOfRecord: Bool
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -105,7 +111,9 @@ public struct Ruleset: Sendable {
         flags: RuleFlags(distance: .floor, distinctShipyards: false, resourcesAffectUnvisitedSystems: false,
                          resetPriceCargoOnHoldClear: false, restockUsesOwnSystemItemTraded: false,
                          tradeInOrbitCashCapUsesOrbitPrice: false, randomSkillIncreaseReachesTen: false,
-                         waspOpponentReachable: false, kravatEngineerChecksPlayerWild: false),
+                         waspOpponentReachable: false, kravatEngineerChecksPlayerWild: false,
+                         reactorDamageRealFactor: false, hardenedHullProtectsPlayerOnly: false,
+                         bountyCreditedRegardlessOfRecord: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
                               hasHiddenBays: true, mercenariesPerSystem: 3),
         rngKind: .dotNet, newspaperRNG: .csharp)
@@ -123,6 +131,8 @@ public struct Ruleset: Sendable {
         r.flags.randomSkillIncreaseReachesTen = true
         r.flags.waspOpponentReachable = true
         r.flags.kravatEngineerChecksPlayerWild = true
+        r.flags.reactorDamageRealFactor = true
+        r.flags.hardenedHullProtectsPlayerOnly = true
         return r
     }()
 

@@ -88,12 +88,28 @@ public struct TransitState: Codable, Sendable, Equatable {
     public var hadEncounter = false
 }
 
-/// An ongoing encounter (C# encounter fields of `Game`). Filled in M3.
+/// An ongoing encounter (C# encounter fields of `Game`).
 public struct EncounterState: Codable, Sendable, Equatable {
     public var type: EncounterType
     public var opponent: Ship
     public var opponentDisabled = false
     public var round = 0
+    /// Clicks from the destination when the encounter began.
+    public var clicks = 0
+    public var cmdrFleeing = false
+    public var oppFleeing = false
+    public var oppFleeingPrev = false
+    public var cmdrHit = false
+    public var oppHit = false
+    /// Auto-repeat flags (C# `EncounterContinueAttacking` / `EncounterContinueFleeing`); the UI repeats the action.
+    public var continueAttacking = false
+    public var continueFleeing = false
+
+    public init(type: EncounterType, opponent: Ship, clicks: Int = 0) {
+        self.type = type
+        self.opponent = opponent
+        self.clicks = clicks
+    }
 }
 
 /// The full game state.
@@ -127,6 +143,8 @@ public struct GameState: Codable, Sendable, Equatable {
     public var targetWormhole = false
     /// A trade-in-orbit offer awaiting the player's quantity (ECO-081).
     public var pendingOrbitTrade: OrbitTradeOffer?
+    /// A floating canister the player may scoop after a kill (C# `EncounterScoop`).
+    public var pendingScoop: TradeItemType?
     public var phase: GamePhase = .docked
     public var cheatsUsed = false
     public var reloadCount = 0

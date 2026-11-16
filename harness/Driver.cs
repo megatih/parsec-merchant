@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Forms;
 
 namespace Fryz.Apps.SpaceTrader
 {
@@ -25,6 +26,7 @@ namespace Fryz.Apps.SpaceTrader
 			if (cmd == "galaxy" || cmd == "all") Write(dir, "galaxy-windows201.json", Galaxies());
 			if (cmd == "market" || cmd == "all") Write(dir, "market-windows201.json", MarketSteps());
 			if (cmd == "opponents" || cmd == "all") Write(dir, "opponents-windows201.json", Opponents());
+			if (cmd == "combat" || cmd == "all") Write(dir, "combat-windows201.json", Combat());
 			return 0;
 		}
 
@@ -169,6 +171,73 @@ namespace Fryz.Apps.SpaceTrader
 				}
 			}
 			return list;
+		}
+
+		/// Combat: generate an opponent, set an encounter type, and run EncounterExecuteAction until it ends
+		/// (or 25 rounds), recording ships and state after each round. Dialogs answer "No" (scoop declined).
+		static object Combat()
+		{
+			Harness.Policy = _ => DialogResult.No;
+			var list = new List<object>();
+			foreach (int seed in new[] { 5, 11, 42 })
+			{
+				foreach (Difficulty d in new[] { Difficulty.Beginner, Difficulty.Normal, Difficulty.Impossible })
+				{
+					SeedRandom(seed);
+					var game = new Game("Harness", d, 5, 5, 5, 5, new SpaceTrader());
+					var fights = new List<object>();
+					var setups = new[] {
+						(OpponentType.Pirate, EncounterType.PirateAttack, false, 0),
+						(OpponentType.Police, EncounterType.PoliceAttack, false, 1),
+						(OpponentType.Trader, EncounterType.TraderAttack, false, 2),
+						(OpponentType.Pirate, EncounterType.PirateAttack, true, 3),
+						(OpponentType.Trader, EncounterType.TraderIgnore, false, 4),
+						(OpponentType.Pirate, EncounterType.PirateAttack, false, 5) };
+					int n = 0;
+					foreach (var (ot, et, flee, variant) in setups)
+					{
+						for (int rep = 0; rep < 3; rep++)
+						{
+							int warp = (n * 31 + seed) % game.Universe.Length; n++;
+							typeof(Game).GetField("_warpSystemId", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(game, (StarSystemId)warp);
+							// Fresh well-armed commander ship each fight.
+							var ship = new Ship(variant >= 3 ? ShipType.Wasp : ShipType.Hornet);
+							ship.Crew[0] = game.Commander;
+							for (int i = 0; i < ship.Weapons.Length; i++) ship.AddEquipment(Consts.Weapons[variant == 5 ? (int)WeaponType.PhotonDisruptor : (int)WeaponType.BeamLaser]);
+							for (int i = 0; i < ship.Shields.Length; i++) ship.AddEquipment(Consts.Shields[(int)ShieldType.Energy]);
+							game.Commander.Ship = ship;
+							game.Commander.Cash = 5000; game.Commander.PoliceRecordScore = 0;
+							game.Options.DisableOpponents = variant == 5;
+							game.Options.ContinuousAttack = variant == 2;
+							game.Opponent = new Ship(ot);
+							game.EncounterType = et;
+							game.OpponentDisabled = false;
+							game.EncounterCmdrFleeing = flee;
+							var start = new { cmdr = ShipDump(game.Commander.Ship), opp = ShipDump(game.Opponent) };
+							var rounds = new List<object>();
+							for (int round = 0; round < 25; round++)
+							{
+								var result = game.EncounterExecuteAction(null);
+								rounds.Add(new { result = (int)result, type = (int)game.EncounterType, disabled = game.OpponentDisabled,
+									cmdrHull = game.Commander.Ship.Hull, cmdrCharges = Charges(game.Commander.Ship), oppHull = game.Opponent.Hull,
+									oppCharges = Charges(game.Opponent), cash = game.Commander.Cash, record = game.Commander.PoliceRecordScore,
+									reputation = game.Commander.ReputationScore, contAttack = game.EncounterContinueAttacking, contFlee = game.EncounterContinueFleeing });
+								game.EncounterContinueAttacking = false; game.EncounterContinueFleeing = false;
+								if (result != EncounterResult.Continue) break;
+							}
+							fights.Add(new { warp, oppType = (int)ot, encounterType = (int)et, flee, variant, start, rounds });
+						}
+					}
+					list.Add(new { seed, difficulty = (int)d, fights });
+				}
+			}
+			Harness.Policy = _ => DialogResult.Yes;
+			return list;
+		}
+
+		static int[] Charges(Ship sh)
+		{
+			var l = new List<int>(); foreach (Shield x in sh.Shields) if (x != null) l.Add(x.Charge); return l.ToArray();
 		}
 
 		/// StarSystem.SpecialResource hides the value until visited; read the backing field instead.
