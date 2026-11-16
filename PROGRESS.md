@@ -4,8 +4,8 @@
 
 ## Status
 - **Current milestone:** M3 (in progress)
-- **Next step:** M3: (1) port encounter player actions (EncounterVerifyAttack/Flee/Surrender/Bribe/Submit/Plunder/Board/Drink/Meet/Yield/Ignore/Trade) + Arrested (Game.cs:202-300, 1586-1968) into Systems/Encounters/EncounterActions.swift with Command.encounter(...) wiring and finishEncounter; harness the actions if feasible; (2) when TRV/NEWS/ENC/CMB/POL specs land (agents running), trace all {M3} IDs; (3) newspaper (NEWS); (4) real pmsim fuzz (random legal commands, invariants, determinism replay); coverage ≥90%.
-- **Last gate result:** verify.sh default ALL GATES PASSED @ M2 exit
+- **Next step:** M3: merge the five tracing branches (ENC, CMB, POL, TRV+NEWS, ALR/BNK/CRW tests; agents in worktrees), resolve reported engine/spec discrepancies, reach engine coverage ≥90% (83.3% before tracing), then verify.sh default and tag m3-done.
+- **Last gate result:** verify.sh --quick ALL GATES PASSED (encounter API commit); default gate pending coverage
 - **Blockers:** none
 
 ## Milestones
@@ -40,6 +40,7 @@
 - [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-17: Encounter API decisions: auto-repeat = .encounter(.autoRepeat), interrupt = .encounter(.stop), .encounter(.resolve) = attack + forceContinuous; rounds emit combatRound (no shotFired); stance changes emit encounterChanged; no encounterEnded event; nothing-illegal prompts are submitWithNothingIllegal (attack/bribe) and fleeInspection (flee); takeMarieCargo removed. Specs aligned to these names.
 - 2026-11-17: coverage-gate.sh merges all profraws and exports across every per-target .xctest (SwiftPM's codecov JSON covers only one bundle in Swift 6.4). Thresholds unchanged.
 - 2026-11-17: ALR.md {M2} Swift names aligned to the implemented ECO/SHP/BNK/CRW vocabulary.
 - 2026-11-17: Lint thresholds are gates: never relax them; wrap long lines instead (auto-mode classifier correctly blocked a relaxation).
@@ -52,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M3: encounter actions + Arrested bit-exact vs C# action harness; newspaper bit-exact (225 arrivals); real pmsim fuzz (2000 games × 3 rulesets, invariants, replay every 50th game, 0 violations); ENC/CMB/POL/TRV/NEWS specs written; action availability table, autoRepeat/resolve, encounter preview. 397 {M3} IDs were untraced; tracing delegated to five worktree agents.
 - 2026-11-17: M3 progress: opponent generation (216 cases), combat rounds (162 fights/1834 rounds), journeys (225 warps/1415 encounters/arrival pipeline) all bit-exact vs C# harness. Harness commands: rng galaxy market opponents combat travel.
 - 2026-11-17: M2 economy/services implemented (Market.swift, Services.swift) with 30 ID-named tests; RNG vectors (all generators) + galaxy invariants 1000 seeds pass; harness has 21 galaxy snapshots; pmsim dump-galaxy.
 - 2026-11-16: M0 setup done (ladder step 2 succeeded), gates green, repo published.
