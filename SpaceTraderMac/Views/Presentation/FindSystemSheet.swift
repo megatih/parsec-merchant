@@ -57,6 +57,7 @@ struct FindSystemSheet: View {
         }
         .padding(24)
         .frame(width: 400)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.FindSystem.sheet)
     }
 

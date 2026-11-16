@@ -24,7 +24,9 @@ struct MarketSectionView: View {
                 Table(rows, selection: $session.marketSelection) {
                     TableColumn("Item") { (r: MarketRowModel) in ItemCell(row: r) }
                         .width(min: 130, ideal: 160)
-                    TableColumn("Buy") { (r: MarketRowModel) in PriceCell(price: r.buyPrice) }
+                    TableColumn("Buy") { (r: MarketRowModel) in
+                        PriceCell(price: r.buyPrice).accessibilityIdentifier(AXID.Market.buyPrice(r.item))
+                    }
                         .width(min: 60, ideal: 70)
                     TableColumn("Sell") { (r: MarketRowModel) in SellCell(row: r) }
                         .width(min: 70, ideal: 90)
@@ -53,6 +55,7 @@ struct MarketSectionView: View {
                     if let command { self.session.send(command) }
                 }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier(AXID.SectionRoot.root(.market))
         }
     }
@@ -91,6 +94,7 @@ struct MarketSectionView: View {
     private func heldCell(_ r: MarketRowModel) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(verbatim: r.row.held.formatted()).monospacedDigit()
+                .accessibilityIdentifier(AXID.Market.held(r.item))
             if r.row.held > 0 {
                 Text("avg \(r.row.costBasisPerUnit.formatted()) cr.").font(.caption).foregroundStyle(.secondary).monospacedDigit()
             }
@@ -306,6 +310,7 @@ private struct DisposalSheet: View {
         .padding(24)
         .frame(width: 360)
         .onAppear { quantity = max(1, disposal.maximum) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Market.disposalSheet)
     }
 }

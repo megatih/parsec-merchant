@@ -17,6 +17,7 @@ struct WelcomeView: View {
             recentList
                 .frame(width: 420)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Welcome.root)
         .onAppear(perform: reload)
         .onChange(of: session.presentation) { reload() }

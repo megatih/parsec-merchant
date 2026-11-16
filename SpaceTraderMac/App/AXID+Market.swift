@@ -15,13 +15,16 @@ extension AXID {
         static func quantity(_ item: TradeItemType) -> String { "market.row.\(item).quantity" }
         static func jettison(_ item: TradeItemType) -> String { "market.row.\(item).jettison" }
         static func dump(_ item: TradeItemType) -> String { "market.row.\(item).dump" }
+        /// The Held and Buy cells (read by UI flow 1).
+        static func held(_ item: TradeItemType) -> String { "market.row.\(item).held" }
+        static func buyPrice(_ item: TradeItemType) -> String { "market.row.\(item).buyPrice" }
         static let disposalSheet = "market.disposal.sheet"
         static let disposalQuantity = "market.disposal.quantity"
         static let disposalConfirm = "market.disposal.confirm"
         static let disposalCancel = "market.disposal.cancel"
         static let all: [String] = [table, filter, footer, disposalSheet, disposalQuantity, disposalConfirm, disposalCancel]
             + TradeItemType.allCases.flatMap {
-                [row($0), buy($0), sell($0), buyMax($0), sellAll($0), quantity($0), jettison($0), dump($0)]
+                [row($0), buy($0), sell($0), buyMax($0), sellAll($0), quantity($0), jettison($0), dump($0), held($0), buyPrice($0)]
             }
     }
 }

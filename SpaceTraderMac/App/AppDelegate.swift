@@ -10,6 +10,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let helpRouter = HelpRouter()
 
     override init() {
+        // UI-SHELL-013: bare debug flags (`-PMResetState -PMSeed 11`) make NSUserDefaults read the next flag as the
+        // value and leave "11" over, which AppKit would open as a document instead of opening the main window.
+        // Finder opens arrive as Apple events, not arguments, so nothing is lost.
+        UserDefaults.standard.register(defaults: [LaunchOptions.treatUnknownArgumentsAsOpenKey: "NO"])
         let options = LaunchOptions.current
         launchOptions = options
         session = AppBootstrap.makeSession(options: options, defaults: .standard)

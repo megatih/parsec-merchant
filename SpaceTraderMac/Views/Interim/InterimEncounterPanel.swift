@@ -45,6 +45,7 @@ struct InterimEncounterPanel: View {
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Interim.encounterPanel)
     }
 

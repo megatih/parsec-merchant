@@ -19,6 +19,7 @@ struct CrewSectionView: View {
                 .frame(maxWidth: 900, alignment: .leading)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.SectionRoot.root(.crew))
     }
 

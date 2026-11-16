@@ -109,6 +109,7 @@ struct AboutView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(width: 520, height: 600)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.About.window)
         .sheet(isPresented: $showsLicense) {
             LicenseSheet()

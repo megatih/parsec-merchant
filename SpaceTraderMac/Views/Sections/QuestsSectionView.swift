@@ -33,6 +33,7 @@ struct QuestsSectionView: View {
                         } label: {
                             Text("Completed (\(model.finished.count))").font(.headline)
                         }
+                        .accessibilityElement(children: .contain)
                         .accessibilityIdentifier(AXID.Quests.completed)
                     }
                 }
@@ -40,6 +41,7 @@ struct QuestsSectionView: View {
                 .frame(maxWidth: 720, alignment: .leading)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.SectionRoot.root(.quests))
     }
 }

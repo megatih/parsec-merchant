@@ -23,6 +23,7 @@ struct BridgeSectionView: View {
                 }
                 .padding(20)
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier(AXID.SectionRoot.root(.bridge))
         }
     }
@@ -91,6 +92,7 @@ private struct SystemCard: View {
         } label: {
             Label("Current System", systemImage: "globe")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Bridge.systemCard)
     }
 }
@@ -291,6 +293,7 @@ private struct SpecialEventCard: View {
         } label: {
             Label("Special", systemImage: "sparkles")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Bridge.special)
     }
 }
@@ -389,6 +392,7 @@ private struct TargetCard: View {
         } label: {
             Label("Target", systemImage: "scope")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Bridge.targetCard)
     }
 

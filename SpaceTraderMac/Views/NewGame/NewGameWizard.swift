@@ -25,6 +25,7 @@ struct NewGameWizard: View {
             }
         }
         .frame(width: 640, height: 560)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.NewGame.sheet)
         .onAppear {
             if draft == nil {

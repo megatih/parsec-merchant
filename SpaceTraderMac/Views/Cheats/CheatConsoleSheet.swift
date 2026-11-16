@@ -48,6 +48,7 @@ struct CheatConsoleSheet: View {
         .padding(20)
         .frame(width: 520)
         .frame(minHeight: 420)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.CheatConsole.sheet)
         .onAppear {
             guard form == nil, let state = session.state, let first = CheatForm.codes(for: state.ruleset.content.cheatSet).first else { return }

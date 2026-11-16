@@ -18,6 +18,9 @@ struct LaunchOptions: Equatable, Sendable {
 
     static let none = LaunchOptions()
 
+    /// AppKit's default for this is YES: leftover command-line words are opened as documents.
+    static let treatUnknownArgumentsAsOpenKey = "NSTreatUnknownArgumentsAsOpen"
+
     /// The build flavour the arguments are honoured in.
     static var isDebugBuild: Bool {
         #if DEBUG

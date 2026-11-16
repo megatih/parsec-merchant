@@ -98,6 +98,7 @@ struct HelpView: View {
             .accessibilityIdentifier(AXID.Help.content)
         }
         .frame(minWidth: 720, minHeight: 480)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Help.window)
         .modifier(AppTextSize())
     }

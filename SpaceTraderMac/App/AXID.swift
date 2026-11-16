@@ -65,8 +65,9 @@ nonisolated enum AXID {
         static let hull = "status.hull"
         static let feed = "status.feed"
         static let feedList = "status.feed.list"
+        static let feedClose = "status.feed.close"
         static let reason = "status.reason"
-        static let all = [bays, fuel, hull, feed, feedList, reason]
+        static let all = [bays, fuel, hull, feed, feedList, feedClose, reason]
     }
 
     enum Inspector {

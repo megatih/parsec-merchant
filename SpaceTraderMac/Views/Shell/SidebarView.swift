@@ -20,6 +20,8 @@ struct SidebarView: View {
                 SidebarRow(section: section, badge: badges.badge(for: section))
                     .tag(section)
                     .disabled(lock != .none || !section.isAvailable(in: context))
+                    // `.contain` keeps the row's identifier from overwriting the badge's own (`sidebar.crew.badge`).
+                    .accessibilityElement(children: .contain)
                     .accessibilityIdentifier(section.axID)
             }
         }

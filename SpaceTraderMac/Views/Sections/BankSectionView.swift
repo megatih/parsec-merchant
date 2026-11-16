@@ -22,6 +22,7 @@ struct BankSectionView: View {
                 .frame(maxWidth: 720, alignment: .leading)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.SectionRoot.root(.bank))
     }
 

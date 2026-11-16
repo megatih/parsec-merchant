@@ -72,6 +72,7 @@ struct RetireSheet: View {
         }
         .padding(24)
         .frame(width: 420)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Dialog.retireSheet)
     }
 }

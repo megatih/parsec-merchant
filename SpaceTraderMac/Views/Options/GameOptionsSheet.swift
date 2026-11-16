@@ -79,6 +79,7 @@ struct GameOptionsSheet: View {
         }
         .padding(20)
         .frame(width: 520)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Options.sheet)
         .onAppear {
             if draft == nil, let state = session.state {

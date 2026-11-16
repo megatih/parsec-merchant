@@ -4,9 +4,11 @@ import ParsecEngine
 import Testing
 @testable import ParsecMerchant
 
-/// Mirrors `UITestFixtures.flowSeed` of the UI-test target (flows 1 and 3).
+/// Mirrors `UITestFixtures.flowSeed` and `.flowGalaxyCode` of the UI-test target (flows 1 and 3), which cannot import
+/// the engine; keep the two files in step.
 enum FlowFixtures {
     static let flowSeed: UInt64 = 11
+    static let flowGalaxyCode = "M2-B-S"
 }
 
 @MainActor
@@ -35,5 +37,18 @@ struct FlowSeedTests {
         let result = try #require(try Self.playFlow(seed: FlowFixtures.flowSeed))
         #expect(result.0.commander.days == 1)
         #expect(result.1.contains(.uneventfulTrip))
+    }
+
+    @Test("UI-SHELL-124 the galaxy code flow 1 checks in the wizard is the engine's code for Modern, Normal, the flow seed")
+    func flowGalaxyCode() {
+        #expect(FlowFixtures.flowGalaxyCode == GalaxyCode(ruleset: .modern, difficulty: .normal, seed: FlowFixtures.flowSeed).string)
+        var draft = NewGameDraft(commanderName: "Flow", seed: FlowFixtures.flowSeed)
+        draft.balance()
+        #expect(draft.galaxyCodeText == FlowFixtures.flowGalaxyCode)
+    }
+
+    @Test("UI-SHELL-013 bare debug flags never leave a word over for AppKit to open as a document")
+    func unknownArgumentsAreNotOpened() {
+        #expect(UserDefaults.standard.string(forKey: LaunchOptions.treatUnknownArgumentsAsOpenKey) == "NO")
     }
 }

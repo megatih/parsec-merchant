@@ -73,6 +73,7 @@ private struct FeedOverlay: View {
                 Spacer()
                 Button("Close", action: dismiss)
                     .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier(AXID.Status.feedClose)
             }
             .padding(10)
             Divider()
@@ -91,6 +92,7 @@ private struct FeedOverlay: View {
         .frame(width: 460, height: 300)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
         .shadow(radius: 8)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Status.feedList)
     }
 }
