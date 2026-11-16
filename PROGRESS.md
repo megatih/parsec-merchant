@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M3 (in progress)
-- **Next step:** M3 — first complete specs TRV, ENC, CMB, POL, NEWS (skeletons exist; write requirement bullets with IDs, from research 01 §6-8 / 04 + C# source; consider spawning spec agents like M0), then implement resumable transit/arrival pipeline, encounters (35 types), opponent generation, combat, police/arrest/pod, scoop/plunder, very rare encounters, newspaper; extend harness (opponent generation, combat rounds) for bit-exact checks; pmsim fuzz real; coverage ≥90% from M3.
+- **Next step:** M3: (1) port encounter player actions (EncounterVerifyAttack/Flee/Surrender/Bribe/Submit/Plunder/Board/Drink/Meet/Yield/Ignore/Trade) + Arrested (Game.cs:202-300, 1586-1968) into Systems/Encounters/EncounterActions.swift with Command.encounter(...) wiring and finishEncounter; harness the actions if feasible; (2) when TRV/NEWS/ENC/CMB/POL specs land (agents running), trace all {M3} IDs; (3) newspaper (NEWS); (4) real pmsim fuzz (random legal commands, invariants, determinism replay); coverage ≥90%.
 - **Last gate result:** verify.sh default ALL GATES PASSED @ M2 exit
 - **Blockers:** none
 
@@ -52,6 +52,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M3 progress: opponent generation (216 cases), combat rounds (162 fights/1834 rounds), journeys (225 warps/1415 encounters/arrival pipeline) all bit-exact vs C# harness. Harness commands: rng galaxy market opponents combat travel.
 - 2026-11-17: M2 economy/services implemented (Market.swift, Services.swift) with 30 ID-named tests; RNG vectors (all generators) + galaxy invariants 1000 seeds pass; harness has 21 galaxy snapshots; pmsim dump-galaxy.
 - 2026-11-16: M0 setup done (ladder step 2 succeeded), gates green, repo published.
 - 2026-11-16: Docs created: PRD v1.1, UX vision, research 01–06 (with QA errata), QA logs 07–08, CLAUDE.md, GOAL.md. Owner approved D6 (dotnet differential harness).
