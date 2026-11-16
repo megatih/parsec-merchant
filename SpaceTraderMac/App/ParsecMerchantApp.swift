@@ -1,32 +1,33 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import SwiftUI
 import ParsecEngine
+import SwiftUI
 
 /// Static information about the app and its linked engine.
 enum AppInfo {
     static let engineVersion = ParsecEngineInfo.version
 }
 
-@main
-struct ParsecMerchantApp: App {
-    var body: some Scene {
-        Window("Parsec Merchant", id: "main") {
-            PlaceholderView()
-        }
-        .defaultSize(width: 1320, height: 860)
-    }
+/// Scene sizes (UI-SHELL-014). Explicit sizes rather than content-fitting (research 05 §4).
+enum SceneMetrics {
+    static let mainDefaultSize = CGSize(width: 1320, height: 860)
+    static let mainMinimumSize = CGSize(width: 1100, height: 720)
+    static let mainWindowID = "main"
 }
 
-/// Temporary root view until the app shell lands in M7.
-struct PlaceholderView: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            Text("Parsec Merchant")
-                .font(.largeTitle)
-            Text("Engine \(AppInfo.engineVersion)")
-                .foregroundStyle(.secondary)
+@main
+struct ParsecMerchantApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
+    var body: some Scene {
+        Window("Parsec Merchant", id: SceneMetrics.mainWindowID) {
+            RootView()
+                .environment(appDelegate.session)
         }
-        .frame(minWidth: 640, minHeight: 400)
-        .accessibilityIdentifier("placeholder.root")
+        .defaultSize(SceneMetrics.mainDefaultSize)
+        .windowResizability(.contentMinSize)
+        .commands {
+            MenuCommands(session: appDelegate.session)
+        }
+        // Settings (UI-SHELL-100), About (UI-SHELL-106) and Help (UI-SHELL-109) scenes are added by their owners.
     }
 }
