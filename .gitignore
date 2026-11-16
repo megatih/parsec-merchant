@@ -18,3 +18,4 @@ xcuserdata/
 .claude/skills/
 docs/reference/palm-src/
 Config/Local.xcconfig
+.claude/worktrees/

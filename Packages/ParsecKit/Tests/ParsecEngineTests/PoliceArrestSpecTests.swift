@@ -80,7 +80,7 @@ struct PoliceSurrenderSpecTests {
         #expect(r.events == [.preciousHidden])
         #expect(e.state.raided && e.state.commander.cash == cash && e.state.commander.debt == 0)
         #expect(Pol.encounter(e).type == .pirateAttack)
-        // Modern clamps instead (MOD-012) and charges blackmail.
+        // Modern clamps instead (RUL-112, the PRD hidden-bay fix) and charges blackmail.
         e = Pol.engine(.pirateAttack, .modern) { $0.commander.ship.gadgets = [.hiddenCargoBays] }
         let r2 = e.perform(.encounter(.surrender))
         #expect(r2.events.contains(.blackmailed(750)) && e.state.phase == .docked)
