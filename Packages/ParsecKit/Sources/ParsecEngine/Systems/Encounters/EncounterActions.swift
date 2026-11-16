@@ -147,6 +147,8 @@ public struct PlunderOffer: Codable, Sendable, Equatable {
     public var victimCargo: [Int]
     /// True when boarding the Marie Celeste (narcotics taken trigger the customs police).
     public var marieCeleste: Bool
+    /// Narcotics held before boarding the Marie Celeste (C# EncounterVerifyBoard compares against it).
+    public var narcoticsBefore = 0
 }
 
 extension GameEngine {
@@ -166,7 +168,7 @@ extension GameEngine {
         case .resolve: if !enc.type.actions.contains(.attack) { return .rejected(.encounterActionUnavailable) }
         default: if !enc.type.actions.contains(action) { return .rejected(.encounterActionUnavailable) }
         }
-        if action != .autoRepeat, repeating {
+        if action != .autoRepeat, action != .stop, repeating {
             // CMB-068: every command except the auto-repeat tick interrupts continuous combat. A rejected or
             // confirmation-requesting command must not change state, so the flags are cleared on a copy first.
             var probe = self
@@ -203,7 +205,8 @@ extension GameEngine {
         case .board:
             guard enc.type == .marieCeleste else { return .rejected(.invalidArgument) }
             guard ack.contains(.boardMarieCeleste) else { return .needsConfirmation(Confirmation(.boardMarieCeleste)) }
-            state.pendingPlunder = PlunderOffer(victimCargo: enc.opponent.cargo, marieCeleste: true)
+            state.pendingPlunder = PlunderOffer(victimCargo: enc.opponent.cargo, marieCeleste: true,
+                                                narcoticsBefore: state.commander.ship.cargo[TradeItemType.narcotics.rawValue])
             return StepResult(events: [], decision: .plunder(enc.opponent.cargo), rejection: nil)
         case .drink: return drink(enc, ack)
         case .meet: return meet(enc, ack)
@@ -513,7 +516,7 @@ extension GameEngine {
         guard let offer = state.pendingPlunder, let enc = encounter else { return .rejected(.notAllowedInPhase) }
         state.pendingPlunder = nil
         if offer.marieCeleste {
-            if state.commander.ship.cargo[TradeItemType.narcotics.rawValue] > 0 { state.quests.justLootedMarie = true }
+            if state.commander.ship.cargo[TradeItemType.narcotics.rawValue] > offer.narcoticsBefore { state.quests.justLootedMarie = true }
             return finish(.normal)
         }
         var events: [GameEvent] = []

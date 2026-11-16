@@ -160,6 +160,8 @@ public extension GameState {
 
     /// C# `EncounterExecuteAction`: one round after the player chose Attack (or Flee: `enc.cmdrFleeing == true`).
     mutating func executeRound(_ enc: inout EncounterState) -> (RoundResult, [GameEvent]) {
+        // CMB-052: C# fights the shared Space Monster / Scarab / Dragonfly / Scorpion object, so damage persists.
+        defer { persistSpecialShip(enc.opponent) }
         var events: [GameEvent] = []
         let prevCmdrHull = commander.ship.hull
         let prevOppHull = enc.opponent.hull
@@ -230,6 +232,17 @@ public extension GameState {
         }
         if enc.type != prev { events.append(.encounterChanged(enc.type)) }
         return (.continue, events)
+    }
+
+    /// Writes a special opponent back to `specialShips` (C# `Opponent` is a reference to the shared ship).
+    mutating func persistSpecialShip(_ ship: Ship) {
+        switch ship.type {
+        case .spaceMonster: specialShips.spaceMonster = ship
+        case .scarab: specialShips.scarab = ship
+        case .dragonfly: specialShips.dragonfly = ship
+        case .scorpion: specialShips.scorpion = ship
+        default: break
+        }
     }
 
     /// C# EncounterDefeatDragonfly / Scarab / Scorpion.
