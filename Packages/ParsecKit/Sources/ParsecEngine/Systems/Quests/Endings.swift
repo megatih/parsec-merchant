@@ -27,9 +27,10 @@ public extension GameState {
 }
 
 extension GameEngine {
-    /// SCORE: retire (C# mnuRetire_Click), two-phase with `WarningID.retire` carrying the score preview.
+    /// SCORE-016/017: retire (C# mnuRetire_Click), docked only, two-phase with `WarningID.retire` carrying the score preview.
     mutating func retire(_ ack: Set<WarningID>) -> StepResult {
         if case .gameOver = state.phase { return .rejected(.gameOver) }
+        guard case .docked = state.phase else { return .rejected(.notAllowedInPhase) }
         guard ack.contains(.retire) else {
             return .needsConfirmation(Confirmation(.retire, amounts: [state.score(for: .retired)]))
         }

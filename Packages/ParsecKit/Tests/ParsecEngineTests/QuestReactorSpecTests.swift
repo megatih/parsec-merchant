@@ -151,9 +151,10 @@ struct QuestReactorAboardSpecTests {
         }
         #expect(bigger > 0)
         // (b) Tribbles: all die below 20, else they halve.
-        for (count, left) in [(19, 0), (20, 10), (101, 50)] {
+        // QST-TRIBBLES: the death notice precedes the count change.
+        for (count, left, death) in [(19, 0, TribbleDeath.allFromReactor), (20, 10, .halfFromReactor), (101, 50, .halfFromReactor)] {
             var s = reactorEngine(status: 3) { $0.commander.ship.tribbles = count }.state
-            #expect(s.arrivalTribbles() == [.tribblesChanged(from: count, to: left)])
+            #expect(s.arrivalTribbles() == [.tribblesDied(death), .tribblesChanged(from: count, to: left)])
         }
         // (c) Illegal special cargo: submit, surrender and yield arrest; the bribe is multiplied.
         let s = reactorEngine(status: 3).state

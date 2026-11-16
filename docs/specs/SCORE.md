@@ -24,13 +24,13 @@
 ## 2. After the end
 
 - **SCORE-013** {M4} [M][W][P] While `phase == .gameOver(_)`, `perform` rejects every `Command` with `CommandError.gameOver` and leaves the state unchanged, including `.setOptions`, `.track`, `.retire` and `.specialEvent` (C# disables the in-game menus and drops the game). (source: Form_SpaceTrader.cs:2803, :2839-2840, :2914-2924)
-- **SCORE-014** {M4} [M][W][P] Read-only queries still work on a game-over state: `worth`, `score(for:)`, `scoreTenths(for:)` and the commander/ship/quest views return the final values, so the app can build the game-over card from the state alone. (source: Form_SpaceTrader.cs:2819-2825)
+- **SCORE-014** {M4} [M][W][P] Read-only queries still work on a game-over state: `worth`, `score(for:)` and the commander/ship/quest views return the final values, so the app can build the game-over card from the state alone. (source: Form_SpaceTrader.cs:2819-2825)
 - **SCORE-015** {M9} [M][W][P] The game-over presentation follows the C# order in one card (UX-VISION §5.5): the ending (killed / retired / moon / Modern moon-girl), then "You achieved a score of X.Y%" (SCORE-024/025), then the high-score outcome (SCORE-036). (source: Form_SpaceTrader.cs:2801-2841; Palm: Src/Traveler.c:341-375)
 
 ## 3. The Retire command
 
 - **SCORE-016** {M4} [M][W][P] `perform(.retire)` is accepted only in phase `.docked`; in `.inTransit` or `.encounter` it is rejected with `.notAllowedInPhase` (the C# menu is unreachable behind the modal travel and encounter forms; Palm's Retire is a docked-form menu command). In `.gameOver` it is rejected with `.gameOver` (SCORE-013). (source: Form_SpaceTrader.cs:2914-2924, :3752; Palm: Src/AppHandleEvent.c:38-41, :143-146)
-- **SCORE-017** {M4} [M][W][P] Two-phase consent: `perform(.retire)` without `acknowledging: [.retire]` returns `needsConfirmation(Confirmation(.retire, amounts: [state.scoreTenths(for: .retired)]))` and changes nothing; with the acknowledgement it sets `phase = .gameOver(.retired)` and emits `[.gameEnded(.retired, score: state.score(for: .retired))]`. Retiring is allowed in debt and with passengers, quests or cargo aboard; none of these block it. (source: Form_SpaceTrader.cs:3752-3760, Form_Alert.cs:581-582; Palm: Src/AppHandleEvent.c:143-146)
+- **SCORE-017** {M4} [M][W][P] Two-phase consent: `perform(.retire)` without `acknowledging: [.retire]` returns `needsConfirmation(Confirmation(.retire, amounts: [state.score(for: .retired)]))` and changes nothing; with the acknowledgement it sets `phase = .gameOver(.retired)` and emits `[.gameEnded(.retired, score: state.score(for: .retired))]`. Retiring is allowed in debt and with passengers, quests or cargo aboard; none of these block it. (source: Form_SpaceTrader.cs:3752-3760, Form_Alert.cs:581-582; Palm: Src/AppHandleEvent.c:143-146)
 
 ## 4. Score formula
 
@@ -44,9 +44,9 @@
 - **SCORE-021** {M4} [M][W] The score uses `worth` as defined for Windows 2.01: ship list price (`ShipSpec.price`, not hull, equipment or cargo) + cash − debt + 500,000 when `quests.moon > notStarted`. (source: Commander.cs:389-395, ShipSpec.cs:390)
 - **SCORE-022** {M5} [M][P] Modern and Palm score with the trade-in worth of RUL-119 (`worthUsesTradeInValue`): trade-in value of ship and equipment (after repairs and fuel, with the tribble penalty) + cargo cost basis + cash − debt + moon. For a killed ending the trade-in value is taken from the final ship as the step leaves it (hull ≤ 0 counts against it through the repair term). [verify the Palm value at hull ≤ 0 with the harness] (source: Palm: Src/Money.c:48, Src/ShipPrice.c:72-90)
 - **SCORE-023** {M4} [M][W][P] `days`, `worth` and `D` are read from the state at the moment the game ends (after the ending step's changes, SCORE-007), not at the start of the step. For the moon the days bonus `dm` counts the days still left before day `(D+1) × 100`; at or after that day it is 0. (source: Game.cs:4250-4263, Form_SpaceTrader.cs:2821-2825; Palm: Src/Traveler.c:305)
-- **SCORE-024** {M4} [M][W] `GameState.scoreTenths(for:)` is the score in tenths of a percent: equal to `score(for:)` in Modern and Windows 2.01. Display is `"\(t / 10).\(t % 10)%"` with the integer part grouped (C# `FormatNumber`, `{0:n0}`); for a negative `t` both parts carry the sign exactly as C# prints them (e.g. `-5969` → "-596.-9%", `-5` → "0.-5%"). (source: Form_SpaceTrader.cs:2821-2822, Form_ViewHighScores.cs:68, Functions.cs:98-101)
+- **SCORE-024** {M4} [M][W] In Modern and Windows 2.01 `score(for:)` is already the score in tenths of a percent; there is no separate `scoreTenths` query in M4 (the Palm display variant is SCORE-025, {M5}). The app's display is `"\(t / 10).\(t % 10)%"` with the integer part grouped (C# `FormatNumber`, `{0:n0}`); for a negative `t` both parts carry the sign exactly as C# prints them (e.g. `-5969` → "-596.-9%", `-5` → "0.-5%"). (source: Form_SpaceTrader.cs:2821-2822, Form_ViewHighScores.cs:68, Functions.cs:98-101)
 - **SCORE-025** {M5} [P] Palm `scoreTenths(for:) = score(for:) / 5` (C truncation), which reproduces Palm's display `a / 50 "." (a % 50) / 5` for every `a`, including negative ones; Palm prints the integer part ungrouped. Ranking (SCORE-031) uses the full Palm score, not the tenths. (source: Palm: Src/Traveler.c:343-350, :1269-1276)
-- **SCORE-026** {M4} [M][W][P] `score(for:)` and `scoreTenths(for:)` are pure queries usable in every phase (the Retire preview, the game-over card, the Commander inspector); they consume no RNG and change nothing. (source: Game.cs:4246-4269)
+- **SCORE-026** {M4} [M][W][P] `score(for:)` is a pure query usable in every phase (the Retire preview, the game-over card, the Commander inspector); they consume no RNG and change nothing. (source: Game.cs:4246-4269)
 
 ## 5. Worked examples
 
@@ -94,10 +94,10 @@ All examples are hand-computed from the expressions in SCORE-018 and SCORE-020 (
 
 ## 8. API names proposed by this spec
 
-- `Command.retire` (two-phase with the existing `WarningID.retire`; `Confirmation.amounts == [scoreTenths(for: .retired)]`).
+- `Command.retire` (docked only; two-phase with the existing `WarningID.retire`; `Confirmation.amounts == [score(for: .retired)]`).
 - `GameEvent.gameEnded(GameEndType, score: Int)` (SCORE-012).
-- `GameState.score(for: GameEndType) -> Int` (decided) and `GameState.scoreTenths(for: GameEndType) -> Int` (SCORE-024/025).
+- `GameState.score(for: GameEndType) -> Int` (decided; tenths of a percent in Modern/Windows). A Palm `scoreTenths(for:)` display variant is {M5} (SCORE-025).
 - `HighScoreEntry`, `HighScoreTable.inserting(_:eligible:)`, `HighScoreOutcome { entered(rank:), missed, excludedForCheats, excludedForReload }` ({M6}).
 - Ruleset flag `moonGirlEnding` (SCORE-008; RUL-006 names the behaviour but no flag).
 - Existing names reused: `GamePhase.gameOver(GameEndType)`, `CommandError.gameOver`, `CommandError.notAllowedInPhase`, `CommandError.insufficientFunds`, `WarningID.retire`, `WarningID.acceptSpecialEvent`, `GameEvent.playerDestroyed`, `.bothDestroyed`, `.reactorMeltdown`.
-- Note: ALR-096/097/102/104 still name `PendingDecision.gameOver(...)` and `WarningID.retire(scorePreview:)`; the decided API is the phase (TRV-043) and a payload-free `WarningID.retire` with the preview in `Confirmation.amounts`. ALR-097's `.boughtMoonWithPrincess` is `GameEndType.boughtMoonGirl`.
+- ALR-096/097/101…104 are aligned to the decided API: the phase `.gameOver(GameEndType)` (TRV-043) with `GameEvent.gameEnded(_, score:)`, and a payload-free `WarningID.retire` with the preview in `Confirmation.amounts`; the moon-girl ending is `GameEndType.boughtMoonGirl`.
