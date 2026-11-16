@@ -104,6 +104,8 @@ public struct EncounterState: Codable, Sendable, Equatable {
     /// Auto-repeat flags (C# `EncounterContinueAttacking` / `EncounterContinueFleeing`); the UI repeats the action.
     public var continueAttacking = false
     public var continueFleeing = false
+    /// ENC-190: set by `resolve`; auto-repeat is evaluated as if both continuous options were on.
+    public var forceContinuous = false
 
     public init(type: EncounterType, opponent: Ship, clicks: Int = 0) {
         self.type = type

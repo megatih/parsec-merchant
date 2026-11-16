@@ -19,8 +19,11 @@ struct Fuzzer {
         }
         if let offer = s.pendingOrbitTrade { return .resolveTradeInOrbit(quantity: r.next(below: offer.maxQuantity + 1)) }
         switch s.phase {
-        case .encounter:
-            let actions = EncounterAction.allCases
+        case let .encounter(enc):
+            // Mostly offered actions (ENC-130), sometimes any action to exercise the rejections.
+            var actions = enc.type.actions + [.resolve]
+            if enc.continueAttacking || enc.continueFleeing { actions += [.autoRepeat, .autoRepeat, .stop] }
+            if r.next(below: 10) == 0 { actions = EncounterAction.allCases }
             return .encounter(actions[r.next(below: actions.count)])
         case .docked:
             let item = TradeItemType(rawValue: r.next(below: 10)) ?? .water
@@ -60,6 +63,15 @@ struct Fuzzer {
         if s.commander.debt < 0 { fail("negative debt") }
         // The C# trade-in-orbit cash quirk (ECO-068) can drive cash negative unless the ruleset caps with the orbit price.
         if s.commander.cash < 0, r.flags.tradeInOrbitCashCapUsesOrbitPrice { fail("negative cash \(s.commander.cash)") }
+        if case let .encounter(enc) = s.phase {
+            // ENC-192: the action set is never empty; a disabled opponent is in a disabled type or a quest ship.
+            if enc.type.actions.isEmpty { fail("empty action set for \(enc.type)") }
+            let disabledTypes: [EncounterType] = [.pirateDisabled, .policeDisabled, .traderDisabled, .famousCaptDisabled]
+            if enc.opponentDisabled, !disabledTypes.contains(enc.type), ![.dragonfly, .scarab, .scorpion].contains(enc.opponent.type) {
+                fail("disabled opponent in \(enc.type)")
+            }
+            if enc.opponent.hull <= 0, s.pendingScoop == nil { fail("encounter open with destroyed opponent") }
+        }
         if s.quests.reactor < 0 || s.quests.reactor > 22 || s.quests.princess > 16 || s.quests.dragonfly > 6 { fail("quest status out of range") }
     }
 

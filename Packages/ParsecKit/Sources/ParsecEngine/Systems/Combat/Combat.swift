@@ -222,8 +222,10 @@ public extension GameState {
         let prev = enc.type
         updateEncounterType(prevCmdrHull: prevCmdrHull, prevOppHull: prevOppHull, encounter: &enc)
         enc.oppFleeing = Self.isFleeOrSurrender(enc.type)
-        if options.continuousAttack, enc.cmdrFleeing || !enc.oppFleeing
-            || (options.continuousAttackFleeing && (enc.type == prev || (enc.type != .pirateSurrender && enc.type != .traderSurrender))) {
+        let continuous = options.continuousAttack || enc.forceContinuous
+        let continuousFleeing = options.continuousAttackFleeing || enc.forceContinuous
+        if continuous, enc.cmdrFleeing || !enc.oppFleeing
+            || (continuousFleeing && (enc.type == prev || (enc.type != .pirateSurrender && enc.type != .traderSurrender))) {
             if enc.cmdrFleeing { enc.continueFleeing = true } else { enc.continueAttacking = true }
         }
         if enc.type != prev { events.append(.encounterChanged(enc.type)) }

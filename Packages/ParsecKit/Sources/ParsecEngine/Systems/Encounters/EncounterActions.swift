@@ -5,6 +5,64 @@
 /// The actions offered by the encounter screen (C# Form_Encounter buttons).
 public enum EncounterAction: String, Codable, Sendable, CaseIterable {
     case attack, flee, surrender, bribe, submit, yield, ignore, plunder, trade, board, drink, meet, stop
+    /// ENC-187: the auto-repeat tick (one more round without re-verification).
+    case autoRepeat
+    /// ENC-190: attack and keep attacking until the encounter resolves.
+    case resolve
+}
+
+public extension EncounterType {
+    /// ENC-130: the actions offered for this type (table 6.1, C# Form_Encounter.UpdateButtons).
+    var actions: [EncounterAction] {
+        switch self {
+        case .bottleGood, .bottleOld: return [.drink, .ignore]
+        case .captainAhab, .captainConrad, .captainHuie: return [.attack, .ignore, .meet]
+        case .dragonflyAttack, .famousCaptainAttack, .scorpionAttack, .spaceMonsterAttack, .traderAttack: return [.attack, .flee]
+        case .marieCeleste: return [.board, .ignore]
+        case .marieCelestePolice: return [.attack, .flee, .yield, .bribe]
+        case .pirateAttack, .policeAttack, .policeSurrender, .scarabAttack: return [.attack, .flee, .surrender]
+        case .pirateSurrender, .pirateDisabled, .traderSurrender, .traderDisabled: return [.attack, .plunder]
+        case .policeInspect: return [.attack, .flee, .submit, .bribe]
+        case .traderBuy, .traderSell: return [.attack, .ignore, .trade]
+        case .dragonflyIgnore, .famousCaptDisabled, .pirateIgnore, .pirateFlee, .policeIgnore, .policeFlee, .policeDisabled,
+             .scarabIgnore, .scorpionIgnore, .spaceMonsterIgnore, .traderIgnore, .traderFlee:
+            return [.attack, .ignore]
+        }
+    }
+
+    /// ENC-132: the safe default action bound to Return (nil when every action is destructive or penalised).
+    var defaultAction: EncounterAction? {
+        switch self {
+        case .pirateSurrender, .traderSurrender, .traderDisabled: return nil
+        case .pirateDisabled: return .plunder
+        case .marieCelestePolice: return .yield
+        case .policeInspect: return .submit
+        default:
+            let a = actions
+            return a.contains(.flee) ? .flee : (a.contains(.ignore) ? .ignore : a.first)
+        }
+    }
+}
+
+/// ENC-186 / CMB-098: one action's availability for the current encounter.
+public struct EncounterActionPreview: Sendable, Equatable {
+    public var action: EncounterAction
+    /// The rejection the command would return now, if any.
+    public var rejection: CommandError?
+    /// The first confirmation the command would ask for, if any.
+    public var confirmation: Confirmation?
+    public var enabled: Bool { rejection == nil }
+}
+
+/// ENC-186: pure description of the current encounter for the encounter screen.
+public struct EncounterPreview: Sendable, Equatable {
+    public var type: EncounterType
+    public var opponentType: ShipType
+    public var playerHullPercent, playerShieldPercent, opponentHullPercent, opponentShieldPercent: Int
+    public var actions: [EncounterActionPreview]
+    public var defaultAction: EncounterAction?
+    public var canStop: Bool
+    public var canAutoRepeat: Bool
 }
 
 public extension GameState {
@@ -103,8 +161,37 @@ extension GameEngine {
     /// Entry point for `Command.encounter`.
     mutating func encounterAction(_ action: EncounterAction, _ ack: Set<WarningID>) -> StepResult {
         guard var enc = encounter else { return .rejected(.notAllowedInPhase) }
-        if state.pendingPlunder != nil || state.pendingOrbitTrade != nil { return .rejected(.pendingDecisionFirst) }
+        if state.pendingPlunder != nil || state.pendingOrbitTrade != nil || state.pendingScoop != nil {
+            return .rejected(.pendingDecisionFirst)
+        }
+        let repeating = enc.continueAttacking || enc.continueFleeing
         switch action {
+        case .stop, .autoRepeat: if !repeating { return .rejected(.encounterActionUnavailable) }
+        case .resolve: if !enc.type.actions.contains(.attack) { return .rejected(.encounterActionUnavailable) }
+        default: if !enc.type.actions.contains(action) { return .rejected(.encounterActionUnavailable) }
+        }
+        if action != .autoRepeat, repeating {
+            // CMB-068: every command except the auto-repeat tick interrupts continuous combat. A rejected or
+            // confirmation-requesting command must not change state, so the flags are cleared on a copy first.
+            var probe = self
+            var cleared = enc
+            cleared.continueAttacking = false
+            cleared.continueFleeing = false
+            probe.setEncounter(cleared)
+            let r = probe.encounterAction(action, ack)
+            if r.rejection == nil, !Self.isConfirmationRequest(r) { self = probe }
+            return r
+        }
+        switch action {
+        case .autoRepeat:
+            enc.continueAttacking = false
+            enc.continueFleeing = false
+            return runRound(&enc, events: [])
+        case .resolve:
+            var forced = enc
+            forced.forceContinuous = true
+            if let stop = verifyAttack(&forced, ack) { return stop }
+            return runRound(&forced, events: [.playerAttacked])
         case .attack: return attack(&enc, ack)
         case .flee: return flee(&enc, ack)
         case .surrender: return surrender(enc, ack)
@@ -130,6 +217,29 @@ extension GameEngine {
             setEncounter(enc)
             return StepResult()
         }
+    }
+
+    /// ENC-186 / CMB-098: pure preview of the current encounter (nil outside the encounter phase).
+    public var encounterPreview: EncounterPreview? {
+        guard let enc = encounter else { return nil }
+        let r = ruleset
+        func pct(_ v: Int, _ m: Int) -> Int { m <= 0 ? 0 : 100 * v / m }
+        let me = state.commander.ship, opp = enc.opponent
+        let previews = enc.type.actions.map { action -> EncounterActionPreview in
+            var probe = self
+            let res = probe.encounterAction(action, [])
+            var conf: Confirmation?
+            if case let .confirm(c) = res.decision { conf = c }
+            return EncounterActionPreview(action: action, rejection: res.rejection, confirmation: conf)
+        }
+        return EncounterPreview(type: enc.type, opponentType: opp.type,
+                                playerHullPercent: pct(me.hull, me.hullStrength(r)),
+                                playerShieldPercent: pct(me.shieldCharge, me.shieldStrength(r)),
+                                opponentHullPercent: pct(opp.hull, opp.hullStrength(r)),
+                                opponentShieldPercent: pct(opp.shieldCharge, opp.shieldStrength(r)),
+                                actions: previews, defaultAction: enc.type.defaultAction,
+                                canStop: enc.continueAttacking || enc.continueFleeing,
+                                canAutoRepeat: enc.continueAttacking || enc.continueFleeing)
     }
 
     /// Ends the encounter with `result` and resumes transit / arrival.
@@ -169,8 +279,8 @@ extension GameEngine {
         case .dragonflyIgnore, .pirateIgnore, .scarabIgnore, .scorpionIgnore, .spaceMonsterIgnore:
             enc.type = EncounterType(rawValue: enc.type.rawValue - 1) ?? enc.type
         case .policeInspect, .marieCelestePolice, .policeFlee, .policeIgnore, .policeSurrender:
-            if enc.type == .policeInspect, !state.detectableIllegalCargoOrPassengers, !ack.contains(.nothingIllegal) {
-                return .needsConfirmation(Confirmation(.nothingIllegal))
+            if enc.type == .policeInspect, !state.detectableIllegalCargoOrPassengers, !ack.contains(.submitWithNothingIllegal) {
+                return .needsConfirmation(Confirmation(.submitWithNothingIllegal))
             }
             if state.commander.policeRecordScore > -30, !ack.contains(.attackPolice) {
                 return .needsConfirmation(Confirmation(.attackPolice, amounts: [-33]))
@@ -215,8 +325,8 @@ extension GameEngine {
 
     /// C# `EncounterVerifyFlee`: returns a confirmation, or nil when fleeing may proceed.
     mutating func verifyFlee(_ enc: inout EncounterState, _ ack: Set<WarningID>) -> StepResult? {
-        if enc.type == .policeInspect, !state.detectableIllegalCargoOrPassengers, !ack.contains(.nothingIllegal) {
-            return .needsConfirmation(Confirmation(.nothingIllegal))
+        if enc.type == .policeInspect, !state.detectableIllegalCargoOrPassengers, !ack.contains(.fleeInspection) {
+            return .needsConfirmation(Confirmation(.fleeInspection))
         }
         if enc.type == .marieCelestePolice, !ack.contains(.fleeMariePolice) {
             return .needsConfirmation(Confirmation(.fleeMariePolice))
@@ -296,8 +406,8 @@ extension GameEngine {
     mutating func bribe(_ enc: EncounterState, _ ack: Set<WarningID>) -> StepResult {
         if enc.type == .marieCelestePolice { return .rejected(.bribeNotAccepted) }
         guard let amount = state.bribeAmount else { return .rejected(.bribeNotPossible) }
-        if !state.detectableIllegalCargoOrPassengers, !ack.contains(.nothingIllegal) {
-            return .needsConfirmation(Confirmation(.nothingIllegal))
+        if !state.detectableIllegalCargoOrPassengers, !ack.contains(.submitWithNothingIllegal) {
+            return .needsConfirmation(Confirmation(.submitWithNothingIllegal))
         }
         guard ack.contains(.bribe) else { return .needsConfirmation(Confirmation(.bribe, amounts: [amount])) }
         guard state.commander.cash >= amount else { return .rejected(.insufficientFunds) }

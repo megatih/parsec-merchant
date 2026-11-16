@@ -7,7 +7,7 @@ public enum WarningID: String, Codable, Sendable, Hashable, CaseIterable {
     case submitWithNothingIllegal, surrenderToPolice, bribe
     case buyEquipment, sellEquipment, buyShip, fireMercenary, stopInsurance
     case wildLeavesWithoutLaser, wildLeavesForReactor, litteringWarning, useSingularity, retire
-    case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain, buyEscapePod, nothingIllegal, surrenderArtifact, submitInspection, buyNewspaper
+    case drinkTonic, boardMarieCeleste, meetCaptain, buyEscapePod, surrenderArtifact, submitInspection, buyNewspaper
 }
 
 /// A consent request returned instead of performing a command.
@@ -83,6 +83,8 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case surrenderPrincess
     case bribeNotAccepted
     case bribeNotPossible
+    /// ENC-130: the action is not offered for the current encounter type.
+    case encounterActionUnavailable
 }
 
 /// Something that happened, for the feed, log, statistics and achievements.
@@ -113,7 +115,7 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case bountyPaid(Int)
     case departed(from: Int, to: Int, viaWormhole: Bool)
     case fabricRip(newDestination: Int)
-    case encounterStarted(type: EncounterType, opponent: ShipType, clicks: Int)
+    case encounterStarted(type: EncounterType, opponent: ShipType, clicks: Int, playerCloaked: Bool)
     case uneventfulTrip
     case arrived(system: Int)
     case debtWarning(debt: Int)

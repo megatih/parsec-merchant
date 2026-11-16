@@ -565,7 +565,8 @@ extension GameEngine {
                 state.phase = .inTransit(t)
                 state.encounterTransit = t
                 state.phase = .encounter(enc)
-                events.append(.encounterStarted(type: enc.type, opponent: enc.opponent.type, clicks: clicks))
+                events.append(.encounterStarted(type: enc.type, opponent: enc.opponent.type, clicks: clicks,
+                                                 playerCloaked: state.commanderCloaked))
                 return events
             }
             t.clicksRemaining -= 1
