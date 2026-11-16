@@ -57,11 +57,11 @@
 - **POL-040** {M3} [M][W][P] `rec += 1` when the player destroys a non-Mantis pirate, the Space Monster, the Dragonfly or the Scarab, plunders a disabled pirate ([M][W]), or disables the Dragonfly, Scarab or Scorpion ([M][W], CMB-045). Destroying the Mantis changes no record. (source: Game.cs:1101-1120, :1463, :1993-2015; Palm: Src/Encounter.c:999-1032)
 - **POL-041** {M3} [M][W][P] Destroying police: `rec -= 6`. (source: Game.cs:2004-2008; Palm: Src/Encounter.c:981-985)
 - **POL-042** {M3} [M][W][P] Destroying a trader: `rec -= 4`. Destroying a famous captain changes no record (the attack already did). (source: Game.cs:2017-2023, :1977-1987; Palm: Src/Encounter.c:1011-1016)
-- **POL-043** {M3} [M][W][P] Plunder: trader types `rec -= 2`, surrendered pirate `rec -= 1` (timing per CMB-090/CMB-091: after plundering in C#, when Plunder is pressed in Palm). (source: Game.cs:1445-1466; Palm: Src/Encounter.c:2144-2147, RUL-096)
+- **POL-043** {M3} [M][W][P] Plunder: trader types `rec -= 2`, surrendered pirate `rec -= 1` (timing per CMB-091/CMB-092: after plundering in C#, when Plunder is pressed in Palm). (source: Game.cs:1445-1466; Palm: Src/Encounter.c:2144-2147, RUL-096)
 - **POL-044** {M3} [M][W][P] Trafficking: submitting with detectable illegal goods `rec -= 1`; a clean inspection `rec += 1` (Palm: only if Wild is not aboard). (source: Game.cs:1817, :1827; Palm: Src/Encounter.c:2109-2116)
 - **POL-045** {M3} [M][W][P] Littering penalties are owned by ECO-056/ECO-057 and use the same `rec` field. (source: Game.cs:713-719; Palm: Src/Cargo.c:950-957)
 - **POL-046** {M4} [M][W][P] Using the escape pod with Wild aboard: `rec -= 4` (C# `ScoreCaughtWithWild`). Arrest with Wild aboard applies no −4 (the record becomes −5 anyway). (source: Game.cs:2073-2078; Palm: Src/Encounter.c:618-624)
-- **POL-047** {M3} [M][W][P] Assignments: arrest sets `rec = -5` (POL-108/POL-112); Erase Record sets `rec = 0` (QST); delivering Wild sets `rec = 0` [M][W] or `max(rec, 0)` [P] (RUL-037). (source: Game.cs:305, :2314, :2571; Palm: Src/Encounter.c:766, Src/SpecialEvent.c:220)
+- **POL-047** {M3} [M][W][P] Assignments: arrest sets `rec = -5` (POL-093/POL-098); Erase Record sets `rec = 0` (QST); delivering Wild sets `rec = 0` [M][W] or `max(rec, 0)` [P] (RUL-037). (source: Game.cs:305, :2314, :2571; Palm: Src/Encounter.c:766, Src/SpecialEvent.c:220)
 - **POL-048** {M3} [M][W][P] Reputation changes: `rep += opponentType/2 + 1` for every destroyed opponent, for each disabled Dragonfly/Scarab/Scorpion and (C# only) every plunder; a destroyed famous captain sets `rep = rep < 300 ? 300 : rep + 100` before the type bonus. Nothing ever lowers reputation. (source: Game.cs:1215, :1468, :1981-1984, :2028; Palm: Src/Encounter.c:986-995, :1035)
 
 ## 4. Police inspection
@@ -140,7 +140,7 @@
 ## 10. Arrival after arrest or the escape pod
 
 - **POL-109** {M3} [M][W] After an arrest or the pod, the transit loop ends and the normal C# `Arrival()` runs at the destination, after the jail or pod days: reactor check, tribbles, the debt warning or reminder (BNK-034/035), repairs, shield recharge and auto-buy, pressures and quantities, the Og egg, prices and news (RUL-066). All its events join the same arrival report as the arrest or pod events. (source: Game.cs:3130-3150, :3196-3207, :309-331)
-- **POL-110** {M5} [P] Palm: arrest and pod run only the short `Arrival()` (system, shuffle, quantities, prices) inside their own sequence and then show the system screen; no arrival alert, debt warning or reminder (BNK-036), reactor warnings, tribble growth, repairs or auto-buy run, except after a Yield arrest (POL-074). (source: Palm: Src/Encounter.c:592, :738, :652-653, :785-786, Src/Traveler.c:2434-2441)
+- **POL-110** {M5} [P] Palm: arrest and pod run only the short `Arrival()` (system, shuffle, quantities, prices) inside their own sequence and then show the system screen; no arrival alert, debt warning or reminder (BNK-036), reactor warnings, tribble growth, repairs or auto-buy run, except after a Yield arrest (POL-074). After a reactor meltdown the pod's `Arrival()` is the second one of that arrival (Travel already ran one). (source: Palm: Src/Encounter.c:592, :738, :652-653, :785-786, Src/Traveler.c:2434-2441)
 - **POL-111** {M3} [M][W][P] The current system after an arrest or the pod is the warp destination of the interrupted trip (including a fabric-rip redirection), never the departure system. (source: Game.cs:3196-3207; Palm: Src/Traveler.c:2436)
 
 ## 11. Engine API

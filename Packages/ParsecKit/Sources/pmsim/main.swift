@@ -57,8 +57,10 @@ case "dump-galaxy":
         exit(1)
     }
 case "fuzz":
-    // Travel and encounters land in M3; until then fuzzing is a no-op PASS (PRD §8.1 step 3).
-    print("pmsim fuzz: travel not implemented yet — no-op PASS")
+    // PRD §8.1 step 3: random legal-command games with invariants; every 50th game replayed for determinism.
+    let code = runFuzz(games: args.int("games", 2_000), seed: UInt64(args.int("seed", 1)), rulesets: args.rulesets(),
+                       maxCommands: args.int("commands", 3_000))
+    exit(code)
 case "bench":
     print("pmsim bench: benchmarks start in M8 — no-op PASS")
 default:
