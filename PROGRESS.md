@@ -4,8 +4,8 @@
 
 ## Status
 - **Current milestone:** M6 (starting)
-- **Next step:** M6: persistence (SAV: versioned JSON shoebox saves, migrator, autosave, import/export), high scores (SCORE {M6}), cheats (CHEAT), options (OPT) — write/complete specs first, ParsecPersistence ≥85% coverage.
-- **Last gate result:** verify.sh default ALL GATES PASSED @ M5 exit (7/7; 0 untraced {M5} IDs; 1008 tests; fuzz 2000×3 clean)
+- **Next step:** M6: integrate SAV/CHEAT/OPT specs (agent writing them); implement cheats (Command.cheat) and Ironman rules per spec; traced tests incl. 500 fuzzed byte-identical round trips, migration fixtures, corruption quarantine, slot rotation, high scores; ParsecPersistence coverage ≥85%; verify default; tag m6-done.
+- **Last gate result:** verify.sh --quick ALL GATES PASSED (persistence core)
 - **Blockers:** none
 
 ## Milestones
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M6 started: ParsecPersistence SaveEnvelope/SaveCodec (sorted-key JSON, byte-identical round trips)/SaveMigrator (raw JSON, v1)/SlotStore (atomic, 3 rotating backups, autosave, import/export, Corrupt/ quarantine)/HighScoreStore; engine HighScoreTable (top 10, SCORE-031…036).
 - 2026-11-17: M5 exit: cross-area finish (Palm passengers outside the crew array, Palm Gemulon `> 7` rule, duplicate economy flags removed). Fuzz cash invariant now checks negative-cash transitions (allowed only for ECO-068 C# orbit cap and RUL-043 Palm dump precedence bug) — stricter than before (Windows now checked).
 - 2026-11-17: M5: five area branches merged (Palm content pack + galaxy; economy; travel/news/score; encounters/combat/police; quests). Deduplicated flags (one per behaviour: moon-girl → quest, record decay → travel, Wild laser/quest-ship damage → quest); Palm arrest/pod run Arrival() once (meltdown twice); 971 tests; fuzz clean on all rulesets; 1530 spec IDs (≥400 ✓). MOD-n cited as RUL-1nn in tests.
 - 2026-11-17: M5 started: 411 {M5} IDs (137 RUL). Added per-area rule groups (GalaxyRules, EconomyRules, TravelRules, EncounterRules, QuestRules) under RuleFlags so parallel agents never edit the same struct.
