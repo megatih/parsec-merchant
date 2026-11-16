@@ -6,6 +6,7 @@ excluded:
   - docs
   - harness
   - DerivedData
+  - .claude
 opt_in_rules:
   - force_unwrapping
 disabled_rules:
