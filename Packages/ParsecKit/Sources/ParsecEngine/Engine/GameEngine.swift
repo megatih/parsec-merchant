@@ -49,6 +49,8 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case alreadyHaveEscapePod
     case escapePodNotAvailable
     case alreadyOwnThisShipType
+    case designNameEmpty
+    case designOverCapacity
     // Bank (BNK-063)
     case debtTooLargeForLoan
     case noDebt
@@ -81,6 +83,7 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case boughtShip(type: ShipType, netPrice: Int)
     case cannotTransfer(TransferItem)
     case cannotAffordTransfer(TransferItem)
+    case cannotAffordAllTransfers
     case boughtEscapePod(price: Int)
     case hired(crewID: Int)
     case fired(crewID: Int)
@@ -134,6 +137,7 @@ public enum Command: Codable, Sendable, Equatable {
     case sellGadget(index: Int)
     case buyShip(ShipType, transfers: [TransferItem])
     case resolveTradeInOrbit(quantity: Int)
+    case buildDesign(ShipDesign, transfers: [TransferItem])
     case selectTarget(Int)
     case track(Int?)
 }
@@ -234,6 +238,7 @@ public struct GameEngine: Sendable {
         case let .sellGadget(i): return sellEquipment(gadgetIndex: i, ack)
         case let .buyShip(t, transfers): return buyShip(t, accepting: transfers, ack)
         case let .resolveTradeInOrbit(q): return resolveTradeInOrbit(q)
+        case let .buildDesign(d, transfers): return buildDesign(d, accepting: transfers, ack)
         case .setOptions, .selectTarget, .track: return .rejected(.invalidArgument)
         }
     }

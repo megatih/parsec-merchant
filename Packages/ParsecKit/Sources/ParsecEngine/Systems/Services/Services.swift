@@ -82,7 +82,11 @@ public extension GameState {
     /// SHP-034: net price of buying `type` (list price minus current ship worth including cargo cost basis).
     func shipQuote(_ type: ShipType) -> ShipQuote {
         let newSpec = ruleset.tables.ship(type)
-        let net = newSpec.price - shipWorth(forInsurance: false)
+        return shipQuote(type, spec: newSpec, netPrice: newSpec.price - shipWorth(forInsurance: false))
+    }
+
+    /// SHP-038: transfer candidates and lost items for a new ship with `newSpec`.
+    func shipQuote(_ type: ShipType, spec newSpec: ShipSpec, netPrice net: Int) -> ShipQuote {
         var candidates: [(TransferItem, Int)] = []
         var lost: [TransferItem] = []
         let ship = commander.ship
@@ -291,9 +295,26 @@ extension GameEngine {
         guard state.shipsForSale.contains(type) else {
             return .rejected(type == state.commander.ship.type ? .alreadyOwnThisShipType : .notSoldHere)
         }
-        let newSpec = ruleset.tables.ship(type)
-        let quote = state.shipQuote(type)
-        let net = quote.netPrice
+        let spec = ruleset.tables.ship(type)
+        return tradeShip(type, spec: spec, netPrice: spec.price - state.shipWorth(forInsurance: false), accepting: wanted, ack)
+    }
+
+    /// SHP-075: builds a designed ship through the TradeShip flow.
+    mutating func buildDesign(_ design: ShipDesign, accepting wanted: [TransferItem], _ ack: Set<WarningID>) -> StepResult {
+        guard docked else { return .rejected(.notAllowedInPhase) }
+        guard let quote = state.designQuote(design) else { return .rejected(.notSoldHere) }
+        if let blocker = quote.blocker { return .rejected(blocker) }
+        let result = tradeShip(.custom, spec: quote.spec, netPrice: quote.totalCost, accepting: wanted, ack)
+        if result.rejection == nil, result.decision == nil {
+            state.commander.shipName = quote.design.name
+        }
+        return result
+    }
+
+    /// C# `Commander.TradeShip` (SHP-036…048) for a stock or custom spec.
+    mutating func tradeShip(_ type: ShipType, spec newSpec: ShipSpec, netPrice net: Int, accepting wanted: [TransferItem],
+                            _ ack: Set<WarningID>) -> StepResult {
+        let quote = state.shipQuote(type, spec: newSpec, netPrice: net)
         if net > 0, state.commander.debt > 0 { return .rejected(.inDebt) }
         if net > state.cashToSpend { return .rejected(.insufficientFunds) }
         if newSpec.crewQuarters < state.specialCrewCount { return .rejected(.passengersNeedQuarters) }
@@ -301,6 +322,9 @@ extension GameEngine {
         if state.reactorOnBoard { return .rejected(.reactorOnBoard) }
 
         var events: [GameEvent] = quote.lost.map { .cannotTransfer($0) }
+        if net + quote.candidates.reduce(0, { $0 + $1.price }) > state.cashToSpend, !quote.candidates.isEmpty {
+            events.append(.cannotAffordAllTransfers)
+        }
         var extra = 0
         var accepted: [TransferItem] = []
         for (item, price) in quote.candidates {
@@ -316,6 +340,7 @@ extension GameEngine {
         }
         let old = state.commander.ship
         var ship = Ship(type: type, spec: newSpec)
+        if type == .custom { ship.customSpec = newSpec }
         for j in 0..<min(old.crew.count, ship.crew.count) { ship.crew[j] = old.crew[j] }
         for item in accepted {
             switch item {
