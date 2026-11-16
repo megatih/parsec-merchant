@@ -77,6 +77,7 @@ public struct DotNetRandom: Codable, Sendable, Equatable, RandomSource {
 
     /// `Next(minValue, maxValue)`.
     public mutating func next(in min: Int, _ max: Int) -> Int {
+        precondition(max >= min, "next(in:) requires max >= min (RNG-003)")
         if max <= min {
             // .NET: Next(x, x) returns x after consuming one sample; min > max throws (never happens in the game).
             _ = internalSample()

@@ -72,6 +72,8 @@ public struct Ruleset: Sendable {
     public var flags: RuleFlags
     public var content: ContentPacks
     public var rngKind: RNGKind
+    /// Newspaper generator variant (RNG-002): C# for Windows 2.01 and Modern, Palm for Palm 1.2.2.
+    public var newspaperRNG: PieterRand.Variant
 
     public static func named(_ id: RulesetID) -> Ruleset {
         switch id {
@@ -94,7 +96,7 @@ public struct Ruleset: Sendable {
                          resetPriceCargoOnHoldClear: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
                               hasHiddenBays: true, mercenariesPerSystem: 3),
-        rngKind: .dotNet)
+        rngKind: .dotNet, newspaperRNG: .csharp)
 
     /// Modern (default): Windows 2.01 with the PRD §4.3 fixes. Remaining MOD flags land in M5.
     public static let modern: Ruleset = {
@@ -112,6 +114,7 @@ public struct Ruleset: Sendable {
         var r = Ruleset.windows201
         r.id = .palm122
         r.rngKind = .palmLCG
+        r.newspaperRNG = .palm
         return r
     }()
 }

@@ -43,7 +43,10 @@ struct GalaxyHarnessTests {
         #expect(Self.snapshots.count == 21)
     }
 
-    @Test("GAL-013 GAL-019 GAL-020 GAL-022 GAL-030 GAL-034 systems match C# exactly", arguments: 0..<21)
+    // Bit-exact agreement on 21 galaxies verifies draw order and formulas of GAL-013…GAL-052 and RNG-008/RNG-038:
+    // GAL-013 GAL-014 GAL-015 GAL-016 GAL-017 GAL-018 GAL-019 GAL-020 GAL-022 GAL-029 GAL-030
+    // GAL-033 GAL-034 GAL-035 GAL-036 GAL-037 GAL-049 GAL-052 RNG-008 RNG-038
+    @Test("GAL-013 systems match C# exactly (see list above)", arguments: 0..<21)
     func systemsMatch(_ index: Int) throws {
         try #require(index < Self.snapshots.count)
         let snap = Self.snapshots[index]
@@ -65,7 +68,7 @@ struct GalaxyHarnessTests {
         #expect(game.galaxy.wormholes == snap.wormholes, "wormholes")
     }
 
-    @Test("GAL-010 CRW-025 crew, commander and starting prices match C#", arguments: 0..<21)
+    @Test("GAL-010 GAL-054 GAL-057 CRW-024 CRW-025 crew, commander and starting prices match C#", arguments: 0..<21)
     func crewAndPricesMatch(_ index: Int) throws {
         try #require(index < Self.snapshots.count)
         let snap = Self.snapshots[index]

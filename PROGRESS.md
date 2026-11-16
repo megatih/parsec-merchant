@@ -3,13 +3,13 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M0 (in progress)
-- **Next step:** When RUL.md (agent) lands: verify, commit, tag m0-done, set milestone M1, then M1 exit check (RNG/GAL {M1} IDs must all be traced: spec-trace lists missing), then M2: add tests for every {M2} ID in ECO/SHP/CRW/BNK/ALR (spec-trace shows the list) + remaining M2 features (IncDays, preview APIs, special-event price check, price breakdown ECO-082, options OPT).
-- **Last gate result:** verify.sh default ALL GATES PASSED @ c21cb4a (50 tests)
+- **Current milestone:** M1 (in progress)
+- **Next step:** M1 exit: run spec-trace at M1 (all RNG/GAL/CRW {M1} IDs traced) → verify → tag m1-done. Then M2: trace every {M2} ID (ECO/SHP/CRW/BNK/ALR/OPT) with tests and finish remaining M2 features.
+- **Last gate result:** verify.sh default ALL GATES PASSED @ M0 exit (73 tests)
 - **Blockers:** none
 
 ## Milestones
-- [ ] M0 Tooling, project setup, specs, Palm source, GitHub repo
+- [x] M0 Tooling, project setup, specs, Palm source, GitHub repo (2026-11-17, tag m0-done)
 - [ ] M1 RNGs, tables, galaxy generation
 - [ ] M2 Economy and services
 - [ ] M3 Travel, encounters, combat, police, news
@@ -33,13 +33,14 @@
 - [x] Palm source fetched (gitignored, sha recorded); MOD-017 swap re-confirmed (DataTypes.h SHIPTYPE order; Global.c Gnat CostOfFuel 2 / RepairCosts 1 vs C# fuelCost 1 / repairCost 2)
 - [x] Apple skills exported to .claude/skills (11 skills; must use an absolute --output-dir)
 - [x] GitHub repo megatih/parsec-merchant created (public) and pushed
-- [ ] docs/reference/csharp-index.md (agent running)
-- [x] docs/specs skeletons; ECO (83), SHP (85), CRW (69), BNK (63), ALR (188) written; [ ] RNG, GAL (agent running)
-- [x] ALR.md; [ ] RUL.md (agent running)
+- [x] docs/reference/csharp-index.md (540 entries)
+- [x] docs/specs skeletons; ECO (83), SHP (85), CRW (69), BNK (63), ALR (188) written; RNG (41), GAL (72) written
+- [x] ALR.md; RUL.md (139 IDs, 102 flags, 34 bug dispositions)
 - [x] final-check.sh (full), release/make-icon stubs, harness.sh (working; .NET 10 via dotnet-install.sh into build/harness/dotnet — brew cask needs sudo)
-- [ ] M0 exit: verify.sh PASS, tag m0-done, push
+- [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-17: RUL.md [verify] items accepted for now: designer cost columns keep C# (Modern); Palm SysRandom stand-in; escape-pod Scarab status kept (RUL-099).
 - 2026-11-16: Harness: .NET SDK installed with dotnet-install.sh into gitignored build/harness/dotnet (Homebrew cask is a sudo .pkg).
 - 2026-11-16: Ahead of plan (M1 work done during M0): RNGs bit-exact vs .NET; galaxy/crew/start/prices bit-exact vs harness for 15 snapshots.
 - 2026-11-16: Ruleset is a struct (tables/flags/content/rngKind) rather than a protocol; same capability as PRD §4.1.

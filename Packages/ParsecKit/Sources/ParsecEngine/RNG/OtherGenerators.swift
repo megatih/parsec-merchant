@@ -4,20 +4,21 @@
 /// The ROM algorithm is unverified, so the Palm ruleset is rule-faithful rather than sequence-faithful (PRD §4.2).
 /// Algorithm: `seed = 0x015A4E35 * seed + 1; value = (seed >> 16) & 0x7FFF` (0…32767, like `sysRandomMax`).
 public struct PalmLCG: Codable, Sendable, Equatable, RandomSource {
-    public private(set) var seed: UInt32
+    public private(set) var state: UInt32
 
     public init(seed: UInt32) {
-        self.seed = seed
+        state = seed
     }
 
     /// One `SysRandom(0)` value in `0...0x7FFF`.
     public mutating func sysRandom() -> Int {
-        seed = 0x015A_4E35 &* seed &+ 1
-        return Int((seed >> 16) & 0x7FFF)
+        state = 0x015A_4E35 &* state &+ 1
+        return Int((state >> 16) & 0x7FFF)
     }
 
     /// RNG-004/027: `max == 0` returns 0 but still consumes one step, keeping call counts aligned with .NET.
     public mutating func next(below max: Int) -> Int {
+        precondition(max >= 0, "next(below:) requires max >= 0 (RNG-003)")
         let v = sysRandom()
         return max > 0 ? v % max : 0
     }
@@ -61,6 +62,7 @@ public struct Xoshiro256StarStar: Codable, Sendable, Equatable, RandomSource {
     /// Unbiased bounded integer (Lemire's multiply-shift with rejection).
     /// Lemire multiply-shift with rejection (RNG-031). `max == 0` consumes one draw and returns 0 (RNG-004).
     public mutating func next(below max: Int) -> Int {
+        precondition(max >= 0, "next(below:) requires max >= 0 (RNG-003)")
         guard max > 0 else { _ = nextUInt64(); return 0 }
         let bound = UInt64(max)
         var m = nextUInt64().multipliedFullWidth(by: bound)
@@ -75,6 +77,28 @@ public struct Xoshiro256StarStar: Codable, Sendable, Equatable, RandomSource {
 
     public mutating func next(in min: Int, _ max: Int) -> Int {
         min + next(below: max - min)
+    }
+
+    // RNG-032: the four state words are encoded as 16-digit upper-case hex strings.
+    private enum CodingKeys: String, CodingKey { case s }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let words = try c.decode([String].self, forKey: .s)
+        guard words.count == 4, let a = UInt64(words[0], radix: 16), let b = UInt64(words[1], radix: 16),
+              let cc = UInt64(words[2], radix: 16), let d = UInt64(words[3], radix: 16) else {
+            throw DecodingError.dataCorruptedError(forKey: .s, in: c, debugDescription: "expected 4 hex words")
+        }
+        (s0, s1, s2, s3) = (a, b, cc, d)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        func hex(_ v: UInt64) -> String {
+            let h = String(v, radix: 16, uppercase: true)
+            return String(repeating: "0", count: 16 - h.count) + h
+        }
+        try c.encode([hex(s0), hex(s1), hex(s2), hex(s3)], forKey: .s)
     }
 }
 

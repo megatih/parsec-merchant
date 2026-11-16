@@ -20,7 +20,7 @@
 | `PieterRand.palm` | Newspaper only (`GetRandom2`) | [P] | no (reseeded before every use) |
 
 - **RNG-001** {M1} [M][W][P] Every random decision in `ParsecEngine` draws from the game's `RNGState`, or from `PieterRand` where §5 allows it. The engine never uses `SystemRandomNumberGenerator`, `Int.random`/`Double.random` without an explicit generator, `Date`, `UUID`, `hashValue`, or any other non-deterministic source. A source scan test fails on any of these symbols under `Sources/ParsecEngine`. (source: PRD §4.2, §6.2)
-- **RNG-002** {M1} [M][W][P] Each ruleset declares its `rngKind`: Windows 2.01 → `.dotNet`, Palm 1.2.2 → `.palmLCG`, Modern → `.xoshiro256StarStar`. Its newspaper generator is `PieterRand.csharp` for Windows 2.01 and Modern, and `PieterRand.palm` for Palm. `Ruleset.makeRNG(seed:)` returns the matching `RNGState` case. (source: PRD §4.1, §4.2)
+- **RNG-002** {M1} [M][W][P] Each ruleset declares its `rngKind`: Windows 2.01 → `.dotNet`, Palm 1.2.2 → `.palmLCG`, Modern → `.xoshiro`. Its newspaper generator is `PieterRand.csharp` for Windows 2.01 and Modern, and `PieterRand.palm` for Palm. `Ruleset.makeRNG(seed:)` returns the matching `RNGState` case. (source: PRD §4.1, §4.2)
 
 ## 2. The `RandomSource` protocol
 
@@ -241,7 +241,7 @@ next(below n: Int) -> Int:          // Lemire multiply-shift with rejection (exa
 
 ## 8. Serialization, state and determinism
 
-- **RNG-032** {M1} [M][W][P] `RNGState` is a `Codable, Sendable, Equatable` enum with one case per kind, stored in `GameState` and in the save: `.dotNet(seedArray: [Int32] /*56 elements, index 0 included*/, inext: Int32, inextp: Int32)`; `.palmLCG(state: UInt32)`; `.xoshiro256StarStar(s: [String] /*4 × 16 upper-case hex digits*/)`. UInt64 words are encoded as hex strings so JSON round-trips stay exact and independent of platform number handling. (source: PRD §6.2; research 06 §RNG)
+- **RNG-032** {M1} [M][W][P] `RNGState` is a `Codable, Sendable, Equatable` enum with one case per kind, stored in `GameState` and in the save: `.dotNet(seedArray: [Int32] /*56 elements, index 0 included*/, inext: Int32, inextp: Int32)`; `.palmLCG(state: UInt32)`; `.xoshiro(s: [String] /*4 × 16 upper-case hex digits*/)`. UInt64 words are encoded as hex strings so JSON round-trips stay exact and independent of platform number handling. (source: PRD §6.2; research 06 §RNG)
 - **RNG-033** {M1} [M][W][P] Round-trip: for every generator, take 0, 1, 57 and 1000 draws, encode the state to JSON, decode it, and draw 100 more. The output matches 100 draws from an uninterrupted generator, and the decoded state is `==` the original. (source: PRD §6.2, §8.2)
 - **RNG-034** {M1} [M][W][P] The canonical state hash (SHA-256 of sorted-key JSON) includes `RNGState`. Two games with the same ruleset, seed and command sequence produce identical RNG states and hashes after every command. (source: PRD §6.2 Determinism)
 - **RNG-035** {M6} [M][W][P] Loading a save whose `RNGState` case doesn't match the ruleset's `rngKind` is rejected with a typed persistence error. The engine never silently reseeds. (source: PRD §6.4; SAV.md)
