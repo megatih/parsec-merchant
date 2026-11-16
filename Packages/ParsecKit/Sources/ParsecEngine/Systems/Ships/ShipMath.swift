@@ -173,10 +173,15 @@ public extension GameState {
     /// C# `Commander` interest: max(1, debt × 10%) when in debt.
     var interestCosts: Int { commander.debt > 0 ? max(1, Int(Double(commander.debt) * 0.1)) : 0 }
 
+    /// MAP-093: the commander ship's fuel cost per parsec (after the MOD-017 column swap).
+    var fuelCostPerParsec: Int { commander.ship.spec(ruleset).fuelCost }
+
+    /// MAP-093: the tax for one wormhole jump, 25 × the fuel cost per parsec.
+    var wormholeTaxPerJump: Int { 25 * fuelCostPerParsec }
+
     /// C# `Game.WormholeCosts`: 25 × fuel cost when warping through a wormhole to the selected system.
     var wormholeCosts: Int {
-        galaxy.wormholeExists(from: commander.currentSystem, to: warpSystem)
-            ? 25 * commander.ship.spec(ruleset).fuelCost : 0
+        galaxy.wormholeExists(from: commander.currentSystem, to: warpSystem) ? wormholeTaxPerJump : 0
     }
 
     /// C# `Game.CurrentCosts`.

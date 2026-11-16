@@ -48,6 +48,16 @@ public enum DistanceRule: String, Codable, Sendable {
     case floor
     /// Palm: integer square root rounded to nearest (`Math.c:RealDistance`).
     case rounded
+
+    /// MAP-033: the largest integer `dx² + dy²` whose distance under this rule is at most `r` (−1 when `r < 0`).
+    /// `.floor`: `floor(√sq) ≤ r` ⇔ `sq < (r + 1)²`. `.rounded` (Palm `Math.c:sqrt`): `sq ≤ r² + r`.
+    public func maxSquaredDistance(withinRange r: Int) -> Int {
+        guard r >= 0 else { return -1 }
+        switch self {
+        case .floor: return (r + 1) * (r + 1) - 1
+        case .rounded: return r * r + r
+        }
+    }
 }
 
 /// Behaviour switches (docs/specs/RUL.md). Grows milestone by milestone.

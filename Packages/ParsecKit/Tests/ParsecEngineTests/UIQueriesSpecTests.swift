@@ -34,7 +34,7 @@ private func ship(_ type: ShipType, _ r: RulesetID, crew: [Int?] = [0]) -> Ship 
 struct UIQueriesSpecTests {
     // MARK: UI-SHELL-115
 
-    @Test("UI-SHELL-115 every preview and query the app reads is public and leaves the state unchanged")
+    @Test("UI-SHELL-115 MAP-093 every preview and query the app reads is public and leaves the state unchanged")
     func publicQueries() {
         for r in RulesetID.allCases {
             let e = engine(r)
@@ -51,6 +51,9 @@ struct UIQueriesSpecTests {
             _ = (s.policeRecord, s.reputation, s.shipSkills, s.worth, s.specialEventAvailable)
             _ = (s.specialEventSpec(.moon), s.scoreTenths(for: .retired))
             _ = (s.equipmentMarket, s.questLog, GalaxyCode(s).string)
+            // MAP-093: the galaxy chart and route planner queries.
+            _ = (s.ruleset.flags.distance.maxSquaredDistance(withinRange: s.fuelCapacity), s.fuelCostPerParsec,
+                 s.wormholeTaxPerJump)
             let config = NewGameConfig(commanderName: "Q", ruleset: r, seed: 7)
             _ = (CommanderRules.validate(config), CommanderRules.preview(name: "Q", skills: [5, 5, 5, 5]))
             _ = (e.encounterPreview, e.policeStatus)
