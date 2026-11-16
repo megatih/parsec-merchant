@@ -7,7 +7,7 @@ public enum WarningID: String, Codable, Sendable, Hashable, CaseIterable {
     case submitWithNothingIllegal, surrenderToPolice, bribe
     case buyEquipment, sellEquipment, buyShip, fireMercenary, stopInsurance
     case wildLeavesWithoutLaser, wildLeavesForReactor, litteringWarning, useSingularity, retire
-    case drinkTonic, boardMarieCeleste, meetCaptain, buyEscapePod, surrenderArtifact, submitInspection, buyNewspaper
+    case drinkTonic, boardMarieCeleste, meetCaptain, buyEscapePod, surrenderArtifact, acceptSpecialEvent, submitInspection, buyNewspaper
 }
 
 /// A consent request returned instead of performing a command.
@@ -86,6 +86,12 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case bribeNotPossible
     /// ENC-130: the action is not offered for the current encounter type.
     case encounterActionUnavailable
+    /// QST-INDEX: no special event is offered here (button hidden, or not docked).
+    case noSpecialEvent
+    /// QST-WILD: Wild boards only with a beam laser or better.
+    case wildRequiresLaser
+    /// QST-WILD: Wild refuses to board while the reactor is aboard.
+    case wildRefusesReactor
 }
 
 /// Something that happened, for the feed, log, statistics and achievements.
@@ -161,6 +167,14 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case insuranceStopped
     case optionsChanged
     case orbitTradeCompleted(direction: OrbitTradeDirection, item: TradeItemType, quantity: Int, total: Int)
+    /// QST: a special event was handled (and removed or replaced per the source).
+    case specialEventCompleted(SpecialEventType)
+    /// QST-SCULPTURE: the hidden-bays reward found no free slot, but the quest status was still committed (C# quirk).
+    case specialEventRefused(SpecialEventType, reason: CommandError)
+    /// QST-ONEOFFS: three sealed canisters of this item were loaded.
+    case sealedCanisters(TradeItemType)
+    /// SCORE: the game ended.
+    case gameEnded(GameEndType)
 }
 
 /// A decision the engine needs before it can continue.
@@ -216,6 +230,10 @@ public enum Command: Codable, Sendable, Equatable {
     case plunderDone
     case resolveScoop(accept: Bool)
     case readNewspaper
+    /// QST-INDEX: accept / acknowledge the special event at the current system.
+    case specialEvent
+    /// SCORE: retire (two-phase, `WarningID.retire`).
+    case retire
     case selectTarget(Int)
     case track(Int?)
     case selectWormhole(Int)
@@ -317,6 +335,13 @@ public struct GameEngine: Sendable {
         case let .buyShip(t, transfers): return buyShip(t, accepting: transfers, ack)
         case let .resolveTradeInOrbit(q): return resolveTradeInOrbit(q)
         case let .buildDesign(d, transfers): return buildDesign(d, accepting: transfers, ack)
+        default: return applyVoyage(command, acknowledging: ack)
+        }
+    }
+
+    /// Travel, encounter, newspaper, quest and ending commands (M3–M4).
+    mutating func applyVoyage(_ command: Command, acknowledging ack: Set<WarningID>) -> StepResult {
+        switch command {
         case .warp: return warp(viaSingularity: false, ack)
         case .jump: return warp(viaSingularity: true, ack)
         case let .encounter(a): return encounterAction(a, ack)
@@ -324,7 +349,9 @@ public struct GameEngine: Sendable {
         case .plunderDone: return plunderDone()
         case let .resolveScoop(accept): return resolveScoop(accept: accept)
         case .readNewspaper: return readNewspaper(ack)
-        case .setOptions, .selectTarget, .track, .selectWormhole, .selectNextTarget: return .rejected(.invalidArgument)
+        case .specialEvent: return specialEvent(ack)
+        case .retire: return retire(ack)
+        default: return .rejected(.invalidArgument)
         }
     }
 }

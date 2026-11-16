@@ -29,6 +29,7 @@ namespace Fryz.Apps.SpaceTrader
 			if (cmd == "combat" || cmd == "all") Write(dir, "combat-windows201.json", Combat());
 			if (cmd == "travel" || cmd == "all") Write(dir, "travel-windows201.json", Travel());
 			if (cmd == "actions" || cmd == "all") Write(dir, "actions-windows201.json", Actions());
+			if (cmd == "quests" || cmd == "all") Write(dir, "quests-windows201.json", Quests());
 			if (cmd == "strings" || cmd == "travel" || cmd == "all") Write(dir, "news-strings.json", NewsStrings());
 			return 0;
 		}
@@ -355,6 +356,87 @@ namespace Fryz.Apps.SpaceTrader
 			hero = Strings.NewsPoliceRecordHero, external = Strings.NewsPressureExternal, externalPressures = Strings.NewsPressureExternalPressures,
 			internalPressure = Strings.NewsPressureInternal, events = Strings.NewsEvent, moon = Strings.NewsMoonForSale,
 			tribbleBuyer = Strings.NewsTribbleBuyer, shipyard = Strings.NewsShipyard, systems = Strings.SystemNames, ships = Strings.ShipNames };
+
+		static int[] CrewIds(Ship sh) { var a = new int[sh.Crew.Length]; for (int i = 0; i < a.Length; i++) a[i] = sh.Crew[i] == null ? -1 : (int)sh.Crew[i].Id; return a; }
+
+		static object QSnap(Game g, object end)
+		{
+			var c = g.Commander; var sh = c.Ship;
+			var w = new List<int>(); foreach (var x in sh.Weapons) if (x != null) w.Add((int)x.Type);
+			var sd = new List<int>(); foreach (var x in sh.Shields) if (x != null) { sd.Add((int)x.Type); sd.Add(x.Charge); }
+			var gd = new List<int>(); foreach (var x in sh.Gadgets) if (x != null) gd.Add((int)x.Type);
+			var z = g.Mercenaries[(int)CrewMemberId.Zeethibal];
+			return new { cash = c.Cash, record = c.PoliceRecordScore, cargo = (int[])sh.Cargo.Clone(), priceCargo = (int[])c.PriceCargo.Clone(),
+				crew = CrewIds(sh), weapons = w, shields = sd, gadgets = gd, hull = sh.Hull, hullUpgraded = sh.HullUpgraded, tribbles = sh.Tribbles,
+				quests = new[] { g.QuestStatusArtifact, g.QuestStatusDragonfly, g.QuestStatusExperiment, g.QuestStatusGemulon, g.QuestStatusJapori,
+					g.QuestStatusJarek, g.QuestStatusMoon, g.QuestStatusPrincess, g.QuestStatusReactor, g.QuestStatusScarab, g.QuestStatusSculpture,
+					g.QuestStatusSpaceMonster, g.QuestStatusWild },
+				canSuperWarp = g.CanSuperWarp, sysEvent = (int)c.CurrentSystem.SpecialEventType, skills = (int[])g.Mercenaries[0].Skills.Clone(),
+				zSkills = (int[])z.Skills.Clone(), zSystem = (int)z.CurrentSystemId, end, buy = (int[])g.PriceCargoBuy.Clone(), sell = (int[])g.PriceCargoSell.Clone() };
+		}
+
+		/// Every special event handled under four ship setups (v0 start Gnat; v1 Wasp + beam laser; v2 Wasp + beam + reactor;
+		/// v3 Wasp + beam + Wild aboard), with each event's display preconditions satisfied. Dialogs answered Yes / OK.
+		static object Quests()
+		{
+			Harness.Policy = a => a == AlertType.WildWontStayAboardReactor ? DialogResult.OK : DialogResult.Yes;
+			var list = new List<object>();
+			foreach (int seed in new[] { 7, 99 })
+			{
+				var events = new List<object>();
+				for (int ev = 0; ev < 46; ev++)
+				for (int v = 0; v < 4; v++)
+				{
+					SeedRandom(seed);
+					var game = new Game("Harness", Difficulty.Normal, 5, 5, 5, 5, new SpaceTrader());
+					var c = game.Commander;
+					if (v > 0)
+					{
+						var ship = new Ship(ShipType.Wasp); ship.Crew[0] = c; ship.AddEquipment(Consts.Weapons[(int)WeaponType.BeamLaser]);
+						c.Ship = ship;
+					}
+					if (v == 2) game.QuestStatusReactor = 1;
+					if (v == 3) { c.Ship.Hire(game.Mercenaries[(int)CrewMemberId.Wild]); game.QuestStatusWild = 1; }
+					var t = (SpecialEventType)ev;
+					c.Cash = 600000; c.ReputationScore = 40;
+					c.PoliceRecordScore = (t == SpecialEventType.EraseRecord || t == SpecialEventType.Wild || t == SpecialEventType.Reactor || t == SpecialEventType.Sculpture) ? -10 : 10;
+					switch (t)
+					{
+						case SpecialEventType.ArtifactDelivery: game.QuestStatusArtifact = 1; break;
+						case SpecialEventType.DragonflyBaratas: game.QuestStatusDragonfly = 1; break;
+						case SpecialEventType.DragonflyMelina: game.QuestStatusDragonfly = 2; break;
+						case SpecialEventType.DragonflyRegulas: game.QuestStatusDragonfly = 3; break;
+						case SpecialEventType.DragonflyDestroyed: game.QuestStatusDragonfly = 5; break;
+						case SpecialEventType.ExperimentStopped: game.QuestStatusExperiment = 1; break;
+						case SpecialEventType.GemulonRescued: game.QuestStatusGemulon = 1; break;
+						case SpecialEventType.JaporiDelivery: game.QuestStatusJapori = 1; break;
+						case SpecialEventType.JarekGetsOut: c.Ship.Hire(game.Mercenaries[(int)CrewMemberId.Jarek]); game.QuestStatusJarek = 1; break;
+						case SpecialEventType.MoonRetirement: game.QuestStatusMoon = 1; break;
+						case SpecialEventType.PrincessCentauri: game.QuestStatusPrincess = 1; break;
+						case SpecialEventType.PrincessInthara: game.QuestStatusPrincess = 2; break;
+						case SpecialEventType.PrincessQonos: game.QuestStatusPrincess = 4; break;
+						case SpecialEventType.PrincessReturned: c.Ship.Hire(game.Mercenaries[(int)CrewMemberId.Princess]); game.QuestStatusPrincess = 4; break;
+						case SpecialEventType.ReactorDelivered: game.QuestStatusReactor = 1; break;
+						case SpecialEventType.ScarabDestroyed: case SpecialEventType.ScarabUpgradeHull: game.QuestStatusScarab = 2; break;
+						case SpecialEventType.SculptureDelivered: game.QuestStatusSculpture = 1; break;
+						case SpecialEventType.SpaceMonsterKilled: game.QuestStatusSpaceMonster = 2; break;
+						case SpecialEventType.TribbleBuyer: c.Ship.Tribbles = 500; break;
+						case SpecialEventType.WildGetsOut: if (v != 3) { c.Ship.Hire(game.Mercenaries[(int)CrewMemberId.Wild]); game.QuestStatusWild = 1; } break;
+					}
+					c.CurrentSystem.SpecialEventType = t;
+					bool shown = c.CurrentSystem.ShowSpecialButton();
+					int price = c.CurrentSystem.SpecialEvent.Price;
+					object end = null;
+					if (shown && c.CashToSpend >= price)
+					{
+						try { game.HandleSpecialEvent(); } catch (GameEndException) { end = (int)GameEndType.BoughtMoon; }
+					}
+					events.Add(new { ev, v, shown, after = QSnap(game, end) });
+				}
+				list.Add(new { seed, events });
+			}
+			return list;
+		}
 
 		static int[] Charges(Ship sh)
 		{
