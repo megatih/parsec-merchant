@@ -1,0 +1,4106 @@
+{
+  "appVersion" : "fixture",
+  "format" : "parsec-merchant-save",
+  "gameID" : "00000000-0000-4000-8000-000000000002",
+  "generation" : 1,
+  "rulesetID" : "windows201",
+  "schemaVersion" : 1,
+  "state" : {
+    "arrivedViaWormhole" : false,
+    "buyPrices" : [
+      51,
+      284,
+      154,
+      401,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "chanceOfTradeInOrbit" : 100,
+    "chanceOfVeryRareEncounter" : 5,
+    "cheatsUsed" : false,
+    "commander" : {
+      "cash" : 0,
+      "currentSystem" : 106,
+      "days" : 4,
+      "debt" : 431,
+      "insurance" : false,
+      "kills" : {
+        "pirates" : 0,
+        "police" : 0,
+        "traders" : 0
+      },
+      "name" : "Fixture Zoë",
+      "noClaim" : 0,
+      "policeRecordScore" : -3,
+      "priceCargo" : [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reputationScore" : 0,
+      "ship" : {
+        "cargo" : [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "crew" : [
+          0
+        ],
+        "escapePod" : false,
+        "fuel" : 3,
+        "gadgets" : [
+
+        ],
+        "hull" : 100,
+        "hullUpgraded" : false,
+        "shields" : [
+
+        ],
+        "tribbles" : 0,
+        "type" : 1,
+        "weapons" : [
+          0
+        ]
+      }
+    },
+    "difficulty" : 2,
+    "galaxy" : {
+      "systems" : [
+        {
+          "countDown" : 0,
+          "id" : 0,
+          "politics" : 13,
+          "pressure" : 0,
+          "size" : 0,
+          "specialEvent" : 32,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            5,
+            8,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 144,
+          "y" : 65
+        },
+        {
+          "countDown" : 0,
+          "id" : 1,
+          "politics" : 6,
+          "pressure" : 2,
+          "shipyard" : 0,
+          "size" : 3,
+          "specialEvent" : 1,
+          "specialResource" : 4,
+          "techLevel" : 7,
+          "tradeItems" : [
+            29,
+            25,
+            17,
+            23,
+            39,
+            31,
+            12,
+            40,
+            24,
+            32
+          ],
+          "visited" : false,
+          "x" : 7,
+          "y" : 48
+        },
+        {
+          "countDown" : 0,
+          "id" : 2,
+          "politics" : 10,
+          "pressure" : 6,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 6,
+          "tradeItems" : [
+            31,
+            33,
+            18,
+            41,
+            72,
+            44,
+            59,
+            57,
+            0,
+            47
+          ],
+          "visited" : false,
+          "x" : 48,
+          "y" : 83
+        },
+        {
+          "countDown" : 0,
+          "id" : 3,
+          "politics" : 10,
+          "pressure" : 2,
+          "size" : 2,
+          "specialResource" : 12,
+          "techLevel" : 3,
+          "tradeItems" : [
+            22,
+            24,
+            31,
+            31,
+            9,
+            39,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 92,
+          "y" : 44
+        },
+        {
+          "countDown" : 0,
+          "id" : 4,
+          "politics" : 13,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 2,
+          "techLevel" : 5,
+          "tradeItems" : [
+            0,
+            9,
+            3,
+            9,
+            4,
+            16,
+            16,
+            10,
+            9,
+            0
+          ],
+          "visited" : false,
+          "x" : 80,
+          "y" : 93
+        },
+        {
+          "countDown" : 0,
+          "id" : 5,
+          "politics" : 8,
+          "pressure" : 3,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 6,
+          "tradeItems" : [
+            36,
+            26,
+            41,
+            52,
+            48,
+            60,
+            47,
+            64,
+            0,
+            33
+          ],
+          "visited" : false,
+          "x" : 119,
+          "y" : 91
+        },
+        {
+          "countDown" : 0,
+          "id" : 6,
+          "politics" : 7,
+          "pressure" : 4,
+          "size" : 1,
+          "specialEvent" : 4,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            30,
+            30,
+            30,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 82,
+          "y" : 66
+        },
+        {
+          "countDown" : 0,
+          "id" : 7,
+          "politics" : 8,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 10,
+          "specialResource" : 7,
+          "techLevel" : 6,
+          "tradeItems" : [
+            29,
+            18,
+            15,
+            19,
+            29,
+            20,
+            33,
+            25,
+            0,
+            19
+          ],
+          "visited" : false,
+          "x" : 18,
+          "y" : 15
+        },
+        {
+          "countDown" : 0,
+          "id" : 8,
+          "politics" : 8,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 7,
+          "techLevel" : 6,
+          "tradeItems" : [
+            0,
+            3,
+            4,
+            4,
+            9,
+            8,
+            10,
+            13,
+            0,
+            5
+          ],
+          "visited" : false,
+          "x" : 27,
+          "y" : 31
+        },
+        {
+          "countDown" : 0,
+          "id" : 9,
+          "politics" : 14,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            21,
+            20,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 47,
+          "y" : 63
+        },
+        {
+          "countDown" : 0,
+          "id" : 10,
+          "politics" : 1,
+          "pressure" : 5,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            45,
+            31,
+            26,
+            37,
+            26,
+            34,
+            35,
+            50,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 42,
+          "y" : 89
+        },
+        {
+          "countDown" : 0,
+          "id" : 11,
+          "politics" : 9,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            20,
+            20,
+            20,
+            19,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 75,
+          "y" : 62
+        },
+        {
+          "countDown" : 0,
+          "id" : 12,
+          "politics" : 16,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 13,
+          "specialResource" : 3,
+          "techLevel" : 4,
+          "tradeItems" : [
+            15,
+            23,
+            4,
+            38,
+            23,
+            34,
+            41,
+            29,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 82,
+          "y" : 82
+        },
+        {
+          "countDown" : 0,
+          "id" : 13,
+          "politics" : 10,
+          "pressure" : 7,
+          "size" : 1,
+          "specialEvent" : 28,
+          "specialResource" : 0,
+          "techLevel" : 6,
+          "tradeItems" : [
+            7,
+            0,
+            11,
+            13,
+            20,
+            17,
+            24,
+            16,
+            0,
+            14
+          ],
+          "visited" : false,
+          "x" : 20,
+          "y" : 86
+        },
+        {
+          "countDown" : 0,
+          "id" : 14,
+          "politics" : 10,
+          "pressure" : 7,
+          "size" : 0,
+          "specialEvent" : 3,
+          "specialResource" : 10,
+          "techLevel" : 4,
+          "tradeItems" : [
+            10,
+            10,
+            5,
+            10,
+            8,
+            0,
+            2,
+            11,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 130,
+          "y" : 88
+        },
+        {
+          "countDown" : 0,
+          "id" : 15,
+          "politics" : 15,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            23,
+            14,
+            26,
+            51,
+            30,
+            38,
+            36,
+            47,
+            41,
+            0
+          ],
+          "visited" : false,
+          "x" : 89,
+          "y" : 86
+        },
+        {
+          "countDown" : 0,
+          "id" : 16,
+          "politics" : 1,
+          "pressure" : 5,
+          "size" : 1,
+          "specialResource" : 12,
+          "techLevel" : 5,
+          "tradeItems" : [
+            15,
+            1,
+            6,
+            16,
+            13,
+            22,
+            15,
+            26,
+            7,
+            0
+          ],
+          "visited" : false,
+          "x" : 120,
+          "y" : 71
+        },
+        {
+          "countDown" : 0,
+          "id" : 17,
+          "politics" : 14,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 12,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            32,
+            30,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 80,
+          "y" : 51
+        },
+        {
+          "countDown" : 0,
+          "id" : 18,
+          "politics" : 9,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 4,
+          "techLevel" : 0,
+          "tradeItems" : [
+            13,
+            24,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 32,
+          "y" : 73
+        },
+        {
+          "countDown" : 0,
+          "id" : 19,
+          "politics" : 16,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 8,
+          "techLevel" : 2,
+          "tradeItems" : [
+            42,
+            42,
+            42,
+            48,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 42,
+          "y" : 11
+        },
+        {
+          "countDown" : 0,
+          "id" : 20,
+          "politics" : 3,
+          "pressure" : 3,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            29,
+            19,
+            36,
+            29,
+            21,
+            37,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 72,
+          "y" : 30
+        },
+        {
+          "countDown" : 0,
+          "id" : 21,
+          "politics" : 11,
+          "pressure" : 4,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            49,
+            46,
+            29,
+            50,
+            5,
+            51,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 26,
+          "y" : 67
+        },
+        {
+          "countDown" : 0,
+          "id" : 22,
+          "politics" : 9,
+          "pressure" : 0,
+          "size" : 3,
+          "specialEvent" : 20,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            37,
+            34,
+            44,
+            34,
+            34,
+            28,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 21,
+          "y" : 23
+        },
+        {
+          "countDown" : 0,
+          "id" : 23,
+          "politics" : 11,
+          "pressure" : 3,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            48,
+            34,
+            57,
+            53,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 34,
+          "y" : 55
+        },
+        {
+          "countDown" : 0,
+          "id" : 24,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 3,
+          "techLevel" : 4,
+          "tradeItems" : [
+            39,
+            31,
+            22,
+            37,
+            34,
+            40,
+            28,
+            44,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 69,
+          "y" : 11
+        },
+        {
+          "countDown" : 0,
+          "id" : 25,
+          "politics" : 3,
+          "pressure" : 0,
+          "size" : 1,
+          "specialEvent" : 38,
+          "specialResource" : 9,
+          "techLevel" : 4,
+          "tradeItems" : [
+            20,
+            13,
+            20,
+            19,
+            14,
+            15,
+            19,
+            23,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 60,
+          "y" : 16
+        },
+        {
+          "countDown" : 0,
+          "id" : 26,
+          "politics" : 11,
+          "pressure" : 0,
+          "size" : 4,
+          "specialResource" : 7,
+          "techLevel" : 1,
+          "tradeItems" : [
+            42,
+            58,
+            51,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 95,
+          "y" : 52
+        },
+        {
+          "countDown" : 0,
+          "id" : 27,
+          "politics" : 9,
+          "pressure" : 1,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            37,
+            50,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 129,
+          "y" : 5
+        },
+        {
+          "countDown" : 0,
+          "id" : 28,
+          "politics" : 12,
+          "pressure" : 5,
+          "size" : 4,
+          "specialEvent" : 2,
+          "specialResource" : 2,
+          "techLevel" : 1,
+          "tradeItems" : [
+            64,
+            66,
+            58,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 104,
+          "y" : 3
+        },
+        {
+          "countDown" : 0,
+          "id" : 29,
+          "politics" : 4,
+          "pressure" : 2,
+          "size" : 1,
+          "specialEvent" : 37,
+          "specialResource" : 10,
+          "techLevel" : 5,
+          "tradeItems" : [
+            23,
+            9,
+            7,
+            21,
+            19,
+            21,
+            16,
+            24,
+            17,
+            0
+          ],
+          "visited" : false,
+          "x" : 32,
+          "y" : 81
+        },
+        {
+          "countDown" : 0,
+          "id" : 30,
+          "politics" : 11,
+          "pressure" : 0,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            56,
+            55,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 110,
+          "y" : 64
+        },
+        {
+          "countDown" : 0,
+          "id" : 31,
+          "politics" : 1,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 9,
+          "techLevel" : 6,
+          "tradeItems" : [
+            8,
+            9,
+            16,
+            16,
+            20,
+            19,
+            30,
+            29,
+            15,
+            23
+          ],
+          "visited" : false,
+          "x" : 76,
+          "y" : 22
+        },
+        {
+          "countDown" : 0,
+          "id" : 32,
+          "politics" : 12,
+          "pressure" : 0,
+          "size" : 1,
+          "specialEvent" : 16,
+          "specialResource" : 8,
+          "techLevel" : 0,
+          "tradeItems" : [
+            27,
+            22,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 38,
+          "y" : 25
+        },
+        {
+          "countDown" : 0,
+          "id" : 33,
+          "politics" : 6,
+          "pressure" : 7,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            8,
+            3,
+            8,
+            4,
+            11,
+            7,
+            12,
+            8,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 86,
+          "y" : 55
+        },
+        {
+          "countDown" : 0,
+          "id" : 34,
+          "politics" : 7,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 3,
+          "techLevel" : 7,
+          "tradeItems" : [
+            5,
+            2,
+            8,
+            17,
+            20,
+            26,
+            18,
+            18,
+            11,
+            11
+          ],
+          "visited" : false,
+          "x" : 51,
+          "y" : 18
+        },
+        {
+          "countDown" : 0,
+          "id" : 35,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 0,
+          "specialEvent" : 2,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            4,
+            1,
+            13,
+            11,
+            9,
+            10,
+            9,
+            6,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 73,
+          "y" : 73
+        },
+        {
+          "countDown" : 0,
+          "id" : 36,
+          "politics" : 8,
+          "pressure" : 0,
+          "size" : 4,
+          "specialResource" : 12,
+          "techLevel" : 5,
+          "tradeItems" : [
+            51,
+            36,
+            32,
+            51,
+            60,
+            48,
+            49,
+            60,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 124,
+          "y" : 29
+        },
+        {
+          "countDown" : 4,
+          "id" : 37,
+          "politics" : 3,
+          "pressure" : 1,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            7,
+            8,
+            8,
+            17,
+            1,
+            12,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : true,
+          "x" : 103,
+          "y" : 77
+        },
+        {
+          "countDown" : 0,
+          "id" : 38,
+          "politics" : 8,
+          "pressure" : 0,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            27,
+            26,
+            20,
+            21,
+            23,
+            33,
+            31,
+            21,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 130,
+          "y" : 35
+        },
+        {
+          "countDown" : 0,
+          "id" : 39,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            21,
+            14,
+            20,
+            11,
+            19,
+            17,
+            16,
+            23,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 92,
+          "y" : 60
+        },
+        {
+          "countDown" : 0,
+          "id" : 40,
+          "politics" : 2,
+          "pressure" : 0,
+          "size" : 4,
+          "specialResource" : 7,
+          "techLevel" : 1,
+          "tradeItems" : [
+            50,
+            52,
+            42,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 152,
+          "y" : 63
+        },
+        {
+          "countDown" : 0,
+          "id" : 41,
+          "politics" : 13,
+          "pressure" : 0,
+          "size" : 0,
+          "specialEvent" : 18,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            1,
+            0,
+            0,
+            15,
+            5,
+            9,
+            5,
+            9,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 9,
+          "y" : 90
+        },
+        {
+          "countDown" : 0,
+          "id" : 42,
+          "politics" : 9,
+          "pressure" : 3,
+          "size" : 0,
+          "specialEvent" : 0,
+          "specialResource" : 9,
+          "techLevel" : 0,
+          "tradeItems" : [
+            4,
+            9,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 71,
+          "y" : 42
+        },
+        {
+          "countDown" : 0,
+          "id" : 43,
+          "politics" : 12,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 4,
+          "techLevel" : 1,
+          "tradeItems" : [
+            18,
+            22,
+            18,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 139,
+          "y" : 26
+        },
+        {
+          "countDown" : 0,
+          "id" : 44,
+          "politics" : 9,
+          "pressure" : 2,
+          "size" : 4,
+          "specialResource" : 1,
+          "techLevel" : 0,
+          "tradeItems" : [
+            31,
+            52,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 29,
+          "y" : 60
+        },
+        {
+          "countDown" : 0,
+          "id" : 45,
+          "politics" : 9,
+          "pressure" : 0,
+          "size" : 4,
+          "specialEvent" : 33,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            44,
+            49,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 40,
+          "y" : 75
+        },
+        {
+          "countDown" : 0,
+          "id" : 46,
+          "politics" : 0,
+          "pressure" : 0,
+          "size" : 2,
+          "specialResource" : 3,
+          "techLevel" : 0,
+          "tradeItems" : [
+            30,
+            27,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 109,
+          "y" : 94
+        },
+        {
+          "countDown" : 0,
+          "id" : 47,
+          "politics" : 8,
+          "pressure" : 0,
+          "size" : 0,
+          "specialEvent" : 17,
+          "specialResource" : 9,
+          "techLevel" : 6,
+          "tradeItems" : [
+            2,
+            0,
+            7,
+            2,
+            10,
+            7,
+            20,
+            6,
+            0,
+            5
+          ],
+          "visited" : false,
+          "x" : 146,
+          "y" : 53
+        },
+        {
+          "countDown" : 0,
+          "id" : 48,
+          "politics" : 9,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            30,
+            39,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 134,
+          "y" : 99
+        },
+        {
+          "countDown" : 3,
+          "id" : 49,
+          "politics" : 14,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 7,
+          "techLevel" : 1,
+          "tradeItems" : [
+            26,
+            13,
+            25,
+            0,
+            3,
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : true,
+          "x" : 96,
+          "y" : 80
+        },
+        {
+          "countDown" : 0,
+          "id" : 50,
+          "politics" : 2,
+          "pressure" : 2,
+          "size" : 4,
+          "specialEvent" : 36,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            62,
+            39,
+            40,
+            59,
+            49,
+            42,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 121,
+          "y" : 39
+        },
+        {
+          "countDown" : 0,
+          "id" : 51,
+          "politics" : 11,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            16,
+            11,
+            12,
+            9,
+            20,
+            20,
+            25,
+            22,
+            8,
+            0
+          ],
+          "visited" : false,
+          "x" : 143,
+          "y" : 80
+        },
+        {
+          "countDown" : 0,
+          "id" : 52,
+          "politics" : 6,
+          "pressure" : 4,
+          "size" : 1,
+          "specialResource" : 4,
+          "techLevel" : 3,
+          "tradeItems" : [
+            22,
+            14,
+            19,
+            13,
+            3,
+            11,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 19,
+          "y" : 68
+        },
+        {
+          "countDown" : 0,
+          "id" : 53,
+          "politics" : 12,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            12,
+            3,
+            12,
+            14,
+            6,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 103,
+          "y" : 18
+        },
+        {
+          "countDown" : 0,
+          "id" : 54,
+          "politics" : 1,
+          "pressure" : 4,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 6,
+          "tradeItems" : [
+            20,
+            10,
+            20,
+            18,
+            13,
+            29,
+            38,
+            32,
+            2,
+            17
+          ],
+          "visited" : false,
+          "x" : 34,
+          "y" : 36
+        },
+        {
+          "countDown" : 0,
+          "id" : 55,
+          "politics" : 4,
+          "pressure" : 2,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            25,
+            18,
+            14,
+            17,
+            31,
+            16,
+            23,
+            27,
+            26,
+            0
+          ],
+          "visited" : false,
+          "x" : 14,
+          "y" : 81
+        },
+        {
+          "countDown" : 0,
+          "id" : 56,
+          "politics" : 10,
+          "pressure" : 4,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            35,
+            46,
+            41,
+            51,
+            53,
+            50,
+            49,
+            48,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 150,
+          "y" : 95
+        },
+        {
+          "countDown" : 0,
+          "id" : 57,
+          "politics" : 11,
+          "pressure" : 0,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            42,
+            46,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 101,
+          "y" : 10
+        },
+        {
+          "countDown" : 0,
+          "id" : 58,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            40,
+            22,
+            42,
+            54,
+            52,
+            54,
+            52,
+            59,
+            39,
+            0
+          ],
+          "visited" : false,
+          "x" : 131,
+          "y" : 107
+        },
+        {
+          "countDown" : 0,
+          "id" : 59,
+          "politics" : 1,
+          "pressure" : 0,
+          "size" : 4,
+          "specialEvent" : 6,
+          "specialResource" : 12,
+          "techLevel" : 4,
+          "tradeItems" : [
+            47,
+            46,
+            43,
+            47,
+            48,
+            40,
+            42,
+            44,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 130,
+          "y" : 12
+        },
+        {
+          "countDown" : 0,
+          "id" : 60,
+          "politics" : 5,
+          "pressure" : 4,
+          "size" : 3,
+          "specialEvent" : 30,
+          "specialResource" : 9,
+          "techLevel" : 7,
+          "tradeItems" : [
+            29,
+            8,
+            23,
+            14,
+            37,
+            0,
+            54,
+            34,
+            0,
+            33
+          ],
+          "visited" : false,
+          "x" : 4,
+          "y" : 38
+        },
+        {
+          "countDown" : 0,
+          "id" : 61,
+          "politics" : 6,
+          "pressure" : 6,
+          "size" : 4,
+          "specialResource" : 1,
+          "techLevel" : 7,
+          "tradeItems" : [
+            36,
+            26,
+            28,
+            47,
+            42,
+            55,
+            52,
+            49,
+            28,
+            39
+          ],
+          "visited" : false,
+          "x" : 13,
+          "y" : 33
+        },
+        {
+          "countDown" : 0,
+          "id" : 62,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 1,
+          "specialEvent" : 22,
+          "specialResource" : 1,
+          "techLevel" : 5,
+          "tradeItems" : [
+            9,
+            13,
+            18,
+            13,
+            23,
+            13,
+            21,
+            26,
+            17,
+            0
+          ],
+          "visited" : false,
+          "x" : 54,
+          "y" : 48
+        },
+        {
+          "countDown" : 0,
+          "id" : 63,
+          "politics" : 6,
+          "pressure" : 0,
+          "size" : 1,
+          "specialEvent" : 30,
+          "specialResource" : 0,
+          "techLevel" : 7,
+          "tradeItems" : [
+            9,
+            5,
+            10,
+            14,
+            14,
+            16,
+            27,
+            21,
+            13,
+            22
+          ],
+          "visited" : false,
+          "x" : 9,
+          "y" : 9
+        },
+        {
+          "countDown" : 0,
+          "id" : 64,
+          "politics" : 8,
+          "pressure" : 0,
+          "size" : 4,
+          "specialEvent" : 34,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            48,
+            38,
+            52,
+            48,
+            57,
+            37,
+            53,
+            57,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 63,
+          "y" : 70
+        },
+        {
+          "countDown" : 0,
+          "id" : 65,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 7,
+          "techLevel" : 4,
+          "tradeItems" : [
+            4,
+            3,
+            0,
+            10,
+            4,
+            8,
+            9,
+            15,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 51,
+          "y" : 72
+        },
+        {
+          "countDown" : 0,
+          "id" : 66,
+          "politics" : 0,
+          "pressure" : 0,
+          "size" : 1,
+          "specialEvent" : 34,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            10,
+            20,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 47,
+          "y" : 6
+        },
+        {
+          "countDown" : 0,
+          "id" : 67,
+          "politics" : 16,
+          "pressure" : 0,
+          "size" : 0,
+          "specialEvent" : 25,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            8,
+            5,
+            5,
+            14,
+            13,
+            10,
+            8,
+            10,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 65,
+          "y" : 54
+        },
+        {
+          "countDown" : 0,
+          "id" : 68,
+          "politics" : 15,
+          "pressure" : 0,
+          "shipyard" : 3,
+          "size" : 3,
+          "specialResource" : 11,
+          "techLevel" : 7,
+          "tradeItems" : [
+            24,
+            29,
+            25,
+            37,
+            43,
+            39,
+            42,
+            41,
+            31,
+            32
+          ],
+          "visited" : false,
+          "x" : 147,
+          "y" : 31
+        },
+        {
+          "countDown" : 0,
+          "id" : 69,
+          "politics" : 4,
+          "pressure" : 4,
+          "size" : 1,
+          "specialResource" : 7,
+          "techLevel" : 5,
+          "tradeItems" : [
+            18,
+            9,
+            3,
+            10,
+            4,
+            17,
+            14,
+            26,
+            3,
+            0
+          ],
+          "visited" : false,
+          "x" : 57,
+          "y" : 8
+        },
+        {
+          "countDown" : 0,
+          "id" : 70,
+          "politics" : 8,
+          "pressure" : 4,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            56,
+            30,
+            44,
+            57,
+            40,
+            51,
+            58,
+            45,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 65,
+          "y" : 83
+        },
+        {
+          "countDown" : 0,
+          "id" : 71,
+          "politics" : 12,
+          "pressure" : 0,
+          "size" : 1,
+          "specialEvent" : 24,
+          "specialResource" : 1,
+          "techLevel" : 1,
+          "tradeItems" : [
+            22,
+            24,
+            26,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 131,
+          "y" : 28
+        },
+        {
+          "countDown" : 0,
+          "id" : 72,
+          "politics" : 2,
+          "pressure" : 0,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            22,
+            12,
+            33,
+            22,
+            25,
+            45,
+            27,
+            39,
+            25,
+            0
+          ],
+          "visited" : false,
+          "x" : 82,
+          "y" : 8
+        },
+        {
+          "countDown" : 0,
+          "id" : 73,
+          "politics" : 11,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 9,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            29,
+            25,
+            32,
+            29,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 121,
+          "y" : 103
+        },
+        {
+          "countDown" : 0,
+          "id" : 74,
+          "politics" : 14,
+          "pressure" : 4,
+          "size" : 1,
+          "specialResource" : 12,
+          "techLevel" : 0,
+          "tradeItems" : [
+            22,
+            22,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 132,
+          "y" : 81
+        },
+        {
+          "countDown" : 0,
+          "id" : 75,
+          "politics" : 10,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            14,
+            7,
+            18,
+            10,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 58,
+          "y" : 87
+        },
+        {
+          "countDown" : 0,
+          "id" : 76,
+          "politics" : 12,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            23,
+            23,
+            27,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 32,
+          "y" : 18
+        },
+        {
+          "countDown" : 0,
+          "id" : 77,
+          "politics" : 10,
+          "pressure" : 4,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            37,
+            49,
+            35,
+            62,
+            41,
+            52,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 26,
+          "y" : 9
+        },
+        {
+          "countDown" : 0,
+          "id" : 78,
+          "politics" : 13,
+          "pressure" : 0,
+          "size" : 4,
+          "specialEvent" : 34,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            47,
+            26,
+            41,
+            50,
+            41,
+            52,
+            40,
+            60,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 107,
+          "y" : 86
+        },
+        {
+          "countDown" : 0,
+          "id" : 79,
+          "politics" : 5,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 2,
+          "techLevel" : 6,
+          "tradeItems" : [
+            33,
+            31,
+            40,
+            48,
+            57,
+            0,
+            43,
+            29,
+            0,
+            39
+          ],
+          "visited" : false,
+          "x" : 65,
+          "y" : 93
+        },
+        {
+          "countDown" : 0,
+          "id" : 80,
+          "politics" : 15,
+          "pressure" : 0,
+          "size" : 3,
+          "specialEvent" : 2,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            43,
+            30,
+            35,
+            28,
+            42,
+            43,
+            37,
+            36,
+            32,
+            0
+          ],
+          "visited" : false,
+          "x" : 14,
+          "y" : 95
+        },
+        {
+          "countDown" : 0,
+          "id" : 81,
+          "politics" : 11,
+          "pressure" : 5,
+          "size" : 2,
+          "specialResource" : 10,
+          "techLevel" : 4,
+          "tradeItems" : [
+            17,
+            7,
+            19,
+            36,
+            28,
+            28,
+            30,
+            25,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 128,
+          "y" : 70
+        },
+        {
+          "countDown" : 0,
+          "id" : 82,
+          "politics" : 6,
+          "pressure" : 0,
+          "size" : 3,
+          "specialEvent" : 7,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            32,
+            28,
+            34,
+            40,
+            40,
+            49,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 40,
+          "y" : 46
+        },
+        {
+          "countDown" : 0,
+          "id" : 83,
+          "politics" : 2,
+          "pressure" : 2,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            18,
+            0,
+            8,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 106,
+          "y" : 29
+        },
+        {
+          "countDown" : 0,
+          "id" : 84,
+          "politics" : 6,
+          "pressure" : 0,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            34,
+            27,
+            27,
+            27,
+            28,
+            27,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 20,
+          "y" : 41
+        },
+        {
+          "countDown" : 0,
+          "id" : 85,
+          "politics" : 7,
+          "pressure" : 3,
+          "size" : 4,
+          "specialEvent" : 27,
+          "specialResource" : 9,
+          "techLevel" : 0,
+          "tradeItems" : [
+            52,
+            50,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 31,
+          "y" : 44
+        },
+        {
+          "countDown" : 0,
+          "id" : 86,
+          "politics" : 14,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            19,
+            23,
+            29,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 92,
+          "y" : 103
+        },
+        {
+          "countDown" : 0,
+          "id" : 87,
+          "politics" : 6,
+          "pressure" : 0,
+          "size" : 3,
+          "specialEvent" : 9,
+          "specialResource" : 9,
+          "techLevel" : 4,
+          "tradeItems" : [
+            30,
+            31,
+            30,
+            43,
+            34,
+            40,
+            36,
+            50,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 153,
+          "y" : 16
+        },
+        {
+          "countDown" : 0,
+          "id" : 88,
+          "politics" : 11,
+          "pressure" : 3,
+          "size" : 3,
+          "specialResource" : 5,
+          "techLevel" : 0,
+          "tradeItems" : [
+            12,
+            40,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 77,
+          "y" : 13
+        },
+        {
+          "countDown" : 0,
+          "id" : 89,
+          "politics" : 13,
+          "pressure" : 1,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            12,
+            10,
+            11,
+            2,
+            3,
+            5,
+            7,
+            9,
+            9,
+            0
+          ],
+          "visited" : false,
+          "x" : 21,
+          "y" : 3
+        },
+        {
+          "countDown" : 0,
+          "id" : 90,
+          "politics" : 11,
+          "pressure" : 1,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 4,
+          "tradeItems" : [
+            8,
+            8,
+            14,
+            9,
+            6,
+            10,
+            2,
+            6,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 84,
+          "y" : 75
+        },
+        {
+          "countDown" : 0,
+          "id" : 91,
+          "politics" : 9,
+          "pressure" : 0,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            26,
+            38,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 46,
+          "y" : 40
+        },
+        {
+          "countDown" : 0,
+          "id" : 92,
+          "politics" : 13,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 0,
+          "tradeItems" : [
+            8,
+            15,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 96,
+          "y" : 90
+        },
+        {
+          "countDown" : 0,
+          "id" : 93,
+          "politics" : 9,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            29,
+            40,
+            42,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 58,
+          "y" : 39
+        },
+        {
+          "countDown" : 0,
+          "id" : 94,
+          "politics" : 3,
+          "pressure" : 4,
+          "size" : 3,
+          "specialResource" : 2,
+          "techLevel" : 3,
+          "tradeItems" : [
+            33,
+            40,
+            38,
+            50,
+            32,
+            41,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 144,
+          "y" : 20
+        },
+        {
+          "countDown" : 0,
+          "id" : 95,
+          "politics" : 15,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 6,
+          "tradeItems" : [
+            29,
+            21,
+            19,
+            30,
+            55,
+            32,
+            44,
+            36,
+            36,
+            39
+          ],
+          "visited" : false,
+          "x" : 102,
+          "y" : 100
+        },
+        {
+          "countDown" : 0,
+          "id" : 96,
+          "politics" : 11,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            50,
+            32,
+            43,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 98,
+          "y" : 30
+        },
+        {
+          "countDown" : 0,
+          "id" : 97,
+          "politics" : 0,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 12,
+          "techLevel" : 3,
+          "tradeItems" : [
+            11,
+            5,
+            3,
+            11,
+            5,
+            8,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 9,
+          "y" : 62
+        },
+        {
+          "countDown" : 0,
+          "id" : 98,
+          "politics" : 14,
+          "pressure" : 6,
+          "size" : 2,
+          "specialResource" : 6,
+          "techLevel" : 0,
+          "tradeItems" : [
+            31,
+            35,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 58,
+          "y" : 79
+        },
+        {
+          "countDown" : 0,
+          "id" : 99,
+          "politics" : 6,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 31,
+          "specialResource" : 0,
+          "techLevel" : 6,
+          "tradeItems" : [
+            14,
+            25,
+            25,
+            26,
+            38,
+            22,
+            35,
+            32,
+            28,
+            12
+          ],
+          "visited" : false,
+          "x" : 50,
+          "y" : 55
+        },
+        {
+          "countDown" : 0,
+          "id" : 100,
+          "politics" : 10,
+          "pressure" : 0,
+          "size" : 1,
+          "specialEvent" : 35,
+          "specialResource" : 0,
+          "techLevel" : 7,
+          "tradeItems" : [
+            20,
+            17,
+            8,
+            14,
+            19,
+            27,
+            18,
+            16,
+            0,
+            18
+          ],
+          "visited" : false,
+          "x" : 46,
+          "y" : 30
+        },
+        {
+          "countDown" : 0,
+          "id" : 101,
+          "politics" : 9,
+          "pressure" : 6,
+          "size" : 4,
+          "specialResource" : 3,
+          "techLevel" : 0,
+          "tradeItems" : [
+            50,
+            59,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 66,
+          "y" : 23
+        },
+        {
+          "countDown" : 0,
+          "id" : 102,
+          "politics" : 13,
+          "pressure" : 1,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            33,
+            26,
+            35,
+            51,
+            45,
+            54,
+            53,
+            62,
+            44,
+            0
+          ],
+          "visited" : false,
+          "x" : 38,
+          "y" : 63
+        },
+        {
+          "countDown" : 0,
+          "id" : 103,
+          "politics" : 0,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            47,
+            41,
+            38,
+            34,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 3,
+          "y" : 28
+        },
+        {
+          "countDown" : 0,
+          "id" : 104,
+          "politics" : 0,
+          "pressure" : 0,
+          "size" : 0,
+          "specialResource" : 6,
+          "techLevel" : 4,
+          "tradeItems" : [
+            8,
+            6,
+            14,
+            3,
+            15,
+            10,
+            4,
+            11,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 102,
+          "y" : 108
+        },
+        {
+          "countDown" : 0,
+          "id" : 105,
+          "politics" : 2,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 22,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            31,
+            30,
+            24,
+            33,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 21,
+          "y" : 61
+        },
+        {
+          "countDown" : 0,
+          "id" : 106,
+          "politics" : 0,
+          "pressure" : 3,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            13,
+            9,
+            8,
+            16,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : true,
+          "x" : 114,
+          "y" : 80
+        },
+        {
+          "countDown" : 0,
+          "id" : 107,
+          "politics" : 10,
+          "pressure" : 0,
+          "shipyard" : 2,
+          "size" : 2,
+          "specialEvent" : 19,
+          "specialResource" : 0,
+          "techLevel" : 7,
+          "tradeItems" : [
+            5,
+            2,
+            13,
+            25,
+            18,
+            30,
+            30,
+            23,
+            0,
+            31
+          ],
+          "visited" : false,
+          "x" : 76,
+          "y" : 104
+        },
+        {
+          "countDown" : 0,
+          "id" : 108,
+          "politics" : 7,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 3,
+          "techLevel" : 2,
+          "tradeItems" : [
+            42,
+            37,
+            32,
+            46,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 35,
+          "y" : 9
+        },
+        {
+          "countDown" : 0,
+          "id" : 109,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 23,
+          "specialResource" : 2,
+          "techLevel" : 6,
+          "tradeItems" : [
+            8,
+            12,
+            22,
+            24,
+            30,
+            34,
+            24,
+            30,
+            29,
+            28
+          ],
+          "visited" : false,
+          "x" : 59,
+          "y" : 25
+        },
+        {
+          "countDown" : 0,
+          "id" : 110,
+          "politics" : 0,
+          "pressure" : 5,
+          "size" : 1,
+          "specialEvent" : 9,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            14,
+            10,
+            14,
+            15,
+            19,
+            26,
+            23,
+            23,
+            17,
+            0
+          ],
+          "visited" : false,
+          "x" : 143,
+          "y" : 41
+        },
+        {
+          "countDown" : 0,
+          "id" : 111,
+          "politics" : 2,
+          "pressure" : 7,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            24,
+            14,
+            13,
+            28,
+            15,
+            17,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 144,
+          "y" : 102
+        },
+        {
+          "countDown" : 0,
+          "id" : 112,
+          "politics" : 7,
+          "pressure" : 7,
+          "size" : 1,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            20,
+            14,
+            19,
+            12,
+            31,
+            14,
+            19,
+            20,
+            14,
+            0
+          ],
+          "visited" : false,
+          "x" : 137,
+          "y" : 13
+        },
+        {
+          "countDown" : 0,
+          "id" : 113,
+          "politics" : 10,
+          "pressure" : 5,
+          "size" : 0,
+          "specialResource" : 0,
+          "techLevel" : 5,
+          "tradeItems" : [
+            6,
+            9,
+            12,
+            7,
+            7,
+            11,
+            5,
+            8,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 61,
+          "y" : 47
+        },
+        {
+          "countDown" : 0,
+          "id" : 114,
+          "politics" : 12,
+          "pressure" : 0,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 2,
+          "tradeItems" : [
+            41,
+            26,
+            28,
+            36,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 92,
+          "y" : 34
+        },
+        {
+          "countDown" : 0,
+          "id" : 115,
+          "politics" : 13,
+          "pressure" : 3,
+          "size" : 1,
+          "specialEvent" : 22,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            14,
+            25,
+            20,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 115,
+          "y" : 45
+        },
+        {
+          "countDown" : 0,
+          "id" : 116,
+          "politics" : 3,
+          "pressure" : 0,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 6,
+          "tradeItems" : [
+            35,
+            8,
+            24,
+            38,
+            37,
+            47,
+            44,
+            53,
+            36,
+            24
+          ],
+          "visited" : false,
+          "x" : 122,
+          "y" : 64
+        },
+        {
+          "countDown" : 0,
+          "id" : 117,
+          "politics" : 10,
+          "pressure" : 0,
+          "shipyard" : 4,
+          "size" : 3,
+          "specialResource" : 0,
+          "techLevel" : 7,
+          "tradeItems" : [
+            40,
+            25,
+            15,
+            35,
+            38,
+            39,
+            36,
+            31,
+            0,
+            41
+          ],
+          "visited" : false,
+          "x" : 103,
+          "y" : 39
+        },
+        {
+          "countDown" : 0,
+          "id" : 118,
+          "politics" : 7,
+          "pressure" : 0,
+          "size" : 4,
+          "specialEvent" : 5,
+          "specialResource" : 8,
+          "techLevel" : 4,
+          "tradeItems" : [
+            55,
+            26,
+            45,
+            14,
+            40,
+            13,
+            54,
+            50,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 65,
+          "y" : 35
+        },
+        {
+          "countDown" : 0,
+          "id" : 119,
+          "politics" : 0,
+          "pressure" : 0,
+          "size" : 1,
+          "specialResource" : 1,
+          "techLevel" : 4,
+          "tradeItems" : [
+            21,
+            17,
+            19,
+            14,
+            19,
+            25,
+            18,
+            14,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 2,
+          "y" : 19
+        },
+        {
+          "countDown" : 0,
+          "id" : 120,
+          "politics" : 14,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 41,
+          "specialResource" : 9,
+          "techLevel" : 1,
+          "tradeItems" : [
+            26,
+            24,
+            28,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 92,
+          "y" : 18
+        },
+        {
+          "countDown" : 0,
+          "id" : 121,
+          "politics" : 11,
+          "pressure" : 3,
+          "size" : 3,
+          "specialEvent" : 40,
+          "specialResource" : 0,
+          "techLevel" : 7,
+          "tradeItems" : [
+            19,
+            11,
+            20,
+            15,
+            37,
+            37,
+            37,
+            41,
+            30,
+            38
+          ],
+          "visited" : false,
+          "x" : 92,
+          "y" : 2
+        },
+        {
+          "countDown" : 0,
+          "id" : 122,
+          "politics" : 2,
+          "pressure" : 0,
+          "size" : 4,
+          "specialEvent" : 42,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            39,
+            31,
+            50,
+            69,
+            28,
+            57,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 119,
+          "y" : 7
+        },
+        {
+          "countDown" : 0,
+          "id" : 123,
+          "politics" : 14,
+          "pressure" : 0,
+          "size" : 2,
+          "specialResource" : 0,
+          "techLevel" : 1,
+          "tradeItems" : [
+            28,
+            25,
+            27,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 125,
+          "y" : 17
+        },
+        {
+          "countDown" : 0,
+          "id" : 124,
+          "politics" : 2,
+          "pressure" : 0,
+          "size" : 2,
+          "specialEvent" : 43,
+          "specialResource" : 3,
+          "techLevel" : 3,
+          "tradeItems" : [
+            30,
+            30,
+            15,
+            33,
+            24,
+            23,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 129,
+          "y" : 44
+        },
+        {
+          "countDown" : 0,
+          "id" : 125,
+          "politics" : 12,
+          "pressure" : 0,
+          "size" : 3,
+          "specialEvent" : 30,
+          "specialResource" : 5,
+          "techLevel" : 1,
+          "tradeItems" : [
+            50,
+            35,
+            53,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 1,
+          "y" : 55
+        },
+        {
+          "countDown" : 0,
+          "id" : 126,
+          "politics" : 4,
+          "pressure" : 0,
+          "size" : 3,
+          "specialEvent" : 22,
+          "specialResource" : 7,
+          "techLevel" : 5,
+          "tradeItems" : [
+            18,
+            26,
+            27,
+            27,
+            37,
+            42,
+            30,
+            43,
+            31,
+            0
+          ],
+          "visited" : false,
+          "x" : 90,
+          "y" : 10
+        },
+        {
+          "countDown" : 0,
+          "id" : 127,
+          "politics" : 13,
+          "pressure" : 5,
+          "size" : 4,
+          "specialResource" : 0,
+          "techLevel" : 3,
+          "tradeItems" : [
+            59,
+            44,
+            39,
+            55,
+            48,
+            45,
+            0,
+            0,
+            0,
+            0
+          ],
+          "visited" : false,
+          "x" : 122,
+          "y" : 82
+        }
+      ],
+      "wormholes" : [
+        13,
+        43,
+        5,
+        76,
+        101,
+        35
+      ]
+    },
+    "inspected" : false,
+    "ironman" : false,
+    "lastOpponent" : {
+      "cargo" : [
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        3,
+        0,
+        0,
+        0
+      ],
+      "crew" : [
+        31,
+        null
+      ],
+      "escapePod" : false,
+      "fuel" : 16,
+      "gadgets" : [
+
+      ],
+      "hull" : 150,
+      "hullUpgraded" : false,
+      "shields" : [
+        {
+          "charge" : 60,
+          "type" : 0
+        }
+      ],
+      "tribbles" : 0,
+      "type" : 6,
+      "weapons" : [
+        0
+      ]
+    },
+    "litterWarning" : false,
+    "mercenaries" : [
+      {
+        "id" : 0,
+        "skills" : [
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      {
+        "id" : 1,
+        "skills" : [
+          4,
+          2,
+          8,
+          6
+        ],
+        "systemID" : 17
+      },
+      {
+        "id" : 2,
+        "skills" : [
+          4,
+          8,
+          7,
+          3
+        ],
+        "systemID" : 28
+      },
+      {
+        "id" : 3,
+        "skills" : [
+          4,
+          3,
+          5,
+          9
+        ],
+        "systemID" : 91
+      },
+      {
+        "id" : 4,
+        "skills" : [
+          3,
+          2,
+          8,
+          4
+        ],
+        "systemID" : 76
+      },
+      {
+        "id" : 5,
+        "skills" : [
+          7,
+          8,
+          5,
+          6
+        ],
+        "systemID" : 36
+      },
+      {
+        "id" : 6,
+        "skills" : [
+          2,
+          8,
+          5,
+          1
+        ],
+        "systemID" : 20
+      },
+      {
+        "id" : 7,
+        "skills" : [
+          5,
+          7,
+          3,
+          5
+        ],
+        "systemID" : 32
+      },
+      {
+        "id" : 8,
+        "skills" : [
+          1,
+          4,
+          3,
+          6
+        ],
+        "systemID" : 52
+      },
+      {
+        "id" : 9,
+        "skills" : [
+          6,
+          8,
+          3,
+          4
+        ],
+        "systemID" : 75
+      },
+      {
+        "id" : 10,
+        "skills" : [
+          2,
+          4,
+          5,
+          7
+        ],
+        "systemID" : 66
+      },
+      {
+        "id" : 11,
+        "skills" : [
+          9,
+          3,
+          5,
+          7
+        ],
+        "systemID" : 97
+      },
+      {
+        "id" : 12,
+        "skills" : [
+          4,
+          1,
+          6,
+          5
+        ],
+        "systemID" : 23
+      },
+      {
+        "id" : 13,
+        "skills" : [
+          3,
+          1,
+          9,
+          7
+        ],
+        "systemID" : 43
+      },
+      {
+        "id" : 14,
+        "skills" : [
+          5,
+          10,
+          5,
+          8
+        ],
+        "systemID" : 96
+      },
+      {
+        "id" : 15,
+        "skills" : [
+          8,
+          10,
+          2,
+          4
+        ],
+        "systemID" : 88
+      },
+      {
+        "id" : 16,
+        "skills" : [
+          3,
+          6,
+          5,
+          2
+        ],
+        "systemID" : 59
+      },
+      {
+        "id" : 17,
+        "skills" : [
+          7,
+          2,
+          6,
+          2
+        ],
+        "systemID" : 84
+      },
+      {
+        "id" : 18,
+        "skills" : [
+          4,
+          7,
+          7,
+          8
+        ],
+        "systemID" : 50
+      },
+      {
+        "id" : 19,
+        "skills" : [
+          5,
+          6,
+          6,
+          2
+        ],
+        "systemID" : 104
+      },
+      {
+        "id" : 20,
+        "skills" : [
+          10,
+          4,
+          6,
+          9
+        ],
+        "systemID" : 76
+      },
+      {
+        "id" : 21,
+        "skills" : [
+          3,
+          5,
+          3,
+          5
+        ],
+        "systemID" : 6
+      },
+      {
+        "id" : 22,
+        "skills" : [
+          9,
+          9,
+          7,
+          8
+        ],
+        "systemID" : 113
+      },
+      {
+        "id" : 23,
+        "skills" : [
+          7,
+          9,
+          9,
+          5
+        ],
+        "systemID" : 75
+      },
+      {
+        "id" : 24,
+        "skills" : [
+          5,
+          6,
+          3,
+          7
+        ],
+        "systemID" : 13
+      },
+      {
+        "id" : 25,
+        "skills" : [
+          8,
+          10,
+          10,
+          4
+        ],
+        "systemID" : 64
+      },
+      {
+        "id" : 26,
+        "skills" : [
+          5,
+          4,
+          4,
+          1
+        ],
+        "systemID" : 53
+      },
+      {
+        "id" : 27,
+        "skills" : [
+          5,
+          4,
+          1,
+          4
+        ],
+        "systemID" : 20
+      },
+      {
+        "id" : 28,
+        "skills" : [
+          5,
+          5,
+          1,
+          7
+        ],
+        "systemID" : 60
+      },
+      {
+        "id" : 29,
+        "skills" : [
+          8,
+          9,
+          6,
+          6
+        ],
+        "systemID" : 27
+      },
+      {
+        "id" : 30,
+        "skills" : [
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      {
+        "id" : 31,
+        "skills" : [
+          1,
+          7,
+          4,
+          4
+        ]
+      },
+      {
+        "id" : 32,
+        "skills" : [
+          7,
+          10,
+          2,
+          5
+        ]
+      },
+      {
+        "id" : 33,
+        "skills" : [
+          3,
+          2,
+          10,
+          4
+        ]
+      },
+      {
+        "id" : 34,
+        "skills" : [
+          10,
+          10,
+          10,
+          10
+        ]
+      },
+      {
+        "id" : 35,
+        "skills" : [
+          6,
+          8,
+          1,
+          8
+        ]
+      },
+      {
+        "id" : 36,
+        "skills" : [
+          7,
+          8,
+          1,
+          8
+        ]
+      },
+      {
+        "id" : 37,
+        "skills" : [
+          10,
+          10,
+          1,
+          3
+        ]
+      },
+      {
+        "id" : 38,
+        "skills" : [
+          9,
+          5,
+          5,
+          4
+        ],
+        "systemID" : 36
+      },
+      {
+        "id" : 39,
+        "skills" : [
+          3,
+          8,
+          7,
+          6
+        ],
+        "systemID" : 107
+      },
+      {
+        "id" : 40,
+        "skills" : [
+          7,
+          3,
+          6,
+          5
+        ],
+        "systemID" : 48
+      },
+      {
+        "id" : 41,
+        "skills" : [
+          5,
+          9,
+          3,
+          7
+        ],
+        "systemID" : 42
+      },
+      {
+        "id" : 42,
+        "skills" : [
+          3,
+          2,
+          4,
+          2
+        ],
+        "systemID" : 71
+      },
+      {
+        "id" : 43,
+        "skills" : [
+          8,
+          6,
+          2,
+          3
+        ],
+        "systemID" : 75
+      },
+      {
+        "id" : 44,
+        "skills" : [
+          3,
+          5,
+          7,
+          10
+        ],
+        "systemID" : 34
+      },
+      {
+        "id" : 45,
+        "skills" : [
+          8,
+          1,
+          4,
+          7
+        ],
+        "systemID" : 106
+      },
+      {
+        "id" : 46,
+        "skills" : [
+          4,
+          4,
+          6,
+          8
+        ],
+        "systemID" : 14
+      },
+      {
+        "id" : 47,
+        "skills" : [
+          8,
+          7,
+          7,
+          4
+        ],
+        "systemID" : 80
+      },
+      {
+        "id" : 48,
+        "skills" : [
+          8,
+          7,
+          4,
+          6
+        ],
+        "systemID" : 11
+      },
+      {
+        "id" : 49,
+        "skills" : [
+          6,
+          5,
+          8,
+          10
+        ],
+        "systemID" : 51
+      },
+      {
+        "id" : 50,
+        "skills" : [
+          10,
+          6,
+          4,
+          6
+        ],
+        "systemID" : 100
+      },
+      {
+        "id" : 51,
+        "skills" : [
+          8,
+          3,
+          7,
+          4
+        ],
+        "systemID" : 119
+      },
+      {
+        "id" : 52,
+        "skills" : [
+          6,
+          1,
+          7,
+          4
+        ],
+        "systemID" : 58
+      },
+      {
+        "id" : 53,
+        "skills" : [
+          4,
+          3,
+          8,
+          9
+        ]
+      },
+      {
+        "id" : 54,
+        "skills" : [
+          10,
+          10,
+          1,
+          8
+        ]
+      }
+    ],
+    "newsEvents" : [
+
+    ],
+    "options" : {
+      "alwaysIgnorePirates" : false,
+      "alwaysIgnorePolice" : false,
+      "alwaysIgnoreTradeInOrbit" : false,
+      "alwaysIgnoreTraders" : true,
+      "autoFuel" : false,
+      "autoRepair" : false,
+      "continuousAttack" : false,
+      "continuousAttackFleeing" : false,
+      "disableOpponents" : false,
+      "leaveEmpty" : 0,
+      "newsAutoPay" : false,
+      "newsAutoShow" : false,
+      "remindLoans" : true,
+      "reserveMoney" : false,
+      "showTrackedRange" : true,
+      "trackAutoOff" : true
+    },
+    "paidForNewspaper" : false,
+    "phase" : {
+      "docked" : {
+
+      }
+    },
+    "quests" : {
+      "artifact" : 0,
+      "canSuperWarp" : false,
+      "dragonfly" : 0,
+      "experiment" : 0,
+      "fabricRipProbability" : 0,
+      "gemulon" : 0,
+      "japori" : 0,
+      "jarek" : 0,
+      "justLootedMarie" : false,
+      "moon" : 0,
+      "princess" : 0,
+      "reactor" : 0,
+      "scarab" : 0,
+      "sculpture" : 0,
+      "spaceMonster" : 0,
+      "wild" : 0
+    },
+    "raided" : true,
+    "reloadCount" : 0,
+    "rng" : {
+      "dotNet" : {
+        "_0" : {
+          "inext" : 14,
+          "inextp" : 35,
+          "seedArray" : [
+            0,
+            524023728,
+            1743989285,
+            1010978817,
+            301586506,
+            385340762,
+            415004094,
+            203546591,
+            975071880,
+            1168292159,
+            49133288,
+            768067963,
+            521828369,
+            2004279391,
+            2127388120,
+            123334776,
+            325042604,
+            1429388355,
+            1714917089,
+            1013794428,
+            1199871140,
+            1533014660,
+            1969014578,
+            1893211306,
+            729033407,
+            786829024,
+            1406126838,
+            1232289701,
+            747157529,
+            362334665,
+            1800100975,
+            2062629688,
+            1826649093,
+            1913014777,
+            1464359238,
+            2043635997,
+            1440320560,
+            1364094147,
+            1477203521,
+            722541443,
+            1723303383,
+            622756450,
+            1291211468,
+            2005195595,
+            1338948396,
+            402610117,
+            186263573,
+            1231316287,
+            1643314418,
+            693131674,
+            648113924,
+            1749970379,
+            1106519630,
+            849453557,
+            861707832,
+            1419812084
+          ]
+        }
+      }
+    },
+    "rulesetID" : "windows201",
+    "seed" : 1002,
+    "sellPrices" : [
+      48,
+      263,
+      143,
+      372,
+      223,
+      1026,
+      606,
+      0,
+      3333,
+      0
+    ],
+    "specialShips" : {
+      "dragonfly" : {
+        "cargo" : [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "crew" : [
+          35
+        ],
+        "escapePod" : false,
+        "fuel" : 1,
+        "gadgets" : [
+          1,
+          3
+        ],
+        "hull" : 10,
+        "hullUpgraded" : false,
+        "shields" : [
+          {
+            "charge" : 350,
+            "type" : 2
+          },
+          {
+            "charge" : 350,
+            "type" : 2
+          },
+          {
+            "charge" : 350,
+            "type" : 2
+          }
+        ],
+        "tribbles" : 0,
+        "type" : 11,
+        "weapons" : [
+          2,
+          0
+        ]
+      },
+      "scarab" : {
+        "cargo" : [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "crew" : [
+          36,
+          null
+        ],
+        "escapePod" : false,
+        "fuel" : 1,
+        "gadgets" : [
+
+        ],
+        "hull" : 400,
+        "hullUpgraded" : false,
+        "shields" : [
+
+        ],
+        "tribbles" : 0,
+        "type" : 13,
+        "weapons" : [
+          2,
+          2
+        ]
+      },
+      "scorpion" : {
+        "cargo" : [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "crew" : [
+          54,
+          null
+        ],
+        "escapePod" : false,
+        "fuel" : 1,
+        "gadgets" : [
+          1,
+          3
+        ],
+        "hull" : 300,
+        "hullUpgraded" : false,
+        "shields" : [
+          {
+            "charge" : 200,
+            "type" : 1
+          },
+          {
+            "charge" : 200,
+            "type" : 1
+          }
+        ],
+        "tribbles" : 0,
+        "type" : 16,
+        "weapons" : [
+          2,
+          2
+        ]
+      },
+      "spaceMonster" : {
+        "cargo" : [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "crew" : [
+          37
+        ],
+        "escapePod" : false,
+        "fuel" : 1,
+        "gadgets" : [
+
+        ],
+        "hull" : 500,
+        "hullUpgraded" : false,
+        "shields" : [
+
+        ],
+        "tribbles" : 0,
+        "type" : 10,
+        "weapons" : [
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    "targetWormhole" : false,
+    "tribbleMessage" : false,
+    "veryRareEncounters" : [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "warpSystem" : 106
+  },
+  "summary" : {
+    "cheatsUsed" : false,
+    "commander" : "Fixture Zoë",
+    "day" : 4,
+    "ended" : false,
+    "ironman" : false,
+    "system" : 106,
+    "worth" : 9569
+  }
+}

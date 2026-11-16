@@ -3,48 +3,55 @@
 import Foundation
 import ParsecEngine
 
-/// The summary shown in the save list without decoding the whole state.
+/// SAV-002: the summary shown in the save list. Always derived from the state; display data only.
 public struct SaveSummary: Codable, Sendable, Equatable {
     public var commander: String
     public var day: Int
     public var worth: Int
     public var system: Int
     public var ironman: Bool
-
-    public init(commander: String, day: Int, worth: Int, system: Int, ironman: Bool) {
-        self.commander = commander
-        self.day = day
-        self.worth = worth
-        self.system = system
-        self.ironman = ironman
-    }
+    public var cheatsUsed: Bool
+    public var ended: Bool
 
     public init(_ s: GameState) {
-        self.init(commander: s.commander.name, day: s.commander.days, worth: s.worth, system: s.commander.currentSystem,
-                  ironman: s.ironman)
+        commander = s.commander.name
+        day = s.commander.days
+        worth = s.worth
+        system = s.commander.currentSystem
+        ironman = s.ironman
+        cheatsUsed = s.cheatsUsed
+        if case .gameOver = s.phase { ended = true } else { ended = false }
     }
 }
 
-/// `{format, schemaVersion, appVersion, rulesetID, summary, state}`.
+/// SAV-001: `{format, schemaVersion, appVersion, rulesetID, gameID, generation, summary, state}`.
 public struct SaveEnvelope: Codable, Sendable, Equatable {
     public static let formatName = "parsec-merchant-save"
     public var format: String
     public var schemaVersion: Int
     public var appVersion: String
     public var rulesetID: RulesetID
+    /// SAV-031: persistence metadata identifying the game across slots; never part of `GameState`.
+    public var gameID: String
+    /// SAV-032: stamped by `SlotStore` when the envelope is written.
+    public var generation: Int
     public var summary: SaveSummary
     public var state: GameState
 
-    public init(state: GameState, appVersion: String) {
+    /// SAV-003. `gameID` and `generation` are normally assigned by `SlotStore` on write.
+    public init(state: GameState, appVersion: String, gameID: String = "", generation: Int = 1) {
         self.format = Self.formatName
         self.schemaVersion = SaveMigrator.currentSchemaVersion
         self.appVersion = appVersion
         self.rulesetID = state.rulesetID
+        self.gameID = gameID
+        self.generation = generation
         self.summary = SaveSummary(state)
         self.state = state
     }
 }
 
+/// SAV-011. The payloads are diagnostic only; the app maps every case to a localized `SystemAlert.openFailed`.
 public enum SaveError: Error, Equatable, Sendable {
     case notASave
     case unsupportedFutureVersion(Int)
@@ -52,7 +59,7 @@ public enum SaveError: Error, Equatable, Sendable {
     case migrationFailed(from: Int)
 }
 
-/// Deterministic UTF-8 JSON with sorted keys: decoding and re-encoding gives identical bytes.
+/// SAV-004…010: deterministic UTF-8 JSON with sorted keys; decoding and re-encoding gives identical bytes.
 public enum SaveCodec {
     public static func encode(_ envelope: SaveEnvelope) throws -> Data {
         let enc = JSONEncoder()
@@ -60,40 +67,70 @@ public enum SaveCodec {
         return try enc.encode(envelope)
     }
 
-    public static func decode(_ data: Data) throws -> SaveEnvelope {
-        let object: Any
-        do {
-            object = try JSONSerialization.jsonObject(with: data)
-        } catch {
-            throw SaveError.corrupt("not JSON")
-        }
-        guard let raw = object as? [String: Any], raw["format"] as? String == SaveEnvelope.formatName else {
+    /// Parses the top level and checks `format` (SAV-008).
+    static func rawObject(_ data: Data) throws -> [String: Any] {
+        guard let object = try? JSONSerialization.jsonObject(with: data),
+              let raw = object as? [String: Any],
+              raw["format"] as? String == SaveEnvelope.formatName else {
             throw SaveError.notASave
         }
-        let migrated = try SaveMigrator.migrate(raw)
+        return raw
+    }
+
+    public static func decode(_ data: Data) throws -> SaveEnvelope {
+        let migrated = try SaveMigrator.migrate(rawObject(data))
+        let envelope: SaveEnvelope
         do {
             let bytes = try JSONSerialization.data(withJSONObject: migrated, options: [.sortedKeys])
-            return try JSONDecoder().decode(SaveEnvelope.self, from: bytes)
+            envelope = try JSONDecoder().decode(SaveEnvelope.self, from: bytes)
         } catch {
-            throw SaveError.corrupt("\(error)")
+            throw SaveError.corrupt("decode: \(error)")
         }
+        try validate(envelope)
+        return envelope
+    }
+
+    /// SAV-010, RNG-035: structural checks the typed decoder can't express.
+    static func validate(_ e: SaveEnvelope) throws {
+        let s = e.state
+        guard e.rulesetID == s.rulesetID else { throw SaveError.corrupt("rulesetID differs from state") }
+        guard !e.gameID.isEmpty, e.generation >= 1 else { throw SaveError.corrupt("gameID/generation") }
+        let ruleset = s.ruleset
+        guard s.rng.kind == ruleset.rngKind else { throw SaveError.corrupt("rng kind") }
+        let count = ruleset.tables.systemNames.count
+        guard s.galaxy.systems.count == count else { throw SaveError.corrupt("system count") }
+        let valid = 0..<count
+        guard valid.contains(s.commander.currentSystem), valid.contains(s.warpSystem) else {
+            throw SaveError.corrupt("system index")
+        }
+        if let tracked = s.trackedSystem, !valid.contains(tracked) { throw SaveError.corrupt("tracked system") }
     }
 }
 
-/// Upgrades raw save JSON one schema version at a time. Every past version keeps a fixture in the tests.
+/// SAV-012…016: upgrades raw save JSON one schema version at a time. Every past version keeps a fixture in the tests.
 public enum SaveMigrator {
+    public typealias Step = @Sendable ([String: Any]) throws -> [String: Any]
+
     /// Version 1 is the first released format.
     public static let currentSchemaVersion = 1
 
-    /// `steps[n]` upgrades a version-n object to version n+1.
-    static let steps: [Int: @Sendable ([String: Any]) throws -> [String: Any]] = [:]
+    /// `steps[n]` upgrades a version-n object to version n+1 (one entry for every n in 1..<currentSchemaVersion).
+    public static let steps: [Int: Step] = [:]
 
     public static func migrate(_ raw: [String: Any]) throws -> [String: Any] {
-        guard let version = raw["schemaVersion"] as? Int, version >= 1 else { throw SaveError.corrupt("schemaVersion") }
-        if version > currentSchemaVersion { throw SaveError.unsupportedFutureVersion(version) }
+        try migrate(raw, steps: steps, target: currentSchemaVersion)
+    }
+
+    /// The step chain with an injected table (SAV-016).
+    public static func migrate(_ raw: [String: Any], steps: [Int: Step], target: Int) throws -> [String: Any] {
+        guard let number = raw["schemaVersion"] as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID(),
+              let version = raw["schemaVersion"] as? Int, version >= 1 else {
+            throw SaveError.corrupt("schemaVersion")
+        }
+        if version > target { throw SaveError.unsupportedFutureVersion(version) }
         var object = raw
         var v = version
-        while v < currentSchemaVersion {
+        while v < target {
             guard let step = steps[v] else { throw SaveError.migrationFailed(from: v) }
             do {
                 object = try step(object)

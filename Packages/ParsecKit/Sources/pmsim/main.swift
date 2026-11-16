@@ -61,6 +61,19 @@ case "fuzz":
     let code = runFuzz(games: args.int("games", 2_000), seed: UInt64(args.int("seed", 1)), rulesets: args.rulesets(),
                        maxCommands: args.int("commands", 3_000))
     exit(code)
+case "write-save-fixtures":
+    // SAV-015: writes one save per ruleset for the current schema version from fixed seeds. Fixtures of a released
+    // version are never rewritten; run this only when adding a new schema version's directory.
+    guard let out = args.options["out"] else {
+        FileHandle.standardError.write(Data("usage: pmsim write-save-fixtures --out <dir>\n".utf8))
+        exit(2)
+    }
+    do {
+        try writeSaveFixtures(to: URL(fileURLWithPath: out, isDirectory: true))
+    } catch {
+        FileHandle.standardError.write(Data("write failed: \(error)\n".utf8))
+        exit(1)
+    }
 case "bench":
     print("pmsim bench: benchmarks start in M8 — no-op PASS")
 default:

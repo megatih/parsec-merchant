@@ -196,6 +196,9 @@ public struct TravelRules: Sendable, Equatable {
     public var newsAutoShowAvailable = true
     public var scoreFormula: ScoreFormula = .csharp
     public var highScoreBlock: HighScoreBlock = .cheats
+    /// SAV-037 `cheatChancesPersist`: the cheat-adjustable very-rare and trade-in-orbit chances survive a load
+    /// (C# saves both; Palm resets them to 5 and 100 on every load).
+    public var cheatChancesPersist = true
     // SCORE-008 (RUL-006): the moon-girl ending flag lives in QuestRules (`flags.quest.moonGirlEnding`).
 
     /// Windows 2.01 (faithful C# port).
@@ -244,6 +247,7 @@ public struct TravelRules: Sendable, Equatable {
         r.newsAutoShowAvailable = false
         r.scoreFormula = .palm
         r.highScoreBlock = .reload
+        r.cheatChancesPersist = false
         return r
     }()
 }
