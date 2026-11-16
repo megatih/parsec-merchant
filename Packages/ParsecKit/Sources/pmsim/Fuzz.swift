@@ -48,7 +48,7 @@ struct Fuzzer {
         }
     }
 
-    mutating func check(_ s: GameState, game: Int, step: Int) {
+    mutating func check(_ s: GameState, game: Int, step: Int, command: Command, cashBefore: Int) {
         let r = s.ruleset
         let ship = s.commander.ship
         func fail(_ msg: String) { violations.append("\(ruleset) game \(game) step \(step): \(msg)") }
@@ -61,8 +61,13 @@ struct Fuzzer {
         if ship.weapons.count > ship.spec(r).weaponSlots || ship.shields.count > ship.spec(r).shieldSlots
             || ship.gadgets.count > ship.spec(r).gadgetSlots { fail("equipment > slots") }
         if s.commander.debt < 0 { fail("negative debt") }
-        // The C# trade-in-orbit cash quirk (ECO-068) can drive cash negative unless the ruleset caps with the orbit price.
-        if s.commander.cash < 0, r.flags.tradeInOrbitCashCapUsesOrbitPrice { fail("negative cash \(s.commander.cash)") }
+        // Cash may only cross below zero through a documented source quirk: the C# trade-in-orbit cap (ECO-068) or
+        // Palm's dump-cap precedence bug (RUL-043). Any other command that takes cash from ≥ 0 to < 0 is a violation.
+        if cashBefore >= 0, s.commander.cash < 0 {
+            let orbitQuirk: Bool = if case .resolveTradeInOrbit = command { !r.flags.tradeInOrbitCashCapUsesOrbitPrice } else { false }
+            let dumpQuirk: Bool = if case .dumpCargo = command { r.flags.economy.dumpQuantityCap == .precedenceBug } else { false }
+            if !orbitQuirk, !dumpQuirk { fail("cash went negative (\(cashBefore) → \(s.commander.cash)) on \(command)") }
+        }
         if case let .encounter(enc) = s.phase {
             // ENC-192: the action set is never empty; a disabled opponent is in a disabled type or a quest ship.
             if enc.type.actions.isEmpty { fail("empty action set for \(enc.type)") }
@@ -85,8 +90,9 @@ struct Fuzzer {
             if case .gameOver = engine.state.phase { break }
             let cmd = Self.pickCommand(engine.state, &r)
             log.append(cmd)
+            let cashBefore = engine.state.commander.cash
             engine.perform(cmd, acknowledging: Self.ackAll)
-            check(engine.state, game: game, step: step)
+            check(engine.state, game: game, step: step, command: cmd, cashBefore: cashBefore)
         }
         return (log, Self.canonical(engine.state))
     }
