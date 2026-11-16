@@ -16,9 +16,10 @@ public struct PalmLCG: Codable, Sendable, Equatable, RandomSource {
         return Int((seed >> 16) & 0x7FFF)
     }
 
+    /// RNG-004/027: `max == 0` returns 0 but still consumes one step, keeping call counts aligned with .NET.
     public mutating func next(below max: Int) -> Int {
-        guard max > 0 else { return 0 }
-        return sysRandom() % max
+        let v = sysRandom()
+        return max > 0 ? v % max : 0
     }
 
     public mutating func next(in min: Int, _ max: Int) -> Int {
@@ -58,8 +59,9 @@ public struct Xoshiro256StarStar: Codable, Sendable, Equatable, RandomSource {
     }
 
     /// Unbiased bounded integer (Lemire's multiply-shift with rejection).
+    /// Lemire multiply-shift with rejection (RNG-031). `max == 0` consumes one draw and returns 0 (RNG-004).
     public mutating func next(below max: Int) -> Int {
-        guard max > 0 else { return 0 }
+        guard max > 0 else { _ = nextUInt64(); return 0 }
         let bound = UInt64(max)
         var m = nextUInt64().multipliedFullWidth(by: bound)
         if m.low < bound {
