@@ -130,24 +130,37 @@ public extension GameState {
             quests.fabricRipProbability -= n
         }
         for (onBoard, id) in [(jarekOnBoard, CrewID.jarek), (princessOnBoard, CrewID.princess), (wildOnBoard, CrewID.wild)] where onBoard {
-            impatience(id)
+            events += impatience(id)
         }
         return events
     }
 
-    /// Passenger impatience steps of IncDays (Jarek, Princess, Wild): skills drop to 0 one step before impatient.
-    private mutating func impatience(_ id: Int) {
+    /// Passenger impatience steps of IncDays (Jarek, Princess, Wild), once per call: a concern notice halfway, then
+    /// the impatience notice and zeroed skills one step before impatient (C# Game.IncDays).
+    private mutating func impatience(_ id: Int) -> [GameEvent] {
+        let status: Int, impatient: Int, concerned: Int
         switch id {
-        case CrewID.jarek:
-            if quests.jarek == QuestStatus.Jarek.impatient - 1 { mercenaries[id].skills = [0, 0, 0, 0] }
-            if quests.jarek < QuestStatus.Jarek.impatient { quests.jarek += 1 }
+        case CrewID.jarek: (status, impatient, concerned) = (quests.jarek, QuestStatus.Jarek.impatient, QuestStatus.Jarek.impatient / 2)
         case CrewID.princess:
-            if quests.princess == QuestStatus.Princess.impatient - 1 { mercenaries[id].skills = [0, 0, 0, 0] }
-            if quests.princess < QuestStatus.Princess.impatient { quests.princess += 1 }
-        default:
-            if quests.wild == QuestStatus.Wild.impatient - 1 { mercenaries[id].skills = [0, 0, 0, 0] }
-            if quests.wild < QuestStatus.Wild.impatient { quests.wild += 1 }
+            (status, impatient) = (quests.princess, QuestStatus.Princess.impatient)
+            concerned = (QuestStatus.Princess.impatient + QuestStatus.Princess.rescued) / 2
+        default: (status, impatient, concerned) = (quests.wild, QuestStatus.Wild.impatient, QuestStatus.Wild.impatient / 2)
         }
+        var events: [GameEvent] = []
+        if status == concerned {
+            events.append(.passengerConcerned(crewID: id))
+        } else if status == impatient - 1 {
+            events.append(.passengerImpatient(crewID: id))
+            mercenaries[id].skills = [0, 0, 0, 0]
+        }
+        if status < impatient {
+            switch id {
+            case CrewID.jarek: quests.jarek += 1
+            case CrewID.princess: quests.princess += 1
+            default: quests.wild += 1
+            }
+        }
+        return events
     }
 
     /// C# `Ship.PerformRepairs` for the commander's ship (each click).

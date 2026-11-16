@@ -135,6 +135,10 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case easterEgg
     case escapePodUsed(insurancePayout: Int)
     case wildLeftShip
+    /// QST-JAREK/WILD/PRINCESS: a special passenger is concerned about the delay (C# SpecialPassengerConcerned*).
+    case passengerConcerned(crewID: Int)
+    /// QST-JAREK/WILD/PRINCESS: a special passenger became impatient; their skills dropped to 0.
+    case passengerImpatient(crewID: Int)
     /// TRV-021: the singularity was consumed on consent, then a departure check failed.
     case singularityLost
     case departureBlocked(CommandError)
