@@ -727,7 +727,7 @@ struct PoliceRulesetTests {
         #expect(w.state.commander.ship.cargo[9] == 0)
     }
 
-    @Test("POL-081 MOD-012 Modern: hidden bays beyond the cargo protect everything, so the pirates blackmail instead of aborting")
+    @Test("POL-081 RUL-112 Modern: hidden bays beyond the cargo protect everything, so the pirates blackmail instead of aborting")
     func modernClamp() {
         var e = Pol.engine(.pirateAttack, .modern) { s in
             s.commander.ship.gadgets = [.hiddenCargoBays]
@@ -738,7 +738,7 @@ struct PoliceRulesetTests {
         #expect(e.state.commander.ship.cargo[0] == 2 && e.state.phase != Pol.engine(.pirateAttack).state.phase)
     }
 
-    @Test("RUL-103 POL-011 MOD-003 record decay: in IncDays (Windows) vs once per warp, never in IncDays (Modern, Palm)")
+    @Test("RUL-103 POL-011 RUL-103 record decay: in IncDays (Windows) vs once per warp, never in IncDays (Modern, Palm)")
     func decay() {
         for r in [RulesetID.windows201, .modern, .palm122] {
             var s = RS.state(r) { $0.commander.policeRecordScore = 30 }

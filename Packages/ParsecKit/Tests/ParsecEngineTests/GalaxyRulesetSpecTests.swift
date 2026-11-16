@@ -276,7 +276,7 @@ struct GalaxyRulesetSpecTests {
         #expect(easy.systems.map { $0.tradeItems[0] } == hard.systems.map { $0.tradeItems[0] })
     }
 
-    @Test("GAL-021 Modern starting quantities use the true resource with the same draw count as without MOD-006")
+    @Test("GAL-021 Modern starting quantities use the true resource with the same draw count as without RUL-106")
     func modernResourceQuantities() {
         let hidden = GalKit.ruleset(.modern) { $0.flags.resourcesAffectUnvisitedSystems = false }
         var differs = false

@@ -338,7 +338,7 @@ struct CrewRulesetSpecTests {
         }
     }
 
-    @Test("RUL-116 CRW-051 MOD-016 Modern relocates mercenaries lost to arrest or the pod; Windows and Palm leave them")
+    @Test("RUL-116 CRW-051 RUL-116 Modern relocates mercenaries lost to arrest or the pod; Windows and Palm leave them")
     func lostMercenaries() {
         for id in allRulesets {
             var s = makeEngine(id) { s in

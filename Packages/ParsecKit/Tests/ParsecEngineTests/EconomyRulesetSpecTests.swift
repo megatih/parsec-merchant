@@ -380,7 +380,7 @@ struct EconomyRulesetOrbitTests {
 
 @Suite("Economy rulesets: MOD fixes and worth (RUL-101, 105, 113, 115, 117…119, BNK/SHP worth)")
 struct EconomyRulesetModTests {
-    @Test("RUL-101 MOD-001 buying a ship or getting the Flea resets the cargo cost basis in Modern and Palm; Windows keeps it")
+    @Test("RUL-101 RUL-101 buying a ship or getting the Flea resets the cargo cost basis in Modern and Palm; Windows keeps it")
     func costBasisReset() {
         for id in [RulesetID.windows201, .modern, .palm122] {
             var e = makeEngine(id) { s in
@@ -398,7 +398,7 @@ struct EconomyRulesetModTests {
         }
     }
 
-    @Test("RUL-105 CRW-053 MOD-005 random increases reach 10 in Modern and Palm, stop at 9 in Windows")
+    @Test("RUL-105 CRW-053 RUL-105 random increases reach 10 in Modern and Palm, stop at 9 in Windows")
     func skillCap() {
         for id in [RulesetID.windows201, .modern, .palm122] {
             var s = makeEngine(id) { $0.mercenaries[CrewID.commander].skills = [9, 9, 9, 9] }.state
@@ -408,7 +408,7 @@ struct EconomyRulesetModTests {
         }
     }
 
-    @Test("RUL-113 MOD-013 Modern places the 5 shipyards on 5 distinct systems; Windows may stack them")
+    @Test("RUL-113 RUL-113 Modern places the 5 shipyards on 5 distinct systems; Windows may stack them")
     func distinctShipyards() {
         for seed in UInt64(1)...25 {
             let s = makeEngine(.modern, seed: seed).state
@@ -456,7 +456,7 @@ struct EconomyRulesetModTests {
         }
     }
 
-    @Test("RUL-117 SHP-002 SHP-056 BNK-053 MOD-017 Modern uses Palm's fuel/repair columns; the wormhole tax follows the fuel cost")
+    @Test("RUL-117 SHP-002 SHP-056 BNK-053 RUL-117 Modern uses Palm's fuel/repair columns; the wormhole tax follows the fuel cost")
     func fuelRepairColumns() {
         let fuel = [1, 2, 3, 5, 7, 10, 15, 15, 20, 20, 1, 1, 1, 1, 1]
         let repair = [1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 1, 1, 1, 1, 1]
@@ -489,7 +489,7 @@ struct EconomyRulesetModTests {
         #expect(e.state.commander.ship.fuel == 11 && e.state.commander.cash == cash - 2)
     }
 
-    @Test("RUL-118 BNK-036 BNK-037 MOD-018 debt warning and reminder: Windows exclusive; Modern both; Palm both on the normal path only")
+    @Test("RUL-118 BNK-036 BNK-037 RUL-118 debt warning and reminder: Windows exclusive; Modern both; Palm both on the normal path only")
     func debtNotices() {
         func notices(_ id: RulesetID, normal: Bool) -> [GameEvent] {
             var s = makeEngine(id) { s in
@@ -511,7 +511,7 @@ struct EconomyRulesetModTests {
         #expect(notices(.palm122, normal: true) == both && notices(.palm122, normal: false).isEmpty)
     }
 
-    @Test("RUL-119 BNK-005 BNK-006 BNK-009 SHP-032 MOD-019 worth: trade-in value + cost basis in Modern and Palm; list price in Windows")
+    @Test("RUL-119 BNK-005 BNK-006 BNK-009 SHP-032 RUL-119 worth: trade-in value + cost basis in Modern and Palm; list price in Windows")
     func worth() {
         for id in [RulesetID.windows201, .modern, .palm122] {
             var s = makeEngine(id).state

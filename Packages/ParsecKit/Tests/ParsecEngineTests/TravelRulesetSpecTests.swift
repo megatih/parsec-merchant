@@ -205,7 +205,7 @@ struct TravelRulesetDepartureTests {
         #expect(w.newsEvents.isEmpty)
     }
 
-    @Test("TRV-025 Modern singularity: Windows behaviour plus the MOD-003 decay on the unchanged day; no heal, no recharge")
+    @Test("TRV-025 Modern singularity: Windows behaviour plus the RUL-103 decay on the unchanged day; no heal, no recharge")
     func modernSingularity() {
         var s = makeEngine(.modern).state
         s.commander.ship = shieldedShip(s)
@@ -296,7 +296,7 @@ struct TravelRulesetPipelineTests {
         #expect(win.specialShips.spaceMonster.hull == 231)
     }
 
-    @Test("TRV-033 MOD-003 per-warp decay in Modern and Palm runs after the day advance; Modern IncDays no longer decays")
+    @Test("TRV-033 RUL-103 per-warp decay in Modern and Palm runs after the day advance; Modern IncDays no longer decays")
     func perWarpDecayTiming() {
         for id in [RulesetID.modern, .palm122] {
             var s = makeEngine(id).state
@@ -550,7 +550,7 @@ struct TravelRulesetArrivalTests {
         #expect(s.galaxy.systems[x].visited && s.newsEvents == [.scarab])
     }
 
-    @Test("RUL-118 MOD-018 debt warning and reminder both fire in Modern and Palm; Windows reports only the warning")
+    @Test("RUL-118 RUL-118 debt warning and reminder both fire in Modern and Palm; Windows reports only the warning")
     func debtNotices() {
         for (id, both) in [(RulesetID.modern, true), (.palm122, true), (.windows201, false)] {
             var s = makeEngine(id).state

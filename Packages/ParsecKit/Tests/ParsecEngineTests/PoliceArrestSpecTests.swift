@@ -82,7 +82,7 @@ struct PoliceSurrenderSpecTests {
         #expect(Pol.encounter(e).type == .pirateAttack)
         // Modern clamps instead (RUL-112, the PRD hidden-bay fix) and charges blackmail.
         e = Pol.engine(.pirateAttack, .modern) { $0.commander.ship.gadgets = [.hiddenCargoBays] }
-        // Modern worth is the trade-in value (MOD-019), so the blackmail follows `worth`.
+        // Modern worth is the trade-in value (RUL-119), so the blackmail follows `worth`.
         let blackmail = min(25_000, max(500, e.state.worth / 20))
         let r2 = e.perform(.encounter(.surrender))
         #expect(r2.events.contains(.blackmailed(blackmail)) && e.state.phase == .docked)
@@ -235,7 +235,7 @@ struct PoliceArrestSpecTests {
             var sale = s
             sale.commander.ship.gadgets = []
             sale.commander.priceCargo[narcotics] = 0
-            // Windows worth is list price + cash (fine 1500); Modern uses the trade-in value (MOD-019).
+            // Windows worth is list price + cash (fine 1500); Modern uses the trade-in value (RUL-119).
             let fine = ruleset == .windows201 ? 1_500 : s.arrestFine
             let expectedCash = max(0, 100 + sale.shipWorth(forInsurance: true) - fine)
             let events = s.arrested()
