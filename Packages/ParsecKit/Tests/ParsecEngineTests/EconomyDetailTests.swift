@@ -62,14 +62,19 @@ struct EconomyDetailTests {
     func buyRecalc() throws {
         for seed in 1...60 {
             var e = makeEngine(seed: UInt64(seed))
-            guard let merc = e.state.mercenariesForHire.first(where: { e.state.mercenaries[$0].skills[2] > 5 && e.state.dailyRate(of: $0) > 0 }) else { continue }
+            let candidates = e.state.mercenariesForHire
+            guard let merc = candidates.first(where: { e.state.mercenaries[$0].skills[2] > 5 && e.state.dailyRate(of: $0) > 0 }) else { continue }
             e.state.commander.ship.crew = [CrewID.commander, nil]
             let sell = e.state.sellPrices
             _ = e.perform(.hire(crewID: merc))
             #expect(e.state.sellPrices == sell)
             let sys = e.state.currentSystem
             for (i, item) in e.ruleset.tables.tradeItems.enumerated() {
-                if Pricing.itemTraded(item, in: sys, ruleset: e.ruleset) { #expect(e.state.buyPrices[i] >= e.state.sellPrices[i] + 1) } else { #expect(e.state.buyPrices[i] == 0) }
+                if Pricing.itemTraded(item, in: sys, ruleset: e.ruleset) {
+                    #expect(e.state.buyPrices[i] >= e.state.sellPrices[i] + 1)
+                } else {
+                    #expect(e.state.buyPrices[i] == 0)
+                }
             }
             return
         }

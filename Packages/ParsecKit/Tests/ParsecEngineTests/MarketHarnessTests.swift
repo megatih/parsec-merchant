@@ -17,7 +17,7 @@ struct HarnessMarket: Decodable {
     let steps: [Step]
 }
 
-/// Replays harness/Driver.cs `MarketSteps` against the Swift engine (Windows 2.01).
+// Replays harness/Driver.cs `MarketSteps` against the Swift engine (Windows 2.01).
 // Bit-exact agreement verifies ECO-011 ECO-012 ECO-014 ECO-015 ECO-018 ECO-025 ECO-026 ECO-028 ECO-029 ECO-030
 // ECO-031 ECO-034 ECO-035 ECO-036 ECO-037 ECO-005 ECO-009 ECO-019.
 @Suite("Market evolution vs C# harness (Windows 2.01)")
