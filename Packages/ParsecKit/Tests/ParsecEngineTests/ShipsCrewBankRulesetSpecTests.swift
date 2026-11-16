@@ -532,8 +532,8 @@ struct BankRulesetSpecTests {
             expected.phase = .docked
             expected.encounterTransit = nil
             if id == .palm122 {
-                expected.arrivalMarket()
-                _ = expected.escapeWithPod()
+                // The Palm pod sequence itself starts with Arrival() (POL-107), then System Information.
+                _ = expected.palmEscapeWithPod()
                 expected.palmSystemInformation()
             } else {
                 _ = expected.escapeWithPod()

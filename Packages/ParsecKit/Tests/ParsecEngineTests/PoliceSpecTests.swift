@@ -22,15 +22,13 @@ enum Pol {
     }
 
     /// Sets C# `Commander.Worth` (ship list price + cash − debt) to `w` exactly.
+    /// Sets cash/debt so `worth == w` under the ruleset's worth rule (RUL-119: list price or trade-in value).
     static func setWorth(_ s: inout GameState, _ w: Int) {
-        let price = s.commander.ship.spec(s.ruleset).price
-        if w >= price {
-            s.commander.cash = w - price
-            s.commander.debt = 0
-        } else {
-            s.commander.cash = 0
-            s.commander.debt = price - w
-        }
+        s.commander.cash = 0
+        s.commander.debt = 0
+        let base = s.worth
+        s.commander.cash = max(0, w - base)
+        s.commander.debt = max(0, base - w)
     }
 
     /// The current encounter; records an issue (and returns a placeholder) when the engine is not in one.

@@ -223,7 +223,7 @@ public extension GameState {
         if clicks == 1, warp == SystemID.qonos, quests.princess == QuestStatus.Princess.flyQonos {
             return start(specialShips.scorpion, attack: .scorpionAttack, ignore: .scorpionIgnore)
         }
-        if clicks == 1, quests.justLootedMarie {
+        if clicks == 1, quests.justLootedMarie, !ruleset.flags.encounter.postMarieCustomsAfterLoop {
             let opp = generateOpponent(.police)
             lastOpponent = opp
             quests.justLootedMarie = false
@@ -243,74 +243,104 @@ public extension GameState {
             let policeMod = max(1, 3 - policeRecord.rawValue)
             if commander.ship.type == .flea { roll *= 2 }
             let pir = gov.activityPirates.rawValue, pol = gov.activityPolice.rawValue, tra = gov.activityTraders.rawValue
+            let rules = ruleset.flags.encounter
             if roll < pir {
-                pirate = !raided
+                // RUL-071: Palm turns a raided pirate roll into a police encounter.
+                if !raided { pirate = true } else if rules.raidedPirateRollBecomesPolice { police = true }
             } else if roll < pir + pol * policeMod {
                 police = true
             } else if roll < pir + pol * policeMod + tra {
                 trader = true
             } else if wildOnBoard, warpSystem == SystemID.kravat {
                 police = rng.next(below: 100) < 100 / max(2, min(4, 5 - difficulty.rawValue))
-            } else if artifactOnBoard, rng.next(below: 20) <= 3 {
+            } else if !rules.artifactMantisWhenNoBand, artifactOnBoard, rng.next(below: 20) <= 3 {
+                mantis = true
+            }
+            // RUL-072: Palm runs the Mantis roll whenever no band flag is set (also after a failed Kravat roll).
+            if rules.artifactMantisWhenNoBand, !(pirate || police || trader), artifactOnBoard, rng.next(below: 20) <= 3 {
                 mantis = true
             }
         }
         if police { return determinePolice(clicks: clicks) }
         if pirate || mantis { return determinePirate(mantis: mantis, clicks: clicks) }
         if trader { return determineTrader(clicks: clicks) }
-        if commander.days > 10, rng.next(below: 1000) < chanceOfVeryRareEncounter, !veryRareEncounters.isEmpty {
+        let allSix = ruleset.flags.encounter.veryRareSelection == .allSix
+        if commander.days > 10, rng.next(below: 1000) < chanceOfVeryRareEncounter, allSix || !veryRareEncounters.isEmpty {
             return determineVeryRare(clicks: clicks)
         }
         return nil
     }
 
     mutating func determinePirate(mantis: Bool, clicks: Int) -> EncounterState? {
-        let opp: Ship
-        var type: EncounterType
-        if mantis {
-            opp = generateOpponent(.mantis)
-            lastOpponent = opp
-            type = .pirateAttack
-        } else {
-            opp = generateOpponent(.pirate)
-            lastOpponent = opp
-            if commanderCloaked {
-                type = .pirateIgnore
-            } else if opp.type.rawValue > commander.ship.type.rawValue || opp.type.rawValue >= ShipType.grasshopper.rawValue
-                        || rng.next(below: 1_500) > (commander.reputationScore * 4) / (1 + opp.type.rawValue) {
-                type = .pirateAttack
-            } else {
-                type = .pirateFlee
-            }
-        }
+        let opp = generateOpponent(mantis ? .mantis : .pirate)
+        lastOpponent = opp
+        let type = mantis ? EncounterType.pirateAttack : pirateReaction(opp)
         let shown = type == .pirateAttack || !(opponentCloaked(opp) || options.alwaysIgnorePirates)
         return shown ? EncounterState(type: type, opponent: opp, clicks: clicks) : nil
+    }
+
+    /// ENC-100…103: how a (non-Mantis) pirate reacts to the commander.
+    mutating func pirateReaction(_ opp: Ship) -> EncounterType {
+        if commanderCloaked { return .pirateIgnore }
+        if ruleset.flags.encounter.outclassCheckAfterReaction {
+            // ENC-103: Palm draws unless the opponent is type ≥ 7, then a flee against a weaker player becomes attack.
+            let attack = opp.type.rawValue >= ShipType.grasshopper.rawValue
+                || rng.next(below: 1_500) > (commander.reputationScore * 4) / (1 + opp.type.rawValue)
+            return attack || opp.type.rawValue > commander.ship.type.rawValue ? .pirateAttack : .pirateFlee
+        }
+        if opp.type.rawValue > commander.ship.type.rawValue || opp.type.rawValue >= ShipType.grasshopper.rawValue
+            || rng.next(below: 1_500) > (commander.reputationScore * 4) / (1 + opp.type.rawValue) {
+            return .pirateAttack
+        }
+        return .pirateFlee
     }
 
     mutating func determinePolice(clicks: Int) -> EncounterState? {
         let opp = generateOpponent(.police)
         lastOpponent = opp
+        let type = policeReaction(opp)
+        let shown = type == .policeAttack || type == .policeInspect || !(opponentCloaked(opp) || options.alwaysIgnorePolice)
+        return shown ? EncounterState(type: type, opponent: opp, clicks: clicks) : nil
+    }
+
+    /// ENC-104…106: how police react to the commander (sets `inspected` for an inspection).
+    mutating func policeReaction(_ opp: Ship) -> EncounterType {
         var type: EncounterType = .policeIgnore
+        let rules = ruleset.flags.encounter
+        let rec = commander.policeRecordScore
         if !commanderCloaked {
-            if commander.policeRecordScore < -5 {
-                if (opp.weaponStrength(ruleset) > 0
-                    && (commander.reputationScore < 40 || rng.next(below: 1_500) > commander.reputationScore / (1 + opp.type.rawValue)))
-                    || opp.type.rawValue > commander.ship.type.rawValue {
-                    type = commander.policeRecordScore >= -30 ? .policeSurrender : .policeAttack
+            if rec < -5 {
+                // RUL-087: Palm police attack criminals even without weapons; RUL-086: no surrender demand in Palm.
+                let armed = rules.unarmedPoliceAttack || opp.weaponStrength(ruleset) > 0
+                let outclassed = opp.type.rawValue > commander.ship.type.rawValue
+                let attackType: EncounterType = rules.policeSurrenderState && rec >= rules.policeConstants.criminal ? .policeSurrender : .policeAttack
+                let draws = armed && (commander.reputationScore < 40
+                    || rng.next(below: 1_500) > commander.reputationScore / (1 + opp.type.rawValue))
+                if draws || (outclassed && !rules.outclassCheckAfterReaction) {
+                    type = attackType
                 } else if opponentCloaked(opp) {
                     type = .policeIgnore
                 } else {
-                    type = .policeFlee
+                    type = outclassed ? attackType : .policeFlee // ENC-106: Palm's flee → attack when outclassed
                 }
-            } else if !inspected, commander.policeRecordScore < 0
-                        || (commander.policeRecordScore < 5 && rng.next(below: 12 - difficulty.rawValue) < 1)
-                        || (commander.policeRecordScore >= 5 && rng.next(below: 40) == 0) {
+            } else if rules.inspectionDrawWhenInspected {
+                // ENC-106: Palm draws the clean / lawful inspection roll even when already inspected.
+                if rec < 0, !inspected {
+                    type = .policeInspect
+                } else if rec < 5 {
+                    if rng.next(below: 12 - difficulty.rawValue) < 1, !inspected { type = .policeInspect }
+                } else if rng.next(below: 40) == rules.lawfulInspectionRoll, !inspected {
+                    type = .policeInspect
+                }
+                if type == .policeInspect { inspected = true }
+            } else if !inspected, rec < 0
+                        || (rec < 5 && rng.next(below: 12 - difficulty.rawValue) < 1)
+                        || (rec >= 5 && rng.next(below: 40) == rules.lawfulInspectionRoll) {
                 type = .policeInspect
                 inspected = true
             }
         }
-        let shown = type == .policeAttack || type == .policeInspect || !(opponentCloaked(opp) || options.alwaysIgnorePolice)
-        return shown ? EncounterState(type: type, opponent: opp, clicks: clicks) : nil
+        return type
     }
 
     mutating func determineTrader(clicks: Int) -> EncounterState? {
@@ -318,7 +348,7 @@ public extension GameState {
         lastOpponent = opp
         var type: EncounterType = .traderIgnore
         if !commanderCloaked {
-            if commander.policeRecordScore <= -30,
+            if commander.policeRecordScore <= ruleset.flags.encounter.policeConstants.criminal, // RUL-089
                rng.next(below: 1_500) <= (commander.reputationScore * 10) / (1 + opp.type.rawValue) {
                 type = .traderFlee
             } else if let orbit = tradeInOrbitRoll(trader: opp) {
@@ -335,34 +365,53 @@ public extension GameState {
     }
 
     mutating func determineVeryRare(clicks: Int) -> EncounterState? {
-        let pick = veryRareEncounters[rng.next(below: veryRareEncounters.count)]
+        let rules = ruleset.flags.encounter
+        let allSix = rules.veryRareSelection == .allSix
+        let pick: VeryRareEncounter
+        if allSix {
+            // RUL-073 / ENC-046: Palm draws rand(6) over all six; an already-used entry yields nothing.
+            pick = VeryRareEncounter.allCases[rng.next(below: VeryRareEncounter.allCases.count)]
+            guard veryRareEncounters.contains(pick) else { return nil }
+        } else {
+            pick = veryRareEncounters[rng.next(below: veryRareEncounters.count)]
+        }
         let cmdrRaw = mercenaries[CrewID.commander].skills
+        let captainRecordOK = commander.policeRecordScore > rules.policeConstants.criminal // RUL-074
         func remove(_ v: VeryRareEncounter) { veryRareEncounters.removeAll { $0 == v } }
         switch pick {
         case .marieCeleste:
-            let here = ruleset.flags.marieCelesteChecksDestination ? warpSystem : commander.currentSystem
-            guard clicks > 1, here != SystemID.acamar, here != SystemID.zalkon, here != SystemID.qonos else { return nil }
+            if rules.marieCelesteRestricted {
+                let here = ruleset.flags.marieCelesteChecksDestination ? warpSystem : commander.currentSystem
+                guard clicks > 1, here != SystemID.acamar, here != SystemID.zalkon, here != SystemID.qonos else { return nil }
+            }
             remove(.marieCeleste)
             var opp = generateOpponent(.trader)
             opp.cargo = Array(repeating: 0, count: 10)
-            opp.cargo[TradeItemType.narcotics.rawValue] = min(opp.cargoBays(ruleset), 5)
+            // ENC-046: Palm caps the narcotics with the ship type's base bays.
+            let bays = allSix ? opp.spec(ruleset).cargoBays : opp.cargoBays(ruleset)
+            opp.cargo[TradeItemType.narcotics.rawValue] = min(bays, 5)
             lastOpponent = opp
             return EncounterState(type: .marieCeleste, opponent: opp, clicks: clicks)
         case .captainAhab:
-            guard commander.ship.has(.reflective), cmdrRaw[0] < 10, commander.policeRecordScore > -30 else { return nil }
+            guard commander.ship.has(.reflective), cmdrRaw[0] < 10, captainRecordOK else { return nil }
             remove(.captainAhab)
             return famous(.captainAhab, clicks)
         case .captainConrad:
-            guard commander.ship.has(.militaryLaser), cmdrRaw[3] < 10, commander.policeRecordScore > -30 else { return nil }
+            guard commander.ship.has(.militaryLaser), cmdrRaw[3] < 10, captainRecordOK else { return nil }
             remove(.captainConrad)
             return famous(.captainConrad, clicks)
         case .captainHuie:
-            guard commander.ship.has(.militaryLaser), cmdrRaw[2] < 10, commander.policeRecordScore > -30 else { return nil }
+            guard commander.ship.has(.militaryLaser), cmdrRaw[2] < 10, captainRecordOK else { return nil }
             remove(.captainHuie)
             return famous(.captainHuie, clicks)
         case .bottleOld, .bottleGood:
             remove(pick)
-            let opp = generateOpponent(.bottle)
+            var opp = generateOpponent(.bottle)
+            if allSix {
+                // ENC-046: Palm generates a full trader (consuming its draws), then makes it a bottle with hull 10.
+                _ = generateOpponent(.trader)
+                opp.hull = 10
+            }
             lastOpponent = opp
             return EncounterState(type: pick == .bottleOld ? .bottleOld : .bottleGood, opponent: opp, clicks: clicks)
         }
@@ -637,66 +686,6 @@ public extension GameState {
         return [.easterEgg]
     }
 
-    /// C# `EscapeWithPod`.
-    mutating func escapeWithPod() -> [GameEvent] {
-        var events: [GameEvent] = []
-        if reactorOnBoard { quests.reactor = QuestStatus.Reactor.done }
-        if quests.japori == QuestStatus.Japori.inTransit { quests.japori = QuestStatus.Japori.notStarted }
-        if artifactOnBoard { quests.artifact = QuestStatus.Artifact.done }
-        if jarekOnBoard { quests.jarek = QuestStatus.Jarek.notStarted }
-        if princessOnBoard { quests.princess = QuestStatus.Princess.notStarted }
-        if wildOnBoard {
-            commander.policeRecordScore -= 4
-            addNewsEvent(.wildArrested)
-            quests.wild = QuestStatus.Wild.notStarted
-        }
-        var payout = 0
-        if commander.insurance {
-            payout = baseWorth(of: commander.ship, forInsurance: true)
-            commander.cash += payout
-        }
-        if commander.cash > 500 {
-            commander.cash -= 500
-        } else {
-            commander.debt += 500 - commander.cash
-            commander.cash = 0
-        }
-        events.append(.escapePodUsed(insurancePayout: payout))
-        events += incDays(3)
-        createFlea()
-        return events
-    }
-
-    /// MOD-016 (RUL-116, CRW-051): mercenaries lost to jail or the escape pod relocate like fired ones, in ascending
-    /// slot order, measured from the system where the commander arrives.
-    mutating func relocateLostMercenaries(_ ids: [Int]) {
-        guard ruleset.flags.economy.lostMercenariesRelocate else { return }
-        let special: Set<Int> = [CrewID.commander, CrewID.jarek, CrewID.princess, CrewID.wild]
-        for id in ids where !special.contains(id) { relocateMercenary(id, near: warpSystem) }
-    }
-
-    /// CRW-039: `GetRandom(systems)` until the floor distance to `systemID` is < 20.
-    mutating func relocateMercenary(_ id: Int, near systemID: Int) {
-        let here = galaxy.systems[systemID]
-        var candidate: Int
-        repeat {
-            candidate = rng.next(below: galaxy.systems.count)
-        } while GalaxyGenerator.distance(galaxy.systems[candidate], here, rule: ruleset.flags.distance) >= 20
-        mercenaries[id].systemID = candidate
-    }
-
-    /// C# `CreateFlea`.
-    mutating func createFlea() {
-        let lost = commander.ship.crew.dropFirst().compactMap { $0 }
-        defer { relocateLostMercenaries(lost) }
-        var flea = Ship(type: .flea, spec: ruleset.tables.ship(.flea))
-        flea.crew[0] = CrewID.commander
-        commander.ship = flea
-        commander.insurance = false
-        commander.noClaim = 0
-        if ruleset.flags.resetPriceCargoOnHoldClear { commander.priceCargo = Array(repeating: 0, count: 10) }
-    }
-
     /// C# `Arrival` (the reactor meltdown path may end the game); Palm order per `arrivalPipelineOrder`.
     mutating func arrival() -> [GameEvent] {
         if ruleset.flags.travel.arrivalPipelineOrder == .palm { return palmArrival() }
@@ -845,6 +834,17 @@ extension GameEngine {
                 return events
             }
             t.clicksRemaining -= 1
+        }
+        if state.ruleset.flags.encounter.postMarieCustomsAfterLoop, state.quests.justLootedMarie {
+            // RUL-070 / ENC-004: Palm's customs appear after the loop; `Clicks++` makes the resumed trip arrive at once.
+            let opp = state.generateOpponent(.police)
+            state.lastOpponent = opp
+            state.quests.justLootedMarie = false
+            t.clicksRemaining = 1
+            t.hadEncounter = true
+            state.encounterTransit = t
+            events.append(startEncounter(EncounterState(type: .marieCelestePolice, opponent: opp, clicks: 1)))
+            return events
         }
         if !t.hadEncounter { events.append(.uneventfulTrip) }
         state.phase = .docked

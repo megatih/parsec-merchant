@@ -21,8 +21,9 @@ public extension GameState {
         switch opp {
         case .famousCaptain:
             var ship = Ship(type: .wasp, spec: r.tables.ship(.wasp))
+            // RUL-082: Palm fits 3 reflective shields regardless of the Wasp's slot count.
             ship.shields = Array(repeating: ShieldInstance(type: .reflective, charge: r.tables.shield(.reflective).power),
-                                 count: r.tables.ship(.wasp).shieldSlots)
+                                 count: r.flags.encounter.famousCaptainShieldCount ?? r.tables.ship(.wasp).shieldSlots)
             ship.weapons = Array(repeating: .militaryLaser, count: r.tables.ship(.wasp).weaponSlots)
             ship.gadgets = [.navigatingSystem, .targetingSystem]
             ship.crew[0] = CrewID.famousCaptain
@@ -35,35 +36,79 @@ public extension GameState {
         let tries = opp == .mantis ? difficulty.rawValue + 1
             : max(1, worth / 150_000 + difficulty.rawValue - Difficulty.normal.rawValue)
         var ship = generateOpponentShip(opp)
-        generateOpponentCrew(&ship)
-        addOpponentGadgets(&ship, tries: tries)
-        addOpponentShields(&ship, tries: tries)
-        addOpponentWeapons(&ship, tries: tries)
-        if opp != .mantis { setOpponentHull(&ship) }
-        if opp != .police { addOpponentCargo(&ship, pirate: opp == .pirate) }
+        switch r.flags.encounter.opponentGenerationOrder {
+        case .typeCrewGadgetsShieldsWeaponsHullCargo:
+            generateOpponentCrew(&ship)
+            addOpponentGadgets(&ship, tries: tries)
+            addOpponentShields(&ship, tries: tries)
+            addOpponentWeapons(&ship, tries: tries)
+            if opp != .mantis { setOpponentHull(&ship) }
+            if opp != .police { addOpponentCargo(&ship, opp: opp) }
+        case .typeGadgetsCargoWeaponsShieldsHullCrew:
+            // RUL-084 / ENC-084: Palm order; fuel takes no draw and the Mantis hull is forced full after its draws.
+            addOpponentGadgets(&ship, tries: tries)
+            addOpponentCargo(&ship, opp: opp)
+            addOpponentWeapons(&ship, tries: tries)
+            addOpponentShields(&ship, tries: tries)
+            setOpponentHull(&ship)
+            if opp == .mantis { ship.hull = ship.hullStrength(r) }
+            generateOpponentCrew(&ship)
+        }
         return ship
     }
 
+    /// RUL-075: the base police ship-quality tries before the difficulty adjustment.
+    func policeBaseTries() -> Int {
+        let k = ruleset.flags.encounter.policeConstants
+        let rec = commander.policeRecordScore
+        switch ruleset.flags.encounter.policeTries {
+        case .psychopathFirst:
+            if rec < k.psychopath || wildOnBoard { return 5 }
+            return rec < k.villain ? 3 : 1
+        case .villainFirst:
+            if rec < k.villain, !wildOnBoard { return 3 }
+            return rec < k.psychopath || wildOnBoard ? 5 : 1
+        }
+    }
+
     /// C# `GenerateOpponentShip`.
-    private mutating func generateOpponentShip(_ opp: OpponentType) -> Ship {
+    mutating func generateOpponentShip(_ opp: OpponentType) -> Ship {
         let r = ruleset
-        if opp == .mantis { return Ship(type: .mantis, spec: r.tables.ship(.mantis)) }
+        let palmRoll = r.flags.encounter.opponentShipRoll == .cumulativeRedraw
+        if opp == .mantis, !palmRoll { return Ship(type: .mantis, spec: r.tables.ship(.mantis)) }
         let gov = r.tables.politics(galaxy.systems[warpSystem].politics)
         var tries = 1
         switch opp {
         case .pirate:
             tries = max(1, 1 + worth / 100_000 + difficulty.rawValue - Difficulty.normal.rawValue)
         case .police:
-            if commander.policeRecordScore < -100 || wildOnBoard {
-                tries = 5
-            } else if commander.policeRecordScore < -70 {
-                tries = 3
-            }
-            tries = max(1, tries + difficulty.rawValue - Difficulty.normal.rawValue)
+            tries = max(1, policeBaseTries() + difficulty.rawValue - Difficulty.normal.rawValue)
+        case .mantis:
+            tries = difficulty.rawValue + 1
         default:
             break
         }
         var best: ShipType = opp == .trader ? .flea : .gnat
+        if palmRoll {
+            // RUL-076 / ENC-067: `rand(100)` over every type's cumulative occurrence; a disallowed type is redrawn
+            // without using a try. The Mantis draws unfiltered and is then overwritten.
+            let types = ShipType.buyable
+            for _ in 0..<tries {
+                var i = 0
+                repeat {
+                    let d = rng.next(below: 100)
+                    i = 0
+                    var sum = r.tables.ship(types[0]).occurrence
+                    while sum < d, i < types.count - 1 {
+                        i += 1
+                        sum += r.tables.ship(types[i]).occurrence
+                    }
+                } while opp != .mantis && !shipTypeLikely(types[i], opp, government: gov)
+                if i > best.rawValue { best = types[i] }
+            }
+            if opp == .mantis { best = .mantis }
+            return Ship(type: best, spec: r.tables.ship(best))
+        }
         let maxIndex = r.flags.waspOpponentReachable ? 10 : 9
         var total = 0
         for i in 0..<maxIndex {
@@ -87,13 +132,18 @@ public extension GameState {
     }
 
     /// C# `GenerateOpponentAddCrew`.
-    private mutating func generateOpponentCrew(_ ship: inout Ship) {
+    mutating func generateOpponentCrew(_ ship: inout Ship) {
         let opp = CrewID.opponent
         mercenaries[opp].skills[0] = 1 + rng.next(below: 10)
         mercenaries[opp].skills[1] = 1 + rng.next(below: 10)
         mercenaries[opp].skills[2] = 1 + rng.next(below: 10)
         let wildCheck = ruleset.flags.kravatEngineerChecksPlayerWild ? wildOnBoard : ship.hasCrew(CrewID.wild)
-        if warpSystem == SystemID.kravat, wildCheck, rng.next(below: 10) < difficulty.rawValue + 1 {
+        let palm = ruleset.flags.encounter.opponentGenerationOrder == .typeGadgetsCargoWeaponsShieldsHullCrew
+        if palm {
+            // ENC-073: Palm draws the engineer first and then the Kravat check.
+            mercenaries[opp].skills[3] = 1 + rng.next(below: 10)
+            if warpSystem == SystemID.kravat, wildCheck, rng.next(below: 10) < difficulty.rawValue + 1 { mercenaries[opp].skills[3] = 10 }
+        } else if warpSystem == SystemID.kravat, wildCheck, rng.next(below: 10) < difficulty.rawValue + 1 {
             mercenaries[opp].skills[3] = 10
         } else {
             mercenaries[opp].skills[3] = 1 + rng.next(below: 10)
@@ -112,9 +162,13 @@ public extension GameState {
         var i = 1
         while i < numCrew {
             var pick: Int
-            repeat {
-                pick = rng.next(below: mercenaries.count)
-            } while special.contains(pick)
+            if ruleset.flags.encounter.opponentExtraCrew == .anySlot {
+                pick = rng.next(below: min(31, mercenaries.count)) // RUL-085: Palm `rand(MAXCREWMEMBER)`, any slot
+            } else {
+                repeat {
+                    pick = rng.next(below: mercenaries.count)
+                } while special.contains(pick)
+            }
             ship.crew[i] = pick
             i += 1
         }
@@ -122,6 +176,18 @@ public extension GameState {
 
     /// Weighted pick over a chance table (C#: `x = GetRandom(100)`, walk while `sum < x`).
     private mutating func weightedIndex(_ chances: [Int]) -> Int {
+        if ruleset.flags.encounter.opponentEquipmentRollBug {
+            // RUL-077: Palm walks while `k < sum` over the buyable types, so a draw yields the first or the last type.
+            let k = rng.next(below: 100)
+            let last = chances.lastIndex { $0 > 0 } ?? 0
+            var sum = chances[0]
+            var j = 0
+            while k < sum, j < last {
+                j += 1
+                sum += chances[j]
+            }
+            return j
+        }
         let x = rng.next(below: 100)
         var sum = chances[0]
         var k = 0
@@ -132,7 +198,7 @@ public extension GameState {
         return k
     }
 
-    private mutating func addOpponentGadgets(_ ship: inout Ship, tries: Int) {
+    mutating func addOpponentGadgets(_ ship: inout Ship, tries: Int) {
         let slots = ship.spec(ruleset).gadgetSlots
         guard slots > 0 else { return }
         var count: Int
@@ -153,7 +219,7 @@ public extension GameState {
         }
     }
 
-    private mutating func addOpponentShields(_ ship: inout Ship, tries: Int) {
+    mutating func addOpponentShields(_ ship: inout Ship, tries: Int) {
         let slots = ship.spec(ruleset).shieldSlots
         guard slots > 0 else { return }
         var count: Int
@@ -164,11 +230,12 @@ public extension GameState {
             if count < slots, tries > 3 || (tries > 1 && rng.next(below: 2) > 0) { count += 1 }
         }
         let chances = ruleset.tables.shields.map(\.chance)
+        let repeatable = ruleset.flags.encounter.opponentWeaponsShieldsMayRepeat // RUL-078
         for _ in 0..<count {
             var best = 0
             for _ in 0..<tries {
                 let k = weightedIndex(chances)
-                if !ship.has(ShieldType.allCases[k]), k > best { best = k }
+                if repeatable || !ship.has(ShieldType.allCases[k]), k > best { best = k }
             }
             let type = ShieldType.allCases[best]
             let power = ruleset.tables.shield(type).power
@@ -178,7 +245,7 @@ public extension GameState {
         }
     }
 
-    private mutating func addOpponentWeapons(_ ship: inout Ship, tries: Int) {
+    mutating func addOpponentWeapons(_ ship: inout Ship, tries: Int) {
         let slots = ship.spec(ruleset).weaponSlots
         guard slots > 0 else { return }
         var count: Int
@@ -188,20 +255,36 @@ public extension GameState {
             count = 1
         } else {
             count = 1 + rng.next(below: slots)
-            if count < slots, tries > 4 || (tries > 3 && rng.next(below: 2) > 0) { count += 1 }
+            if ruleset.flags.encounter.opponentWeaponCountDifficulty {
+                // RUL-079: Palm also adds a weapon with difficulty ≥ Hard.
+                let hard = difficulty >= .hard
+                if count < slots, (tries > 4 && hard) || ((tries > 3 || hard) && rng.next(below: 2) > 0) { count += 1 }
+            } else if count < slots, tries > 4 || (tries > 3 && rng.next(below: 2) > 0) {
+                count += 1
+            }
         }
         let chances = ruleset.tables.weapons.map(\.chance)
+        let repeatable = ruleset.flags.encounter.opponentWeaponsShieldsMayRepeat // RUL-078
         for _ in 0..<count {
             var best = 0
             for _ in 0..<tries {
                 let k = weightedIndex(chances)
-                if !ship.has(WeaponType.allCases[k], exact: true), k > best { best = k }
+                if repeatable || !ship.has(WeaponType.allCases[k], exact: true), k > best { best = k }
             }
             ship.weapons.append(WeaponType.allCases[best])
         }
     }
 
-    private mutating func setOpponentHull(_ ship: inout Ship) {
+    mutating func setOpponentHull(_ ship: inout Ship) {
+        if ruleset.flags.encounter.opponentHullRoll == .fullIfShieldedSeventyPercent {
+            // RUL-083: Palm keeps the full hull when shielded and `rand(10) ≤ 7`, else the best of five.
+            if !ship.shields.isEmpty, rng.next(below: 10) <= 7 { return }
+            let strength = ship.hullStrength(ruleset)
+            var hull = 0
+            for _ in 0..<5 { hull = max(hull, 1 + rng.next(below: strength)) }
+            ship.hull = hull
+            return
+        }
         if ship.shieldStrength(ruleset) == 0 || rng.next(below: 5) == 0 {
             let strength = ship.hullStrength(ruleset)
             var hull = 0
@@ -210,14 +293,17 @@ public extension GameState {
         }
     }
 
-    private mutating func addOpponentCargo(_ ship: inout Ship, pirate: Bool) {
+    mutating func addOpponentCargo(_ ship: inout Ship, opp: OpponentType) {
+        let rules = ruleset.flags.encounter
         let bays = ship.cargoBays(ruleset)
-        guard bays > 0 else { return }
+        guard bays > rules.opponentCargoMinBays else { return } // RUL-080
         var toFill = bays
         if difficulty >= .normal { toFill = min(15, 3 + rng.next(below: toFill - 5)) }
-        if pirate {
-            toFill = difficulty < .normal ? toFill * 4 / 5 : max(1, toFill / difficulty.rawValue)
+        if opp == .police { toFill = 0 }
+        if opp == .pirate {
+            toFill = difficulty < .normal ? toFill * 4 / 5 : (rules.policeCargoMinimum ? toFill / difficulty.rawValue : max(1, toFill / difficulty.rawValue))
         }
+        if rules.policeCargoMinimum { toFill = max(1, toFill) } // RUL-081: Palm's minimum of one unit applies to all
         var i = 0
         while i < toFill {
             let item = rng.next(below: 10)

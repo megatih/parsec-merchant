@@ -29,7 +29,8 @@ extension GameState {
 
     /// Palm `EscapeWithPod` (it runs `Arrival()` first) for the meltdown path (TRV-061).
     mutating func palmEscapeWithPod() -> [GameEvent] {
-        arrivalMarket()
+        // The Palm pod sequence (POL-107) starts with its own Arrival(); only add one if that sequence is off.
+        if !ruleset.flags.encounter.escapePodPalmSequence { arrivalMarket() }
         return escapeWithPod()
     }
 
@@ -41,7 +42,8 @@ extension GameState {
         var events: [GameEvent] = []
         if pod {
             events += palmEscapeWithPod()
-        } else {
+        } else if ruleset.flags.encounter.arrestSequence != .palm {
+            // The Palm arrest sequence (RUL-137) already ran its Arrival().
             arrivalMarket()
         }
         palmSystemInformation()

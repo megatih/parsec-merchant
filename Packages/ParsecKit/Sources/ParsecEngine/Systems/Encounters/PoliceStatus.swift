@@ -44,7 +44,11 @@ public extension GameState {
         let record = commander.policeRecordScore
         let factor = ruleset.flags.arrestFineNeverNegative ? min(80, max(0, -record)) : min(80, -record)
         let w32 = Int32(truncatingIfNeeded: worth)
-        var fine = Int((1 &+ w32 &* Int32(truncatingIfNeeded: factor) / 50_000) &* 500)
+        let m32 = Int32(truncatingIfNeeded: factor)
+        // RUL-136: Palm divides in two steps, `(1 + (W×m/100)/500) × 500` (POL-091).
+        var fine = ruleset.flags.encounter.arrestFineDividesInSteps
+            ? Int((1 &+ (w32 &* m32 / 100) / 500) &* 500)
+            : Int((1 &+ w32 &* m32 / 50_000) &* 500)
         if ruleset.flags.arrestFineNeverNegative { fine = max(500, fine) }
         if wildOnBoard { fine = Int(Double(fine) * 1.05) }
         return fine

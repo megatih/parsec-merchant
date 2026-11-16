@@ -454,7 +454,10 @@ struct TravelRulesetArrivalTests {
         }
         var palm = encounterState(.palm122)
         let hull = palm.state.commander.ship.hull
+        // The arrest sequence runs first (Palm's short Arrival is part of it, RUL-137), then the arrival step.
+        let jail = palm.state.arrested()
         let pe = palm.finishEncounter(.arrested)
+        #expect(jail.contains { if case .arrested = $0 { true } else { false } })
         #expect(pe == [.arrived(system: palm.state.warpSystem)])
         #expect(palm.state.commander.ship.tribbles == 40 && palm.state.commander.ship.hull == hull)
         #expect(palm.state.commander.currentSystem == palm.state.warpSystem && palm.state.phase == .docked)
