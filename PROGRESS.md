@@ -3,14 +3,14 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M1 (in progress)
-- **Next step:** M1 exit: run spec-trace at M1 (all RNG/GAL/CRW {M1} IDs traced) → verify → tag m1-done. Then M2: trace every {M2} ID (ECO/SHP/CRW/BNK/ALR/OPT) with tests and finish remaining M2 features.
-- **Last gate result:** verify.sh default ALL GATES PASSED @ M0 exit (73 tests)
+- **Current milestone:** M2 (in progress)
+- **Next step:** M2: run `python3 -I build/st.py 2` (copy of spec-trace python) to list untraced {M2} IDs; write tests (and missing features) until zero; engine coverage ≥85% (coverage-gate from M2); then verify → tag m2-done.
+- **Last gate result:** verify.sh default ALL GATES PASSED @ M1 exit
 - **Blockers:** none
 
 ## Milestones
 - [x] M0 Tooling, project setup, specs, Palm source, GitHub repo (2026-11-17, tag m0-done)
-- [ ] M1 RNGs, tables, galaxy generation
+- [x] M1 RNGs, tables, galaxy generation (2026-11-17, tag m1-done; RNG bit-exact vs .NET, galaxy bit-exact vs C# harness on 21 snapshots, invariants on 1000 seeds × 2 rulesets)
 - [ ] M2 Economy and services
 - [ ] M3 Travel, encounters, combat, police, news
 - [ ] M4 Quests, endings, scoring
