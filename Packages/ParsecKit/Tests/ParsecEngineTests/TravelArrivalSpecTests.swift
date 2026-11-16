@@ -36,7 +36,8 @@ struct TravelArrivalSpecTests {
         ref.updatePressuresAndQuantities(arrival: d)
         ref.calculatePrices(for: d)
         let events = s.arrival()
-        #expect(events == [.reactorWarning(status: 2), .tribblesChanged(from: 10, to: 0), .debtWarning(debt: 80_000),
+        #expect(events == [.reactorWarning(status: 2), .tribblesDied(.allFromReactor), .tribblesChanged(from: 10, to: 0),
+                           .debtWarning(debt: 80_000),
                            .autoFuelFailed, .arrived(system: d)])
         #expect(s.commander.currentSystem == d && s.galaxy.systems[d].visited && !s.paidForNewspaper && s.trackedSystem == nil)
         #expect(s.newsEvents == [.gemulon])

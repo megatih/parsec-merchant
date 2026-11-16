@@ -130,24 +130,41 @@ public extension GameState {
             quests.fabricRipProbability -= n
         }
         for (onBoard, id) in [(jarekOnBoard, CrewID.jarek), (princessOnBoard, CrewID.princess), (wildOnBoard, CrewID.wild)] where onBoard {
-            impatience(id)
+            events += impatience(id)
         }
         return events
     }
 
-    /// Passenger impatience steps of IncDays (Jarek, Princess, Wild): skills drop to 0 one step before impatient.
-    private mutating func impatience(_ id: Int) {
+    /// Passenger impatience steps of IncDays (Jarek, Princess, Wild; TRV-079/080): a notice at the halfway status, then
+    /// one step before impatient the notice that their skills drop to 0; the status rises by one per call.
+    private mutating func impatience(_ id: Int) -> [GameEvent] {
+        let status: Int, impatient: Int, concerned: Int
         switch id {
         case CrewID.jarek:
-            if quests.jarek == QuestStatus.Jarek.impatient - 1 { mercenaries[id].skills = [0, 0, 0, 0] }
-            if quests.jarek < QuestStatus.Jarek.impatient { quests.jarek += 1 }
+            (status, impatient) = (quests.jarek, QuestStatus.Jarek.impatient)
+            concerned = impatient / 2
         case CrewID.princess:
-            if quests.princess == QuestStatus.Princess.impatient - 1 { mercenaries[id].skills = [0, 0, 0, 0] }
-            if quests.princess < QuestStatus.Princess.impatient { quests.princess += 1 }
+            (status, impatient) = (quests.princess, QuestStatus.Princess.impatient)
+            concerned = (impatient + QuestStatus.Princess.rescued) / 2
         default:
-            if quests.wild == QuestStatus.Wild.impatient - 1 { mercenaries[id].skills = [0, 0, 0, 0] }
-            if quests.wild < QuestStatus.Wild.impatient { quests.wild += 1 }
+            (status, impatient) = (quests.wild, QuestStatus.Wild.impatient)
+            concerned = impatient / 2
         }
+        var events: [GameEvent] = []
+        if status == concerned {
+            events.append(.passengerConcerned(crewID: id))
+        } else if status == impatient - 1 {
+            events.append(.passengerImpatient(crewID: id))
+            mercenaries[id].skills = [0, 0, 0, 0]
+        }
+        if status < impatient {
+            switch id {
+            case CrewID.jarek: quests.jarek += 1
+            case CrewID.princess: quests.princess += 1
+            default: quests.wild += 1
+            }
+        }
+        return events
     }
 
     /// C# `Ship.PerformRepairs` for the commander's ship (each click).
@@ -401,13 +418,17 @@ public extension GameState {
         }
     }
 
-    /// C# `ArrivalCheckTribbles`.
+    /// C# `ArrivalCheckTribbles` (QST-TRIBBLES-005…010): branch notices, then `tribblesChanged`.
     mutating func arrivalTribbles() -> [GameEvent] {
         let before = commander.ship.tribbles
         guard before > 0 else { return [] }
+        var events: [GameEvent] = []
         let narc = TradeItemType.narcotics.rawValue, food = TradeItemType.food.rawValue
+        let maxTribbles = 100_000
         if reactorOnBoard {
-            commander.ship.tribbles = commander.ship.tribbles < 20 ? 0 : commander.ship.tribbles / 2
+            let all = commander.ship.tribbles < 20
+            commander.ship.tribbles = all ? 0 : commander.ship.tribbles / 2
+            events.append(.tribblesDied(all ? .allFromReactor : .halfFromReactor))
         } else if commander.ship.cargo[narc] > 0 {
             let held = commander.ship.cargo[narc]
             let dead = min(1 + rng.next(below: 3), held)
@@ -415,21 +436,27 @@ public extension GameState {
             commander.ship.cargo[narc] -= dead
             commander.ship.cargo[TradeItemType.furs.rawValue] += dead
             commander.ship.tribbles -= min(dead * (rng.next(below: 5) + 98), commander.ship.tribbles - 1)
+            events.append(.tribblesDied(.narcotics(converted: dead)))
         } else {
-            if commander.ship.cargo[food] > 0, commander.ship.tribbles < 100_000 {
+            if commander.ship.cargo[food] > 0, commander.ship.tribbles < maxTribbles {
                 let held = commander.ship.cargo[food]
                 let eaten = held - rng.next(below: held)
                 commander.priceCargo[food] -= commander.priceCargo[food] * eaten / held
                 commander.ship.cargo[food] -= eaten
                 commander.ship.tribbles += eaten * 100
+                events.append(.tribblesAteFood(eaten: eaten))
             }
-            if commander.ship.tribbles < 100_000 {
+            if commander.ship.tribbles < maxTribbles {
                 commander.ship.tribbles += 1 + rng.next(below: commander.ship.cargo[food] > 0 ? commander.ship.tribbles : commander.ship.tribbles / 2)
             }
-            if commander.ship.tribbles > 100_000 { commander.ship.tribbles = 100_000 }
+            if commander.ship.tribbles > maxTribbles { commander.ship.tribbles = maxTribbles }
+            let now = commander.ship.tribbles
+            if [100, 1_000, 10_000, 50_000].contains(where: { before < $0 && now >= $0 }) || (before < maxTribbles && now == maxTribbles) {
+                events.append(.tribbleInspectorWarning(count: now))
+            }
         }
         tribbleMessage = false
-        return [.tribblesChanged(from: before, to: commander.ship.tribbles)]
+        return events + [.tribblesChanged(from: before, to: commander.ship.tribbles)]
     }
 
     /// C# `ArrivalPerformRepairs` (auto fuel/repair all-or-nothing).

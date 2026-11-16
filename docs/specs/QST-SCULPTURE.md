@@ -16,7 +16,7 @@
 - **QST-SCULPTURE-005** {M4} [M][W] Surrendering to pirates (or the Scarab) with it aboard: with hidden cargo bays fitted it is kept and `GameEvent.preciousHidden` is emitted; otherwise `sculpture = 0` with `GameEvent.sculptureTaken` (POL-078, ALR-059), before the cargo theft or blackmail. (source: Game.cs:1866-1886)
 - **QST-SCULPTURE-006** {M4} [M][W] Arrest with it aboard sets `sculpture = 0` (POL-093 step 3); hidden cargo bays are removed first (step 1), whatever the sculpture. No separate event: the arrest report derives ALR-135 (`SculptureConfiscated`) from `arrested` and the status change (POL-093). (source: Game.cs:214-232)
 - **QST-SCULPTURE-007** {M4} [M][W] The escape pod keeps the sculpture: the status stays 1 (POL-104 step 1; the pod report derives ALR-136 `SculptureSaved` from `escapePodUsed` with the sculpture still aboard); ship trades also keep it. (source: Game.cs:2035-2036; Ship.cs:1173-1179)
-- **QST-SCULPTURE-008** {M4} [M][W] Wild boarding while the sculpture is aboard adds the follow-up `wildAdmiresSculpture` narrative (QST-WILD, ALR-184); it changes no state. (source: Game.cs:2556-2557)
+- **QST-SCULPTURE-008** {M4} [M][W] Wild boarding while the sculpture is aboard shows the follow-up narrative ALR-184 (`WildSculpture`), which the app derives from `specialEventCompleted(.wild)` with `sculptureOnBoard`; there is no separate event and it changes no state. (source: Game.cs:2556-2557)
 - **QST-SCULPTURE-009** {M4} [M][W] Once lost (status 0) the job cannot be taken again: the start event was removed, and `SculptureDelivered` is shown only at status 1. (source: Game.cs:2492-2494; StarSystem.cs:270-272)
 
 ## 3. Delivery and reward

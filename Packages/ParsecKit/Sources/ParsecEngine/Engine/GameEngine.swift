@@ -130,6 +130,16 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case reactorWarning(status: Int)
     case reactorMeltdown
     case tribblesChanged(from: Int, to: Int)
+    /// QST-TRIBBLES-006/007: tribbles died on arrival (reactor radiation or narcotics).
+    case tribblesDied(TribbleDeath)
+    /// QST-TRIBBLES-008: tribbles ate this many units of food on arrival.
+    case tribblesAteFood(eaten: Int)
+    /// QST-TRIBBLES-010: the count crossed an inspector threshold (100 000 is "a dangerous number").
+    case tribbleInspectorWarning(count: Int)
+    /// TRV-079/080: a special passenger is getting concerned (halfway to impatient).
+    case passengerConcerned(crewID: Int)
+    /// TRV-079/080: a special passenger became impatient; their skills dropped to 0.
+    case passengerImpatient(crewID: Int)
     case autoFuelFailed
     case autoRepairFailed
     case easterEgg
@@ -175,6 +185,13 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case sealedCanisters(TradeItemType)
     /// SCORE: the game ended.
     case gameEnded(GameEndType, score: Int)
+}
+
+/// How tribbles died on arrival (QST-TRIBBLES-006/007; ALR-169/172/174).
+public enum TribbleDeath: Codable, Sendable, Equatable {
+    case allFromReactor
+    case halfFromReactor
+    case narcotics(converted: Int)
 }
 
 /// A decision the engine needs before it can continue.
