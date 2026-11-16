@@ -128,7 +128,7 @@ nonisolated enum AXID {
     /// Every fixed identifier plus the parameterised ones expanded over their engine enums (UI-SHELL-128).
     static var all: [String] {
         Welcome.all + NewGame.all + Sidebar.all + Toolbar.all + Status.all + Inspector.all + SectionRoot.all
-            + Dialog.all + GameOver.all + Interim.all
+            + Dialog.all + GameOver.all + Interim.all + shipyardArea
     }
 
     /// Keeps only characters the identifier scheme allows (slot ids are lowercase UUIDs with hyphens).

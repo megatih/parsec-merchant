@@ -15,7 +15,9 @@ struct SheetRouteView: View {
             RetireSheet(pending: pending)
         case let .decision(decision):
             InterimDecisionSheet(decision: decision)
-        case .openSavedGame, .gameOptions, .findSystem, .shipPurchase, .cheatConsole, .encounterInterim:
+        case let .shipPurchase(request):
+            ShipPurchaseSheet(request: request)
+        case .openSavedGame, .gameOptions, .findSystem, .cheatConsole, .encounterInterim:
             PlaceholderSheet(route: route)
         }
     }
