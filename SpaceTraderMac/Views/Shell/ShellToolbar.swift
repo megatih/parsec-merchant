@@ -40,16 +40,13 @@ struct WarpButtonModel: Equatable {
     var isEnabled: Bool
     var help: String
 
+    /// Enablement comes from `MenuRules.warp` (MENU-004/030), shared with Game › Warp and the Bridge.
     static func make(state: GameState?, isModal: Bool) -> WarpButtonModel {
-        guard let state, state.phase == .docked, !isModal else {
-            return WarpButtonModel(isEnabled: false, help: String(localized: "Not possible right now."))
+        let availability = MenuRules.warp(MenuContext.make(state: state, isModal: isModal))
+        guard availability.isEnabled, let state else {
+            return WarpButtonModel(isEnabled: false, help: availability.reason?.text ?? DisabledReason.notDocked.text)
         }
-        guard state.warpSystem != state.commander.currentSystem else {
-            return WarpButtonModel(isEnabled: false, help: String(localized: "Choose a target system first."))
-        }
-        let p = state.warpTargetPreview(state.warpSystem)
-        if let blocking = p.blocking { return WarpButtonModel(isEnabled: false, help: ReasonText.string(for: blocking)) }
-        let c = p.costs
+        let c = state.warpTargetPreview(state.warpSystem).costs
         let help = String(localized: """
             Mercenaries \(c.mercenaries.formatted()) cr., insurance \(c.insurance.formatted()) cr., \
             interest \(c.interest.formatted()) cr., wormhole tax \(c.wormholeTax.formatted()) cr. Total \(c.total.formatted()) cr.

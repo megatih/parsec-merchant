@@ -21,13 +21,27 @@ struct ParsecMerchantApp: App {
     var body: some Scene {
         Window("Parsec Merchant", id: SceneMetrics.mainWindowID) {
             RootView()
+                .modifier(FileTransferHost())
+                .modifier(AppTextSize())
                 .environment(appDelegate.session)
         }
         .defaultSize(SceneMetrics.mainDefaultSize)
         .windowResizability(.contentMinSize)
         .commands {
-            MenuCommands(session: appDelegate.session)
+            MenuCommands(session: appDelegate.session, helpRouter: appDelegate.helpRouter)
         }
-        // Settings (UI-SHELL-100), About (UI-SHELL-106) and Help (UI-SHELL-109) scenes are added by their owners.
+        Settings {
+            SettingsView()
+                .environment(appDelegate.session)
+        }
+        Window("About Parsec Merchant", id: AppWindowID.about) {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
+        Window("Parsec Merchant Help", id: AppWindowID.help) {
+            HelpView()
+                .environment(appDelegate.helpRouter)
+        }
+        .defaultSize(width: 860, height: 600)
     }
 }
