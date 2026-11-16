@@ -162,6 +162,12 @@ public extension GameState {
     /// SHP-083: the designer quote at the current system's shipyard, or nil if there is none.
     func designQuote(_ design: ShipDesign) -> DesignQuote? {
         guard ruleset.content.hasShipyards, let yard = currentSystem.shipyard else { return nil }
-        return Designer.quote(design, yard: yard, tradeIn: shipWorth(forInsurance: false))
+        var quote = Designer.quote(design, yard: yard, tradeIn: shipWorth(forInsurance: false))
+        // UI-SHELL-075: a design that passes the designer checks still shows the first TradeShip blocker.
+        if quote.blocker == nil, let blocker = tradeShipBlocker(spec: quote.spec, netPrice: quote.totalCost) {
+            quote.blocker = blocker
+            quote.canBuild = false
+        }
+        return quote
     }
 }
