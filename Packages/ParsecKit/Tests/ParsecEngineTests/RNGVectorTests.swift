@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+// swiftlint:disable line_length
 // Vectors from docs/specs/RNG.md Appendix A (RNG-039).
 import Testing
 @testable import ParsecEngine

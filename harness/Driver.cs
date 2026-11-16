@@ -55,7 +55,7 @@ namespace Fryz.Apps.SpaceTrader
 		static object Galaxies()
 		{
 			var list = new List<object>();
-			foreach (int seed in new[] { 1, 2, 3, 42, 1000 })
+			foreach (int seed in new[] { 0, 1, 2, 3, 42, 1000, 12345 })
 				foreach (Difficulty d in new[] { Difficulty.Beginner, Difficulty.Normal, Difficulty.Impossible })
 					list.Add(GalaxySnapshot(seed, d));
 			return list;

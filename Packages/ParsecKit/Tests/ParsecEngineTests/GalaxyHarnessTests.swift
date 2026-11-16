@@ -38,12 +38,12 @@ struct GalaxyHarnessTests {
                                 skills: [5, 5, 5, 5])
     }
 
-    @Test("GAL-010 harness galaxy fixture loaded")
+    @Test("GAL-010 GAL-069 harness galaxy fixture loaded")
     func fixtureLoaded() {
-        #expect(Self.snapshots.count == 15)
+        #expect(Self.snapshots.count == 21)
     }
 
-    @Test("GAL-013 GAL-019 GAL-020 GAL-022 GAL-030 GAL-034 systems match C# exactly", arguments: 0..<15)
+    @Test("GAL-013 GAL-019 GAL-020 GAL-022 GAL-030 GAL-034 systems match C# exactly", arguments: 0..<21)
     func systemsMatch(_ index: Int) throws {
         try #require(index < Self.snapshots.count)
         let snap = Self.snapshots[index]
@@ -65,7 +65,7 @@ struct GalaxyHarnessTests {
         #expect(game.galaxy.wormholes == snap.wormholes, "wormholes")
     }
 
-    @Test("GAL-010 CRW-025 crew, commander and starting prices match C#", arguments: 0..<15)
+    @Test("GAL-010 CRW-025 crew, commander and starting prices match C#", arguments: 0..<21)
     func crewAndPricesMatch(_ index: Int) throws {
         try #require(index < Self.snapshots.count)
         let snap = Self.snapshots[index]
