@@ -99,12 +99,8 @@ public extension GameState {
     /// C# `Game.Arrested`.
     mutating func arrested() -> [GameEvent] {
         var events: [GameEvent] = []
-        let record = commander.policeRecordScore
-        let term = max(30, -record)
-        let fineFactor = ruleset.flags.arrestFineNeverNegative ? min(80, max(0, -record)) : min(80, -record)
-        var fine = (1 + worth * fineFactor / 50_000) * 500
-        if ruleset.flags.arrestFineNeverNegative { fine = max(500, fine) }
-        if wildOnBoard { fine = Int(Double(fine) * 1.05) }
+        let term = arrestTerm
+        let fine = arrestFine
         commander.ship.gadgets.removeAll { $0 == .hiddenCargoBays }
         if reactorOnBoard { quests.reactor = QuestStatus.Reactor.notStarted }
         if sculptureOnBoard { quests.sculpture = QuestStatus.Sculpture.notStarted }
@@ -373,7 +369,12 @@ extension GameEngine {
         var hidden = state.commander.ship.hiddenCargoBays
         if state.princessOnBoard { hidden -= 1 }
         if state.sculptureOnBoard { hidden -= 1 }
-        // C# `RemoveRange(0, hidden)` throws when hidden bays exceed the cargo; the engine guards it (MOD-012).
+        // C# `RemoveRange(0, hidden)` throws when hidden bays exceed the cargo (POL-080): the surrender aborts and
+        // the encounter stays open. MOD-012 (`pirateLootHiddenBaysClamp`) clamps instead.
+        if hidden > steal.count, !ruleset.flags.pirateLootHiddenBaysClamp {
+            setEncounter(enc)
+            return StepResult(events: events)
+        }
         if hidden > 0 { steal.removeFirst(min(hidden, steal.count)) }
         if steal.isEmpty {
             let blackmail = min(25_000, max(500, state.worth / 20))
