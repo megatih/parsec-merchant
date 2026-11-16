@@ -54,22 +54,22 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 | Flag | Modern | Windows 2.01 | Palm 1.2.2 | Ref |
 |---|---|---|---|---|
 | `specialResourceRequiresVisit` | false | true | false | MOD-006 |
-| `priceVarianceTwoRolls` | false | false | true | 04 §3 |
-| `quantityUsesWrongSystemSize` | false | false | true | 04 §3 |
+| `economy.priceVariance = .twoRolls` | false | false | true | 04 §3 |
+| `economy.marketQuantitySizeSource = .systemAtItemIndex` | false | false | true | 04 §3 |
 | `restockUsesOwnSystemItemTraded` | true | false | true | MOD-007 |
-| `restockDriftTriangular` | false | false | true | 04 §3 |
-| `shuffleStatusBeforeQuantities` | false | false | true | 04 §3 |
-| `cashToSpendPalmFormula` | false | false | true | this spec |
-| `dumpCapPrecedenceBug` | false | false | true | 04 §3 |
-| `tradeableItemPickPalm` | false | false | true | this spec |
-| `tradeInOrbitPalmPricing` | false | false | true | 04 §3 |
-| `tradeInOrbitMutatesMarketPrices` | false | false | true | 04 §3 |
+| `economy.quantityDriftDistribution = .triangular, economy.zeroUntradeableOnDrift` | false | false | true | 04 §3 |
+| `economy.statusShuffleOrder = .statusesFirst` | false | false | true | 04 §3 |
+| `economy.cashToSpend = .reserveCrewAndInsurance` | false | false | true | this spec |
+| `economy.dumpQuantityCap = .precedenceBug` | false | false | true | 04 §3 |
+| `economy.tradeInOrbitItemPick = .tenTriesThenScan` | false | false | true | this spec |
+| `economy.tradeInOrbitThresholdInclusive, economy.tradeInOrbitRounding = .truncate` | false | false | true | 04 §3 |
+| `economy.tradeInOrbitMutatesMarketPrices` | false | false | true | 04 §3 |
 | `tradeInOrbitCashCapUsesOrbitPrice` | true | false | true | MOD-008 |
-| `tradeInOrbitTypedBuyIgnoresFreeBays` | false | false | true | 04 §3 |
-| `tradeInOrbitSellCapUsesTotalBays` | false | false | true | 04 §3 |
-| `hagglingBonusBeforeDifficulty` | false | false | true | CRW (owner) |
-| `recalcSellPricesOnlyIfWasCriminal` | true | false | false | MOD-015 |
-| `dumpAllConfirmShowsCostBasis` | false | false | true | this spec |
+| (none: ECO-070 typed-buy overflow not reproduced; see QA-REPORT accepted assumptions) | — | — | — | 04 §3 |
+| `economy.tradeInOrbitSellCap = .traderTypeBays` | false | false | true | 04 §3 |
+| `economy.skillComputation = .gadgetsThenAdjust` | false | false | true | CRW (owner) |
+| `economy.sellPriceRecalc = .onlyIfWasCriminal` | true | false | false | MOD-015 |
+| `economy.dumpAllConfirmShowsCostBasis` (consent `WarningID.jettisonAll`) | false | false | true | this spec |
 
 ## 2. Where items trade
 
@@ -78,7 +78,7 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 - **ECO-003** {M2} [M][W][P] `ItemTraded(system, item)` (a market sells it) is true iff `(item != Narcotics || gov.DrugsOk) && (item != Firearms || gov.FirearmsOk) && system.tech >= item.techProduction`. (source: StarSystem.cs:118-123; Palm: Src/Skill.c:RecalculateBuyPrices, Src/Traveler.c:InitializeTradeitems)
 - **ECO-004** {M2} [M][W][P] `ItemUsed(system, item)` (a market buys it) is the same test with `item.techUsage` in place of `techProduction`. With the shipped table `techUsage <= techProduction` for every item, so every traded item is also used. (source: StarSystem.cs:125-130; Palm: Src/Traveler.c:StandardPrice)
 - **ECO-005** {M2} [W] The special resource used by pricing and quantity formulas is the system's resource only if the system has been visited; otherwise it is `Nothing` (0), which never matches any item's cheap/expensive resource (`NA` = -1 never matches either). Flag `specialResourceRequiresVisit = true`. (source: StarSystem.cs:424-430)
-- **ECO-006** {M5} [M][P] Pricing and quantity formulas always use the system's actual special resource, whether or not it has been visited (`specialResourceRequiresVisit = false`). Palm passes `SolarSystem[i].SpecialResources` directly; the Modern fix is MOD-006. (source: PRD MOD-006; Palm: Src/Traveler.c:DeterminePrices, Src/Traveler.c:InitializeTradeitems)
+- **ECO-006** {M5} [M][P] Pricing and quantity formulas always use the system's actual special resource, whether or not it has been visited (`resourcesAffectUnvisitedSystems = true`). Palm passes `SolarSystem[i].SpecialResources` directly; the Modern fix is MOD-006. (source: PRD MOD-006; Palm: Src/Traveler.c:DeterminePrices, Src/Traveler.c:InitializeTradeitems)
 - **ECO-007** {M5} [M] In Modern the resource is still *displayed* only after the system is visited; player-facing previews of unvisited systems (and the Average Price List estimate) use `Nothing` for the resource so no hidden information leaks. (source: PRD MOD-006, PRD §6.6 fairness)
 
 ## 3. Standard price
@@ -91,7 +91,7 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 
 - **ECO-011** {M2} [M][W][P] `CalculatePrices(system)` computes, for each item in index order, `p = StandardPrice(item, system)`; if `p > 0` and `item.pressureHike == system.pressure`, then `p = p*3/2` (Palm `(p*3)>>1`, identical for p ≥ 0). (source: Game.cs:534-546; Palm: Src/Traveler.c:DeterminePrices)
 - **ECO-012** {M2} [M][W] Variance (when p > 0): `v = min(item.variance, p - 1)`; `p = p + GetRandom(-v, v + 1)`, which is one RNG draw, uniform over `-v..v` in absolute credits (not percent, even though the field comment says "percentage"; kept as designed in Modern, PRD §4.3 #9). Items with p == 0 consume no RNG draw. (source: Game.cs:548-550)
-- **ECO-013** {M5} [P] Palm variance: `p = p + GetRandom(V) - GetRandom(V)` (two draws, evaluated left to right, range `-(V-1)..+(V-1)`, triangular, no clamp against p). If the result is ≤ 0, both buy and sell prices are 0 for that item. Flag `priceVarianceTwoRolls`. (source: Palm: Src/Traveler.c:DeterminePrices)
+- **ECO-013** {M5} [P] Palm variance: `p = p + GetRandom(V) - GetRandom(V)` (two draws, evaluated left to right, range `-(V-1)..+(V-1)`, triangular, no clamp against p). If the result is ≤ 0, both buy and sell prices are 0 for that item. Flag `economy.priceVariance = .twoRolls`. (source: Palm: Src/Traveler.c:DeterminePrices)
 - **ECO-014** {M2} [M][W][P] After variance, if `PoliceRecordScore < -5` (Dubious) then `p = p*90/100` ("criminals pay an intermediary"). The result is the sell price; items with StandardPrice 0 get sell price 0. (source: Game.cs:552-557; Palm: Src/Traveler.c:DeterminePrices)
 - **ECO-015** {M2} [M][W][P] CalculatePrices ends by calling RecalculateBuyPrices(system) (ECO-018). (source: Game.cs:558; Palm: Src/Traveler.c:472)
 - **ECO-016** {M2} [M][W][P] CalculatePrices runs (a) for the start system at game construction, after the crew list and ships are created; (b) at departure for the destination `WarpSystem`, after the departure system's countdown is set (these are the prices used by trade in orbit); (c) on arrival for the current system, after pressures and quantities are updated; (d) on the cheat direct warp. (source: Game.cs:127, 3190-3194, 3216-3218, 325; Palm: Src/Traveler.c:593, 2439)
@@ -101,20 +101,20 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 
 - **ECO-018** {M2} [M][W][P] For each item: if `!ItemTraded(system, item)` then `buy = 0`; otherwise `buy = sell`; if `PoliceRecordScore < -5` then `buy = buy*100/90`; then `buy = buy*(103 + 10 - Trader)/100`; finally if `buy <= sell` then `buy = sell + 1`. 10 is MaxSkill. (source: Game.cs:2960-2980; Palm: Src/Skill.c:142-165)
 - **ECO-019** {M2} [M][W] `Trader` is the ship's effective trader skill: the best crew Trader skill adjusted for difficulty (minimum 1), plus 1 if the haggling computer is aboard (Jarek delivered), added after the difficulty adjustment. The full skill rules belong to CRW. (source: Ship.cs:1228-1246, Ship.cs:1315-1320, Ship.cs:1088-1094)
-- **ECO-020** {M5} [P] Palm adds the Jarek +1 before the difficulty adjustment (`AdaptDifficulty(max + 1)`), so on Impossible a best skill of 1 yields 1 (C# yields 2). Flag `hagglingBonusBeforeDifficulty`; owned by CRW. (source: Palm: Src/Skill.c:117-135, Src/Skill.c:355-363)
+- **ECO-020** {M5} [P] Palm adds the Jarek +1 before the difficulty adjustment (`AdaptDifficulty(max + 1)`), so on Impossible a best skill of 1 yields 1 (C# yields 2). Flag `economy.skillComputation = .gadgetsThenAdjust`; owned by CRW. (source: Palm: Src/Skill.c:117-135, Src/Skill.c:355-363)
 - **ECO-021** {M2} [M][W][P] Buy prices (only) are recalculated for the current system whenever the effective Trader skill changes: hiring, firing and random skill changes. Sell prices are not touched. (source: Ship.cs:212-213, Ship.cs:620-621, CrewMember.cs:82-85; Palm: Src/Skill.c:199,237, Src/SystemInfoEvent.c:907)
 - **ECO-022** {M2} [M][W][P] With the shipped tables every traded item has sell > 0, so `buy >= sell + 1` always holds for traded items and `buy == 0` exactly for untraded items. (source: Game.cs:2960-2980; Palm: Src/Skill.c:142-165)
 
 ## 6. RecalculateSellPrices
 
 - **ECO-023** {M2} [W][P] `RecalculateSellPrices` multiplies every sell price by 100/90 (`sell = sell*100/90`) unconditionally and does **not** recalculate buy prices. C# calls it after Erase Record and after Wild is delivered; Palm only after Erase Record. (source: Game.cs:2985-2989, 2315, 2573; Palm: Src/Skill.c:368-374, Src/SpecialEvent.c:218-221)
-- **ECO-024** {M5} [M] Modern applies the ×100/90 only if `PoliceRecordScore < -5` held immediately before the record was reset (flag `recalcSellPricesOnlyIfWasCriminal`, MOD-015). Buy prices are left unchanged as in the source. (source: PRD MOD-015)
+- **ECO-024** {M5} [M] Modern applies the ×100/90 only if `PoliceRecordScore < -5` held immediately before the record was reset (flag `economy.sellPriceRecalc = .onlyIfWasCriminal`, MOD-015). Buy prices are left unchanged as in the source. (source: PRD MOD-015)
 
 ## 7. Market quantities (InitializeTradeItems)
 
 - **ECO-025** {M2} [M][W][P] For each item in index order, an item with `!ItemTraded` gets quantity 0 and consumes no RNG draw. (source: StarSystem.cs:86-91; Palm: Src/Traveler.c:385-395)
 - **ECO-026** {M2} [M][W] For a traded item: `q = (system.size + 1) * (GetRandom(9, 14) - |item.techTop - system.tech|)`. (source: StarSystem.cs:94-95)
-- **ECO-027** {M5} [P] Palm: `q = ((9 + GetRandom(5)) - |item.techTop - system.tech|) * (1 + SolarSystem[i].Size)` where `i` is the **trade-item index**, so the size of system 0..9 is used instead of the system's own size. Flag `quantityUsesWrongSystemSize`. (source: Palm: Src/Traveler.c:397-400)
+- **ECO-027** {M5} [P] Palm: `q = ((9 + GetRandom(5)) - |item.techTop - system.tech|) * (1 + SolarSystem[i].Size)` where `i` is the **trade-item index**, so the size of system 0..9 is used instead of the system's own size. Flag `economy.marketQuantitySizeSource = .systemAtItemIndex`. (source: Palm: Src/Traveler.c:397-400)
 - **ECO-028** {M2} [M][W][P] For Narcotics and Robots (index ≥ 8): `q = q*(5 - difficulty)/(6 - difficulty) + 1`. (source: StarSystem.cs:97-99; Palm: Src/Traveler.c:402-404)
 - **ECO-029** {M2} [M][W][P] Then, as two independent tests: if resource == cheapResource, `q = q*4/3`; if resource == expensiveResource, `q = q*3/4` (Palm `(q*3)>>2`, identical for q ≥ 0). The resource follows ECO-005/ECO-006. (source: StarSystem.cs:101-105; Palm: Src/Traveler.c:406-414)
 - **ECO-030** {M2} [M][W][P] Then, if `system.pressure == item.pressureHike`, `q = q/5`. (source: StarSystem.cs:107-108; Palm: Src/Traveler.c:416-418)
@@ -129,14 +129,14 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 - **ECO-036** {M2} [M][W][P] Countdown step for a system with `CountDown > 0`: decrement it; then if `CountDown > CountDownStart` clamp it to CountDownStart (no restock that arrival); else if `CountDown <= 0` call InitializeTradeItems (§7); else apply drift (ECO-037..039). Systems with CountDown 0 are untouched. (source: Game.cs:514-528; Palm: Src/Traveler.c:1192-1206)
 - **ECO-037** {M2} [W] Drift: for each item j for which `WarpSystem.ItemTraded(j)` is true (the arrival system, not system i: a port bug), `q = max(0, q + GetRandom(-4, 5))` (uniform −4..4, one draw). Untraded items of system i are skipped, not zeroed. Flag `restockUsesOwnSystemItemTraded = false`. (source: Game.cs:522-526)
 - **ECO-038** {M5} [M] Drift tests system i's own `ItemTraded(j)` (MOD-007, `restockUsesOwnSystemItemTraded = true`); otherwise identical to ECO-037 (uniform `GetRandom(-4, 5)`). (source: PRD MOD-007)
-- **ECO-039** {M5} [P] Palm drift: items untraded in system i are set to 0 (no draw); traded items get `q = q + GetRandom(5) - GetRandom(5)` (triangular −4..4, two draws), clamped to ≥ 0. Flags `restockUsesOwnSystemItemTraded = true`, `restockDriftTriangular`. (source: Palm: Src/Traveler.c:1207-1224)
-- **ECO-040** {M5} [P] Palm runs the pressure shuffle over all systems first and only then the countdown/quantity pass over all systems (flag `shuffleStatusBeforeQuantities`); this changes RNG call order only. (source: Palm: Src/Traveler.c:2434-2439)
+- **ECO-039** {M5} [P] Palm drift: items untraded in system i are set to 0 (no draw); traded items get `q = q + GetRandom(5) - GetRandom(5)` (triangular −4..4, two draws), clamped to ≥ 0. Flags `restockUsesOwnSystemItemTraded = true`, `economy.quantityDriftDistribution = .triangular, economy.zeroUntradeableOnDrift`. (source: Palm: Src/Traveler.c:1207-1224)
+- **ECO-040** {M5} [P] Palm runs the pressure shuffle over all systems first and only then the countdown/quantity pass over all systems (flag `economy.statusShuffleOrder = .statusesFirst`); this changes RNG call order only. (source: Palm: Src/Traveler.c:2434-2439)
 - **ECO-041** {M2} [M][W][P] Within the arrival pipeline the market work happens in this order: (W/M) reactor, tribbles, debt, repairs, **pressures and quantities**, Easter egg, **CalculatePrices(current)**; (P) **ShuffleStatus, ChangeQuantities, DeterminePrices(current)**. The full pipeline is owned by TRV. (source: Game.cs:309-330; Palm: Src/Traveler.c:2434-2441)
 
 ## 9. Cash to spend and options
 
 - **ECO-042** {M2} [M][W] `CashToSpend = Cash - (Options.ReserveMoney ? InsuranceCosts + InterestCosts + MercenaryCosts + WormholeCosts : 0)`, unclamped (it may be negative). WormholeCosts is evaluated for the currently selected warp system. (source: Commander.cs:253-259, Game.cs:3338-3343, Game.cs:4410-4416)
-- **ECO-043** {M5} [P] Palm `ToSpend() = ReserveMoney ? max(0, Credits - MercenaryMoney() - InsuranceMoney()) : Credits`; interest and wormhole tax are not reserved. Flag `cashToSpendPalmFormula`. (source: Palm: Src/Traveler.c:1234-1239)
+- **ECO-043** {M5} [P] Palm `ToSpend() = ReserveMoney ? max(0, Credits - MercenaryMoney() - InsuranceMoney()) : Credits`; interest and wormhole tax are not reserved. Flag `economy.cashToSpend = .reserveCrewAndInsurance`. (source: Palm: Src/Traveler.c:1234-1239)
 - **ECO-044** {M2} [M][W][P] Option defaults: ReserveMoney = false, LeaveEmpty = 0; LeaveEmpty accepts 0..99. (source: GameOptions.cs:46-49, Form_Options.cs:287-291; Palm: Src/Global.c:613,653, Src/AppHandleEvent.c:212)
 
 ## 10. Buying at a market
@@ -153,38 +153,38 @@ Enums: SystemPressure None=0, War=1, Plague=2, Drought=3, Boredom=4, Cold=5, Cro
 - **ECO-051** {M2} [M][W][P] Selling, dumping or jettisoning q of h held units: `PriceCargo[i] = PriceCargo[i]*(h - q)/h` (computed with the pre-sale h), then `cargo[i] -= q`, then `Cash += q*unitPrice` (unitPrice is the sell price, `-dumpCost`, or 0). (source: Game.cs:706-711; Palm: Src/Cargo.c:944-949)
 - **ECO-052** {M2} [M][W][P] Dump (docked, item with sell price ≤ 0): cost per unit `5*(difficulty + 1)`; Cash decreases by `q*5*(difficulty + 1)`; no police or news effect. (source: Game.cs:689-693, 711; Palm: Src/Cargo.c:948-949)
 - **ECO-053** {M2} [M][W] Dump maximum = `max(0, min(held, CashToSpend / (5*(difficulty + 1))))`; the engine floors at 0 where C# would hand a negative maximum to the dialog. (source: Game.cs:687-692)
-- **ECO-054** {M5} [P] Palm caps the dumped amount with `ToSpend() / 5 * (difficulty + 1)` (operator precedence bug: divides by 5 and then multiplies), while the dialog text shows the correct `ToSpend()/(5*(difficulty+1))`. Flag `dumpCapPrecedenceBug`. (source: Palm: Src/Cargo.c:939-942, Src/Cargo.c:114-119)
+- **ECO-054** {M5} [P] Palm caps the dumped amount with `ToSpend() / 5 * (difficulty + 1)` (operator precedence bug: divides by 5 and then multiplies), while the dialog text shows the correct `ToSpend()/(5*(difficulty+1))`. Flag `economy.dumpQuantityCap = .precedenceBug`. (source: Palm: Src/Cargo.c:939-942, Src/Cargo.c:114-119)
 
 ## 12. Jettison and littering
 
 - **ECO-055** {M2} [M][W][P] Jettison is available only in space (from the plunder screen and when scooping with no room) and costs nothing; maximum = units held. (source: Form_Plunder.cs:577, Game.cs:1486-1491, Game.cs:687; Palm: Src/Encounter.c:389, Src/Cargo.c:716-781)
 - **ECO-056** {M2} [M][W][P] The littering confirmation is required iff `!LitterWarning && PoliceRecordScore > -5`. Issuing the warning sets `LitterWarning = true`. LitterWarning resets to false at the start of every trip. (source: Game.cs:682-684, Form_Alert.cs:409-411, Game.cs:3118; Palm: Src/Cargo.c:927-934, Src/Traveler.c:576)
 - **ECO-057** {M2} [M][W][P] After jettisoning q > 0 units (ECO-051 with unitPrice 0), one draw `GetRandom(10) < difficulty + 1` decides whether you are caught. If caught: if `PoliceRecordScore > -5` it becomes -5, otherwise it decreases by 1; and a `CaughtLittering` news event is added. (source: Game.cs:713-724; Palm: Src/Cargo.c:950-958)
-- **ECO-058** {M5} [P] Palm's "jettison all" button first asks a confirmation that shows the total paid (`BuyingPrice[i]`) for the goods. C# defines `AlertType.EncounterDumpAll` but never raises it. Flag `dumpAllConfirmShowsCostBasis`. (source: Palm: Src/Cargo.c:744-750; C#: Form_Alert.cs:406, no caller)
+- **ECO-058** {M5} [P] Palm's "jettison all" button first asks a confirmation that shows the total paid (`BuyingPrice[i]`) for the goods. C# defines `AlertType.EncounterDumpAll` but never raises it. Flag `economy.dumpAllConfirmShowsCostBasis` (consent `WarningID.jettisonAll`). (source: Palm: Src/Cargo.c:744-750; C#: Form_Alert.cs:406, no caller)
 
 ## 13. Trade in orbit
 
 - **ECO-059** {M2} [M][W][P] A trader who would ignore you rolls `GetRandom(1000) < ChanceOfTradeInOrbit` (default 100). On success: if you have a free bay and the trader `HasTradeableItems`, the encounter becomes TraderSell (the trader sells to you); otherwise, if your ship `HasTradeableItems`, it becomes TraderBuy. The encounter logic is owned by ENC. (source: Game.cs:49, 985-994; Palm: Src/Traveler.c:2062-2073)
 - **ECO-060** {M2} [M][W][P] `HasTradeableItems(ship)`: item i qualifies iff `cargo[i] > 0`, it passes the XOR rule (criminals, `score < -5`, trade only illegal goods; non-criminals only legal goods), and the destination price is positive: the system **buy** price when the ship is the trader's, the system **sell** price when it is the commander's. Prices are those computed at departure for the warp system (ECO-016). (source: Ship.cs:570-595; Palm: Src/Cargo.c:199-229)
 - **ECO-061** {M2} [M][W] The traded item is picked with `idx = GetRandom(10)`, then advanced `idx = (idx + 1) % 10` until it qualifies (one draw). (source: Ship.cs:505-513)
-- **ECO-062** {M5} [P] Palm picks with up to 10 tries of `GetRandom(10)`; if none qualifies it scans sequentially from 0. Flag `tradeableItemPickPalm`. (source: Palm: Src/Cargo.c:234-292)
+- **ECO-062** {M5} [P] Palm picks with up to 10 tries of `GetRandom(10)`; if none qualifies it scans sequentially from 0. Flag `economy.tradeInOrbitItemPick = .tenTriesThenScan`. (source: Palm: Src/Cargo.c:234-292)
 - **ECO-063** {M2} [M][W] Trader sells to you (TraderSell): `chance = illegal ? 45 : 10`; `adj = GetRandom(100) < chance ? 1.1 : (illegal ? 0.8 : 0.9)`; `price = min(maxTrade, max(minTrade, (int)Math.Round(buy[i]*adj/roundOff)*roundOff))`, where the product and quotient are IEEE-754 double and `Math.Round` is round-half-to-even. (source: Game.cs:576-583)
 - **ECO-064** {M2} [M][W] Trader buys from you (TraderBuy): `adj = GetRandom(100) < chance ? (illegal ? 0.8 : 0.9) : 1.1`, applied to `sell[i]` with the same rounding and clamping as ECO-063. (source: Game.cs:665-670)
 - **ECO-065** {M2} [M][W] The item pick (ECO-061) and the price roll happen when the player chooses Trade, in that order; the market price arrays are not modified. (source: Game.cs:1502-1515, 576-583, 665-670)
-- **ECO-066** {M5} [P] Palm pricing (flag `tradeInOrbitPalmPricing`): thresholds are inclusive (`GetRandom(100) <= 45` / `<= 10`); `price = (long)(price*adj)` (truncated); TraderSell: `price = price/roundOff*roundOff`; TraderBuy: `price = (price/roundOff + 1)*roundOff`; then clamp to [min, max]. (source: Palm: Src/Encounter.c:1640-1661, 1725-1745)
-- **ECO-067** {M5} [P] Palm writes the in-orbit price back into the global `BuyPrice[i]`/`SellPrice[i]`, where it persists (and compounds over later trades) until the next DeterminePrices. Flag `tradeInOrbitMutatesMarketPrices`. (source: Palm: Src/Encounter.c:1655-1661, 1740-1745)
+- **ECO-066** {M5} [P] Palm pricing (flag `economy.tradeInOrbitThresholdInclusive, economy.tradeInOrbitRounding = .truncate`): thresholds are inclusive (`GetRandom(100) <= 45` / `<= 10`); `price = (long)(price*adj)` (truncated); TraderSell: `price = price/roundOff*roundOff`; TraderBuy: `price = (price/roundOff + 1)*roundOff`; then clamp to [min, max]. (source: Palm: Src/Encounter.c:1640-1661, 1725-1745)
+- **ECO-067** {M5} [P] Palm writes the in-orbit price back into the global `BuyPrice[i]`/`SellPrice[i]`, where it persists (and compounds over later trades) until the next DeterminePrices. Flag `economy.tradeInOrbitMutatesMarketPrices`. (source: Palm: Src/Encounter.c:1655-1661, 1740-1745)
 - **ECO-068** {M2} [W] Buying from a trader: blocked if you have no free bays (`.noEmptyBays`; LeaveEmpty is ignored) or if `Cash < orbitPrice` (`.insufficientFunds`; Cash, not CashToSpend; no debt check). Maximum = `min(FreeCargoBays, trader.cargo[i], Cash / buy[i])`, using the **system** buy price, so the charge `q*orbitPrice` can drive Cash negative (port bug #10). Effect: `cargo[i] += q`, `trader.cargo[i] -= q`, `Cash -= q*orbitPrice`, `PriceCargo[i] += q*orbitPrice`. (source: Game.cs:563-621, Form_CargoBuy.cs:77-81)
 - **ECO-069** {M5} [M] Modern caps buying from a trader at `min(FreeCargoBays, trader.cargo[i], Cash / orbitPrice)`, so Cash never goes negative (MOD-008, `tradeInOrbitCashCapUsesOrbitPrice = true`). Everything else is as in ECO-068. (source: PRD MOD-008)
-- **ECO-070** {M5} [P] Palm buying from a trader: a typed amount j is `max(0, min(trader.cargo[i], typed))`, and "All" is `min(trader.cargo[i], free bays)`; both are then capped `j = min(j, Credits / orbitPrice)`. A typed amount is **not** capped by free bays (flags `tradeInOrbitTypedBuyIgnoresFreeBays`, `tradeInOrbitCashCapUsesOrbitPrice = true`). (source: Palm: Src/Encounter.c:1779-1803)
+- **ECO-070** {M5} [P] Palm buying from a trader: a typed amount j is `max(0, min(trader.cargo[i], typed))`, and "All" is `min(trader.cargo[i], free bays)`; both are then capped `j = min(j, Credits / orbitPrice)`. A typed amount is **not** capped by free bays in the source; the engine keeps the hold-capacity invariant (ECO-076) and caps every Palm purchase at `min(trader.cargo[i], free bays, Credits / orbitPrice)` (`tradeInOrbitCashCapUsesOrbitPrice = true`). Documented deviation, logged in QA-REPORT "Accepted assumptions". (source: Palm: Src/Encounter.c:1779-1803)
 - **ECO-071** {M2} [M][W] Selling to a trader: maximum = `min(held, trader.FreeCargoBays)`; effect as ECO-051 with the in-orbit price; the trader's cargo is not changed. (source: Game.cs:687, 701-711)
-- **ECO-072** {M5} [P] Palm selling to a trader caps at `min(held, typed or all, Shiptype[trader.type].CargoBays)` (total bays, not free bays) and then sets `trader.cargo[i] = j` (overwrite). Flag `tradeInOrbitSellCapUsesTotalBays`. (source: Palm: Src/Encounter.c:1697-1715)
+- **ECO-072** {M5} [P] Palm selling to a trader caps at `min(held, typed or all, Shiptype[trader.type].CargoBays)` (total bays, not free bays) and then sets `trader.cargo[i] = j` (overwrite). Flag `economy.tradeInOrbitSellCap = .traderTypeBays`. (source: Palm: Src/Encounter.c:1697-1715)
 - **ECO-073** {M2} [M][W][P] When a trade in orbit changes Cash, a `tradeCompleted(direction, item)` event is emitted (AlertType.EncounterTradeCompleted / OrbitTradeCompletedAlert). Trading 0 units changes nothing and emits nothing. (source: Game.cs:1513-1516; Palm: Src/Encounter.c:1716, 1802)
 
 ## 14. Arithmetic fidelity
 
 - **ECO-074** {M2} [M][W][P] Every ECO formula uses integer arithmetic with truncating division in the source's operation order. Floating point appears only in trade-in-orbit pricing (ECO-063/064/066), where it is IEEE-754 binary64 as written, followed by the source's explicit conversion (C# round-half-even; Palm truncation). (source: Game.cs:534-728; Palm: Src/Encounter.c:1640-1745)
 - **ECO-075** {M5} [M] Modern keeps the exact integer price and quantity arithmetic of Windows 2.01 (MOD-021); no Modern formula may substitute floating point or rounding where the source truncates. (source: PRD MOD-021)
-- **ECO-076** {M2} [M][W][P] Invariants after every ECO command: every stock and cargo quantity ≥ 0; filled bays ≤ total bays (except Palm ECO-070, which is documented as a flag-guarded quirk); `PriceCargo[i] == 0` whenever `cargo[i] == 0` after a sale of the whole lot. (source: Game.cs:706-711; Palm: Src/Cargo.c:944-946)
+- **ECO-076** {M2} [M][W][P] Invariants after every ECO command: every stock and cargo quantity ≥ 0; filled bays ≤ total bays in every ruleset (the Palm ECO-070 typed-buy overflow is not reproduced); `PriceCargo[i] == 0` whenever `cargo[i] == 0` after a sale of the whole lot. (source: Game.cs:706-711; Palm: Src/Cargo.c:944-946)
 
 ## 15. Commands and pure previews (engine API)
 

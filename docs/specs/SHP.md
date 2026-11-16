@@ -140,15 +140,15 @@ Scalars: ADJUST_SIZE_DEFAULT 100, ADJUST_SIZE_SPECIALTY 90, ADJUST_SIZE_WEAKNESS
 |---|---|---|---|---|
 | table `shipSpecs` fuel/repair columns | Palm values | C# values | Palm values | MOD-017 |
 | `worthUsesTradeInValue` | true | false | true | MOD-019 |
-| `shipTraderDiscount` | false | false | true | 04 §3 |
-| `uniqueTransferFixedPrices` | false | false | true | 04 §3 |
-| `escapePodKeptOnShipTrade` | false | false | true | 04 §1 |
-| `escapePodPurchaseUsesToSpend` | false | false | true | this spec |
+| `economy.shipTraderDiscount` | false | false | true | 04 §3 |
+| `economy.shipTradeFlow = .palm` | false | false | true | 04 §3 |
+| `economy.shipTradeFlow = .palm` | false | false | true | 04 §1 |
+| `economy.escapePodPurchaseUsesToSpend` | false | false | true | this spec |
 | `resetPriceCargoOnHoldClear` | true | false | true | MOD-001 |
-| `fuelCompactorSetsTanks` | false (+3) | false (+3) | true (18) | 04 §1 |
-| `palmShipTradeChecks` | false | false | true | this spec |
-| `transferredShieldUncharged` | false | false | true | 04 §3 |
-| `worthFuelTermUsesBaseTanks` | false | false | true | this spec |
+| `economy.fuelCompactorRule = .setsEighteen` | false (+3) | false (+3) | true (18) | 04 §1 |
+| `economy.shipTradeFlow = .palm` | false | false | true | this spec |
+| `economy.shipTradeFlow = .palm` | false | false | true | 04 §3 |
+| `economy.tradeInFuelTerm = .baseTanks` | false | false | true | this spec |
 | `arrivalAutoBuyPartial` | false | false | true | 04 §3 (owner TRV) |
 | content `hasDisruptors` | yes | yes | no | PRD §4.4 |
 | content `hasHiddenBays` | yes | yes | no | PRD §4.4 |
@@ -178,7 +178,7 @@ Scalars: ADJUST_SIZE_DEFAULT 100, ADJUST_SIZE_SPECIALTY 90, ADJUST_SIZE_WEAKNESS
 - **SHP-014** {M2} [M][W][P] A ship has as many weapon, shield, gadget and crew slots as its spec gives. Adding equipment fills the first empty slot of its type; removing slot k shifts the higher slots down by one and empties the last. (source: Ship.cs:117-128, 696-704, 755-765; Palm: Src/Cargo.c:1068-1105, Src/SellEquipEvent.c:72-110)
 - **SHP-015** {M2} [M][W][P] Total cargo bays = spec bays + 5 per Extra cargo bays + 5 per Hidden cargo bays (Hidden bays exist only in M/W). Filled bays = Σcargo + 10 while the Japori medicine is in transit + `5 + 10 - (reactorStatus - 1)/2` while the reactor is aboard; free bays = total − filled. Palm subtracts the same special amounts from the total instead, which gives the same free bays. (source: Ship.cs:830-843, 934-994; Palm: Src/Cargo.c:1016-1048)
 - **SHP-016** {M2} [M][W] Fuel tank capacity = spec tanks + 3 if a fuel compactor is installed (`FuelCompactorTanks = 3`). (source: Consts.cs:73, Ship.cs:1072-1078)
-- **SHP-017** {M5} [P] Palm tank capacity = 18 if a fuel compactor is installed, else spec tanks (a downgrade for the 20-tank Flea); usable fuel = `min(Ship.Fuel, capacity)`. Flag `fuelCompactorSetsTanks`. (source: Palm: Src/Fuel.c:50-62)
+- **SHP-017** {M5} [P] Palm tank capacity = 18 if a fuel compactor is installed, else spec tanks (a downgrade for the 20-tank Flea); usable fuel = `min(Ship.Fuel, capacity)`. Flag `economy.fuelCompactorRule = .setsEighteen`. (source: Palm: Src/Fuel.c:50-62)
 - **SHP-018** {M2} [M][W] Hull strength = spec hull + 50 (`HullUpgrade`) if the ship's `hullUpgraded` flag is set; the flag is set only by the Scarab quest reward and a newly built ship never has it. (source: Consts.cs:74, ShipSpec.cs:282-288, Game.cs:2486-2489, Ship.cs:755-765)
 - **SHP-019** {M5} [P] Palm hull strength = spec hull + 50 (`UPGRADEDHULL`) while `ScarabStatus == 3`; it is not stored on the ship. (source: Palm: Src/Shipyard.c:117-123, Src/spacetrader.h:136)
 
@@ -196,29 +196,29 @@ Scalars: ADJUST_SIZE_DEFAULT 100, ADJUST_SIZE_SPECIALTY 90, ADJUST_SIZE_WEAKNESS
 
 - **SHP-027** {M2} [M][W] `BaseWorth(forInsurance) = spec.Price*(tribbles > 0 && !forInsurance ? 1 : 3)/4 - (HullStrength - Hull)*RepairCost - (FuelTanks - Fuel)*FuelCost + Σ SellPrice of every installed weapon, shield and gadget`, using the ship's own cost columns (SHP-001/002) and the compactor-adjusted tank count. (source: Ship.cs:130-152)
 - **SHP-028** {M2} [M][W] `Worth(forInsurance) = BaseWorth(forInsurance) + Σ Commander.PriceCargo[i]` over all 10 items (the trade-in value). (source: Ship.cs:783-790)
-- **SHP-029** {M5} [P] Palm `CurrentShipPriceWithoutCargo(forInsurance) = (Price*(tribbles > 0 && !forInsurance ? 1 : 3))/4 - (GetHullStrength() - Hull)*RepairCosts - (Shiptype.FuelTanks - GetFuel())*CostOfFuel + Σ base×3/4 of installed equipment`. The fuel term uses the **spec** tank count, so with a compactor (18 tanks) on a ship with fewer spec tanks and more than that fuel, the term is negative and adds value. Flag `worthFuelTermUsesBaseTanks`. (source: Palm: Src/ShipPrice.c:72-97, Src/Fuel.c:59-62)
+- **SHP-029** {M5} [P] Palm `CurrentShipPriceWithoutCargo(forInsurance) = (Price*(tribbles > 0 && !forInsurance ? 1 : 3))/4 - (GetHullStrength() - Hull)*RepairCosts - (Shiptype.FuelTanks - GetFuel())*CostOfFuel + Σ base×3/4 of installed equipment`. The fuel term uses the **spec** tank count, so with a compactor (18 tanks) on a ship with fewer spec tanks and more than that fuel, the term is negative and adds value. Flag `economy.tradeInFuelTerm = .baseTanks`. (source: Palm: Src/ShipPrice.c:72-97, Src/Fuel.c:59-62)
 - **SHP-030** {M5} [P] Palm `CurrentShipPrice(forInsurance) = CurrentShipPriceWithoutCargo(forInsurance) + Σ BuyingPrice[i]`. (source: Palm: Src/ShipPrice.c:102-111)
 - **SHP-031** {M2} [W] Commander worth = `Ship.Price` (the spec list price) `+ Cash - Debt + (QuestStatusMoon > 0 ? 500000 : 0)`. Example: the starting Gnat with one pulse laser and 1000 cr gives 11000. Flag `worthUsesTradeInValue = false`. (source: Commander.cs:389-395)
-- **SHP-032** {M5} [M][P] Commander worth = trade-in value (`Worth(false)` / `CurrentShipPrice(false)`) `+ Cash - Debt + 500000 if the moon was bought`. Example: the starting Gnat with one pulse laser and 1000 cr gives `7500 + 1500 + 1000 = 10000`. Flag `worthUsesTradeInValue = true` (MOD-019). It feeds loans, fines, bribes, opponent strength, the moon offer and the score. (source: PRD MOD-019; Palm: Src/Money.c:46-49)
+- **SHP-032** {M5} [M][P] Commander worth = trade-in value (`Worth(false)` / `CurrentShipPrice(false)`) `+ Cash - Debt + 500000 if the moon was bought`. Example: the starting Gnat with one pulse laser and 1000 cr gives `7500 + 1500 + 1000 = 10000`. Flag `economy.worthUsesTradeInValue = true` (MOD-019). It feeds loans, fines, bribes, opponent strength, the moon offer and the score. (source: PRD MOD-019; Palm: Src/Money.c:46-49)
 
 ## 7. Ship availability and price
 
 - **SHP-033** {M2} [M][W][P] Ship type i (0..9) is offered iff `spec.minTech <= system.tech` and `i != current ship type`; otherwise it shows "not sold" (tech) or "got one" (same type). Below EarlyIndustrial no ship is offered. (source: Form_ShipList.cs:916-933, Form_SpaceTrader.cs:3096-3101; Palm: Src/BuyShipEvent.c:88-104, 128-136)
 - **SHP-034** {M2} [M][W] Net price = `spec.Price - Ship.Worth(false)` with no trader discount; it may be negative (the trader pays you). Example: new Gnat with one pulse laser, no cargo, buying a Firefly: `25000 - 9000 = 16000`. (source: Form_ShipList.cs:930)
-- **SHP-035** {M5} [P] Palm net price = `Price*(100 - Trader)/100 - CurrentShipPrice(false)`, and a result of exactly 0 becomes 1. Example (Trader 5): Firefly from the starting Gnat `23750 - 9000 = 14750`. Flag `shipTraderDiscount`. (source: Palm: Src/BuyShipEvent.c:88-104, Src/spacetrader.h:453)
+- **SHP-035** {M5} [P] Palm net price = `Price*(100 - Trader)/100 - CurrentShipPrice(false)`, and a result of exactly 0 becomes 1. Example (Trader 5): Firefly from the starting Gnat `23750 - 9000 = 14750`. Flag `economy.shipTraderDiscount`. (source: Palm: Src/BuyShipEvent.c:88-104, Src/spacetrader.h:453)
 
 ## 8. Trading in a ship (TradeShip)
 
 - **SHP-036** {M2} [M][W] TradeShip checks, in order: `netPrice > 0 && Debt > 0` → `.inDebt` (DebtNoBuy); `netPrice > CashToSpend` → `.insufficientFunds` (ShipBuyIF); `newSpec.crewQuarters < SpecialCrew.count` → `.passengersNeedQuarters(names)` (ShipBuyPassengerQuarters), where SpecialCrew counts the aboard members among Commander, Jarek, Princess and Wild; `newSpec.crewQuarters < CrewCount` → `.tooManyCrew` (ShipBuyCrewQuarters); reactor aboard → `.reactorAboard` (ShipBuyReactor). (source: Commander.cs:120-139, Ship.cs:1260-1277, Consts.cs:283-295)
-- **SHP-037** {M5} [P] Palm checks, in order: price 0 → not available; `price > 0 && Debt > 0` → in debt; `price > ToSpend()` → can't afford; Jarek aboard (`JarekStatus == 1`) and quarters < 2 → passenger needs quarters; same for Wild (`WildStatus == 1`); reactor aboard (status 1..20) → can't sell; then the transfer offers (SHP-042); then hired crew count (commander included) `> quarters` → too many crew members, checked **after** the transfer prompts. Flag `palmShipTradeChecks`. (source: Palm: Src/BuyShipEvent.c:196-216, 326-328)
+- **SHP-037** {M5} [P] Palm checks, in order: price 0 → not available; `price > 0 && Debt > 0` → in debt; `price > ToSpend()` → can't afford; Jarek aboard (`JarekStatus == 1`) and quarters < 2 → passenger needs quarters; same for Wild (`WildStatus == 1`); reactor aboard (status 1..20) → can't sell; then the transfer offers (SHP-042); then hired crew count (commander included) `> quarters` → too many crew members, checked **after** the transfer prompts. Flag `economy.shipTradeFlow = .palm`. (source: Palm: Src/BuyShipEvent.c:196-216, 326-328)
 - **SHP-038** {M2} [M][W] Unique-equipment transfer candidates, in this order: Morgan's laser, Quantum disruptor, Lightning shield, Fuel compactor, Hidden cargo bays. For each one installed: if the new spec has 0 slots of its type, the event `.cannotTransfer(item)` (ShipBuyNoSlots) is emitted and the item is lost; otherwise it is a candidate at its TransferPrice (§1.4). If the old ship has an escape pod, the pod is a candidate at 200 (`PodTransferCost`). (source: Commander.cs:142-173, Consts.cs:78)
 - **SHP-039** {M2} [M][W] If `netPrice + Σ candidate prices > CashToSpend` the warning `.cannotAffordAllTransfers` (ShipBuyIFTransfer) is emitted; it does not abort. (source: Commander.cs:175-176)
 - **SHP-040** {M2} [M][W] Candidates are then decided in order (equipment first, pod last), keeping a running `extra`: a candidate with `netPrice + extra + price > CashToSpend` is declined automatically with `.cannotAffordTransfer(item)` (ShipBuyNoTransfer); otherwise the player accepts or declines it (ShipBuyTransfer), and an accepted price is added to `extra`. (source: Commander.cs:178-203)
 - **SHP-041** {M2} [M][W] Finally the purchase is confirmed (ShipBuyConfirm); declining leaves all state unchanged. (source: Commander.cs:205-207)
-- **SHP-042** {M5} [P] Palm candidates are, in order, Lightning shield 30000, Fuel compactor 20000, Morgan's laser 33333 (flag `uniqueTransferFixedPrices`). The pre-check sum adds each installed item's price even when the new ship has no slot for it. An item is offered only if the new ship has a slot of its type and `price + extraSoFar <= ToSpend()`; the item's own price is **not** included, so accepting can leave Credits negative. (source: Palm: Src/BuyShipEvent.c:229-317)
-- **SHP-043** {M5} [P] Palm keeps the escape pod (and insurance) on a ship trade at no cost; the pod is not offered as a transfer. Flag `escapePodKeptOnShipTrade`. (source: Palm: Src/BuyShipEvent.c:40-82, Src/Global.c EscapePod)
+- **SHP-042** {M5} [P] Palm candidates are, in order, Lightning shield 30000, Fuel compactor 20000, Morgan's laser 33333 (flag `economy.shipTradeFlow = .palm`). The pre-check sum adds each installed item's price even when the new ship has no slot for it. An item is offered only if the new ship has a slot of its type and `price + extraSoFar <= ToSpend()`; the item's own price is **not** included, so accepting can leave Credits negative. (source: Palm: Src/BuyShipEvent.c:229-317)
+- **SHP-043** {M5} [P] Palm keeps the escape pod (and insurance) on a ship trade at no cost; the pod is not offered as a transfer. Flag `economy.shipTradeFlow = .palm`. (source: Palm: Src/BuyShipEvent.c:40-82, Src/Global.c EscapePod)
 - **SHP-044** {M2} [M][W] On a confirmed trade: a new ship of the chosen type replaces the old one with full tanks (spec tanks, before any compactor), full spec hull, no equipment, empty cargo, 0 tribbles and no hull upgrade; `Cash -= netPrice + extra`; crew slot j is copied from the old ship for `j < min(old quarters, new quarters)`; accepted items are added (a transferred shield keeps its charge, which is full); the pod is set if accepted, otherwise if insured then `Insurance = false` and `NoClaim = 0`. (source: Commander.cs:208-228, Ship.cs:755-765, Shield.cs:58-63)
-- **SHP-045** {M5} [P] On a confirmed Palm trade: equipment slots cleared, cargo and `BuyingPrice` cleared, fuel = new tank capacity, hull = spec hull; `Credits -= price`; `ScarabStatus 3 → 0`; `Credits -= extra`; accepted items go into slot 0 of their type; a transferred Lightning shield has charge 0 until the next departure (flag `transferredShieldUncharged`); `Tribbles = 0`; the crew is unchanged. (source: Palm: Src/BuyShipEvent.c:40-82, 357-369)
+- **SHP-045** {M5} [P] On a confirmed Palm trade: equipment slots cleared, cargo and `BuyingPrice` cleared, fuel = new tank capacity, hull = spec hull; `Credits -= price`; `ScarabStatus 3 → 0`; `Credits -= extra`; accepted items go into slot 0 of their type; a transferred Lightning shield has charge 0 until the next departure (flag `economy.shipTradeFlow = .palm`); `Tribbles = 0`; the crew is unchanged. (source: Palm: Src/BuyShipEvent.c:40-82, 357-369)
 - **SHP-046** {M2} [W] The cost basis `Commander.PriceCargo` is **not** reset when the hold is emptied by a ship trade, so the next trade-in counts it again (port bug #1, kept in Windows 2.01: `resetPriceCargoOnHoldClear = false`). (source: Commander.cs:208-228, Ship.cs:783-790)
 - **SHP-047** {M5} [M] Modern resets all 10 `PriceCargo` entries to 0 whenever the hold is cleared by a ship trade (including a designer-built ship), and by the Flea after arrest or the escape pod (POL owns those paths). Flag `resetPriceCargoOnHoldClear = true` (MOD-001). (source: PRD MOD-001)
 - **SHP-048** {M2} [M][W] After any successful ship purchase (ship list or designer), `QuestStatusScarab == 3` (Done) is reset to 0, so the Scarab quest effects end with the old hull. (source: Form_ShipList.cs:892-895, Form_Shipyard.cs:1185-1190, SpecialEvent.cs:89-92)
@@ -226,7 +226,7 @@ Scalars: ADJUST_SIZE_DEFAULT 100, ADJUST_SIZE_SPECIALTY 90, ADJUST_SIZE_WEAKNESS
 ## 9. Escape pod
 
 - **SHP-049** {M2} [M][W] The escape pod is offered iff the ship has none, `system.tech >= EarlyIndustrial` (the Flea's minimum tech) and `Cash >= 2000` (Cash, not CashToSpend). Buying asks a confirmation (EquipmentEscapePod), then `Cash -= 2000` and the pod is installed. (source: Form_SpaceTrader.cs:3096-3118, 3587-3595)
-- **SHP-050** {M5} [P] Palm offers the pod iff none, tech ≥ EarlyIndustrial and `ToSpend() >= 2000`; it costs 2000. Flag `escapePodPurchaseUsesToSpend`. (source: Palm: Src/Shipyard.c:169-172, 229-236, 313-318)
+- **SHP-050** {M5} [P] Palm offers the pod iff none, tech ≥ EarlyIndustrial and `ToSpend() >= 2000`; it costs 2000. Flag `economy.escapePodPurchaseUsesToSpend`. (source: Palm: Src/Shipyard.c:169-172, 229-236, 313-318)
 
 ## 10. Fuel and repairs
 

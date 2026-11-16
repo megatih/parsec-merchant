@@ -178,9 +178,19 @@ extension GameEngine {
             let lowest1 = state.nthLowestSkill(1), lowest2 = state.nthLowestSkill(2)
             state.mercenaries[CrewID.zeethibal].skills = (0..<4).map { $0 == lowest1 ? 10 : ($0 == lowest2 ? 8 : 5) }
             state.quests.wild = QuestStatus.Wild.done
-            state.commander.policeRecordScore = 0
+            let wasCriminal = state.commander.policeRecordScore < -5
+            // RUL-037: Palm raises the record to at least 0 (a hero keeps his record).
+            switch state.ruleset.flags.economy.wildDeliveredRecord {
+            case .setToZero: state.commander.policeRecordScore = 0
+            case .raiseToZero: state.commander.policeRecordScore = max(state.commander.policeRecordScore, 0)
+            }
             state.removeSpecialCrew(CrewID.wild)
-            state.recalculateSellPrices()
+            // RUL-115 (MOD-015): Modern only if the record was criminal before; Palm never after Wild.
+            switch state.ruleset.flags.economy.sellPriceRecalc {
+            case .always: state.recalculateSellPrices()
+            case .onlyIfWasCriminal: if wasCriminal { state.recalculateSellPrices() }
+            case .eraseRecordOnly: break
+            }
         case .reactor:
             guard state.freeCargoBays >= 15 else { return .stop(.rejected(.noEmptyBays)) }
             var events: [GameEvent] = []
@@ -280,8 +290,12 @@ extension GameEngine {
             state.commander.priceCargo[item] += spec.price
             return .done(remove: true, events: [.sealedCanisters(TradeItemType(rawValue: item) ?? .water)])
         case .eraseRecord:
+            let wasCriminal = state.commander.policeRecordScore < -5
             state.commander.policeRecordScore = 0
-            state.recalculateSellPrices()
+            // RUL-115 (MOD-015): Modern recalculates only if the record was criminal before.
+            if state.ruleset.flags.economy.sellPriceRecalc != .onlyIfWasCriminal || wasCriminal {
+                state.recalculateSellPrices()
+            }
         case .skill: state.changeRandomSkill(1)
         case .tribble: state.commander.ship.tribbles = 1
         case .tribbleBuyer:

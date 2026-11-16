@@ -36,6 +36,11 @@ public enum CommanderRules {
     /// CRW-004/007: validates a new-game configuration.
     public static func validate(_ config: NewGameConfig) -> CommandError? {
         if config.commanderName.allSatisfy({ $0 == " " }) { return .commanderNameRequired }
+        // CRW-005: Palm's name field holds at most NAMELEN (20) characters.
+        if let maxLength = Ruleset.named(config.ruleset).flags.economy.commanderNameMaxLength,
+           config.commanderName.count > maxLength {
+            return .commanderNameTooLong
+        }
         if config.skills.count != 4 || config.skills.contains(where: { !(1...10).contains($0) })
             || config.skills.reduce(0, +) != totalSkillPoints {
             return .invalidSkillAllocation
@@ -63,20 +68,37 @@ public extension GameEngine {
 public extension GameState {
     /// CRW-052: C# `ChangeRandomSkill(amount)` on the commander: picks among skills where `skill + amount` stays in
     /// 1…9 (Windows; the `< MaxSkill` quirk) and recalculates buy prices if the effective Trader changed (CRW-062).
-    mutating func changeRandomSkill(_ amount: Int) {
-        let cap = ruleset.flags.randomSkillIncreaseReachesTen ? 11 : 10
-        let candidates = (0..<4).filter {
-            let v = mercenaries[CrewID.commander].skills[$0] + amount
-            return v > 0 && v < cap
+    /// Palm (CRW-054/055) re-draws `GetRandom(4)` until the drawn skill is < 10 (increase) or > n (decrease by n), and
+    /// returns at once when all four skills are ≥ 10; where Palm would loop forever (no eligible skill) the engine makes
+    /// no change. Returns false when nothing could change (no random draw was made).
+    @discardableResult
+    mutating func changeRandomSkill(_ amount: Int) -> Bool {
+        let skills = mercenaries[CrewID.commander].skills
+        let pick: Int
+        switch ruleset.flags.economy.randomSkillChange {
+        case .eligibleList:
+            let cap = ruleset.flags.randomSkillIncreaseReachesTen ? 11 : 10
+            let candidates = (0..<4).filter {
+                let v = skills[$0] + amount
+                return v > 0 && v < cap
+            }
+            guard !candidates.isEmpty else { return false }
+            pick = candidates[rng.next(below: candidates.count)]
+        case .redraw:
+            if skills.allSatisfy({ $0 >= 10 }) { return false }
+            let eligible: (Int) -> Bool = { amount > 0 ? skills[$0] < 10 : skills[$0] > -amount }
+            guard (0..<4).contains(where: eligible) else { return false }
+            var d = rng.next(below: 4)
+            while !eligible(d) { d = rng.next(below: 4) }
+            pick = d
         }
-        guard !candidates.isEmpty else { return }
         let before = skill(.trader)
-        let pick = candidates[rng.next(below: candidates.count)]
         mercenaries[CrewID.commander].skills[pick] += amount
         if skill(.trader) != before {
             buyPrices = Pricing.buyPrices(sell: sellPrices, in: currentSystem, criminal: commander.policeRecordScore < -5,
                                           traderSkill: skill(.trader), ruleset: ruleset)
         }
+        return true
     }
 
     /// CRW-068.
@@ -85,8 +107,11 @@ public extension GameState {
         let crewMax = (0..<4).map { s in
             commander.ship.crew.compactMap { $0 }.reduce(1) { max($0, mercenaries[$1].skills[s]) }
         }
-        let gadget = (0..<4).map { s in commander.ship.gadgets.filter { r.tables.gadget($0).skillBonus?.rawValue == s }.count * 3 }
-        let adj = Skills.adjustForDifficulty(0, difficulty)
+        let gadget = (0..<4).map { s in
+            commander.ship.gadgets.filter { r.tables.gadget($0).skillBonus?.rawValue == s }
+                .reduce(0) { $0 + ($1 == .cloakingDevice ? r.flags.economy.cloakPilotBonus : 3) }
+        }
+        let adj = Skills.adjustForDifficulty(0, difficulty, hardAdjustment: r.flags.economy.hardSkillAdjustment)
         return CrewPreview(effectiveSkills: (0..<4).map { skill(SkillType(rawValue: $0) ?? .pilot) }, crewMaximum: crewMax,
                            difficultyAdjustment: adj, gadgetBonus: gadget, hagglingBonus: hagglingComputer ? 1 : 0,
                            freeQuarters: commander.ship.freeQuarters, dailyMercenaryCost: mercenaryCosts,

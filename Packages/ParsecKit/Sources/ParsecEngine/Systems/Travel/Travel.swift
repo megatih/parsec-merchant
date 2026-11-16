@@ -98,7 +98,8 @@ public extension GameState {
     mutating func incDays(_ n: Int) -> [GameEvent] {
         var events: [GameEvent] = []
         commander.days += n
-        if commander.insurance { setNoClaim(commander.noClaim + n) }
+        // RUL-045: C# grows no-claim per day; Palm per normal warp (in `warp`).
+        if commander.insurance, ruleset.flags.economy.noClaimTiming == .perDay { setNoClaim(commander.noClaim + n) }
         if commander.policeRecordScore > 0 {
             commander.policeRecordScore = max(0, commander.policeRecordScore - n / 3)
         } else if commander.policeRecordScore < -5 {
@@ -129,7 +130,9 @@ public extension GameState {
         } else if quests.experiment == QuestStatus.Experiment.performed, quests.fabricRipProbability > 0 {
             quests.fabricRipProbability -= n
         }
-        for (onBoard, id) in [(jarekOnBoard, CrewID.jarek), (princessOnBoard, CrewID.princess), (wildOnBoard, CrewID.wild)] where onBoard {
+        // RUL-061: Palm has no passenger impatience.
+        for (onBoard, id) in [(jarekOnBoard, CrewID.jarek), (princessOnBoard, CrewID.princess), (wildOnBoard, CrewID.wild)]
+        where onBoard && ruleset.flags.economy.passengerImpatience {
             events += impatience(id)
         }
         return events
@@ -312,6 +315,9 @@ public extension GameState {
             } else if let orbit = tradeInOrbitRoll(trader: opp) {
                 type = orbit
             }
+        } else if ruleset.flags.economy.tradeInOrbitWhileCloaked, let orbit = tradeInOrbitRoll(trader: opp) {
+            // RUL-042: in Palm a cloaked player yields TRADERIGNORE, which still gets the trade-in-orbit roll.
+            type = orbit
         }
         let ignoredByOption = options.alwaysIgnoreTraders && (type == .traderIgnore || type == .traderFlee)
         let ignoredTrade = (type == .traderBuy || type == .traderSell) && options.alwaysIgnoreTradeInOrbit
@@ -535,8 +541,28 @@ public extension GameState {
         return events
     }
 
+    /// MOD-016 (RUL-116, CRW-051): mercenaries lost to jail or the escape pod relocate like fired ones, in ascending
+    /// slot order, measured from the system where the commander arrives.
+    mutating func relocateLostMercenaries(_ ids: [Int]) {
+        guard ruleset.flags.economy.lostMercenariesRelocate else { return }
+        let special: Set<Int> = [CrewID.commander, CrewID.jarek, CrewID.princess, CrewID.wild]
+        for id in ids where !special.contains(id) { relocateMercenary(id, near: warpSystem) }
+    }
+
+    /// CRW-039: `GetRandom(systems)` until the floor distance to `systemID` is < 20.
+    mutating func relocateMercenary(_ id: Int, near systemID: Int) {
+        let here = galaxy.systems[systemID]
+        var candidate: Int
+        repeat {
+            candidate = rng.next(below: galaxy.systems.count)
+        } while GalaxyGenerator.distance(galaxy.systems[candidate], here, rule: ruleset.flags.distance) >= 20
+        mercenaries[id].systemID = candidate
+    }
+
     /// C# `CreateFlea`.
     mutating func createFlea() {
+        let lost = commander.ship.crew.dropFirst().compactMap { $0 }
+        defer { relocateLostMercenaries(lost) }
         var flea = Ship(type: .flea, spec: ruleset.tables.ship(.flea))
         flea.crew[0] = CrewID.commander
         commander.ship = flea
@@ -545,8 +571,9 @@ public extension GameState {
         if ruleset.flags.resetPriceCargoOnHoldClear { commander.priceCargo = Array(repeating: 0, count: 10) }
     }
 
-    /// C# `Arrival` (the reactor meltdown path may end the game).
-    mutating func arrival() -> [GameEvent] {
+    /// C# `Arrival` (the reactor meltdown path may end the game). `normalPath` is false after arrest or the escape pod
+    /// (Palm reports debt notices only on the normal path: BNK-036).
+    mutating func arrival(normalPath: Bool = true) -> [GameEvent] {
         var events: [GameEvent] = []
         commander.currentSystem = warpSystem
         galaxy.systems[warpSystem].visited = true
@@ -565,10 +592,14 @@ public extension GameState {
             events.append(.reactorWarning(status: quests.reactor))
         }
         events += arrivalTribbles()
-        if commander.debt >= 75_000 {
-            events.append(.debtWarning(debt: commander.debt))
-        } else if commander.debt > 0, options.remindLoans, commander.days % 5 == 0 {
-            events.append(.debtReminder(debt: commander.debt))
+        let notices = ruleset.flags.economy.debtNotices
+        if notices != .bothNormalArrivalOnly || normalPath {
+            let warned = commander.debt >= 75_000
+            if warned { events.append(.debtWarning(debt: commander.debt)) }
+            // RUL-118 (MOD-018): Modern and Palm evaluate the reminder independently of the warning.
+            if !warned || notices != .exclusive, commander.debt > 0, options.remindLoans, commander.days % 5 == 0 {
+                events.append(.debtReminder(debt: commander.debt))
+            }
         }
         events += arrivalRepairs()
         updatePressuresAndQuantities(arrival: commander.currentSystem)
@@ -634,6 +665,17 @@ extension GameEngine {
                 state.quests.canSuperWarp = false
                 return StepResult(events: [.singularityLost, .departureBlocked(blocker)])
             }
+        } else if ruleset.flags.economy.wildConfirmBeforeWarpChecks, state.wildWillLeave {
+            // BNK-058: Palm asks about Wild first; accepting removes him even if a money check then fails.
+            guard ack.contains(.wildLeavesWithoutLaser) else {
+                return .needsConfirmation(Confirmation(.wildLeavesWithoutLaser))
+            }
+            state.quests.wild = QuestStatus.Wild.notStarted
+            if let blocker = state.warpTargetPreview(target).blocking {
+                return StepResult(events: [.wildLeftShip, .departureBlocked(blocker)])
+            }
+            return continueWarp(from: state.commander.currentSystem, to: target, viaSingularity: false,
+                                events: [.wildLeftShip])
         } else if let blocker = state.warpTargetPreview(target).blocking {
             return .rejected(blocker)
         }
@@ -645,7 +687,12 @@ extension GameEngine {
             state.quests.wild = QuestStatus.Wild.notStarted
             events.append(.wildLeftShip)
         }
-        let from = state.commander.currentSystem
+        return continueWarp(from: state.commander.currentSystem, to: target, viaSingularity: viaSingularity, events: events)
+    }
+
+    /// The departure part of `warp` once every check and consent has passed.
+    private mutating func continueWarp(from: Int, to target: Int, viaSingularity: Bool, events prior: [GameEvent]) -> StepResult {
+        var events = prior
         state.arrivedViaWormhole = state.galaxy.wormholeExists(from: from, to: target)
         if viaSingularity {
             state.quests.canSuperWarp = false
@@ -657,6 +704,8 @@ extension GameEngine {
             state.commander.ship.fuel -= distance
             state.payInterest()
             events += state.incDays(1)
+            // RUL-045/BNK-044: Palm adds 1 per normal warp, after IncDays; stored unclamped.
+            if state.commander.insurance, ruleset.flags.economy.noClaimTiming == .perWarp { state.commander.noClaim += 1 }
         }
         state.setDepartureCountdown()
         state.newsEvents.removeAll()
@@ -727,13 +776,18 @@ extension GameEngine {
         case .killed:
             return [state.endGame(.killed)]
         case .escapePod:
-            var events = state.escapeWithPod()
             state.phase = .docked
-            events += state.arrival()
+            // BNK-048: Palm runs Arrival() at the start of the escape-pod sequence.
+            if ruleset.flags.economy.escapePodArrivalFirst {
+                let arrived = state.arrival(normalPath: false)
+                return arrived + state.escapeWithPod()
+            }
+            var events = state.escapeWithPod()
+            events += state.arrival(normalPath: false)
             return events
         case .arrested:
             state.phase = .docked
-            return state.arrival()
+            return state.arrival(normalPath: false)
         case .normal, .continue:
             t.clicksRemaining -= 1
             state.phase = .inTransit(t)

@@ -163,6 +163,12 @@ public struct Ruleset: Sendable {
         r.id = .palm122
         r.rngKind = .palmLCG
         r.newspaperRNG = .palm
+        // Flat MOD flags whose Palm value equals Modern (RUL-101, 105, 106, 107, 108).
+        r.flags.resetPriceCargoOnHoldClear = true
+        r.flags.randomSkillIncreaseReachesTen = true
+        r.flags.resourcesAffectUnvisitedSystems = true
+        r.flags.restockUsesOwnSystemItemTraded = true
+        r.flags.tradeInOrbitCashCapUsesOrbitPrice = true
         r.flags.galaxy = .palm122
         r.flags.economy = .palm122
         r.flags.travel = .palm122

@@ -39,12 +39,19 @@ public extension GameState {
 
     // MARK: Escape pod (SHP-049)
     var escapePodOffered: Bool {
-        !commander.ship.escapePod && currentSystem.techLevel >= .earlyIndustrial && commander.cash >= 2_000
+        // SHP-050: Palm tests ToSpend() instead of cash.
+        let money = ruleset.flags.economy.escapePodPurchaseUsesToSpend ? cashToSpend : commander.cash
+        return !commander.ship.escapePod && currentSystem.techLevel >= .earlyIndustrial && money >= 2_000
     }
 
     // MARK: Crew (CRW-027)
     var mercenariesForHire: [Int] {
-        (1..<mercenaries.count).filter { mercenaries[$0].systemID == commander.currentSystem && !commander.ship.hasCrew($0) }
+        let here = (1..<mercenaries.count).filter {
+            mercenaries[$0].systemID == commander.currentSystem && !commander.ship.hasCrew($0)
+        }
+        // CRW-028: Palm offers only the lowest-index mercenary of the system.
+        guard let limit = ruleset.flags.economy.mercenariesOfferedPerSystem else { return here }
+        return Array(here.prefix(limit))
     }
 
     /// Special crew aboard (Commander, Jarek, Princess, Wild) — C# `Ship.SpecialCrew` restricted to passengers + commander.
@@ -68,6 +75,15 @@ public extension GameState {
 
     func transferPrice(_ item: TransferItem) -> Int {
         let t = ruleset.tables
+        // RUL-053: Palm's fixed transfer prices.
+        if ruleset.flags.economy.shipTradeFlow == .palm {
+            switch item {
+            case .lightningShield: return 30_000
+            case .fuelCompactor: return 20_000
+            case .morgansLaser: return 33_333
+            default: break
+            }
+        }
         func tp(_ base: Int) -> Int { base * 3 / 4 * 110 / 90 }
         switch item {
         case .morgansLaser: return tp(t.weapon(.morgansLaser).price)
@@ -82,7 +98,14 @@ public extension GameState {
     /// SHP-034: net price of buying `type` (list price minus current ship worth including cargo cost basis).
     func shipQuote(_ type: ShipType) -> ShipQuote {
         let newSpec = ruleset.tables.ship(type)
-        return shipQuote(type, spec: newSpec, netPrice: newSpec.price - shipWorth(forInsurance: false))
+        return shipQuote(type, spec: newSpec, netPrice: shipNetPrice(newSpec))
+    }
+
+    /// SHP-034/SHP-035 (RUL-052): `Price − tradeIn`; Palm `Price × (100 − Trader)/100 − tradeIn`, where 0 becomes 1.
+    func shipNetPrice(_ newSpec: ShipSpec) -> Int {
+        guard ruleset.flags.economy.shipTraderDiscount else { return newSpec.price - shipWorth(forInsurance: false) }
+        let net = newSpec.price * (100 - skill(.trader)) / 100 - shipWorth(forInsurance: false)
+        return net == 0 ? 1 : net
     }
 
     /// SHP-038: transfer candidates and lost items for a new ship with `newSpec`.
@@ -90,7 +113,13 @@ public extension GameState {
         var candidates: [(TransferItem, Int)] = []
         var lost: [TransferItem] = []
         let ship = commander.ship
-        let installed: [(TransferItem, Bool, Int)] = [
+        let palm = ruleset.flags.economy.shipTradeFlow == .palm
+        // SHP-042: Palm offers Lightning, Compactor, Morgan's in that order; the pod is never a candidate (SHP-043).
+        let installed: [(TransferItem, Bool, Int)] = palm ? [
+            (.lightningShield, ship.has(.lightning), newSpec.shieldSlots),
+            (.fuelCompactor, ship.has(.fuelCompactor), newSpec.gadgetSlots),
+            (.morgansLaser, ship.has(.morgansLaser), newSpec.weaponSlots),
+        ] : [
             (.morgansLaser, ship.has(.morgansLaser), newSpec.weaponSlots),
             (.quantumDisruptor, ship.has(.quantumDisruptor), newSpec.weaponSlots),
             (.lightningShield, ship.has(.lightning), newSpec.shieldSlots),
@@ -100,7 +129,7 @@ public extension GameState {
         for (item, has, slots) in installed where has {
             if slots == 0 { lost.append(item) } else { candidates.append((item, transferPrice(item))) }
         }
-        if ship.escapePod { candidates.append((.escapePod, 200)) }
+        if ship.escapePod, !palm { candidates.append((.escapePod, 200)) }
         return ShipQuote(type: type, netPrice: net, candidates: candidates, lost: lost)
     }
 
@@ -158,7 +187,8 @@ extension GameEngine {
         if !state.commander.ship.escapePod { return .rejected(.insuranceRequiresEscapePod) }
         if state.commander.insurance { return .rejected(.insuranceAlreadyActive) }
         state.commander.insurance = true
-        state.commander.noClaim = 0
+        // RUL-046: Palm keeps the no-claim counter when buying (only stopping resets it).
+        if ruleset.flags.economy.buyInsuranceResetsNoClaim { state.commander.noClaim = 0 }
         return StepResult(events: [.insuranceBought])
     }
 
@@ -209,13 +239,11 @@ extension GameEngine {
         crew.remove(at: slot)
         crew.append(nil)
         state.commander.ship.crew = crew
-        // CRW: a fired mercenary moves to a random system within distance < 20 of the current one (C#).
-        let here = state.currentSystem
-        var candidate: Int
-        repeat {
-            candidate = state.rng.next(below: state.galaxy.systems.count)
-        } while GalaxyGenerator.distance(state.galaxy.systems[candidate], here, rule: ruleset.flags.distance) >= 20
-        state.mercenaries[id].systemID = candidate
+        // CRW-039: a fired mercenary moves to a random system within distance < 20 of the current one (C#);
+        // Palm leaves it in its system (RUL-060, CRW-040).
+        if ruleset.flags.economy.firedMercenaryRelocates {
+            state.relocateMercenary(id, near: state.commander.currentSystem)
+        }
         recalculateBuyPrices()
         return StepResult(events: [.fired(crewID: id)])
     }
@@ -296,7 +324,7 @@ extension GameEngine {
             return .rejected(type == state.commander.ship.type ? .alreadyOwnThisShipType : .notSoldHere)
         }
         let spec = ruleset.tables.ship(type)
-        return tradeShip(type, spec: spec, netPrice: spec.price - state.shipWorth(forInsurance: false), accepting: wanted, ack)
+        return tradeShip(type, spec: spec, netPrice: state.shipNetPrice(spec), accepting: wanted, ack)
     }
 
     /// SHP-075: builds a designed ship through the TradeShip flow.
@@ -316,20 +344,30 @@ extension GameEngine {
     mutating func tradeShip(_ type: ShipType, spec newSpec: ShipSpec, netPrice net: Int, accepting wanted: [TransferItem],
                             _ ack: Set<WarningID>) -> StepResult {
         let quote = state.shipQuote(type, spec: newSpec, netPrice: net)
+        let palm = ruleset.flags.economy.shipTradeFlow == .palm
         if net > 0, state.commander.debt > 0 { return .rejected(.inDebt) }
         if net > state.cashToSpend { return .rejected(.insufficientFunds) }
         if newSpec.crewQuarters < state.specialCrewCount { return .rejected(.passengersNeedQuarters) }
-        if newSpec.crewQuarters < state.commander.ship.crewCount { return .rejected(.notEnoughQuarters) }
+        // SHP-037: Palm checks the reactor before the crew count, and counts hired crew (commander + mercenaries)
+        // without the passengers.
+        let passengers = [CrewID.jarek, CrewID.wild].filter { state.commander.ship.hasCrew($0) }.count
+        let hired = state.commander.ship.crewCount - (ruleset.flags.economy.passengersAsCrew ? 0 : passengers)
+        if palm, state.reactorOnBoard { return .rejected(.reactorOnBoard) }
+        if newSpec.crewQuarters < hired { return .rejected(.notEnoughQuarters) }
         if state.reactorOnBoard { return .rejected(.reactorOnBoard) }
 
         var events: [GameEvent] = quote.lost.map { .cannotTransfer($0) }
-        if net + quote.candidates.reduce(0, { $0 + $1.price }) > state.cashToSpend, !quote.candidates.isEmpty {
+        // SHP-042: Palm's pre-check also adds items that cannot be transferred.
+        let precheck = quote.candidates.reduce(0) { $0 + $1.price }
+            + (palm ? quote.lost.reduce(0) { $0 + state.transferPrice($1) } : 0)
+        if net + precheck > state.cashToSpend, !(quote.candidates.isEmpty && (!palm || quote.lost.isEmpty)) {
             events.append(.cannotAffordAllTransfers)
         }
         var extra = 0
         var accepted: [TransferItem] = []
         for (item, price) in quote.candidates {
-            if net + extra + price > state.cashToSpend {
+            // SHP-042: Palm does not include the item's own price in the affordability test.
+            if net + extra + (palm ? 0 : price) > state.cashToSpend {
                 events.append(.cannotAffordTransfer(item))
             } else if wanted.contains(item) {
                 extra += price
@@ -348,20 +386,24 @@ extension GameEngine {
             case .morgansLaser: ship.weapons.append(.morgansLaser)
             case .quantumDisruptor: ship.weapons.append(.quantumDisruptor)
             case .lightningShield:
-                let charge = old.shields.first { $0.type == .lightning }?.charge ?? ruleset.tables.shield(.lightning).power
+                // RUL-055: Palm's transferred Lightning shield is uncharged until the next recharge.
+                let charge = palm ? 0
+                    : old.shields.first { $0.type == .lightning }?.charge ?? ruleset.tables.shield(.lightning).power
                 ship.shields.append(ShieldInstance(type: .lightning, charge: charge))
             case .fuelCompactor: ship.gadgets.append(.fuelCompactor)
             case .hiddenCargoBays: ship.gadgets.append(.hiddenCargoBays)
             case .escapePod: ship.escapePod = true
             }
         }
+        // RUL-054/SHP-043: Palm keeps the escape pod and insurance for free.
+        if palm { ship.escapePod = old.escapePod }
         if !ship.escapePod, state.commander.insurance {
             state.commander.insurance = false
             state.commander.noClaim = 0
         }
         state.commander.ship = ship
         state.commander.cash -= net + extra
-        if ruleset.flags.resetPriceCargoOnHoldClear {
+        if ruleset.flags.resetPriceCargoOnHoldClear || palm {
             state.commander.priceCargo = Array(repeating: 0, count: TradeItemType.allCases.count)
         }
         if state.quests.scarab == QuestStatus.Scarab.done { state.quests.scarab = QuestStatus.Scarab.notStarted }

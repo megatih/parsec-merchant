@@ -169,7 +169,8 @@ public enum GalaxyGenerator {
             }
             var s = StarSystem(id: i, x: x, y: y, size: size, techLevel: tech, politics: pol.type, pressure: pressure,
                                specialResource: resource)
-            s.tradeItems = Pricing.initialQuantities(for: s, difficulty: difficulty, ruleset: ruleset, rng: &rng)
+            s.tradeItems = Pricing.initialQuantities(for: s, difficulty: difficulty, ruleset: ruleset,
+                                                     systemSizes: systems.map(\.size) + [size], rng: &rng)
             systems.append(s)
         }
         // Shuffle locations so early-alphabet systems are not all central.
