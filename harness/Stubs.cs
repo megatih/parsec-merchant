@@ -55,6 +55,7 @@ namespace Fryz.Apps.SpaceTrader
 		public static Func<AlertType, DialogResult> Policy = _ => DialogResult.Yes;
 		public static List<string> Alerts = new List<string>();
 		public static int CargoAmount = 0;
+		public static List<object> Encounters = new List<object>();
 	}
 
 	public class SpaceTrader : IWin32Window
@@ -79,6 +80,12 @@ namespace Fryz.Apps.SpaceTrader
 	public class FormEncounter : Form
 	{
 		public EncounterResult Result = EncounterResult.Normal;
+		public override DialogResult ShowDialog(IWin32Window owner)
+		{
+			var g = Game.CurrentGame;
+			Harness.Encounters.Add(new { clicks = g.Clicks, type = (int)g.EncounterType, opp = HarnessDriver.ShipDumpPublic(g.Opponent) });
+			return DialogResult.OK;
+		}
 	}
 
 	public class FormPlunder : Form { }

@@ -145,6 +145,13 @@ public struct GameState: Codable, Sendable, Equatable {
     public var pendingOrbitTrade: OrbitTradeOffer?
     /// A floating canister the player may scoop after a kill (C# `EncounterScoop`).
     public var pendingScoop: TradeItemType?
+    /// The most recent opponent (C# `Game.Opponent` persists between encounters and feeds the cloak test).
+    public var lastOpponent: Ship?
+    /// Transit flags of the current or last trip (C# `Raided`, `Inspected`).
+    public var raided = false
+    public var inspected = false
+    /// The transit to resume after the current encounter ends.
+    public var encounterTransit: TransitState?
     public var phase: GamePhase = .docked
     public var cheatsUsed = false
     public var reloadCount = 0
@@ -197,5 +204,6 @@ public extension GameState {
         veryRareEncounters = g.veryRareEncounters
         warpSystem = g.commander.currentSystem
         ironman = config.ironman
+        lastOpponent = Ship(type: .gnat, spec: ruleset.tables.ship(.gnat))
     }
 }

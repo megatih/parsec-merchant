@@ -27,6 +27,7 @@ namespace Fryz.Apps.SpaceTrader
 			if (cmd == "market" || cmd == "all") Write(dir, "market-windows201.json", MarketSteps());
 			if (cmd == "opponents" || cmd == "all") Write(dir, "opponents-windows201.json", Opponents());
 			if (cmd == "combat" || cmd == "all") Write(dir, "combat-windows201.json", Combat());
+			if (cmd == "travel" || cmd == "all") Write(dir, "travel-windows201.json", Travel());
 			return 0;
 		}
 
@@ -232,6 +233,48 @@ namespace Fryz.Apps.SpaceTrader
 				}
 			}
 			Harness.Policy = _ => DialogResult.Yes;
+			return list;
+		}
+
+		public static object ShipDumpPublic(Ship sh) => ShipDump(sh);
+
+		/// Journeys: repeated warps to the first in-range destination after a rotating offset. Encounters are recorded
+		/// by the FormEncounter stub (which returns Normal without fighting), so this exercises warp, departure,
+		/// per-click repairs, encounter determination, opponent generation and the arrival pipeline.
+		static object Travel()
+		{
+			Harness.Policy = _ => DialogResult.Yes;
+			var list = new List<object>();
+			foreach (int seed in new[] { 2, 9, 42 })
+			{
+				foreach (Difficulty d in new[] { Difficulty.Easy, Difficulty.Normal, Difficulty.Impossible })
+				{
+					SeedRandom(seed);
+					var game = new Game("Harness", d, 5, 5, 5, 5, new SpaceTrader());
+					game.Options.AlwaysIgnoreTraders = false;
+					var warps = new List<object>();
+					for (int w = 0; w < 25; w++)
+					{
+						game.Commander.Ship.Fuel = game.Commander.Ship.FuelTanks;
+						game.Commander.Cash = Math.Max(game.Commander.Cash, 20000);
+						game.Commander.PoliceRecordScore = w % 5 == 4 ? -12 : game.Commander.PoliceRecordScore;
+						game.Commander.Ship.Hull = Math.Max(1, game.Commander.Ship.Hull - (w % 3) * 7);
+						int[] dest = game.Destinations;
+						int target = dest[(w * 7) % dest.Length];
+						game.SelectedSystemId = (StarSystemId)target;
+						Harness.Encounters.Clear();
+						game.Warp(false);
+						var sys = game.Commander.CurrentSystem;
+						var news = new List<int>(); foreach (object o in game.NewsEvents) news.Add((int)o);
+						warps.Add(new { target, encounters = new List<object>(Harness.Encounters), arrived = (int)sys.Id,
+							days = game.Commander.Days, cash = game.Commander.Cash, debt = game.Commander.Debt,
+							record = game.Commander.PoliceRecordScore, fuel = game.Commander.Ship.Fuel, hull = game.Commander.Ship.Hull,
+							shields = Charges(game.Commander.Ship), buy = (int[])game.PriceCargoBuy.Clone(), sell = (int[])game.PriceCargoSell.Clone(),
+							stock = (int[])sys.TradeItems.Clone(), news, opponentSkills = (int[])game.Mercenaries[(int)CrewMemberId.Opponent].Skills.Clone() });
+					}
+					list.Add(new { seed, difficulty = (int)d, warps });
+				}
+			}
 			return list;
 		}
 

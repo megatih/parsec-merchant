@@ -68,6 +68,13 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case notInCrew
     case cannotFireSpecialPassenger
     case gameOver
+    // Travel (TRV)
+    case debtTooLargeToTravel
+    case cannotPayMercenaries
+    case cannotPayInsurance
+    case cannotPayWormholeTax
+    case destinationOutOfRange
+    case noSingularity
 }
 
 /// Something that happened, for the feed, log, statistics and achievements.
@@ -96,6 +103,23 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case opponentEscaped
     case encounterChanged(EncounterType)
     case bountyPaid(Int)
+    case departed(from: Int, to: Int, viaWormhole: Bool)
+    case fabricRip(newDestination: Int)
+    case encounterStarted(type: EncounterType, opponent: ShipType, clicks: Int)
+    case uneventfulTrip
+    case arrived(system: Int)
+    case debtWarning(debt: Int)
+    case debtReminder(debt: Int)
+    case reactorWarning(status: Int)
+    case reactorMeltdown
+    case tribblesChanged(from: Int, to: Int)
+    case autoFuelFailed
+    case autoRepairFailed
+    case easterEgg
+    case escapePodUsed(insurancePayout: Int)
+    case wildLeftShip
+    case gemulonInvaded
+    case experimentPerformed
     case boughtEscapePod(price: Int)
     case hired(crewID: Int)
     case fired(crewID: Int)
@@ -150,6 +174,8 @@ public enum Command: Codable, Sendable, Equatable {
     case buyShip(ShipType, transfers: [TransferItem])
     case resolveTradeInOrbit(quantity: Int)
     case buildDesign(ShipDesign, transfers: [TransferItem])
+    case warp
+    case jump
     case selectTarget(Int)
     case track(Int?)
 }
@@ -251,6 +277,8 @@ public struct GameEngine: Sendable {
         case let .buyShip(t, transfers): return buyShip(t, accepting: transfers, ack)
         case let .resolveTradeInOrbit(q): return resolveTradeInOrbit(q)
         case let .buildDesign(d, transfers): return buildDesign(d, accepting: transfers, ack)
+        case .warp: return warp(viaSingularity: false, ack)
+        case .jump: return warp(viaSingularity: true, ack)
         case .setOptions, .selectTarget, .track: return .rejected(.invalidArgument)
         }
     }
