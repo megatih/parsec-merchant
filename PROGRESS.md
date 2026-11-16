@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M6 (starting)
-- **Next step:** M6: integrate SAV/CHEAT/OPT specs (agent writing them); implement cheats (Command.cheat) and Ironman rules per spec; traced tests incl. 500 fuzzed byte-identical round trips, migration fixtures, corruption quarantine, slot rotation, high scores; ParsecPersistence coverage ≥85%; verify default; tag m6-done.
-- **Last gate result:** verify.sh --quick ALL GATES PASSED (persistence core)
+- **Current milestone:** M7 (starting)
+- **Next step:** M7: app shell per UI-SHELL.md/MENU.md (specs committed): GameSession, Welcome/Quick Start, New Game wizard, docked sections, inspector, menus, Settings, Options sheet, save/load/import/export/Finder-open, Retire, About, Help, App Intents; interim encounter panel + game-over card; app unit tests + UI flows 1/3/4; verify --ui at M7 exit.
+- **Last gate result:** verify.sh default ALL GATES PASSED @ M6 exit (7/7; 0 untraced {M6} IDs; 1088 tests; persistence coverage 98%+)
 - **Blockers:** none
 
 ## Milestones
@@ -15,7 +15,7 @@
 - [x] M3 Travel, encounters, combat, police, news (2026-11-17, tag m3-done; opponents/combat/journeys/actions/newspaper bit-exact vs C# harness; fuzz 6000 games 0 violations; 382+ tests)
 - [x] M4 Quests, endings, scoring (2026-11-17, tag m4-done; 46 special events bit-exact vs C# harness; QST scenario tests per chain incl. failures; SCORE; tribble/passenger notices)
 - [x] M5 Rulesets (Palm 1.2.2 and Modern) (2026-11-17, tag m5-done; Palm content pack + galaxy, all RUL flags in per-area rule groups, MOD-001…021, no open [verify] (accepted assumptions in QA-REPORT), 1546 spec IDs)
-- [ ] M6 Persistence, high scores, cheats
+- [x] M6 Persistence, high scores, cheats (2026-11-17, tag m6-done; SAV/SCORE/CHEAT/OPT traced; 500 fuzzed byte-identical round trips; v1 fixtures per ruleset)
 - [ ] M7 App shell and docked screens
 - [ ] M8 Galaxy chart
 - [ ] M9 Encounter, transit, event UX
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M6 exit: persistence rewrite (gameID/generation, backup recovery, validation, versioned high scores, loadForPlay reload rule, import clears Ironman), cheats (all C# Find codes + Palm codes/cheat form, cheatsUsed permanent), options (docked-only, normalized, Palm defaults). M7 specs UI-SHELL (129) + MENU (45) written. Decisions: galaxy code includes difficulty (generator needs it); interim encounter/game-over surfaces in M7 replaced in M9.
 - 2026-11-17: M6 started: ParsecPersistence SaveEnvelope/SaveCodec (sorted-key JSON, byte-identical round trips)/SaveMigrator (raw JSON, v1)/SlotStore (atomic, 3 rotating backups, autosave, import/export, Corrupt/ quarantine)/HighScoreStore; engine HighScoreTable (top 10, SCORE-031…036).
 - 2026-11-17: M5 exit: cross-area finish (Palm passengers outside the crew array, Palm Gemulon `> 7` rule, duplicate economy flags removed). Fuzz cash invariant now checks negative-cash transitions (allowed only for ECO-068 C# orbit cap and RUL-043 Palm dump precedence bug) — stricter than before (Windows now checked).
 - 2026-11-17: M5: five area branches merged (Palm content pack + galaxy; economy; travel/news/score; encounters/combat/police; quests). Deduplicated flags (one per behaviour: moon-girl → quest, record decay → travel, Wild laser/quest-ship damage → quest); Palm arrest/pod run Arrival() once (meltdown twice); 971 tests; fuzz clean on all rulesets; 1530 spec IDs (≥400 ✓). MOD-n cited as RUL-1nn in tests.
