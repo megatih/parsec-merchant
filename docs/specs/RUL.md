@@ -46,7 +46,7 @@
 | `economy.zeroUntradeableOnDrift` | Drift step for items the system cannot trade | left unchanged | left unchanged | set to 0 | `Game.cs:526`; `Src/Traveler.c:ChangeQuantities` | RUL-034 |
 | `economy.statusShuffleOrder` | Order of pressure shuffle and quantity update on arrival | interleaved per system | interleaved per system | all statuses first (`ShuffleStatus`), then all quantities | `Game.cs:505`; `Src/Traveler.c:Arrival` | RUL-035 |
 | `economy.priceVariance` | Random price variance (kept as designed #9) | uniform [−v, v], v = min(V, p−1) | same | `+rand(V) − rand(V)`, result ≤ 0 → 0 | `Game.cs:547`; `Src/Traveler.c:DeterminePrices` | RUL-036 |
-| `economy.wildDeliveredRecord` | Record when Wild is delivered | record = 0 | record = 0 | record = max(record, 0) | `Game.cs:2571`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent` (WILDGETSOUT) | RUL-037 |
+| `quest.wildDeliveredRecord` | Record when Wild is delivered | record = 0 | record = 0 | record = max(record, 0) | `Game.cs:2571`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent` (WILDGETSOUT) | RUL-037 |
 | `economy.tradeInOrbitThresholdInclusive` | Favourable-price roll in trade in orbit | rand(100) < 45 illegal / < 10 legal | same | ≤ 45 / ≤ 10 | `Game.cs:579`, `Game.cs:666`; `Src/Encounter.c:EncounterFormHandleEvent` | RUL-038 |
 | `economy.tradeInOrbitRounding` | Rounding of the in-orbit price | `Math.Round(p×adj/r)×r` (.NET banker's rounding), clamp | same | trader sells: `trunc(p×adj)/r×r`; trader buys: `(trunc(p×adj)/r + 1)×r`; clamp | `Game.cs:582`, `Game.cs:669`; `Src/Encounter.c:EncounterFormHandleEvent` | RUL-039 |
 | `economy.tradeInOrbitSellCap` | Max units you can sell to a trader | min(held, trader free bays) | same | min(held, trader ship type's base bays) | `Game.cs:687`; `Src/Encounter.c:EncounterFormHandleEvent` | RUL-040 |
@@ -54,7 +54,7 @@
 | `economy.tradeInOrbitWhileCloaked` | Trade offer possible when you are cloaked | no | no | yes | `Game.cs:980`; `Src/Traveler.c:Travel` | RUL-042 |
 | `economy.dumpQuantityCap` | Dock-dump quantity cap | min(held, CashToSpend / (5(D+1))) | same | min(held, ToSpend()/5×(D+1)) (precedence bug) | `Game.cs:691`; `Src/Cargo.c:SellCargo` | RUL-043 |
 | `economy.insuranceFormula` | Daily insurance | `(int)max(1, value×0.0025×(100−NoClaim)/100)` (double) | same | `max(1, ((value×5)/2000)×(100−min(NoClaim,90))/100)` (integer) | `Game.cs:3831`; `Src/Traveler.c:InsuranceMoney` | RUL-044 |
-| `economy.noClaimTiming` | When the no-claim counter grows | +1 per IncDays day (incl. jail and pod days) | same | +1 per normal warp only | `Game.cs:2589`; `Src/Traveler.c:DoWarp` | RUL-045 |
+| `travel.noClaimTiming` | When the no-claim counter grows | +1 per IncDays day (incl. jail and pod days) | same | +1 per normal warp only | `Game.cs:2589`; `Src/Traveler.c:DoWarp` | RUL-045 |
 | `economy.buyInsuranceResetsNoClaim` | Buying insurance resets no-claim | yes | yes | no (only stopping resets) | `Form_ViewBank.cs:382`; `Src/Bank.c:BankFormHandleEvent` | RUL-046 |
 | `economy.fuelCompactorRule` | Fuel compactor effect | tanks + 3 | tanks + 3 | tanks = 18 (a downgrade for the Flea) | `Ship.cs:1076`, `Consts.cs:73`; `Src/Fuel.c:GetFuelTanks` | RUL-047 |
 | `economy.cloakPilotBonus` | Cloaking device pilot bonus | +3 | +3 | +2 (`CLOAKBONUS`) | `Consts.cs:151`, `Ship.cs:1252`; `Src/Skill.c:PilotSkill` | RUL-048 |
@@ -70,7 +70,7 @@
 | `economy.randomSkillChange` | Skill decrease when no skill is high enough | no-op | no-op | source loops forever; Palm ruleset implements a no-op (documented deviation) | `CrewMember.cs:74`; `Src/Skill.c:DecreaseRandomSkill` | RUL-058 |
 | `economy.zeethibalPaid` | Zeethibal's daily wage | 0 | 0 | (P+F+T+E)×3 | `CrewMember.cs:249`; `Src/spacetrader.h:MERCENARYHIREPRICE` | RUL-059 |
 | `economy.firedMercenaryRelocates` | Where a fired mercenary goes | random system with floor(d) < 20 | same | stays in its current system | `Ship.cs:224`; `Src/SystemInfoEvent.c:PersonnelRosterFormHandleEvent` | RUL-060 |
-| `economy.passengerImpatience` | Passenger impatience timers | Jarek/Wild concerned at 5, impatient at 10 (skills zeroed); Princess 9/13 | same | none | `Game.cs:2635`, `Game.cs:2669`; `Src/Traveler.c:IncDays` | RUL-061 |
+| `travel.passengerImpatience` | Passenger impatience timers | Jarek/Wild concerned at 5, impatient at 10 (skills zeroed); Princess 9/13 | same | none | `Game.cs:2635`, `Game.cs:2669`; `Src/Traveler.c:IncDays` | RUL-061 |
 | `monsterRegeneration` | Space Monster hull regrowth | ×1.05^n per IncDays (truncated, capped) | same | ×105/100 per warp (incl. singularity), capped | `Game.cs:2600`; `Src/Traveler.c:DoWarp` | RUL-062 |
 | `shieldRechargeTiming` | When shields refill | on arrival | on arrival | at departure (incl. singularity), not on arrival | `Game.cs:469`; `Src/Traveler.c:DoWarp`, `Travel` | RUL-063 |
 | `inFlightRepairHalved` | Engineer repair per click | rand(Eng) | rand(Eng) | rand(Eng) >> 1 | `Ship.cs:670`; `Src/Traveler.c:Travel` | RUL-064 |
@@ -114,6 +114,7 @@
 | `arrestFineNeverNegative` | MOD-002 | `min(80, max(0, −rec))`, ≥ 500 | `min(80, −rec)` (can be negative) | `min(80, −rec)` (can be negative) | `Game.cs:205`; `Src/Encounter.c:Arrested` | RUL-102 |
 | `travel.policeRecordDecay` | MOD-003 | Palm per-warp rule | `rec − num/3`, `rec + num/(D ≤ Normal ? 1 : D)` in IncDays | per warp: `Days%3==0` and rec > 0 → −1; rec < −5 → +1 (D ≤ Normal) or if `Days%D==0` | `Game.cs:2593`; `Src/Traveler.c:DoWarp` | RUL-103 |
 | `hardenedHullProtectsPlayerOnly` + `encounter.hardenedHullHalvesDamage` | MOD-004 | halves damage to player's ship only | halves damage to every defender | no halving | `Game.cs:1367`; `Src/Encounter.c:ExecuteAttack` | RUL-104 |
+| `encounter.hullDamageCapUsesBaseHull` | Dividend of the hull-damage cap | defender's hull strength | same | defender's base spec hull, except the upgraded hull of a Scarab-hardened player | `Game.cs:1363`; `Src/Encounter.c:860-866` | CMB-030 |
 | `randomSkillIncreaseReachesTen` | MOD-005 | 10 | 9 | 10 | `CrewMember.cs:74`; `Src/Skill.c:IncreaseRandomSkill` | RUL-105 |
 | `resourcesAffectUnvisitedSystems` | MOD-006 | yes (display hidden) | no | yes | `StarSystem.cs:428`; `Src/Traveler.c:StandardPrice` | RUL-106 |
 | `restockUsesOwnSystemItemTraded` | MOD-007 | own system | warp system | own system | `Game.cs:526`; `Src/Traveler.c:ChangeQuantities` | RUL-107 |
@@ -124,10 +125,10 @@
 | `pirateLootHiddenBaysClamp` | MOD-012 | clamp | throws | n/a | `Ship.cs:1301`; — | RUL-112 |
 | `distinctShipyards` | MOD-013 | distinct | may overwrite | n/a | `Game.cs:2874`; — | RUL-113 |
 | `reactorDamageRealFactor` | MOD-014 | real factor | int cast | real factor | `Game.cs:1337`; `Src/Encounter.c:ExecuteAttack` | RUL-114 |
-| `economy.sellPriceRecalc` | MOD-015 | only if criminal | always | Erase Record always; Wild none | `Game.cs:2315`, `Game.cs:2573`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent` | RUL-115 |
+| `quest.sellPriceRecalc` | MOD-015 | only if criminal | always | Erase Record always; Wild none | `Game.cs:2315`, `Game.cs:2573`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent` | RUL-115 |
 | `economy.lostMercenariesRelocate` | MOD-016 | relocate | keep system | keep system | `Game.cs:257`, `Game.cs:735`; `Src/Encounter.c:Arrested`, `Src/BuyShipEvent.c:CreateFlea` | RUL-116 |
 | `economy.swapFuelAndRepairColumns` | MOD-017 | Palm columns | swapped | Palm columns | `Consts.cs:251`; `Src/Global.c:Shiptype` | RUL-117 |
-| `economy.debtNotices` | MOD-018 | both | exclusive | both | `Game.cs:335`; `Src/Traveler.c:Travel` | RUL-118 |
+| `travel.debtWarningAndReminder` | MOD-018 | both | exclusive | both | `Game.cs:335`; `Src/Traveler.c:Travel` | RUL-118 |
 | `economy.worthUsesTradeInValue` | MOD-019 | trade-in | list price | trade-in | `Commander.cs:389`; `Src/Money.c:CurrentWorth` | RUL-119 |
 | `waspOpponentReachable` | MOD-020 | yes (0..9) | no (0..8) | yes | `Ship.cs:466`, `Ship.cs:489`; `Src/Traveler.c:GenerateOpponent` | RUL-120 |
 | `exactIntegerArithmetic` | MOD-021 | exact | exact | exact | `Game.cs:3831`, `Commander.cs:83`; `Src/Traveler.c:InsuranceMoney` | RUL-121 |
@@ -155,6 +156,7 @@
 | `tribbleAlgorithm` | Tribble arrival update | C# algorithm (see RUL-151) | same | Palm algorithm (see RUL-151) | `Game.cs:395`; `Src/Traveler.c:Travel` | RUL-151 |
 | `japoriPickupPersists` | Japori pickup after acceptance | kept (a failed delivery can restart) | kept | removed | `Game.cs:2347`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent` (JAPORIDISEASE) | RUL-171 |
 | `gemulonRewardRefuels` | Installing the Gemulon fuel compactor | fuel unchanged | fuel unchanged | `Fuel = GetFuelTanks()` | `Game.cs:2329`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent` (GETFUELCOMPACTOR) | RUL-172 |
+| `gemulonRescueResetsStatus` | Gemulon status after the rescue and the compactor | 9, then 10 | 9, then 10 | `InvasionStatus = 0`, unchanged by the compactor (so `> 7` always means invaded) | `Game.cs:2339`, `Game.cs:2344`; `Src/SpecialEvent.c:178-182`, `Src/Traveler.c:1858` | QST-GEMULON-007, QST-GEMULON-012 |
 | `specialShipDamagePersists` | Quest-ship damage between meetings | all ships persist | all ships persist | a copy is fought; only the Space Monster's hull is written back, on escape | `Game.cs:786`; `Src/Encounter.c:ExecuteAction` | RUL-173 |
 | `moonGirlEnding` | Moon-girl ending variant | yes | no | no | PRD §4.3 | RUL-006 |
 
@@ -178,10 +180,10 @@
 | MOD-012 | Pirate looting can't crash when hidden bays exceed the cargo. | 01 §13.16 | `pirateLootHiddenBaysClamp` | RUL-112 |
 | MOD-013 | The 5 shipyards go on 5 distinct hi-tech systems. | 01 §13.17 | `distinctShipyards` | RUL-113 |
 | MOD-014 | The reactor damage multiplier is a real factor, `1+(D+1)×(D<Normal?0.25:0.33)`, applied before truncating. | 01 §13.19 | `reactorDamageRealFactor` | RUL-114 |
-| MOD-015 | The ×100/90 sell-price recalculation only happens if the commander was a criminal before EraseRecord or before delivering Wild. | 01 §13.20 | `economy.sellPriceRecalc` | RUL-115 |
+| MOD-015 | The ×100/90 sell-price recalculation only happens if the commander was a criminal before EraseRecord or before delivering Wild. | 01 §13.20 | `quest.sellPriceRecalc` | RUL-115 |
 | MOD-016 | Mercenaries lost to jail or the escape pod relocate the same way fired mercenaries do. | 01 §13.21 | `economy.lostMercenariesRelocate` | RUL-116 |
 | MOD-017 | **Fuel and repair cost columns restored to the Palm values.** The fidelity audit confirmed the C# port swapped them. The wormhole tax follows the fuel cost. | 04 §1–2, errata | `economy.swapFuelAndRepairColumns` | RUL-117 |
-| MOD-018 | The debt warning and the 5-day loan reminder can both fire. Both go into the arrival report. | 04 §3 | `economy.debtNotices` | RUL-118 |
+| MOD-018 | The debt warning and the 5-day loan reminder can both fire. Both go into the arrival report. | 04 §3 | `travel.debtWarningAndReminder` | RUL-118 |
 | MOD-019 | **Worth uses trade-in value**, Palm `CurrentWorth`: ship trade-in value plus cargo cost basis plus cash minus debt, plus the moon if bought. This affects loans, fines, bribes, pirate scaling, the moon offer and the score. | errata 04 #1 | `economy.worthUsesTradeInValue` | RUL-119 |
 | MOD-020 | The Wasp can appear as a random opponent: weight over indices 0..9, like Palm. | errata 01 #1 | `waspOpponentReachable` | RUL-120 |
 | MOD-021 | Integer price and quantity arithmetic matches the source exactly. Floating point is used only where the source uses it (insurance and interest), with explicit truncation. | | `exactIntegerArithmetic` | RUL-121 |
@@ -211,7 +213,7 @@
 | 17 | Shipyards can overwrite each other | **fix** (MOD-013) | lost content | `distinctShipyards` / RUL-113 |
 | 18 | `GetRandom2` differs from Palm (64-bit) | **keep** (C# MWC in Modern and W) | errata 01 #3: output is never negative, so not a bug; Palm keeps its UInt16 variant | RNG pack / RUL-019 |
 | 19 | Reactor factor truncated by int cast | **fix** (MOD-014) | Palm real factor | `reactorDamageRealFactor` / RUL-114 |
-| 20 | ×100/90 sell recalculation even if not criminal | **fix** (MOD-015) | free price boost | `economy.sellPriceRecalc` / RUL-115 |
+| 20 | ×100/90 sell recalculation even if not criminal | **fix** (MOD-015) | free price boost | `quest.sellPriceRecalc` / RUL-115 |
 | 21 | Lost mercenaries keep their old system | **fix** (MOD-016) | consistency with firing | `economy.lostMercenariesRelocate` / RUL-116 |
 | E01-1 | C# never generates a Wasp opponent | **fix** (MOD-020) | loop bound `MaxShip = 9` | `waspOpponentReachable` / RUL-120 |
 | E01-2 | Opponent weapons/shields skip owned types | **keep** | correct C# behaviour, documented | `encounter.opponentWeaponsShieldsMayRepeat` / RUL-078 |
@@ -267,7 +269,7 @@
 - **RUL-034** {M5} [M][W][P] `economy.zeroUntradeableOnDrift`: during drift, items the system cannot trade keep their quantity in Modern and Windows 2.01 and are set to 0 in Palm. (source: `Game.cs:526`; `Src/Traveler.c:ChangeQuantities`)
 - **RUL-035** {M5} [M][W][P] `economy.statusShuffleOrder`: on arrival Modern and Windows 2.01 roll each system's pressure then update its quantities before moving to the next system; Palm shuffles all statuses first, then updates all quantities. (source: `Game.cs:505`; `Src/Traveler.c:Arrival`)
 - **RUL-036** {M5} [M][W][P] `economy.priceVariance`: the sell price adds a uniform value in [−v, v] with v = min(V, price−1) in Modern and Windows 2.01 (kept as designed) and rand(V) − rand(V) in Palm (≤ 0 → not traded). (source: `Game.cs:547`; `Src/Traveler.c:DeterminePrices`)
-- **RUL-037** {M5} [M][W][P] `economy.wildDeliveredRecord`: delivering Wild sets the record to exactly 0 in Modern and Windows 2.01 (a Hero drops to 0) and to max(record, 0) in Palm. (source: `Game.cs:2571`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent`)
+- **RUL-037** {M5} [M][W][P] `quest.wildDeliveredRecord`: delivering Wild sets the record to exactly 0 in Modern and Windows 2.01 (a Hero drops to 0) and to max(record, 0) in Palm. (source: `Game.cs:2571`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent`)
 - **RUL-038** {M5} [M][W][P] `economy.tradeInOrbitThresholdInclusive`: the favourable in-orbit price applies when rand(100) < 45 (illegal) or < 10 (legal) in Modern and Windows 2.01, and when ≤ 45 / ≤ 10 in Palm. (source: `Game.cs:579`; `Src/Encounter.c:EncounterFormHandleEvent`)
 - **RUL-039** {M5} [M][W][P] `economy.tradeInOrbitRounding`: Modern and Windows 2.01 compute `Math.Round(price×adj/roundOff)×roundOff` with .NET midpoint-to-even rounding; Palm truncates `price×adj` then uses `/r×r` when the trader sells and `(/r + 1)×r` when the trader buys; all clamp to min/max trade price. (source: `Game.cs:582`, `Game.cs:669`; `Src/Encounter.c:EncounterFormHandleEvent`)
 - **RUL-040** {M5} [M][W][P] `economy.tradeInOrbitSellCap`: you may sell min(held, trader's free bays) in Modern and Windows 2.01 and min(held, trader ship type's base bays) in Palm. (source: `Game.cs:687`; `Src/Encounter.c:EncounterFormHandleEvent`)
@@ -275,7 +277,7 @@
 - **RUL-042** {M5} [M][W][P] `economy.tradeInOrbitWhileCloaked`: a cloaked player gets no trade-in-orbit offer in Modern and Windows 2.01; in Palm the offer roll still happens because cloaking yields TRADERIGNORE. (source: `Game.cs:980`; `Src/Traveler.c:Travel`)
 - **RUL-043** {M5} [M][W][P] `economy.dumpQuantityCap`: dumping in dock is capped at min(held, cashToSpend / (5(D+1))) in Modern and Windows 2.01 and at min(held, toSpend/5×(D+1)) in Palm. (source: `Game.cs:691`; `Src/Cargo.c:SellCargo`)
 - **RUL-044** {M5} [M][W][P] `economy.insuranceFormula`: daily insurance is `(int)max(1, value×0.0025×(100−NoClaim)/100)` in double precision (Modern, Windows 2.01) or `max(1, ((value×5)/2000)×(100−min(NoClaim,90))/100)` in integers (Palm), where value is the ship's trade-in value for insurance. (source: `Game.cs:3831`; `Src/Traveler.c:InsuranceMoney`)
-- **RUL-045** {M5} [M][W][P] `economy.noClaimTiming`: with insurance, no-claim grows by the number of days passed (incl. jail and escape-pod days) in Modern and Windows 2.01 and by 1 per normal (non-singularity) warp in Palm. (source: `Game.cs:2589`; `Src/Traveler.c:DoWarp`)
+- **RUL-045** {M5} [M][W][P] `travel.noClaimTiming`: with insurance, no-claim grows by the number of days passed (incl. jail and escape-pod days) in Modern and Windows 2.01 and by 1 per normal (non-singularity) warp in Palm. (source: `Game.cs:2589`; `Src/Traveler.c:DoWarp`)
 - **RUL-046** {M5} [M][W][P] `economy.buyInsuranceResetsNoClaim`: buying insurance sets no-claim to 0 in Modern and Windows 2.01 and leaves it unchanged in Palm; stopping insurance resets it in all. (source: `Form_ViewBank.cs:382`; `Src/Bank.c:BankFormHandleEvent`)
 - **RUL-047** {M5} [M][W][P] `economy.fuelCompactorRule`: the fuel compactor adds 3 tanks in Modern and Windows 2.01 and sets the tank size to 18 in Palm (Flea 20 → 18). (source: `Ship.cs:1076`; `Src/Fuel.c:GetFuelTanks`)
 - **RUL-048** {M5} [M][W][P] `economy.cloakPilotBonus`: the cloaking device adds +3 pilot in Modern and Windows 2.01 and +2 in Palm. (source: `Consts.cs:151`, `Ship.cs:1252`; `Src/Skill.c:PilotSkill`)
@@ -291,7 +293,7 @@
 - **RUL-058** {M5} [M][W][P] `economy.randomSkillChange`: a random skill decrease with no skill above the amount does nothing in every ruleset (Palm's source would loop forever; this deviation is documented). (source: `CrewMember.cs:74`; `Src/Skill.c:DecreaseRandomSkill`)
 - **RUL-059** {M5} [M][W][P] `economy.zeethibalPaid`: Zeethibal's wage is 0 in Modern and Windows 2.01 and (P+F+T+E)×3 in Palm. (source: `CrewMember.cs:249`; `Src/spacetrader.h:MERCENARYHIREPRICE`)
 - **RUL-060** {M5} [M][W][P] `economy.firedMercenaryRelocates`: a fired non-special mercenary moves to a random system with floor distance < 20 from the current system in Modern and Windows 2.01 and stays in its current system in Palm. (source: `Ship.cs:224`; `Src/SystemInfoEvent.c:PersonnelRosterFormHandleEvent`)
-- **RUL-061** {M5} [M][W][P] `economy.passengerImpatience`: in Modern and Windows 2.01 Jarek and Wild warn at status 5 and turn impatient at status 10 (skills set to 0), the Princess at 9 and 13; Palm has no impatience. (source: `Game.cs:2635`, `Game.cs:2669`; `Src/Traveler.c:IncDays`)
+- **RUL-061** {M5} [M][W][P] `travel.passengerImpatience`: in Modern and Windows 2.01 Jarek and Wild warn at status 5 and turn impatient at status 10 (skills set to 0), the Princess at 9 and 13; Palm has no impatience. (source: `Game.cs:2635`, `Game.cs:2669`; `Src/Traveler.c:IncDays`)
 - **RUL-062** {M5} [M][W][P] `monsterRegeneration`: the Space Monster's hull grows to `(int)(hull×1.05^days)` per IncDays in Modern and Windows 2.01 and to `hull×105/100` once per warp (incl. singularity) in Palm, capped at 500 in all. (source: `Game.cs:2600`; `Src/Traveler.c:DoWarp`)
 - **RUL-063** {M5} [M][W][P] `shieldRechargeTiming`: shields refill on arrival in Modern and Windows 2.01 and at departure in Palm (also on singularity jumps), with no refill on Palm arrival. (source: `Game.cs:469`; `Src/Traveler.c:DoWarp`)
 - **RUL-064** {M5} [M][W][P] `inFlightRepairHalved`: per click the engineer repairs rand(Engineer) hull in Modern and Windows 2.01 and rand(Engineer) >> 1 in Palm; overflow goes ×2 to shields in all. (source: `Ship.cs:670`; `Src/Traveler.c:Travel`)
@@ -371,17 +373,17 @@
 - **RUL-112** {M5} [M][W][P] MOD-012 `pirateLootHiddenBaysClamp`: in Modern the units hidden from pirates are min(hidden bays, units held) and looting never throws; Windows 2.01 throws when hidden bays exceed the cargo; Palm has no hidden bays. (source: `Ship.cs:1301`)
 - **RUL-113** {M5} [M][W][P] MOD-013 `distinctShipyards`: Modern places the 5 shipyards on 5 different Hi-Tech systems; Windows 2.01 may place two on one system (losing one); Palm has none. (source: `Game.cs:2874`)
 - **RUL-114** {M5} [M][W][P] MOD-014 `reactorDamageRealFactor`: with the reactor aboard, damage to the player is `trunc(damage × (1 + (D+1)×(D < Normal ? 0.25 : 0.33)))` (×1.25, ×1.5, ×1.99, ×2.32, ×2.65) in Modern and Palm and `damage × (int)factor` (×1, ×1, ×1, ×2, ×2) in Windows 2.01. (source: `Game.cs:1337`; `Src/Encounter.c:ExecuteAttack`)
-- **RUL-115** {M5} [M][W][P] MOD-015 `economy.sellPriceRecalc`: Modern multiplies sell prices by 100/90 after Erase Record or Wild's delivery only if the record was < −5 before; Windows 2.01 always does; Palm does it always after Erase Record and never after Wild's delivery. (source: `Game.cs:2315`, `Game.cs:2573`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent`)
+- **RUL-115** {M5} [M][W][P] MOD-015 `quest.sellPriceRecalc`: Modern multiplies sell prices by 100/90 after Erase Record or Wild's delivery only if the record was < −5 before; Windows 2.01 always does; Palm does it always after Erase Record and never after Wild's delivery. (source: `Game.cs:2315`, `Game.cs:2573`; `Src/SpecialEvent.c:SpecialEventFormHandleEvent`)
 - **RUL-116** {M5} [M][W][P] MOD-016 `economy.lostMercenariesRelocate`: mercenaries lost to arrest or the escape pod move to a random system with floor distance < 20 in Modern; Windows 2.01 and Palm leave their location unchanged. (source: `Game.cs:257`, `Game.cs:735`; `Src/Encounter.c:Arrested`)
 - **RUL-117** {M5} [M][W][P] MOD-017 `economy.swapFuelAndRepairColumns`: Flea…Wasp fuel cost per parsec is 1,2,3,5,7,10,15,15,20,20 and repair cost per hull point 1,1,1,1,1,1,2,3,4,5 in Modern and Palm; Windows 2.01 uses the swapped columns (fuel 1,1,1,1,1,1,2,3,4,5; repair 1,2,3,5,7,10,15,15,20,20); the wormhole tax is 25 × fuel cost (Gnat 50/25, Wasp 500/125). (source: `Consts.cs:251`; `Src/Global.c:Shiptype`, `Src/Traveler.c:WormholeTax`)
-- **RUL-118** {M5} [M][W][P] MOD-018 `economy.debtNotices`: on arrival with debt ≥ 75000 and the 5-day reminder due, Modern and Palm report both the warning and the reminder; Windows 2.01 reports only the warning. (source: `Game.cs:335`; `Src/Traveler.c:Travel`)
+- **RUL-118** {M5} [M][W][P] MOD-018 `travel.debtWarningAndReminder`: on arrival with debt ≥ 75000 and the 5-day reminder due, Modern and Palm report both the warning and the reminder; Windows 2.01 reports only the warning. (source: `Game.cs:335`; `Src/Traveler.c:Travel`)
 - **RUL-119** {M5} [M][W][P] MOD-019 `economy.worthUsesTradeInValue`: worth is trade-in value (price×(tribbles ? 1 : 3)/4 − repairs − fuel + 3/4 equipment) + cargo cost basis + cash − debt + 500000 if the moon is bought in Modern and Palm, and ship list price + cash − debt + moon in Windows 2.01; every consumer (max loan, fines, bribes, blackmail, pirate and equipment tries, moon offer, score) uses it. (source: `Commander.cs:389`; `Src/Money.c:CurrentWorth`, `Src/ShipPrice.c:CurrentShipPrice`)
 - **RUL-120** {M5} [M][W][P] MOD-020 `waspOpponentReachable`: random opponent ship weighting covers indices 0..9 (Wasp included) in Modern and Palm and 0..8 in Windows 2.01, where only famous captains fly Wasps. (source: `Ship.cs:466`, `Ship.cs:489`; `Src/Traveler.c:GenerateOpponent`)
 - **RUL-121** {M5} [M][W][P] MOD-021 `exactIntegerArithmetic`: price, quantity and money arithmetic uses the source's integer operations and truncation in every ruleset; floating point appears only where the source uses it (C# insurance, interest, reactor factor, Wild fine ×1.05, bribe/fine ceilings), truncated as the source does. (source: `Game.cs:3831`, `Commander.cs:83`; `Src/Traveler.c:InsuranceMoney`)
 
 ## 6. Open points and discrepancies
 
-- **[verify] MOD-017 and the ship designer.** C# custom ships take fuel cost `COST_FUEL[size]` (1,1,1,3,5,10) and repair cost `COST_HULL[size]` (1,5,10,15,20,40) (`Shipyard.cs:38`, `Shipyard.cs:120`). Palm has no designer, so whether these columns are also swapped cannot be checked; Modern keeps them as in C# until the owner decides.
+- **MOD-017 and the ship designer (accepted assumption, docs/QA-REPORT.md).** C# custom ships take fuel cost `COST_FUEL[size]` (1,1,1,3,5,10) and repair cost `COST_HULL[size]` (1,5,10,15,20,40) (`Shipyard.cs:38`, `Shipyard.cs:120`). Palm has no designer, so whether these columns are also swapped cannot be checked; Modern keeps them as in C# until the owner decides.
 - **Palm game RNG stand-in (accepted assumption, docs/QA-REPORT.md).** The ROM `SysRandom` algorithm is not in the game source; the Palm ruleset's LCG parameters are a documented stand-in (PRD §4.2, RNG-026).
 - **Audit candidate (not a MOD).** In Windows 2.01 the escape pod keeps Scarab status 3, so the hull-halving rule still applies to the new Flea (`Game.cs:2031`, `Game.cs:1367`). Modern keeps this per RUL-003 (RUL-099); changing it needs a RUL audit row.
 - **Palm also has the negative-fine bug** (`Src/Encounter.c:Arrested` uses `min(80, −PoliceRecordScore)`), so RUL-102 keeps it in Palm.

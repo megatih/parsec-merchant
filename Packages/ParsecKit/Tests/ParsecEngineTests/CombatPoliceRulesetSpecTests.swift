@@ -497,16 +497,16 @@ struct PoliceRulesetTests {
         s.commander.ship.cargo[narcotics] = 0
         #expect(s.nothingIllegal(for: .attack) && s.nothingIllegal(for: .bribe) && !s.nothingIllegal(for: .flee))
         s.quests.reactor = 0
-        s.commander.ship.crew = [CrewID.commander, CrewID.wild]
+        boardWild(&s)
         #expect(s.nothingIllegal(for: .attack) && !s.nothingIllegal(for: .bribe) && !s.nothingIllegal(for: .flee))
         // Windows uses one test for all three actions.
-        var w = RS.state(.windows201) { $0.commander.ship.crew = [CrewID.commander, CrewID.wild] }
+        var w = RS.state(.windows201) { boardWild(&$0) }
         #expect(!w.nothingIllegal(for: .attack) && !w.nothingIllegal(for: .bribe))
         w.commander.ship.crew = [CrewID.commander]
         #expect(w.nothingIllegal(for: .attack))
         // Palm attack at an inspection with Wild aboard but no goods still asks.
         var e = Pol.engine(.policeInspect, .palm122) { s in
-            s.commander.ship.crew = [CrewID.commander, CrewID.wild]
+            boardWild(&s)
             s.commander.policeRecordScore = -20
         }
         #expect(e.perform(.encounter(.attack)).decision == .confirm(Confirmation(.submitWithNothingIllegal)))
@@ -528,7 +528,7 @@ struct PoliceRulesetTests {
         #expect(!pr.events.contains { if case .arrested = $0 { true } else { false } })
         var p5 = Pol.engine(.policeInspect, .palm122) { $0.quests.reactor = 5 }
         #expect(p5.perform(.encounter(.submit)).decision == .confirm(Confirmation(.submitInspection)))
-        var pw = Pol.engine(.policeInspect, .palm122) { $0.commander.ship.crew = [CrewID.commander, CrewID.wild] }
+        var pw = Pol.engine(.policeInspect, .palm122) { boardWild(&$0) }
         let pwr = pw.perform(.encounter(.submit), acknowledging: Pol.yes)
         #expect(!pwr.events.contains(.inspectionClean))
         #expect(pwr.events.contains { if case .arrested = $0 { true } else { false } })
@@ -600,7 +600,7 @@ struct PoliceRulesetTests {
     @Test("POL-074 POL-110 Palm Yield arrest ends the trip after the arrest's own short Arrival (one arrival, no arrival tail)")
     func yieldArrest() {
         var p = Pol.engine(.marieCelestePolice, .palm122, clicks: 5) { s in
-            s.commander.ship.crew = [CrewID.commander, CrewID.wild]
+            boardWild(&s)
             s.commander.debt = 80_000
             s.commander.cash = 100
         }
@@ -628,7 +628,7 @@ struct PoliceRulesetTests {
             #expect(s.arrestFine == 1_500 && s.arrestTerm == 30)
             s.commander.policeRecordScore = 10
             #expect(s.arrestFine == (r == .modern ? 500 : -500))
-            s.commander.ship.crew = [CrewID.commander, CrewID.wild]
+            boardWild(&s)
             #expect(s.arrestFine == (r == .modern ? 525 : -525))
         }
         // Two-step truncation equals the single division for every sign (C and C# both truncate toward zero).
@@ -715,7 +715,7 @@ struct PoliceRulesetTests {
         #expect(some.state.commander.ship.cargo[0] == 2 && some.state.commander.priceCargo[0] == 6) // C# would give 7
         // Wild: leaves when the pirate ship type has more than one crew quarter.
         for (opp, leaves) in [(ShipType.gnat, false), (.wasp, true)] {
-            var e = Pol.engine(.pirateAttack, .palm122, opponent: opp) { $0.commander.ship.crew = [CrewID.commander, CrewID.wild] }
+            var e = Pol.engine(.pirateAttack, .palm122, opponent: opp) { boardWild(&$0) }
             let crewQuarters = e.ruleset.tables.ship(opp).crewQuarters
             let res = e.perform(.encounter(.surrender))
             #expect(res.events.contains(.wildJoinedPirates) == (leaves && crewQuarters > 1))

@@ -209,7 +209,7 @@ struct EncounterDeterminationRulesetTests {
         func find(_ r: RulesetID) -> GameState {
             let base = RS.state(r) { s in
                 s.warpSystem = SystemID.kravat
-                s.commander.ship.crew = [CrewID.commander, CrewID.wild]
+                boardWild(&s)
                 s.quests.artifact = QuestStatus.Artifact.onBoard
             }
             let gov = base.ruleset.tables.politics(base.galaxy.systems[SystemID.kravat].politics)
@@ -244,7 +244,7 @@ struct OpponentGenerationRulesetTests {
         func tries(_ r: RulesetID, _ rec: Int, wild: Bool = false) -> Int {
             let s = RS.state(r) { s in
                 s.commander.policeRecordScore = rec
-                if wild { s.commander.ship.crew = [CrewID.commander, CrewID.wild] }
+                if wild { boardWild(&s) }
             }
             return s.policeBaseTries()
         }
@@ -427,7 +427,7 @@ struct OpponentGenerationRulesetTests {
         func setup(_ r: RulesetID, _ seed: UInt64) -> GameState {
             RS.state(r, .impossible, seed: seed) { s in
                 s.warpSystem = SystemID.kravat
-                s.commander.ship.crew = [CrewID.commander, CrewID.wild]
+                boardWild(&s)
             }
         }
         for seed in UInt64(0)..<30 {
@@ -600,7 +600,7 @@ struct EncounterReactionRulesetTests {
     @Test("RUL-111 Wild requires a real laser in Modern and Palm; Windows also accepts disruptors")
     func wildLaser() {
         for (r, disruptorOK) in [(RulesetID.windows201, true), (.modern, false), (.palm122, false)] {
-            var s = RS.state(r) { $0.commander.ship.crew = [CrewID.commander, CrewID.wild] }
+            var s = RS.state(r) { boardWild(&$0) }
             s.commander.ship.weapons = [.photonDisruptor]
             #expect(s.hasWildQualifyingLaser == disruptorOK && s.wildWillLeave == !disruptorOK)
             for laser in [WeaponType.beamLaser, .militaryLaser, .morgansLaser] {
