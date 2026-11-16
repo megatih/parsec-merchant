@@ -234,7 +234,7 @@ public extension GameState {
         return (.continue, events)
     }
 
-    /// Writes a special opponent back to `specialShips` (C# `Opponent` is a reference to the shared ship).
+    /// ENC-012 / CMB-052: writes a quest opponent back to `specialShips` (C# `Opponent` references the shared ship).
     mutating func persistSpecialShip(_ ship: Ship) {
         switch ship.type {
         case .spaceMonster: specialShips.spaceMonster = ship
