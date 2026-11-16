@@ -65,23 +65,20 @@ struct TargetPicker: View {
     var body: some View {
         if let state = session.state {
             let cur = state.commander.currentSystem
-            let destinations = state.destinations
-                .map { (index: $0, preview: state.warpTargetPreview($0)) }
-                .sorted { ($0.preview.distance, Names.system($0.index, in: state)) < ($1.preview.distance, Names.system($1.index, in: state)) }
             Menu {
-                ForEach(destinations, id: \.index) { d in
+                ForEach(TargetPickerModel.entries(state: state), id: \.index) { d in
                     Button {
                         session.send(.selectTarget(d.index))
                     } label: {
-                        Text("\(Names.system(d.index, in: state)) · \(d.preview.distance) parsecs")
+                        Text("\(d.name) · \(d.distance) parsecs")
                     }
                 }
-                if let w = state.galaxy.wormholeDestination(from: cur) {
+                if let w = TargetPickerModel.wormhole(state: state) {
                     Divider()
                     Button {
-                        session.send(.selectWormhole(cur))
+                        session.send(w.command)
                     } label: {
-                        Text("Wormhole to \(Names.system(w, in: state))")
+                        Text("Wormhole to \(Names.system(w.destination, in: state))")
                     }
                 }
                 Divider()

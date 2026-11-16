@@ -129,6 +129,7 @@ nonisolated enum AXID {
     static var all: [String] {
         Welcome.all + NewGame.all + Sidebar.all + Toolbar.all + Status.all + Inspector.all + SectionRoot.all
             + Dialog.all + GameOver.all + Interim.all + shipyardArea
+            + Bridge.all + Market.all
     }
 
     /// Keeps only characters the identifier scheme allows (slot ids are lowercase UUIDs with hyphens).
