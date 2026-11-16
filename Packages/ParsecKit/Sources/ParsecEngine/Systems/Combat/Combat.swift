@@ -271,9 +271,7 @@ public extension GameState {
         case .famousCaptainAttack:
             commander.kills.traders += 1
             commander.reputationScore = commander.reputationScore < 300 ? 300 : commander.reputationScore + 100
-            if let last = newsEvents.last, let destroyed = NewsEvent(rawValue: last.rawValue + 1) {
-                newsEvents[newsEvents.count - 1] = destroyed
-            }
+            markFamousCaptainDestroyed()
         case .dragonflyAttack:
             defeatSpecialShip(.dragonfly)
         case .pirateAttack, .pirateFlee, .pirateSurrender:

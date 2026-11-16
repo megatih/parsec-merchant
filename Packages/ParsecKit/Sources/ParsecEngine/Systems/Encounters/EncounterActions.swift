@@ -129,7 +129,7 @@ public extension GameState {
         if reactorOnBoard { quests.reactor = QuestStatus.Reactor.notStarted }
         if sculptureOnBoard { quests.sculpture = QuestStatus.Sculpture.notStarted }
         if wildOnBoard {
-            newsEvents.append(.wildArrested)
+            addNewsEvent(.wildArrested)
             quests.wild = QuestStatus.Wild.notStarted
         }
         if commander.ship.illegalCargoUnits > 0 { removeIllegalGoods() }
@@ -330,7 +330,7 @@ extension GameEngine {
             guard ack.contains(.attackCaptain) else { return .needsConfirmation(Confirmation(.attackCaptain)) }
             if state.commander.policeRecordScore > -70 { state.commander.policeRecordScore = -70 }
             state.commander.policeRecordScore -= 2
-            state.newsEvents.append(enc.type == .captainAhab ? .captAhabAttacked : (enc.type == .captainConrad ? .captConradAttacked : .captHuieAttacked))
+            state.addNewsEvent(enc.type == .captainAhab ? .captAhabAttacked : (enc.type == .captainConrad ? .captConradAttacked : .captHuieAttacked))
             enc.type = .famousCaptainAttack
         default:
             break

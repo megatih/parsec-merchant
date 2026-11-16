@@ -79,10 +79,16 @@ public extension GameState {
     }
 
     /// TRV-087: whether a singularity jump to the current target is possible, and what it would hit after consent.
+    /// The Palm jump uses the tracked system (TRV-020, `singularityTargetSource`).
     var jumpPreview: JumpPreview {
+        let tracked = ruleset.flags.travel.singularityTargetSource == .trackedSystem
+        let destination = tracked ? (trackedSystem ?? warpSystem) : warpSystem
         let rejection: CommandError? = !quests.canSuperWarp ? .noSingularity
-            : warpSystem == commander.currentSystem ? .singularityTargetIsCurrentSystem : nil
-        return JumpPreview(destination: warpSystem, rejection: rejection, blocking: warpBlocker(), wildWillLeave: wildWillLeave)
+            : tracked && trackedSystem == nil ? .singularityNoTarget
+            : destination == commander.currentSystem ? .singularityTargetIsCurrentSystem : nil
+        var copy = self
+        copy.warpSystem = destination
+        return JumpPreview(destination: destination, rejection: rejection, blocking: copy.warpBlocker(), wildWillLeave: wildWillLeave)
     }
 
     /// TRV-088: the trip in progress (also while an encounter interrupts it); nil when docked or the game is over.
@@ -94,23 +100,27 @@ public extension GameState {
         }
     }
 
-    /// C# `Game.IncDays`.
+    /// C# `Game.IncDays`; Palm `IncDays` only advances days and the Gemulon, reactor and experiment counters (TRV-074).
     mutating func incDays(_ n: Int) -> [GameEvent] {
         var events: [GameEvent] = []
+        let tr = ruleset.flags.travel
         commander.days += n
-        if commander.insurance { setNoClaim(commander.noClaim + n) }
-        if commander.policeRecordScore > 0 {
-            commander.policeRecordScore = max(0, commander.policeRecordScore - n / 3)
-        } else if commander.policeRecordScore < -5 {
-            commander.policeRecordScore = min(-5, commander.policeRecordScore + n / (difficulty <= .normal ? 1 : difficulty.rawValue))
+        if commander.insurance, tr.noClaimTiming == .perDay { setNoClaim(commander.noClaim + n) }
+        if tr.policeRecordDecay == .perDayDivision {
+            if commander.policeRecordScore > 0 {
+                commander.policeRecordScore = max(0, commander.policeRecordScore - n / 3)
+            } else if commander.policeRecordScore < -5 {
+                commander.policeRecordScore = min(-5, commander.policeRecordScore + n / (difficulty <= .normal ? 1 : difficulty.rawValue))
+            }
         }
         let monsterMax = specialShips.spaceMonster.hullStrength(ruleset)
-        if specialShips.spaceMonster.hull < monsterMax {
+        if tr.monsterRegeneration == .compoundPerDay, specialShips.spaceMonster.hull < monsterMax {
             specialShips.spaceMonster.hull = min(monsterMax, Int(Double(specialShips.spaceMonster.hull) * pow(1.05, Double(n))))
         }
         if quests.gemulon > QuestStatus.Gemulon.notStarted, quests.gemulon < QuestStatus.Gemulon.tooLate {
-            quests.gemulon = min(quests.gemulon + n, QuestStatus.Gemulon.tooLate)
-            if quests.gemulon == QuestStatus.Gemulon.tooLate {
+            // TRV-076: Palm keeps counting past 8 (`invasionStatusCapped`).
+            quests.gemulon = tr.invasionStatusCapped ? min(quests.gemulon + n, QuestStatus.Gemulon.tooLate) : quests.gemulon + n
+            if quests.gemulon >= QuestStatus.Gemulon.tooLate {
                 galaxy.systems[SystemID.gemulon].specialEvent = .gemulonInvaded
                 galaxy.systems[SystemID.gemulon].techLevel = .preAgricultural
                 galaxy.systems[SystemID.gemulon].politics = .anarchy
@@ -123,13 +133,14 @@ public extension GameState {
             if quests.experiment == QuestStatus.Experiment.performed {
                 quests.fabricRipProbability = 25
                 galaxy.systems[SystemID.daled].specialEvent = .experimentFailed
-                newsEvents.append(.experimentPerformed)
+                addNewsEvent(.experimentPerformed)
                 events.append(.experimentPerformed)
             }
         } else if quests.experiment == QuestStatus.Experiment.performed, quests.fabricRipProbability > 0 {
             quests.fabricRipProbability -= n
         }
-        for (onBoard, id) in [(jarekOnBoard, CrewID.jarek), (princessOnBoard, CrewID.princess), (wildOnBoard, CrewID.wild)] where onBoard {
+        for (onBoard, id) in [(jarekOnBoard, CrewID.jarek), (princessOnBoard, CrewID.princess), (wildOnBoard, CrewID.wild)]
+        where onBoard && tr.passengerImpatience {
             events += impatience(id)
         }
         return events
@@ -170,6 +181,7 @@ public extension GameState {
     /// C# `Ship.PerformRepairs` for the commander's ship (each click).
     mutating func performClickRepairs() {
         var repairs = rng.next(below: shipSkills[3])
+        if ruleset.flags.travel.inFlightRepairHalved { repairs >>= 1 }
         let strength = commander.ship.hullStrength(ruleset)
         if repairs > 0 {
             let used = min(repairs, strength - commander.ship.hull)
@@ -361,10 +373,42 @@ public extension GameState {
 
     // MARK: Arrival (TRV)
 
-    /// C# `NewsAddEventsOnArrival`.
+    /// C# `NewsAddEventsOnArrival`; Palm adds its else-if chain of flags (NEWS-038) when System Information opens.
     mutating func addArrivalNews() {
         guard let ev = currentSystem.specialEvent else { return }
-        if let add = arrivalNewsQuests(ev) ?? arrivalNewsOthers(ev) { newsEvents.append(add) }
+        if ruleset.flags.travel.newsEventOrdering == .palmFixed {
+            if let add = palmArrivalNews(ev) { addNewsEvent(add) }
+            return
+        }
+        if let add = arrivalNewsQuests(ev) ?? arrivalNewsOthers(ev) { addNewsEvent(add) }
+    }
+
+    /// Palm `SystemInformationFormHandleEvent` news flags (NEWS-038): first match only, each with its status test.
+    private func palmArrivalNews(_ ev: SpecialEventType) -> NewsEvent? {
+        let q = quests
+        switch ev {
+        case .spaceMonsterKilled: return q.spaceMonster == QuestStatus.SpaceMonster.destroyed ? .spaceMonsterKilled : nil
+        case .dragonfly: return .dragonfly
+        case .scarab: return .scarab
+        case .scarabDestroyed: return q.scarab == QuestStatus.Scarab.destroyed ? .scarabDestroyed : nil
+        case .dragonflyBaratas: return q.dragonfly == QuestStatus.Dragonfly.flyBaratas ? .dragonflyBaratas : nil
+        case .dragonflyMelina: return q.dragonfly == QuestStatus.Dragonfly.flyMelina ? .dragonflyMelina : nil
+        case .dragonflyRegulas: return q.dragonfly == QuestStatus.Dragonfly.flyRegulas ? .dragonflyRegulas : nil
+        case .dragonflyDestroyed: return q.dragonfly == QuestStatus.Dragonfly.destroyed ? .dragonflyDestroyed : nil
+        case .japoriDelivery: return q.japori == QuestStatus.Japori.inTransit ? .japoriDelivery : nil
+        case .artifactDelivery: return artifactOnBoard ? .artifactDelivery : nil
+        case .japori: return q.japori == QuestStatus.Japori.notStarted ? .japori : nil
+        case .jarekGetsOut: return q.jarek == QuestStatus.Jarek.started ? .jarekGetsOut : nil
+        case .wildGetsOut: return q.wild == QuestStatus.Wild.started ? .wildGetsOut : nil
+        case .gemulonRescued:
+            return q.gemulon > QuestStatus.Gemulon.notStarted && q.gemulon < QuestStatus.Gemulon.tooLate ? .gemulonRescued : nil
+        case .gemulon: return .gemulon
+        case .experimentStopped:
+            return q.experiment > QuestStatus.Experiment.notStarted && q.experiment < QuestStatus.Experiment.performed
+                ? .experimentStopped : nil
+        case .experimentFailed: return .experimentFailed
+        default: return nil
+        }
     }
 
     /// Arrival news for the Dragonfly, Experiment, Gemulon, Japori and Jarek chains.
@@ -422,6 +466,7 @@ public extension GameState {
     mutating func arrivalTribbles() -> [GameEvent] {
         let before = commander.ship.tribbles
         guard before > 0 else { return [] }
+        if ruleset.flags.travel.tribbleAlgorithm == .palm { return palmArrivalTribbles() }
         var events: [GameEvent] = []
         let narc = TradeItemType.narcotics.rawValue, food = TradeItemType.food.rawValue
         let maxTribbles = 100_000
@@ -459,17 +504,61 @@ public extension GameState {
         return events + [.tribblesChanged(from: before, to: commander.ship.tribbles)]
     }
 
-    /// C# `ArrivalPerformRepairs` (auto fuel/repair all-or-nothing).
+    /// Palm tribble update (RUL-151): every branch then grows by `1 + rand(max(1, T >> (food eaten ? 0 : 1)))`.
+    private mutating func palmArrivalTribbles() -> [GameEvent] {
+        let before = commander.ship.tribbles
+        var events: [GameEvent] = []
+        let narc = TradeItemType.narcotics.rawValue, food = TradeItemType.food.rawValue
+        let maxTribbles = 100_000
+        var foodOnBoard = false
+        if reactorOnBoard {
+            commander.ship.tribbles /= 2
+            let all = commander.ship.tribbles < 10
+            if all { commander.ship.tribbles = 0 }
+            events.append(.tribblesDied(all ? .allFromReactor : .halfFromReactor))
+        } else if commander.ship.cargo[narc] > 0 {
+            commander.ship.tribbles = 1 + rng.next(below: 3)
+            let held = commander.ship.cargo[narc]
+            let dead = min(1 + rng.next(below: 3), held)
+            commander.priceCargo[narc] = commander.priceCargo[narc] * (held - dead) / held
+            commander.ship.cargo[narc] -= dead
+            commander.ship.cargo[TradeItemType.furs.rawValue] += dead
+            events.append(.tribblesDied(.narcotics(converted: dead)))
+        } else if commander.ship.cargo[food] > 0 {
+            let held = commander.ship.cargo[food]
+            commander.ship.tribbles += 100 + rng.next(below: held * 100)
+            let left = rng.next(below: held)
+            commander.priceCargo[food] = commander.priceCargo[food] * left / held
+            commander.ship.cargo[food] = left
+            events.append(.tribblesAteFood(eaten: held - left))
+            foodOnBoard = true
+        }
+        let t = commander.ship.tribbles
+        if t > 0, t < maxTribbles {
+            commander.ship.tribbles += 1 + rng.next(below: max(1, t >> (foodOnBoard ? 0 : 1)))
+        }
+        commander.ship.tribbles = min(commander.ship.tribbles, maxTribbles)
+        let now = commander.ship.tribbles
+        if [100, 1_000, 10_000, 50_000].contains(where: { before < $0 && now >= $0 }) {
+            events.append(.tribbleInspectorWarning(count: now))
+        }
+        tribbleMessage = false
+        return events + [.tribblesChanged(from: before, to: now)]
+    }
+
+    /// C# `ArrivalPerformRepairs` (auto fuel/repair all-or-nothing); Palm repairs always draw, shields were recharged at
+    /// departure and auto-buy is partial (TRV-063/064).
     mutating func arrivalRepairs() -> [GameEvent] {
         var events: [GameEvent] = []
-        let r = ruleset
+        let r = ruleset, tr = r.flags.travel
         let strength = commander.ship.hullStrength(r)
-        if commander.ship.hull < strength {
+        if tr.arrivalPipelineOrder == .palm {
+            commander.ship.hull = min(strength, commander.ship.hull + rng.next(below: shipSkills[3]))
+        } else if commander.ship.hull < strength {
             commander.ship.hull += min(strength - commander.ship.hull, rng.next(below: shipSkills[3]))
         }
-        for i in commander.ship.shields.indices {
-            commander.ship.shields[i].charge = r.tables.shield(commander.ship.shields[i].type).power
-        }
+        if tr.shieldRechargeTiming == .onArrival { rechargeShields() }
+        if tr.arrivalAutoBuyPartial { return palmAutoBuy() }
         let spec = commander.ship.spec(r)
         var fuelOK = true, repairOK = true
         let fuelNeed = commander.ship.fuelTanks(r) - commander.ship.fuel
@@ -495,10 +584,50 @@ public extension GameState {
         return events
     }
 
+    /// Every shield back to its power.
+    mutating func rechargeShields() {
+        for i in commander.ship.shields.indices {
+            commander.ship.shields[i].charge = ruleset.tables.shield(commander.ship.shields[i].type).power
+        }
+    }
+
+    /// Palm `BuyFuel(999)` / `BuyRepairs(9999)` on arrival (TRV-064): buys what cash allows.
+    private mutating func palmAutoBuy() -> [GameEvent] {
+        var events: [GameEvent] = []
+        let r = ruleset, spec = commander.ship.spec(r)
+        let tanks = commander.ship.fuelTanks(r), strength = commander.ship.hullStrength(r)
+        var tryRepair = true
+        if options.autoFuel {
+            let amount = max(0, min(999, (tanks - commander.ship.fuel) * spec.fuelCost, commander.cash))
+            let parsecs = amount / spec.fuelCost
+            commander.ship.fuel += parsecs
+            commander.cash -= parsecs * spec.fuelCost
+            if commander.ship.fuel < tanks {
+                if options.autoRepair, commander.ship.hull < strength {
+                    events += [.autoFuelFailed, .autoRepairFailed]
+                    tryRepair = false
+                } else {
+                    events.append(.autoFuelFailed)
+                }
+            }
+        }
+        if options.autoRepair, tryRepair {
+            let amount = max(0, min(9_999, (strength - commander.ship.hull) * spec.repairCost, commander.cash))
+            let points = amount / spec.repairCost
+            commander.ship.hull += points
+            commander.cash -= points * spec.repairCost
+            if commander.ship.hull < strength { events.append(.autoRepairFailed) }
+        }
+        return events
+    }
+
     /// C# `ArrivalCheckEasterEgg` (Og: exactly one unit of every good and a free shield slot → Lightning shield).
+    /// Palm shows the message even without a free slot (TRV-066, `eggMessageWithoutSlot`).
     mutating func arrivalEasterEgg() -> [GameEvent] {
-        guard commander.currentSystem == SystemID.og, commander.ship.cargo.allSatisfy({ $0 == 1 }),
-              commander.ship.freeShieldSlots(ruleset) > 0 else { return [] }
+        guard commander.currentSystem == SystemID.og, commander.ship.cargo.allSatisfy({ $0 == 1 }) else { return [] }
+        guard commander.ship.freeShieldSlots(ruleset) > 0 else {
+            return ruleset.flags.travel.eggMessageWithoutSlot ? [.easterEggNoShieldSlot] : []
+        }
         commander.ship.shields.append(ShieldInstance(type: .lightning, charge: ruleset.tables.shield(.lightning).power))
         commander.ship.cargo = Array(repeating: 0, count: 10)
         commander.priceCargo = Array(repeating: 0, count: 10)
@@ -515,7 +644,7 @@ public extension GameState {
         if princessOnBoard { quests.princess = QuestStatus.Princess.notStarted }
         if wildOnBoard {
             commander.policeRecordScore -= 4
-            newsEvents.append(.wildArrested)
+            addNewsEvent(.wildArrested)
             quests.wild = QuestStatus.Wild.notStarted
         }
         var payout = 0
@@ -545,8 +674,80 @@ public extension GameState {
         if ruleset.flags.resetPriceCargoOnHoldClear { commander.priceCargo = Array(repeating: 0, count: 10) }
     }
 
-    /// C# `Arrival` (the reactor meltdown path may end the game).
+    /// Debt warning and loan reminder (BNK-034/036/037, MOD-018 `debtWarningAndReminder`).
+    func debtNotices() -> [GameEvent] {
+        var events: [GameEvent] = []
+        let warn = commander.debt >= 75_000
+        if warn { events.append(.debtWarning(debt: commander.debt)) }
+        if !warn || ruleset.flags.travel.debtWarningAndReminder, commander.debt > 0, options.remindLoans, commander.days % 5 == 0 {
+            events.append(.debtReminder(debt: commander.debt))
+        }
+        return events
+    }
+
+    /// Palm `Arrival()`: current system, status shuffle and quantities, prices, newspaper unpaid.
+    mutating func arrivalMarket() {
+        commander.currentSystem = warpSystem
+        updatePressuresAndQuantities(arrival: commander.currentSystem)
+        calculatePrices(for: commander.currentSystem)
+        paidForNewspaper = false
+    }
+
+    /// Palm System Information on arrival (TRV-067): news flags, then the visited mark.
+    mutating func palmSystemInformation() {
+        addArrivalNews()
+        galaxy.systems[commander.currentSystem].visited = true
+    }
+
+    /// Palm `EscapeWithPod` (it runs `Arrival()` first) for the meltdown path (TRV-061).
+    private mutating func palmEscapeWithPod() -> [GameEvent] {
+        arrivalMarket()
+        return escapeWithPod()
+    }
+
+    /// The arrival after an arrest or the escape pod: Palm runs only `Arrival()` (TRV-062), C# the full pipeline.
+    mutating func arrivalAfterArrestOrPod(pod: Bool) -> [GameEvent] {
+        guard ruleset.flags.travel.arrivalPipelineAfterArrest == .marketOnly else {
+            return (pod ? escapeWithPod() : []) + arrival()
+        }
+        var events: [GameEvent] = []
+        if pod {
+            events += palmEscapeWithPod()
+        } else {
+            arrivalMarket()
+        }
+        palmSystemInformation()
+        return events + [.arrived(system: commander.currentSystem)]
+    }
+
+    /// Palm arrival pipeline (TRV-060): debt → Arrival() → reactor → tracking → tribbles → repair → auto-buy → egg.
+    private mutating func palmArrival() -> [GameEvent] {
+        var events = debtNotices()
+        arrivalMarket()
+        if [QuestStatus.Reactor.fuelOK + 1, QuestStatus.Reactor.date - 4, QuestStatus.Reactor.date - 2].contains(quests.reactor) {
+            events.append(.reactorWarning(status: quests.reactor))
+        }
+        if quests.reactor == QuestStatus.Reactor.date {
+            events.append(.reactorMeltdown)
+            quests.reactor = QuestStatus.Reactor.notStarted
+            guard commander.ship.escapePod else { return events + [endGame(.killed)] }
+            events += palmEscapeWithPod()
+            palmSystemInformation()
+            return events + [.arrived(system: commander.currentSystem)]
+        }
+        if trackedSystem == commander.currentSystem, options.trackAutoOff { trackedSystem = nil }
+        events += arrivalTribbles()
+        events += arrivalRepairs()
+        events += arrivalEasterEgg()
+        commander.ship.cargo = commander.ship.cargo.map { max(0, $0) }
+        palmSystemInformation()
+        events.append(.arrived(system: commander.currentSystem))
+        return events
+    }
+
+    /// C# `Arrival` (the reactor meltdown path may end the game); Palm order per `arrivalPipelineOrder`.
     mutating func arrival() -> [GameEvent] {
+        if ruleset.flags.travel.arrivalPipelineOrder == .palm { return palmArrival() }
         var events: [GameEvent] = []
         commander.currentSystem = warpSystem
         galaxy.systems[warpSystem].visited = true
@@ -565,11 +766,7 @@ public extension GameState {
             events.append(.reactorWarning(status: quests.reactor))
         }
         events += arrivalTribbles()
-        if commander.debt >= 75_000 {
-            events.append(.debtWarning(debt: commander.debt))
-        } else if commander.debt > 0, options.remindLoans, commander.days % 5 == 0 {
-            events.append(.debtReminder(debt: commander.debt))
-        }
+        events += debtNotices()
         events += arrivalRepairs()
         updatePressuresAndQuantities(arrival: commander.currentSystem)
         events += arrivalEasterEgg()
@@ -596,6 +793,9 @@ extension GameEngine {
     mutating func selectWormhole(_ w: Int) -> StepResult {
         guard docked else { return .rejected(.notAllowedInPhase) }
         guard let k = state.galaxy.wormholes.firstIndex(of: w) else { return .rejected(.invalidArgument) }
+        if ruleset.flags.travel.wormholeSelectionScope == .currentSystemOnly, w != state.commander.currentSystem {
+            return .rejected(.wormholeNotAtCurrentSystem)
+        }
         state.warpSystem = state.galaxy.wormholes[(k + 1) % state.galaxy.wormholes.count]
         state.targetWormhole = true
         return StepResult()
@@ -604,6 +804,7 @@ extension GameEngine {
     /// C# `Game.SelectNextSystemWithinRange`.
     mutating func selectNextTarget(forward: Bool) -> StepResult {
         guard docked else { return .rejected(.notAllowedInPhase) }
+        if ruleset.flags.travel.nextTargetOrdering == .indexScan { return palmNextTarget(forward: forward) }
         let dest = state.destinations
         guard !dest.isEmpty else { return StepResult() }
         var index: Int
@@ -617,62 +818,63 @@ extension GameEngine {
         return selectTarget(dest[index])
     }
 
+    /// Palm `NextSystemWithinRange` (TRV-008): scan indices from the old target with wrap-around.
+    private mutating func palmNextTarget(forward: Bool) -> StepResult {
+        let n = state.galaxy.systems.count, start = state.warpSystem
+        var i = start
+        while true {
+            i = (i + (forward ? 1 : -1) + n) % n
+            if i == start { return StepResult() }
+            if state.destinationOK(i) { break }
+        }
+        let cur = state.commander.currentSystem
+        if state.galaxy.wormholeExists(from: cur, to: i) { return selectWormhole(cur) }
+        return selectTarget(i)
+    }
+
     // MARK: Warp and jump
 
-    /// C# `Game.Warp` (TRV): checks, departure, then transit until an encounter or arrival.
+    /// C# `Game.Warp` / Palm `DoWarp` (TRV): checks, departure, then transit until an encounter or arrival.
     /// A jump (C# `btnJump_Click`) asks for `.useSingularity` consent and consumes the singularity before the checks.
     mutating func warp(viaSingularity: Bool, _ ack: Set<WarningID>) -> StepResult {
         guard docked else { return .rejected(.notAllowedInPhase) }
-        let target = state.warpSystem
+        let wildFirst = ruleset.flags.travel.warpCheckOrder == .wildFirst
+        var destination = state.warpSystem
         if viaSingularity {
             let jump = state.jumpPreview
             if let error = jump.rejection { return .rejected(error) }
             guard ack.contains(.useSingularity) else {
-                return .needsConfirmation(Confirmation(.useSingularity, amounts: [target]))
+                return .needsConfirmation(Confirmation(.useSingularity, amounts: [jump.destination]))
             }
-            if let blocker = jump.blocking {
+            destination = jump.destination
+            if !wildFirst, let blocker = jump.blocking {
                 state.quests.canSuperWarp = false
                 return StepResult(events: [.singularityLost, .departureBlocked(blocker)])
             }
-        } else if let blocker = state.warpTargetPreview(target).blocking {
-            return .rejected(blocker)
+        } else {
+            let preview = state.warpTargetPreview(destination)
+            if !preview.inRange { return .rejected(.destinationOutOfRange) }
+            if !wildFirst, let blocker = preview.blocking { return .rejected(blocker) }
         }
+        if state.wildWillLeave, !ack.contains(.wildLeavesWithoutLaser) {
+            return .needsConfirmation(Confirmation(.wildLeavesWithoutLaser))
+        }
+        // Consent given: commit the jump target and the Wild departure (Palm checks the funds only afterwards, TRV-015).
         var events: [GameEvent] = []
+        state.warpSystem = destination
+        if viaSingularity { state.quests.canSuperWarp = false }
         if state.wildWillLeave {
-            guard ack.contains(.wildLeavesWithoutLaser) else {
-                return .needsConfirmation(Confirmation(.wildLeavesWithoutLaser))
-            }
             state.quests.wild = QuestStatus.Wild.notStarted
             events.append(.wildLeftShip)
         }
-        let from = state.commander.currentSystem
-        state.arrivedViaWormhole = state.galaxy.wormholeExists(from: from, to: target)
-        if viaSingularity {
-            state.quests.canSuperWarp = false
-            state.newsEvents.append(.experimentArrival)
-        } else {
-            let distance = state.arrivedViaWormhole ? 0
-                : GalaxyGenerator.distance(state.galaxy.systems[from], state.galaxy.systems[target], rule: ruleset.flags.distance)
-            state.commander.cash -= state.mercenaryCosts + state.insuranceCosts + state.wormholeCosts
-            state.commander.ship.fuel -= distance
-            state.payInterest()
-            events += state.incDays(1)
+        if wildFirst, let blocker = state.warpBlocker() {
+            if viaSingularity { events.insert(.singularityLost, at: 0) }
+            if events.isEmpty { return .rejected(blocker) }
+            return StepResult(events: events + [.departureBlocked(blocker)])
         }
-        state.setDepartureCountdown()
-        state.newsEvents.removeAll()
-        state.calculatePrices(for: target)
-        events.append(.departed(from: from, to: target, viaWormhole: state.arrivedViaWormhole))
-        // Travel(): fabric rip
-        if state.quests.experiment == QuestStatus.Experiment.performed, state.quests.fabricRipProbability > 0,
-           state.quests.fabricRipProbability == 25 || state.rng.next(below: 100) < state.quests.fabricRipProbability {
-            state.warpSystem = state.rng.next(below: state.galaxy.systems.count)
-            state.targetWormhole = false
-            events.append(.fabricRip(newDestination: state.warpSystem))
-        }
-        state.raided = false
-        state.inspected = false
-        state.litterWarning = false
-        state.phase = .inTransit(TransitState(destination: state.warpSystem, clicksRemaining: 20, viaWormhole: state.arrivedViaWormhole))
+        events += state.depart(viaSingularity: viaSingularity)
+        state.phase = .inTransit(TransitState(destination: state.warpSystem, clicksRemaining: ruleset.flags.travel.transitClicks,
+                                              viaWormhole: state.arrivedViaWormhole))
         events += continueTransit()
         return StepResult(events: events)
     }
@@ -727,17 +929,96 @@ extension GameEngine {
         case .killed:
             return [state.endGame(.killed)]
         case .escapePod:
-            var events = state.escapeWithPod()
             state.phase = .docked
-            events += state.arrival()
-            return events
+            return state.arrivalAfterArrestOrPod(pod: true)
         case .arrested:
             state.phase = .docked
-            return state.arrival()
+            return state.arrivalAfterArrestOrPod(pod: false)
         case .normal, .continue:
             t.clicksRemaining -= 1
             state.phase = .inTransit(t)
             return continueTransit()
         }
+    }
+}
+
+public extension GameState {
+    /// The departure after every check passed (C# `NormalDeparture` + the jump branch of `Warp`; Palm `DoWarp`, TRV-031).
+    /// Ends with the fabric-rip test of `Travel()`; the transit flags are cleared.
+    internal mutating func depart(viaSingularity: Bool) -> [GameEvent] {
+        let tr = ruleset.flags.travel
+        var events: [GameEvent] = []
+        let from = commander.currentSystem, target = warpSystem
+        let wormhole = galaxy.wormholeExists(from: from, to: target)
+        let palmJump = viaSingularity && tr.singularitySideEffects == .palm
+        arrivedViaWormhole = wormhole || palmJump
+        if !viaSingularity {
+            let distance = wormhole ? 0 : GalaxyGenerator.distance(galaxy.systems[from], galaxy.systems[target], rule: ruleset.flags.distance)
+            commander.cash -= mercenaryCosts + insuranceCosts + wormholeCosts
+            commander.ship.fuel -= min(distance, commander.ship.fuel)
+        }
+        if tr.shieldRechargeTiming == .atDeparture { rechargeShields() }
+        if tr.newsResetBeforeDayAdvance { newsEvents.removeAll() }
+        if viaSingularity {
+            addNewsEvent(.experimentArrival)
+        } else {
+            payInterest()
+            events += incDays(1)
+            if commander.insurance, tr.noClaimTiming == .perWarp { setNoClaim(commander.noClaim + 1) }
+        }
+        if tr.monsterRegeneration == .perWarp, !viaSingularity || palmJump {
+            let monsterMax = specialShips.spaceMonster.hullStrength(ruleset)
+            specialShips.spaceMonster.hull = min(monsterMax, specialShips.spaceMonster.hull * 105 / 100)
+        }
+        if tr.policeRecordDecay == .perWarp { perWarpRecordDecay() }
+        setDepartureCountdown()
+        if !tr.newsResetBeforeDayAdvance { newsEvents.removeAll() }
+        calculatePrices(for: target)
+        events.append(.departed(from: from, to: target, viaWormhole: arrivedViaWormhole))
+        // Travel(): fabric rip (Palm draws before testing for 25, TRV-037).
+        let p = quests.fabricRipProbability
+        if quests.experiment == QuestStatus.Experiment.performed, p > 0 {
+            let rip = tr.fabricRipDrawFirst ? (rng.next(below: 100) < p || p == 25) : (p == 25 || rng.next(below: 100) < p)
+            if rip {
+                warpSystem = rng.next(below: galaxy.systems.count)
+                targetWormhole = false
+                events.append(.fabricRip(newDestination: warpSystem))
+            }
+        }
+        raided = false
+        inspected = false
+        litterWarning = false
+        return events
+    }
+
+    /// MOD-003 / Palm per-warp record decay (TRV-033), using `days` after the departure's day advance.
+    internal mutating func perWarpRecordDecay() {
+        let days = commander.days
+        if days % 3 == 0, commander.policeRecordScore > 0 { commander.policeRecordScore -= 1 }
+        if commander.policeRecordScore < -5 {
+            if difficulty <= .normal || days % difficulty.rawValue == 0 { commander.policeRecordScore += 1 }
+        }
+    }
+
+    /// Stores a news flag; Palm keeps at most `newsEventCapacity` (NEWS-035).
+    mutating func addNewsEvent(_ event: NewsEvent) {
+        if let cap = ruleset.flags.travel.newsEventCapacity, newsEvents.count >= cap { return }
+        newsEvents.append(event)
+    }
+
+    /// A famous captain was destroyed: C# turns the last event into its "destroyed" successor; Palm
+    /// `replaceNewsEvent(latest, latest + 10)` replaces every stored copy of the latest flag (NEWS-036).
+    internal mutating func markFamousCaptainDestroyed() {
+        guard let last = newsEvents.last else { return }
+        guard ruleset.flags.travel.newsEventOrdering == .palmFixed else {
+            if let destroyed = NewsEvent(rawValue: last.rawValue + 1) { newsEvents[newsEvents.count - 1] = destroyed }
+            return
+        }
+        // Palm flag codes: 90 WILDARRESTED, 91 CAUGHTLITTERING, 92 EXPERIMENTPERFORMED, 100…102 attacked, 110…112 destroyed.
+        let codes: [NewsEvent: Int] = [.wildArrested: 90, .caughtLittering: 91, .experimentPerformed: 92,
+                                       .captHuieAttacked: 100, .captConradAttacked: 101, .captAhabAttacked: 102,
+                                       .captHuieDestroyed: 110, .captConradDestroyed: 111, .captAhabDestroyed: 112]
+        guard let code = codes[last], let replacement = codes.first(where: { $0.value == code + 10 })?.key else { return }
+        newsEvents = newsEvents.map { $0 == last ? replacement : $0 }
     }
 }

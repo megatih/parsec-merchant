@@ -333,9 +333,7 @@ extension GameEngine {
         case .moon: state.quests.moon = QuestStatus.Moon.bought
         case .moonRetirement:
             state.quests.moon = QuestStatus.Moon.done
-            // RUL-006: the Modern moon-girl variant after the Princess quest is done (same score).
-            let girl = r.flags.quest.moonGirlEnding && state.quests.princess == QuestStatus.Princess.done
-            return .stop(StepResult(events: [.specialEventCompleted(type), state.endGame(girl ? .boughtMoonGirl : .boughtMoon)]))
+            return .stop(StepResult(events: [.specialEventCompleted(type), state.endGame(state.moonEndType)]))
         default:
             return nil
         }

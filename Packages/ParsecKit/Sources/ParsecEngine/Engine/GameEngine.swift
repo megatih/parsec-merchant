@@ -76,6 +76,10 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case destinationOutOfRange
     case noSingularity
     case singularityTargetIsCurrentSystem
+    /// TRV-020 (Palm): a singularity jump needs a tracked system.
+    case singularityNoTarget
+    /// TRV-005 (Palm): only the wormhole at the current system can be selected.
+    case wormholeNotAtCurrentSystem
     // Encounters (ENC/CMB/POL)
     case noWeapons
     case noLasers
@@ -143,6 +147,8 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case autoFuelFailed
     case autoRepairFailed
     case easterEgg
+    /// TRV-066 (Palm): the Og egg message without a free shield slot (nothing is installed or cleared).
+    case easterEggNoShieldSlot
     case escapePodUsed(insurancePayout: Int)
     case wildLeftShip
     /// TRV-021: the singularity was consumed on consent, then a departure check failed.
