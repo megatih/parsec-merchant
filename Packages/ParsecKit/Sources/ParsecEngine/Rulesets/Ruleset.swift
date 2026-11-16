@@ -74,6 +74,12 @@ public struct RuleFlags: Sendable {
     public var arrestFineNeverNegative: Bool
     /// MOD-012 (RUL-112): pirate looting clamps the hidden-bay protection (C# `RemoveRange` throws: POL-080).
     public var pirateLootHiddenBaysClamp = false
+    /// Area rule groups (M5). Each preset lives in its own file (GalaxyRules.swift, EconomyRules.swift, …).
+    public var galaxy: GalaxyRules = .windows201
+    public var economy: EconomyRules = .windows201
+    public var travel: TravelRules = .windows201
+    public var encounter: EncounterRules = .windows201
+    public var quest: QuestRules = .windows201
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -143,6 +149,11 @@ public struct Ruleset: Sendable {
         r.flags.marieCelesteChecksDestination = true
         r.flags.arrestFineNeverNegative = true
         r.flags.pirateLootHiddenBaysClamp = true
+        r.flags.galaxy = .modern
+        r.flags.economy = .modern
+        r.flags.travel = .modern
+        r.flags.encounter = .modern
+        r.flags.quest = .modern
         return r
     }()
 
@@ -152,6 +163,11 @@ public struct Ruleset: Sendable {
         r.id = .palm122
         r.rngKind = .palmLCG
         r.newspaperRNG = .palm
+        r.flags.galaxy = .palm122
+        r.flags.economy = .palm122
+        r.flags.travel = .palm122
+        r.flags.encounter = .palm122
+        r.flags.quest = .palm122
         return r
     }()
 }
