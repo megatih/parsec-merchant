@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M5 (starting)
-- **Next step:** M5: finish the last 38 cross-area {M5} IDs + remaining [verify] marks (agent running in a worktree), merge, fuzz all rulesets, verify default, tag m5-done; then M6 persistence.
-- **Last gate result:** verify.sh default ALL GATES PASSED @ M4 exit (7/7; 0 untraced {M4} IDs; 744+ tests)
+- **Current milestone:** M6 (starting)
+- **Next step:** M6: persistence (SAV: versioned JSON shoebox saves, migrator, autosave, import/export), high scores (SCORE {M6}), cheats (CHEAT), options (OPT) — write/complete specs first, ParsecPersistence ≥85% coverage.
+- **Last gate result:** verify.sh default ALL GATES PASSED @ M5 exit (7/7; 0 untraced {M5} IDs; 1008 tests; fuzz 2000×3 clean)
 - **Blockers:** none
 
 ## Milestones
@@ -14,7 +14,7 @@
 - [x] M2 Economy and services (2026-11-17, tag m2-done; 146 tests; engine coverage 94.2%; market evolution bit-exact vs harness; designer)
 - [x] M3 Travel, encounters, combat, police, news (2026-11-17, tag m3-done; opponents/combat/journeys/actions/newspaper bit-exact vs C# harness; fuzz 6000 games 0 violations; 382+ tests)
 - [x] M4 Quests, endings, scoring (2026-11-17, tag m4-done; 46 special events bit-exact vs C# harness; QST scenario tests per chain incl. failures; SCORE; tribble/passenger notices)
-- [ ] M5 Rulesets (Palm 1.2.2 and Modern)
+- [x] M5 Rulesets (Palm 1.2.2 and Modern) (2026-11-17, tag m5-done; Palm content pack + galaxy, all RUL flags in per-area rule groups, MOD-001…021, no open [verify] (accepted assumptions in QA-REPORT), 1546 spec IDs)
 - [ ] M6 Persistence, high scores, cheats
 - [ ] M7 App shell and docked screens
 - [ ] M8 Galaxy chart
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M5 exit: cross-area finish (Palm passengers outside the crew array, Palm Gemulon `> 7` rule, duplicate economy flags removed). Fuzz cash invariant now checks negative-cash transitions (allowed only for ECO-068 C# orbit cap and RUL-043 Palm dump precedence bug) — stricter than before (Windows now checked).
 - 2026-11-17: M5: five area branches merged (Palm content pack + galaxy; economy; travel/news/score; encounters/combat/police; quests). Deduplicated flags (one per behaviour: moon-girl → quest, record decay → travel, Wild laser/quest-ship damage → quest); Palm arrest/pod run Arrival() once (meltdown twice); 971 tests; fuzz clean on all rulesets; 1530 spec IDs (≥400 ✓). MOD-n cited as RUL-1nn in tests.
 - 2026-11-17: M5 started: 411 {M5} IDs (137 RUL). Added per-area rule groups (GalaxyRules, EconomyRules, TravelRules, EncounterRules, QuestRules) under RuleFlags so parallel agents never edit the same struct.
 - 2026-11-17: M4 exit: 15 QST chain specs + index (304 IDs) and SCORE (41); four worktree agents traced all {M4} IDs with multi-step chain scenarios; engine additions: passengerConcerned/Impatient, tribblesDied/AteFood/InspectorWarning notices, retire docked-only. Decision: arrest/pod quest losses are derived by the app from state (no separate events). POL-085 retagged M5.
