@@ -83,6 +83,7 @@
       }
     },
     "difficulty" : 2,
+    "easyEncounters" : false,
     "galaxy" : {
       "systems" : [
         {
