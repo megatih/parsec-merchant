@@ -1,19 +1,8 @@
-//
-//  SpaceTraderMacTests.swift
-//  SpaceTraderMacTests
-//
-//  Created by Megat Iskandar Hashim on 16/11/2026.
-//
-
+// SPDX-License-Identifier: GPL-2.0-or-later
 import Testing
-@testable import SpaceTraderMac
+@testable import ParsecMerchant
 
-struct SpaceTraderMacTests {
-
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-        // Swift Testing Documentation
-        // https://developer.apple.com/documentation/testing
-    }
-
+@MainActor @Test("APP-001 app target links ParsecEngine")
+func appLinksEngine() {
+    #expect(AppInfo.engineVersion == "0.1.0")
 }

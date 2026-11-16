@@ -1,0 +1,20 @@
+# Build products
+build/
+DerivedData/
+dist/
+*.xcresult
+Packages/ParsecKit/.build/
+.build/
+.swiftpm/
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+
+# macOS
+.DS_Store
+
+# Never commit: Apple-provided skills, copyrighted reference sources, local signing config
+.claude/skills/
+docs/reference/palm-src/
+Config/Local.xcconfig
