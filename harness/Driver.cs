@@ -41,7 +41,7 @@ namespace Fryz.Apps.SpaceTrader
 		static object Rng()
 		{
 			var list = new List<object>();
-			foreach (int seed in new[] { 0, 1, 42, 12345, -7, int.MaxValue })
+			foreach (int seed in new[] { 0, 1, 42, 12345, 2147483647, -2147483648, -42 })
 			{
 				var r1 = new Random(seed); var next = new List<int>(); for (int i = 0; i < 20; i++) next.Add(r1.Next());
 				var r2 = new Random(seed); var below = new List<int>(); foreach (int m in new[] { 1, 2, 5, 6, 10, 17, 100, 1000, 0, 154, 110, 13 }) below.Add(r2.Next(0, m));

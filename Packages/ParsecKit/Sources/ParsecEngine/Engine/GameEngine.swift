@@ -7,7 +7,7 @@ public enum WarningID: String, Codable, Sendable, Hashable, CaseIterable {
     case submitWithNothingIllegal, surrenderToPolice, bribe
     case buyEquipment, sellEquipment, buyShip, fireMercenary, stopInsurance
     case wildLeavesWithoutLaser, wildLeavesForReactor, litteringWarning, useSingularity, retire
-    case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain
+    case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain, buyEscapePod
 }
 
 /// A consent request returned instead of performing a command.
@@ -35,20 +35,33 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case invalidQuantity
     case cargoNoneToSell
     case marketNotInterested
-    // Generic services
+    // Ships, equipment and services (SHP)
     case tankFull
     case noRepairsNeeded
     case notSoldHere
     case inDebt
     case noFreeSlot
-    case alreadyOwn
+    case equipmentAlreadyOwned
     case extraBaysInUse
     case notEnoughQuarters
+    case passengersNeedQuarters
     case reactorOnBoard
-    case noEscapePod
     case alreadyHaveEscapePod
+    case escapePodNotAvailable
+    case alreadyOwnThisShipType
+    // Bank (BNK-063)
+    case debtTooLargeForLoan
     case noDebt
-    case noCrewToFire
+    case invalidAmount
+    case exceedsAvailableLoan
+    case exceedsRepayable
+    case insuranceRequiresEscapePod
+    case insuranceAlreadyActive
+    case insuranceNotActive
+    // Crew (CRW)
+    case notForHire
+    case noFreeQuarters
+    case notInCrew
     case cannotFireSpecialCrew
     case gameOver
 }
@@ -66,6 +79,8 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case boughtEquipment(price: Int)
     case soldEquipment(price: Int)
     case boughtShip(type: ShipType, netPrice: Int)
+    case cannotTransfer(TransferItem)
+    case cannotAffordTransfer(TransferItem)
     case boughtEscapePod(price: Int)
     case hired(crewID: Int)
     case fired(crewID: Int)
@@ -115,6 +130,7 @@ public enum Command: Codable, Sendable, Equatable {
     case sellWeapon(index: Int)
     case sellShield(index: Int)
     case sellGadget(index: Int)
+    case buyShip(ShipType, transfers: [TransferItem])
     case selectTarget(Int)
     case track(Int?)
 }
@@ -171,6 +187,28 @@ public struct GameEngine: Sendable {
 
     /// Economy and services commands (M2). Implemented in Systems/Economy and Systems/Services.
     mutating func applyEconomy(_ command: Command, acknowledging ack: Set<WarningID>) -> StepResult {
-        .rejected(.notAllowedInPhase)
+        switch command {
+        case let .buyCargo(item, q): return buyCargo(item, quantity: q)
+        case let .sellCargo(item, q): return sellCargo(item, quantity: q, dump: false)
+        case let .dumpCargo(item, q): return sellCargo(item, quantity: q, dump: true)
+        case let .jettisonCargo(item, q): return jettisonCargo(item, quantity: q, acknowledging: ack)
+        case let .buyFuel(c): return buyFuel(credits: c)
+        case let .repairHull(c): return repairHull(credits: c)
+        case let .borrow(a): return borrow(a)
+        case let .repay(a): return repay(a)
+        case .buyInsurance: return buyInsurance()
+        case .stopInsurance: return stopInsurance(ack)
+        case .buyEscapePod: return buyEscapePod(ack)
+        case let .hire(id): return hire(id)
+        case let .fire(id): return fire(id, ack)
+        case let .buyWeapon(w): return buyEquipment(weapon: w, ack)
+        case let .buyShield(s): return buyEquipment(shield: s, ack)
+        case let .buyGadget(g): return buyEquipment(gadget: g, ack)
+        case let .sellWeapon(i): return sellEquipment(weaponIndex: i, ack)
+        case let .sellShield(i): return sellEquipment(shieldIndex: i, ack)
+        case let .sellGadget(i): return sellEquipment(gadgetIndex: i, ack)
+        case let .buyShip(t, transfers): return buyShip(t, accepting: transfers, ack)
+        case .setOptions, .selectTarget, .track: return .rejected(.invalidArgument)
+        }
     }
 }

@@ -16,16 +16,16 @@ struct DotNetVector: Decodable {
 struct RNGTests {
     static let vectors: [DotNetVector] = (try? Fixtures.decode([DotNetVector].self, "harness/rng-dotnet.json")) ?? []
 
-    @Test("DotNetRandom Next() matches .NET for harness seeds")
+    @Test("RNG-040 RNG-009 RNG-010 RNG-041 DotNetRandom Next() matches .NET for harness seeds")
     func dotNetNext() throws {
-        #expect(Self.vectors.count == 6)
+        #expect(Self.vectors.count == 7)
         for v in Self.vectors {
             var r = DotNetRandom(seed: v.seed)
             #expect((0..<20).map { _ in r.nextInt() } == v.next, "seed \(v.seed)")
         }
     }
 
-    @Test("DotNetRandom Next(0,max) incl. max 0 matches .NET")
+    @Test("RNG-004 RNG-006 RNG-012 DotNetRandom Next(0,max) incl. max 0 matches .NET")
     func dotNetBelow() {
         for v in Self.vectors {
             var r = DotNetRandom(seed: v.seed)
@@ -33,7 +33,7 @@ struct RNGTests {
         }
     }
 
-    @Test("DotNetRandom Next(min,max) matches .NET")
+    @Test("RNG-005 RNG-012 DotNetRandom Next(min,max) matches .NET")
     func dotNetRange() {
         for v in Self.vectors {
             var r = DotNetRandom(seed: v.seed)
@@ -45,7 +45,7 @@ struct RNGTests {
         }
     }
 
-    @Test("DotNetRandom Sample() matches .NET NextDouble")
+    @Test("RNG-011 DotNetRandom Sample() matches .NET NextDouble")
     func dotNetDoubles() {
         for v in Self.vectors {
             var r = DotNetRandom(seed: v.seed)

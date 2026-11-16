@@ -50,6 +50,8 @@ public struct RuleFlags: Sendable {
     public var distinctShipyards: Bool
     /// C#: initial quantities read the hidden-until-visited resource (always `.nothing`); Modern (MOD-006) uses the true resource.
     public var resourcesAffectUnvisitedSystems: Bool
+    /// MOD-001: reset the cargo cost basis whenever the hold is cleared (C# keeps it: infinite-money exploit).
+    public var resetPriceCargoOnHoldClear: Bool
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -88,7 +90,8 @@ public struct Ruleset: Sendable {
             politicalSystems: Windows201Tables.politicalSystems, specialEvents: Windows201Tables.specialEvents,
             systemNames: GameNames.systems, galaxyWidth: 154, galaxyHeight: 110, minDistance: 7, closeDistance: 13,
             centralOffset: 13, startingCash: 1000),
-        flags: RuleFlags(distance: .floor, distinctShipyards: false, resourcesAffectUnvisitedSystems: false),
+        flags: RuleFlags(distance: .floor, distinctShipyards: false, resourcesAffectUnvisitedSystems: false,
+                         resetPriceCargoOnHoldClear: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
                               hasHiddenBays: true, mercenariesPerSystem: 3),
         rngKind: .dotNet)
@@ -100,6 +103,7 @@ public struct Ruleset: Sendable {
         r.rngKind = .xoshiro
         r.flags.distinctShipyards = true
         r.flags.resourcesAffectUnvisitedSystems = true
+        r.flags.resetPriceCargoOnHoldClear = true
         return r
     }()
 

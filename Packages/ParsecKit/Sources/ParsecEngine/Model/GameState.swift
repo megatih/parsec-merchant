@@ -58,7 +58,10 @@ public enum QuestStatus {
     public enum Japori { public static let notStarted = 0, inTransit = 1, done = 2 }
     public enum Jarek { public static let notStarted = 0, started = 1, impatient = 11, done = 12 }
     public enum Moon { public static let notStarted = 0, bought = 1, done = 2 }
-    public enum Princess { public static let notStarted = 0, flyCentauri = 1, flyInthara = 2, flyQonos = 3, rescued = 4, impatient = 14, returned = 15, done = 16 }
+    public enum Princess {
+        public static let notStarted = 0, flyCentauri = 1, flyInthara = 2, flyQonos = 3, rescued = 4
+        public static let impatient = 14, returned = 15, done = 16
+    }
     public enum Reactor { public static let notStarted = 0, fuelOK = 1, date = 20, delivered = 21, done = 22 }
     public enum Scarab { public static let notStarted = 0, hunting = 1, destroyed = 2, done = 3 }
     public enum Sculpture { public static let notStarted = 0, inTransit = 1, delivered = 2, done = 3 }
