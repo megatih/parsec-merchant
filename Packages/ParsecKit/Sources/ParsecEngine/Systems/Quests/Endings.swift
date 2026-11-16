@@ -2,6 +2,12 @@
 // Game endings and score (docs/specs/SCORE.md). C# Game.Score, Form_SpaceTrader.mnuRetire_Click / GameEnd.
 
 public extension GameState {
+    /// SCORE-002/012: ends the game and returns the final `gameEnded` event (score on the committed state).
+    mutating func endGame(_ end: GameEndType) -> GameEvent {
+        phase = .gameOver(end)
+        return .gameEnded(end, score: score(for: end))
+    }
+
     /// SCORE: C# `Game.Score` for an end type, in tenths of a percent. 32-bit arithmetic wraps like the C# source.
     func score(for end: GameEndType) -> Int {
         let w = worth
@@ -27,7 +33,6 @@ extension GameEngine {
         guard ack.contains(.retire) else {
             return .needsConfirmation(Confirmation(.retire, amounts: [state.score(for: .retired)]))
         }
-        state.phase = .gameOver(.retired)
-        return StepResult(events: [.gameEnded(.retired)])
+        return StepResult(events: [state.endGame(.retired)])
     }
 }

@@ -532,8 +532,7 @@ public extension GameState {
             if commander.ship.escapePod {
                 events += escapeWithPod()
             } else {
-                phase = .gameOver(.killed)
-                return events
+                return events + [endGame(.killed)]
             }
         } else if [QuestStatus.Reactor.fuelOK + 1, QuestStatus.Reactor.date - 4, QuestStatus.Reactor.date - 2].contains(quests.reactor) {
             events.append(.reactorWarning(status: quests.reactor))
@@ -699,8 +698,7 @@ extension GameEngine {
         state.encounterTransit = nil
         switch result {
         case .killed:
-            state.phase = .gameOver(.killed)
-            return []
+            return [state.endGame(.killed)]
         case .escapePod:
             var events = state.escapeWithPod()
             state.phase = .docked

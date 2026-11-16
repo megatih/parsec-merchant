@@ -677,7 +677,8 @@ struct TravelTransitSpecTests {
         #expect(e.state == ref && e.state.commander.ship.type == .flea)
         // Killed.
         e = frozen
-        #expect(e.finishEncounter(.killed).isEmpty)
+        let ended = e.finishEncounter(.killed)
+        #expect(ended == [.gameEnded(.killed, score: e.state.score(for: .killed))])  // SCORE-012
         #expect(e.state.phase == .gameOver(.killed))
         #expect(e.state.commander.currentSystem == frozen.state.commander.currentSystem)
     }

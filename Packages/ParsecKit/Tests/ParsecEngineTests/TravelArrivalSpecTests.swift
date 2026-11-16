@@ -154,7 +154,7 @@ struct TravelArrivalSpecTests {
         // A reactor meltdown without an escape pod ends the game inside the pipeline.
         var s = arriving { $0.quests.reactor = QuestStatus.Reactor.date }
         let events = s.arrival()
-        #expect(events == [.reactorMeltdown])
+        #expect(events == [.reactorMeltdown, .gameEnded(.killed, score: s.score(for: .killed))])  // SCORE-012
         #expect(s.phase == .gameOver(.killed))
     }
 }

@@ -264,8 +264,7 @@ extension GameEngine {
         case .moon: state.quests.moon = QuestStatus.Moon.bought
         case .moonRetirement:
             state.quests.moon = QuestStatus.Moon.done
-            state.phase = .gameOver(.boughtMoon)
-            return .stop(StepResult(events: [.specialEventCompleted(type), .gameEnded(.boughtMoon)]))
+            return .stop(StepResult(events: [.specialEventCompleted(type), state.endGame(.boughtMoon)]))
         default:
             return nil
         }

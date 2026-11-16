@@ -174,7 +174,7 @@ public enum GameEvent: Codable, Sendable, Equatable {
     /// QST-ONEOFFS: three sealed canisters of this item were loaded.
     case sealedCanisters(TradeItemType)
     /// SCORE: the game ended.
-    case gameEnded(GameEndType)
+    case gameEnded(GameEndType, score: Int)
 }
 
 /// A decision the engine needs before it can continue.
