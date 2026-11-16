@@ -200,7 +200,9 @@ struct ShellTests {
         st.commander.shipName = "Rocinante"
         #expect(WindowTitles.make(state: st).title == "Parsec Merchant — Cmdr. Shell · “Rocinante”")
         let enc = EncounterState(type: .pirateAttack, opponent: st.commander.ship)
-        st.encounterTransit = try decode(#"{"destination":5,"clicksRemaining":3,"viaWormhole":false,"raided":false,"inspected":false,"litterWarning":false,"hadEncounter":false}"#)
+        let transitJSON = #"{"destination":5,"clicksRemaining":3,"viaWormhole":false,"raided":false,"inspected":false,"#
+            + #""litterWarning":false,"hadEncounter":false}"#
+        st.encounterTransit = try decode(transitJSON)
         st.phase = .encounter(enc)
         #expect(WindowTitles.make(state: st).subtitle == "Day 0 · In transit to \(Names.system(5, in: st))")
         st.phase = .gameOver(.killed)
@@ -346,6 +348,29 @@ struct ShellTests {
         #expect(GameOverModel(end: .killed, scoreTenths: 123, recorded: nil).scoreText == "12.3")
         #expect(GameOverModel.make(state: fresh(), recorded: nil) == nil)
         #expect(AXID.GameOver.all == ["gameOver.card", "gameOver.newGame", "gameOver.mainMenu"])
+    }
+
+    @Test("UI-SHELL-096 Retire… sends .retire; its confirmation is the retire sheet with the score and a destructive Retire")
+    func retireSheet() throws {
+        let s = try TestSessions.playing()
+        s.send(.retire)
+        guard case let .sheet(.retire(pending)) = s.presentation, let st = s.state else {
+            Issue.record("retire should present the retire sheet")
+            return
+        }
+        let content = ConfirmationText.content(for: pending.confirmation, state: st)
+        #expect(content.isDestructive)
+        #expect(content.message == "Retiring now scores \(GameOverModel(end: .retired, scoreTenths: st.scoreTenths(for: .retired), recorded: nil).scoreText)%.")
+        #expect(AXID.Dialog.all.contains("retire.confirm") && AXID.Dialog.all.contains("retire.cancel"))
+        s.cancel()
+        #expect(s.mode == .playing)
+    }
+
+    @Test("ALR-094 the discard question is a destructive app confirmation (Discard / Cancel)")
+    func discardDialog() throws {
+        let s = try TestSessions.make()
+        let c = AppConfirmationText.content(for: .discardUnsavedGame, session: s)
+        #expect(c.isDestructive && c.confirmLabel == "Discard")
     }
 
     @Test("UI-SHELL-128 AXID values are unique and match the identifier scheme")

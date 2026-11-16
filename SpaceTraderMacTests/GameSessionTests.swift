@@ -136,12 +136,9 @@ struct GameSessionTests {
             Issue.record("a new game starts the feed with gameStarted")
             return
         }
-        let item = try #require(TradeItemType.allCases.first { (s.state?.buyPrices[$0.rawValue] ?? 0) > 0
-            && (s.state?.currentSystem.tradeItems[$0.rawValue] ?? 0) > 2 && (s.state?.sellPrices[$0.rawValue] ?? 0) > 0 })
-        try TestSessions.edit(s) { $0.commander.cash = 1_000_000 }
         for _ in 0..<260 {
-            s.send(.buyCargo(item, quantity: 1))
-            s.send(.sellCargo(item, quantity: 1))
+            s.send(.borrow(10))
+            s.send(.repay(10))
         }
         #expect(s.feed.count == GameSession.feedLimit)
         let last = try #require(s.feed.last)
