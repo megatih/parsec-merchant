@@ -70,6 +70,8 @@ public struct RuleFlags: Sendable {
     public var bountyCreditedRegardlessOfRecord: Bool
     /// MOD-010: the Marie Celeste exclusion tests the destination (C# tests the departure system).
     public var marieCelesteChecksDestination: Bool
+    /// MOD-002: the arrest fine never goes negative (C# can pay a commander with a positive record).
+    public var arrestFineNeverNegative: Bool
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -115,7 +117,8 @@ public struct Ruleset: Sendable {
                          tradeInOrbitCashCapUsesOrbitPrice: false, randomSkillIncreaseReachesTen: false,
                          waspOpponentReachable: false, kravatEngineerChecksPlayerWild: false,
                          reactorDamageRealFactor: false, hardenedHullProtectsPlayerOnly: false,
-                         bountyCreditedRegardlessOfRecord: false, marieCelesteChecksDestination: false),
+                         bountyCreditedRegardlessOfRecord: false, marieCelesteChecksDestination: false,
+                         arrestFineNeverNegative: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
                               hasHiddenBays: true, mercenariesPerSystem: 3),
         rngKind: .dotNet, newspaperRNG: .csharp)
@@ -136,6 +139,7 @@ public struct Ruleset: Sendable {
         r.flags.reactorDamageRealFactor = true
         r.flags.hardenedHullProtectsPlayerOnly = true
         r.flags.marieCelesteChecksDestination = true
+        r.flags.arrestFineNeverNegative = true
         return r
     }()
 

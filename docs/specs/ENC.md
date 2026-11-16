@@ -1,16 +1,303 @@
 # ENC: Encounters
 
-> **Skeleton.** This file is completed at the start of **M3** (PRD §7). Requirement bullets use the format `- **ENC-001** {M3} [M][W][P] statement (source)`.
-> Inputs: docs/research/01 and 04 (with errata), docs/design/UX-VISION.md, docs/reference/csharp-index.md.
+> Format (PRD §7): `- **ENC-001** {Mn} [M][W][P] statement (source)`. Tags: `[UI]` = covered by app or UI tests; `[manual]` = covered by a QA-REPORT row.
+>
+> **Milestones.** The Windows 2.01 baseline, and behaviour shared by all three rulesets, is `{M3}`. Palm-only and Modern-only variants are `{M5}`. Quest-specific encounter outcomes are `{M4}`.
+>
+> **Sources.** C# 2.01: `/Users/megatih/Downloads/SpaceTraderSource201` (`File.cs:line`). Palm 1.2.2: `docs/reference/palm-src/Src` (`Src/File.c:Function`). Every formula below was re-read in the source on 2026-11-17. Research 01 §7 and 04 §3 (with their QA ERRATA) were the checklist. Discrepancies are listed in §9.
+>
+> **Notation.** `rand(n)` is the game RNG draw `GetRandom(n)`: uniform in `[0, n)`, with `rand(0) == 0` (RNG.md). `D` is the difficulty (Beginner 0 … Impossible 4). `rec` is the police record score and `rep` the reputation score. "Destination" is the warp system (`WarpSystem`). The **activities** `P`, `Q` and `T` are the raw `Activity` values (0..7) for pirates, police and traders of the destination's political system. Ship types compare by raw enum value (Flea 0 … Wasp 9, Custom 15). Draws are listed in call order; a draw is made only when its condition is evaluated (short-circuit order as written). "Effective skill" means the ship skill of CRW (best crew value, difficulty-adjusted, plus gadget bonus).
+>
+> **Ownership.** ENC owns encounter determination, opponent generation, initial reactions, visibility, the per-type action sets and the type transitions caused by actions, and the engine API for encounters. It references, by name only: **CMB** (a combat round: to-hit, damage, disabling, escapes, the post-round type update, destruction outcomes, bounty, scoop, plunder effects), **POL** (record and reputation changes, detectable contraband, submit, fines, bribe amount, yield, surrender effects, raid and blackmail, arrest, escape pod), **TRV** (the click loop, per-click repairs, arrival), **ECO** (trade in orbit, ECO-059…081), **CRW** (effective skills and tonics) and **QST** (quest status effects).
 
-## Planned contents
-- Fixed encounters (Space Monster, Scarab, Dragonfly, Scorpion, post-Marie police)
-- Random encounter roll per click and per ruleset (raided fall-through, Flea doubling, police modifier)
-- Very rare encounters: selection (C# from remaining list vs Palm rand(6) over all six) and conditions
-- Opponent generation: tries, ship weighting (Wasp reachability flag), gadgets/shields/weapons/hull/cargo/crew, Palm backwards roll
-- Initial reactions for pirates, police and traders per ruleset
-- The 35 EncounterTypes with their transitions and available actions (UpdateButtons mapping)
-- Visibility rules (cloak, always-ignore options)
+## 0. Flags used by this spec
 
-## Requirements
-_To be written at the start of M3._
+Flag names follow RUL.md §2. Rows marked "new" have no RUL row yet; RUL needs an audit row for each.
+
+| Flag | Modern | Windows 2.01 | Palm 1.2.2 | Req |
+|---|---|---|---|---|
+| `postMarieCustomsTiming` (RUL-070) | click 1 | click 1 | after the loop | ENC-015, ENC-016 |
+| `raidedPirateFallthrough` (RUL-071) | none | none | police | ENC-023, ENC-025 |
+| `artifactMantisCheck` (RUL-072) | chained | chained | whenever no flag | ENC-025 |
+| `veryRareSelection` (RUL-073) | remaining list | remaining list | rand(6) over six | ENC-041, ENC-046 |
+| `famousCaptainRecordThreshold` (RUL-074) | > −30 | > −30 | > −10 | ENC-044, ENC-046 |
+| `marieCelesteDestinationCheck` (RUL-110, MOD-010) | destination | departure | no restriction | ENC-042, ENC-043, ENC-046 |
+| `worthUsesTradeInValue` (RUL-119, MOD-019) | trade-in | list price | trade-in | ENC-061 |
+| `waspOpponentReachable` (RUL-120, MOD-020) | yes | no | yes | ENC-065, ENC-066 |
+| `policeTries` (RUL-075) | C# | C# | Palm | ENC-062, ENC-063 |
+| `opponentShipRoll` (RUL-076) | C# | C# | Palm | ENC-065, ENC-067 |
+| `opponentEquipmentRollBug`, `opponentDuplicateEquipment`, `opponentWeaponCountDifficulty`, `opponentCargoBaysGuard`, `policeCargoMinimum`, `famousCaptainShields`, `opponentHullRoll`, `opponentGenerationOrder`, `opponentExtraCrew` (RUL-077…085) | C# | C# | Palm | ENC-084 |
+| `kravatEngineerBoostChecksPlayer` (RUL-109, MOD-009; code name `kravatEngineerChecksPlayerWild`) | player | opponent (never) | player | ENC-070, ENC-071 |
+| `policeSurrenderState`, `unarmedPoliceAttack`, `lawfulInspectionRoll` (RUL-086…088) | C# | C# | Palm | ENC-104, ENC-106 |
+| `traderFleeThreshold`, `tradeInOrbitWhileCloaked` (RUL-089, RUL-042) | C# | C# | Palm | ENC-107, ENC-109 |
+| `specialShipDamagePersists` (new) | yes | yes | monster hull only, on escape | ENC-012, ENC-013 |
+| `encounterTribbleSpriteDraws` (new) | yes | yes | no | ENC-087 |
+| `attackReverification` (new: Palm police and captain penalties every click) | C# | C# | Palm | ENC-146, ENC-147 |
+| `autoRepeatRule` (new) | C# | C# | Palm | ENC-187, ENC-189 |
+
+## 1. Transit hook and the fixed encounters
+
+### 1.1 Hook into the click loop
+- **ENC-001** {M3} [M][W][P] Once per transit click, after that click's repairs (TRV), the engine determines an encounter: the fixed checks of §1.2 first, and the random roll of §2 only if no fixed check matched. (source: Game.cs:772-776, Game.cs:3119-3125; Palm: Src/Traveler.c:Travel)
+- **ENC-002** {M3} [M][W][P] A determined encounter that is hidden by the visibility rules of §5 emits no event, does not enter the encounter phase and does not make the trip eventful. Every RNG draw made while determining it stays consumed, and transit continues with the next click. (source: Game.cs:3123-3146, Game.cs:857-860, 906-910, 997-1004; Palm: Src/Traveler.c:Travel `--Clicks; continue;`)
+- **ENC-003** {M3} [M][W][P] A shown encounter sets `phase = .encounter(EncounterState)` and emits `encounterStarted`. Its end result decides what follows. **Normal**: back to `.inTransit`, the click counter decrements, transit continues. **Arrested**: the remaining clicks are dropped, the POL arrest sequence runs, then arrival at the destination. **EscapePod**: the remaining clicks are dropped, the escape-pod sequence runs, then arrival. **Killed**: `phase = .gameOver(.killed)`. (source: Game.cs:3125-3146; Palm: Src/Encounter.c:Arrested, EscapeWithPod)
+- **ENC-004** {M5} [P] Palm resumes transit after an encounter by re-entering `Travel`, which pre-decrements `Clicks`. The total number of encounter checks stays 20 (RUL-069). A post-Marie customs encounter after the loop sets `Clicks++` so that the resumed `Travel` ends immediately and proceeds to arrival. (source: Palm: Src/Traveler.c:Travel, Src/Encounter.c:EncounterFormHandleEvent `Travel()`)
+
+### 1.2 Fixed (non-random) encounters
+- **ENC-010** {M3} [M][W] The fixed checks run in this order, and the first match wins: (a) **Space Monster**: clicks == 1, destination Acamar, `spaceMonster == 1` (at Acamar); (b) **Scarab**: arrived via wormhole, clicks == 20, the destination's special event is `scarabDestroyed`, `scarab == 1` (hunting); (c) **Dragonfly**: clicks == 1, destination Zalkon, `dragonfly == 4` (fly Zalkon); (d) **Scorpion**: clicks == 1, destination Qonos, `princess == 3` (fly Qonos); (e) **customs police**: clicks == 1 and `justLootedMarie`. No fixed check draws from the RNG except (e), which generates a police opponent (§4). (source: Game.cs:783-826)
+- **ENC-011** {M3} [M][W][P] For the Space Monster, Scarab, Dragonfly and Scorpion the initial type is `…Ignore` if the player is cloaked against that ship (ENC-100), else `…Attack`. These encounters are always shown, whatever the opponent's cloak or the always-ignore options. (source: Game.cs:786-813; Palm: Src/Traveler.c:Travel)
+- **ENC-012** {M3} [M][W] The opponent of a fixed quest encounter is the persistent ship in `GameState.specialShips` (Dragonfly, Scarab, Scorpion, Space Monster). It is not regenerated and costs no RNG. When the encounter ends, the opponent's hull, shield charges and cargo are written back to `specialShips`, because C# assigns the object by reference: damage persists into the next meeting (monster regrowth is TRV, RUL-062). Flag `specialShipDamagePersists = true`. (source: Game.cs:786, 795, 804, 813)
+- **ENC-013** {M5} [P] Palm copies the special ship into `Opponent` and resets its crew skills on every meeting: Monster 8+D / 8+D / 1 / 1+D, Scarab 5+D / 6+D / 1 / 6+D, Dragonfly 4+D / 6+D / 1 / 6+D (pilot / fighter / trader / engineer). The monster's hull is loaded from `MonsterHull` and written back only when the player escapes. The Dragonfly and Scarab start undamaged at every meeting. Flag `specialShipDamagePersists = monsterHullOnEscape`. (source: Palm: Src/Traveler.c:Travel, Src/Encounter.c:ExecuteAction `MonsterHull = Opponent.Hull`)
+- **ENC-014** {M3} [M][W] Special-ship loadouts, fixed at new game: Dragonfly = military + pulse laser, 3 lightning shields, auto-repair + targeting; Scarab = 2 military lasers; Scorpion = 2 military lasers, 2 reflective shields, auto-repair + targeting; Space Monster = 3 military lasers. Their crew[0] are mercenaries 35 Dragonfly (4+D, 6+D, 1, 6+D), 36 Scarab (5+D, 6+D, 1, 6+D), 54 Scorpion (8+D, 8+D, 1, 6+D) and 37 Space Monster (8+D, 8+D, 1, 1+D). (source: Game.cs:743-770, Game.cs:2140-2143)
+- **ENC-015** {M3} [M][W][P] The customs encounter generates a police opponent (§4), sets type `marieCelestePolice`, clears `justLootedMarie` and is always shown: no cloak check, no always-ignore option. Windows 2.01 and Modern run it at click 1 inside the loop; Palm runs it after the click loop (RUL-070). (source: Game.cs:815-823; Palm: Src/Traveler.c:Travel)
+- **ENC-016** {M3} [M][W] `justLootedMarie` stays set until a click-1 determination reaches check (e). If an earlier fixed check takes click 1 (for example the Space Monster, on a trip to Acamar on which the Marie Celeste was looted, which Windows 2.01 allows because it tests the departure system, ENC-042), the customs police appear at click 1 of a later trip. (source: Game.cs:783-826, Game.cs:1027-1029)
+- **ENC-017** {M4} [M][W][P] Quest outcomes of the fixed encounters follow CMB and QST: destroying the monster sets `spaceMonster = 2`; destroying or disabling the Dragonfly sets `dragonfly = 5`, the Scarab sets `scarab = 2` and the Scorpion sets `princess = 4` (rescued). Each of these also adds a pirate kill and +1 record. The Scorpion never dies: at hull 0 it becomes hull 1 and disabled. The Scorpion encounter does not exist in Palm (RUL-013). (source: Game.cs:1101-1120, 1203-1226, 1381-1385, 1990-2017)
+
+## 2. Random encounter roll (per click)
+- **ENC-020** {M3} [M][W][P] If the destination is Gemulon and the invasion came too late (`gemulon == 8`; Palm `InvasionStatus > 7`), the click makes exactly one band draw, `rand(10) > 4` → Mantis, and none of ENC-021/022 apply. (source: Game.cs:917-921; Palm: Src/Traveler.c:Travel)
+- **ENC-021** {M3} [M][W][P] Otherwise the click draws `r = rand(44 − 2D)` and doubles it (`r *= 2`) if the player's ship type is Flea. `policeModifier` is 3 for rec < −70, 2 for −70 ≤ rec < −30 and 1 otherwise. This is C# `max(1, 3 − PoliceRecordType)`, identical to Palm `STRENGTHPOLICE`. (source: Game.cs:925-931; Palm: Src/Traveler.c:Travel, Src/spacetrader.h:STRENGTHPOLICE)
+- **ENC-022** {M3} [M][W] Bands are tested in order. `r < P` → pirate, **unless raided this trip** (then no flag). Else `r < P + Q×policeModifier` → police. Else `r < P + Q×policeModifier + T` → trader. Else, if Wild is aboard the player's ship and the destination is Kravat, draw `rand(100) < 100 / max(2, min(4, 5 − D))` → police (25, 25, 33, 50, 50 % for D = 0…4). Else, if the artifact is aboard, draw `rand(20) ≤ 3` → Mantis. (source: Game.cs:933-956)
+- **ENC-023** {M3} [M][W] In Windows 2.01 and Modern, a pirate-band roll while raided sets no flag. Because the dispatch is an else-if chain, that click proceeds to the very-rare check (ENC-040), and neither the Kravat roll nor the artifact Mantis roll is made. (source: Game.cs:940-942, 958-966)
+- **ENC-024** {M3} [M][W][P] Dispatch: police flag → police encounter (ENC-104); pirate or Mantis flag → pirate encounter (ENC-101); trader flag → trader encounter (ENC-107); no flag → very-rare check (ENC-040). (source: Game.cs:958-966; Palm: Src/Traveler.c:Travel)
+- **ENC-025** {M5} [P] Palm differences: a pirate-band roll while raided becomes a police encounter (RUL-071). The artifact Mantis roll runs whenever no pirate, police or trader flag is set, including after a failed Kravat roll (RUL-072). The Kravat roll (`rand(100)` against 25 / 33 / 50 for D ≤ Easy / Normal / ≥ Hard) is equivalent to C#. (source: Palm: Src/Traveler.c:Travel)
+- **ENC-026** {M3} [M][W][P] A Mantis from the artifact or from invaded Gemulon is a pirate encounter whose opponent is generated with the Mantis rules (ENC-083). (source: Game.cs:832-836; Palm: Src/Traveler.c:Travel)
+
+## 3. Very rare encounters
+- **ENC-040** {M3} [M][W] When no flag is set (ENC-024), a very-rare encounter is attempted iff `days > 10`, then `rand(1000) < chanceOfVeryRareEncounter` (state value, default 5), then the remaining list is non-empty. The `rand(1000)` draw is made even when the list is empty. (source: Game.cs:964-966, Game.cs:49)
+- **ENC-041** {M3} [M][W] Selection draws `veryRareEncounters[rand(count)]` from the remaining list. The list starts as Marie Celeste, Ahab, Conrad, Huie, Bottle Old, Bottle Good, and removal keeps that order. If the picked entry's condition holds, it is removed, the type is set, the opponent is generated and the encounter is shown. If not, nothing happens this click and the entry stays. (source: Game.cs:1022-1088, Game.cs:2991-3000)
+- **ENC-042** {M3} [W] Marie Celeste condition (Windows 2.01): clicks > 1 and the **departure** system (`Commander.CurrentSystem`) is not Acamar, Zalkon or Qonos. Type `marieCeleste`. The opponent is a trader generated by §4, then every cargo slot is zeroed and narcotics = `min(opponent cargo bays incl. extra bays, 5)`. (source: Game.cs:1027-1039)
+- **ENC-043** {M5} [M] Modern tests the **destination** system instead (MOD-010); clicks > 1 is kept. (source: PRD MOD-010; Game.cs:1027-1029)
+- **ENC-044** {M3} [M][W] Famous captains, each also requiring rec > −30: **Ahab** needs a reflective shield and the commander's own pilot skill < 10; **Conrad** needs a military laser (exact type) and the commander's engineer skill < 10; **Huie** needs a military laser and the commander's trader skill < 10. Types `captainAhab`, `captainConrad`, `captainHuie`; the opponent is a famous captain (ENC-080). The skills are the commander's raw skills, not ship skills. (source: Game.cs:1043-1072)
+- **ENC-045** {M3} [M][W][P] Bottle Old and Bottle Good have no condition. Types `bottleOld` and `bottleGood`; the opponent is a bottle (ENC-082 / ENC-046). (source: Game.cs:1074-1087; Palm: Src/Traveler.c:Travel)
+- **ENC-046** {M5} [P] Palm: `days > 10 && rand(1000) < 5`, then `k = rand(6)` over **all six**. An entry already used (bit set in `VeryRareEncounter`) or whose condition fails produces nothing. The Marie Celeste has no click or system restriction and its narcotics are `min(base cargo bays of the ship type, 5)`. Captains need rec > −10. A bottle opponent is generated as a full trader (consuming those draws) and then set to type Bottle with hull 10. (source: Palm: Src/Traveler.c:Travel)
+- **ENC-047** {M3} [M][W][P] Very-rare encounters skip the cloak and always-ignore rules and are always shown. Their initial type is the very-rare type itself. (source: Game.cs:1022-1088; Palm: Src/Traveler.c:Travel)
+
+## 4. Opponent generation (`Ship(OpponentType)`)
+- **ENC-060** {M3} [M][W] Windows 2.01 generation order: famous captain and bottle use fixed loadouts with no RNG. For pirate, police, trader and Mantis: compute equipment tries, then **ship type → crew → gadgets → shields → weapons → hull (not Mantis) → cargo (not police)**. (source: Ship.cs:56-96)
+- **ENC-061** {M3} [M][W][P] Worth `W` in every tries formula is the commander's worth per `worthUsesTradeInValue`. Windows 2.01 uses `Ship.Price + cash − debt + moon`. Modern (MOD-019) and Palm use trade-in value (SHP worth). (source: Commander.cs:389-394, Ship.cs:83, 444; Palm: Src/Money.c:CurrentWorth)
+- **ENC-062** {M3} [M][W] Ship-type tries. Pirate: `max(1, 1 + W/100000 + D − 2)`. Police: base 5 if rec < −100 or Wild is aboard the player's ship, else 3 if rec < −70, else 1; then `max(1, base + D − 2)`. Trader: 1. (source: Ship.cs:440-457)
+- **ENC-063** {M5} [P] Palm police base tries: 3 if rec < −30 and Wild is not aboard; else 5 if rec < −70 or Wild is aboard; else 1; then `max(1, base + D − 2)`. A psychopath without Wild therefore gets 3 (RUL-075). (source: Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-064** {M3} [M][W][P] A ship type `t` is allowed for opponent kind `k` iff `activity_k + max(0, D − 2) ≥ spec[t].minActivity_k`, where `NA` (100; Palm −1) is never allowed. The activity is the destination government's pirate, police or trader activity. (source: PoliticalSystem.cs:66-85; Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-065** {M3} [W] Windows 2.01 type pick. `total = Σ occurrence` over allowed types with index 0…8 (loop `i < MaxShip`, MaxShip = 9). Per try: `x = rand(total)`. Walk `j` from 0 with `sum = −1`; at each allowed `j`, `sum = (sum > 0 ? sum + occ : occ)`; stop at the first `j` with `sum ≥ x`. The first allowed type thus wins for `x ∈ [0, occ]`. The walk never passes index 8, so **a Wasp is never a random opponent** (errata 01 #1). The result is the highest index over all tries, starting from Gnat for pirates and police and from Flea for traders. (source: Ship.cs:459-487)
+- **ENC-066** {M5} [M] Modern runs the ENC-065 algorithm over indices 0…9 (the Wasp, occurrence 2, included in `total` and in the walk). Flag `waspOpponentReachable` (MOD-020). (source: PRD MOD-020; Ship.cs:466, 476)
+- **ENC-067** {M5} [P] Palm type pick per try: `d = rand(100)`, then walk all 10 types from `sum = occ[0]` while `sum < d`. A disallowed result is redrawn without using up a try. Start type Gnat (Flea for traders); keep the maximum. A Mantis also runs `1 + D` unfiltered tries before its type is overwritten with Mantis. (source: Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-068** {M3} [M][W][P] Equipment tries: Mantis `D + 1`; every other generated kind `max(1, W/150000 + D − 2)`. (source: Ship.cs:80-82; Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-069** {M3} [M][W] The generated skills are written into mercenary slot 31 (`Opponent`), the shared scratch crew member; the opponent's `crew[0] = 31`. Each generation overwrites slot 31. (source: Ship.cs:258-262, Game.cs:2135)
+- **ENC-070** {M3} [W] Crew (Windows 2.01): pilot, fighter and trader each `1 + rand(10)`, in that order. Then engineer: the Kravat boost tests Wild aboard **the opponent's own ship** (never true), so engineer is always `1 + rand(10)` and no boost draw is made. (source: Ship.cs:258-270)
+- **ENC-071** {M5} [M] Modern (MOD-009): after pilot, fighter and trader, if the destination is Kravat and Wild is aboard the **player's** ship, draw `rand(10) < D + 1` → engineer = 10 (no further draw). Otherwise engineer = `1 + rand(10)`. (source: PRD MOD-009; Ship.cs:267-270)
+- **ENC-072** {M3} [M][W] Crew count: Impossible → all quarters; otherwise `n = 1 + rand(quarters)`, plus 1 on Hard if `n < quarters`. Slots 1…n−1 are filled by repeating `c = rand(55)` until mercenary `c` is not special (special ids: 0 commander, 31 opponent, 32 Wild, 33 Jarek, 34 famous captain, 35 Dragonfly, 36 Scarab, 37 Space Monster, 53 Princess, 54 Scorpion). Zeethibal (30), duplicates and mercenaries currently aboard the player's ship may be picked. (source: Ship.cs:272-288, Consts.cs:283-294)
+- **ENC-073** {M5} [P] Palm crew is generated last: pilot, fighter, trader and engineer each `1 + rand(10)`, then the Kravat check (`WildStatus == 1`) draws `rand(10) < D + 1` → engineer = 10. Count as ENC-072; extra crew are `rand(31)` with any slot allowed. (source: Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-074** {M3} [M][W] Gadgets (if slots > 0): `n = slots` on Impossible, else `n = rand(slots + 1)`, then `n += 1` if `n < slots && (tries > 4 || (tries > 2 && rand(2) > 0))`. For each gadget: `best = 0`; repeat `tries` times: `x = rand(100)`, walk `t = 0, sum = chance[0]`, `while sum < x { t += 1; sum += chance[t] }`; if `t` is not already fitted and `t > best`, then `best = t`. Fit `best`. The index-0 fallback can duplicate extra bays. Chances: extra bays 35, auto-repair 20, navigating 20, targeting 20, cloak 5, compactor 0, hidden bays 0. (source: Ship.cs:291-325, Consts.cs:147-154)
+- **ENC-075** {M3} [M][W] Shields (if slots > 0): count as ENC-074 but with `n += 1` if `n < slots && (tries > 3 || (tries > 1 && rand(2) > 0))`. Type pick as ENC-074 over chances energy 70, reflective 30, lightning 0, skipping fitted types (index-0 fallback). Directly after each shield is picked, its charge = the maximum of 5 draws of `1 + rand(power)`. (source: Ship.cs:328-367, Consts.cs:215-218)
+- **ENC-076** {M3} [M][W] Weapons (if slots > 0): `n = slots` on Impossible; `n = 1` if slots == 1; else `n = 1 + rand(slots)`, then `n += 1` if `n < slots && (tries > 4 || (tries > 3 && rand(2) > 0))`. Type pick as ENC-074 over chances pulse 50, beam 35, military 15, Morgan's 0, photon 0, quantum 0, skipping fitted types (index-0 fallback: pulse). Opponents never carry disruptors. (source: Ship.cs:370-405, Consts.cs:369-374)
+- **ENC-077** {M3} [M][W] Hull (not Mantis): if total shield power is 0, or else `rand(5) == 0` (drawn only when shields exist), hull = the maximum of 5 draws of `1 + rand(hullStrength)`; otherwise hull stays full. (source: Ship.cs:408-420)
+- **ENC-078** {M3} [M][W] Cargo (not police; Mantis included), only if cargo bays incl. extra bays > 0: `b = bays`; if D ≥ Normal, `b = min(15, 3 + rand(bays − 5))`. Pirates then get `b×4/5` below Normal, else `max(1, b/D)`. Fill: `i = 0; while i < b { item = rand(10); q = min(b − i, 1 + rand(10 − item)); cargo[item] += q; i += q }`. (source: Ship.cs:229-253, Ship.cs:836-842)
+- **ENC-079** {M3} [M][W][P] A generated opponent starts with full fuel, full hull (until ENC-077), no tribbles and fully charged fixed-loadout shields. (source: Ship.cs:755-765, Shield.cs:48; Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-080** {M3} [M][W] Famous captain (no RNG): a Wasp with every shield slot (2) reflective at full charge, every weapon slot (3) a military laser, navigating and targeting systems, crew[0] = mercenary 34 with skills 10 / 10 / 10 / 10, full hull and no cargo. (source: Ship.cs:58-73, Game.cs:2139)
+- **ENC-081** {M5} [P] Palm famous captain (no RNG): a Wasp with 3 reflective shields at 200 (ignoring the slot count), 3 military lasers, targeting and navigating systems, full Wasp hull, crew slot 31 set to 10 / 10 / 10 / 10. Palm leaves the other opponent fields from the previous opponent; Parsec clears cargo and extra crew (documented deviation; not observable, since a captain can be neither plundered nor scooped). (source: Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-082** {M3} [M][W] Bottle (no RNG): type Bottle (hull 10, no slots), no crew, so its skills evaluate to the CRW minimum. (source: Ship.cs:74-77, Consts.cs:265)
+- **ENC-083** {M3} [M][W] Mantis (Windows 2.01): the type is set to Mantis with no type draws. Crew, gadgets, shields and weapons follow ENC-070…076 with `tries = D + 1`. The hull stays full (no hull draws). Cargo follows ENC-078 as a non-pirate and applies only if the Mantis fitted extra bays (its base bays are 0). (source: Ship.cs:80-95, Ship.cs:440-442)
+- **ENC-084** {M5} [P] Palm generation order: **type, gadgets, cargo, fuel, weapons, shields (each with its best-of-5 charge), hull, crew** (RUL-084). It uses the backwards equipment roll (RUL-077: 35 % cloak / 65 % extra bays; 50 % military / 50 % pulse; 70 % reflective / 30 % energy), weapons and shields may repeat (RUL-078), the weapon count depends on difficulty (RUL-079), cargo only if bays incl. extra bays > 5 and at least 1 unit, police included (RUL-080/081), and hull = full if a shield exists and `rand(10) ≤ 7` (Mantis and captains always full, after the draws, RUL-083). (source: Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-085** {M3} [W] For a fixed seed and state, `new Ship(oppType)` in the differential harness and the engine produce identical ships (type, crew skills, equipment, shield charges, hull, cargo) and identical RNG positions afterwards. (source: Ship.cs:56-96; PRD §8.4)
+- **ENC-086** {M3} [M][W][P] Opponent generation is a pure function of (state, opponent kind, RNG). It never changes commander, galaxy or quest state, except for mercenary slot 31 (ENC-069). (source: Ship.cs:56-96; Palm: Src/Traveler.c:GenerateOpponent)
+- **ENC-087** {M3} [M][W] When a shown encounter starts, before any player action, the engine makes the cosmetic tribble-sprite draws of the C# encounter form so that the game RNG stays in step with C#. `toShow = min(36, floor(sqrt(tribbles / 74.0)))`, and for each sprite it draws `rand(36)` and then `rand(8)`. Flag `encounterTribbleSpriteDraws` (Palm: false; its RNG is not sequence-faithful). (source: Form_Encounter.cs:141-171, Form_Encounter.cs:1187-1210)
+
+## 5. Initial reactions and visibility
+- **ENC-100** {M3} [M][W][P] A ship S is **cloaked** against ship O iff S has a cloaking device and S's effective **engineer** skill is greater than O's effective engineer skill. Pilot skill plays no part. The player's cloak is evaluated against the opponent just generated (or the special ship assigned). (source: Ship.cs:845-851, Ship.cs:914-920; Palm: Src/Traveler.c:Cloaked)
+- **ENC-101** {M3} [M][W] Pirate encounter (C#). A Mantis is `pirateAttack` with no reaction draws, whatever the cloak. Otherwise, if the player is cloaked → `pirateIgnore`. Else `pirateAttack` if `opp.type > player.type`, or `opp.type ≥ Grasshopper`, or `rand(1500) > rep×4 / (1 + opp.type)` (drawn only when both type tests fail); otherwise `pirateFlee`. (source: Game.cs:832-855)
+- **ENC-102** {M3} [M][W][P] A pirate encounter is shown iff it is `pirateAttack`, or neither is the opponent cloaked against the player nor is `alwaysIgnorePirates` on. (source: Game.cs:857-860; Palm: Src/Traveler.c:Travel)
+- **ENC-103** {M5} [P] Palm pirate reaction: if cloaked → ignore. Else attack if `opp.type ≥ 7` or `rand(1500) > rep×4 / (1 + opp.type)`, else flee. A flee then becomes attack if `opp.type > player.type`, so Palm draws even when the opponent outclasses the player. A Mantis is forced to attack. (source: Palm: Src/Traveler.c:Travel)
+- **ENC-104** {M3} [M][W] Police encounter (C#). The type starts as `policeIgnore`. If the player is not cloaked:
+  - If rec < −5 and (`(opp weapon strength > 0 && (rep < 40 || rand(1500) > rep / (1 + opp.type))) || opp.type > player.type`): `policeSurrender` if rec ≥ −30, else `policeAttack`. Otherwise `policeIgnore` if the opponent is cloaked, else `policeFlee`.
+  - Else, if not yet inspected this trip and (rec < 0, or (rec < 5 and `rand(12 − D) < 1`), or (rec ≥ 5 and `rand(40) == 0`)): `policeInspect`, and `inspected = true`. The `inspected` test comes first, so no draw is made once inspected.
+
+  (source: Game.cs:864-904)
+- **ENC-105** {M3} [M][W] A police encounter is shown iff it is `policeAttack` or `policeInspect`, or neither is the opponent cloaked nor is `alwaysIgnorePolice` on. A `policeSurrender` demand is therefore skipped when the police ship is cloaked or `alwaysIgnorePolice` is on. (source: Game.cs:906-910)
+- **ENC-106** {M5} [P] Palm police reaction:
+  - If the player is cloaked → ignore (no draws).
+  - rec < −5: attack if rep < 40, else attack if `rand(1500) > rep / (1 + opp.type)`, else ignore if the opponent is cloaked, else flee. There is no surrender state, and unarmed police still attack (RUL-086/087). Flee becomes attack if `opp.type > player.type`.
+  - −5 ≤ rec < 0 and not inspected → inspect.
+  - rec < 5 → inspect if `rand(12 − D) < 1` and not inspected (the draw is made even when already inspected).
+  - Else inspect if `rand(40) == 1` and not inspected (RUL-088).
+
+  It is hidden if (ignore and the opponent is cloaked), or (`alwaysIgnorePolice` and ignore or flee). (source: Palm: Src/Traveler.c:Travel)
+- **ENC-107** {M3} [M][W] Trader encounter (C#). The type starts as `traderIgnore`. If the player is not cloaked: if rec ≤ −30 and `rand(1500) ≤ rep×10 / (1 + opp.type)` → `traderFlee`; otherwise the trade-in-orbit roll of **ECO-059** may turn it into `traderSell` or `traderBuy`. No trade roll is made when the player is cloaked or the trader flees. (source: Game.cs:976-995)
+- **ENC-108** {M3} [M][W] A trader encounter is shown iff the opponent is not cloaked, and not (`alwaysIgnoreTraders` and the type is ignore or flee), and not (`alwaysIgnoreTradeInOrbit` and the type is buy or sell). `alwaysIgnoreTraders` defaults to on. (source: Game.cs:997-1004, GameOptions.cs:34-49)
+- **ENC-109** {M5} [P] Palm trader reaction: if cloaked → ignore. Else if rec ≤ −10 (RUL-089) and `rand(1500) ≤ rep×10 / (1 + opp.type)`: ignore if the opponent is cloaked, else flee. The trade roll (`rand(1000) < 100`) runs whenever the type is still ignore, including when the player is cloaked (RUL-042): sell if a bay is free and the trader has tradeable goods, then buy if the player has tradeable goods and it is not sell. Visibility as ENC-108. (source: Palm: Src/Traveler.c:Travel)
+- **ENC-110** {M3} [M][W][P] Every shown encounter starts with `opponentDisabled = false`, `commanderFleeing = false` and both continue flags false. `opponentFleeing` starts true for an initial `pirateFlee`, `policeFlee` or `traderFlee` and false otherwise. (source: Game.cs:1093-1098, Game.cs:3428-3475)
+- **ENC-111** {M3} [M][W][P] The initial type of a shown encounter is never one of `famousCaptainAttack`, `famousCaptDisabled`, `policeDisabled`, `pirateDisabled`, `pirateSurrender`, `traderAttack`, `traderDisabled` or `traderSurrender`. These arise only from actions or combat (fuzzer invariant). (source: Game.cs:3582-3590, Game.cs:3490-3498)
+- **ENC-112** {M3} [M][W][P] `encounterStarted` reports `playerCloaked = true` when the initial type is an ignore type because the player is cloaked, so the app can say "doesn't notice you" rather than "ignores you". (source: Game.cs:3454-3462)
+- **ENC-113** {M3} [M][W][P] Each type maps to a badge category exposed by `preview(.encounter)`:
+  - **special**: bottles, captains, Marie Celeste;
+  - **pirate**: Dragonfly, Scarab and Scorpion types, and pirate types with a non-Mantis opponent;
+  - **alien**: pirate types with a Mantis opponent, and Space Monster types;
+  - **police**: `marieCelestePolice` and the police types;
+  - **trader**: the trader types.
+
+  (source: Game.cs:3537-3593)
+
+## 6. The 35 encounter types: actions, safe default, transitions
+
+### 6.1 Action sets
+Actions are those of C# `UpdateButtons`. **Default** is the Return key's safe action (UX-VISION §5.2): it is never Attack against police or traders, never Surrender, never Flee from an inspection or from customs, never Bribe, and never a record-penalizing Plunder. "none" means Return does nothing because every available action is destructive or penalized. Rulesets: `[P]` lacks the types marked "C# only".
+
+| # | Type | Actions | Default | Notes |
+|---|---|---|---|---|
+| 0 | bottleGood | Drink, Ignore | Ignore | very rare |
+| 1 | bottleOld | Drink, Ignore | Ignore | very rare |
+| 2 | captainAhab | Attack, Ignore, Meet | Ignore | very rare |
+| 3 | captainConrad | Attack, Ignore, Meet | Ignore | very rare |
+| 4 | captainHuie | Attack, Ignore, Meet | Ignore | very rare |
+| 5 | dragonflyAttack | Attack, Flee | Flee | fixed |
+| 6 | dragonflyIgnore | Attack, Ignore | Ignore | fixed (cloaked) |
+| 7 | famousCaptainAttack | Attack, Flee | Flee | never initial |
+| 8 | famousCaptDisabled | Attack, Ignore | Ignore | never initial; C# only |
+| 9 | marieCeleste | Board, Ignore | Ignore | very rare |
+| 10 | marieCelestePolice | Attack, Flee, Yield, Bribe | Yield | fixed |
+| 11 | pirateAttack | Attack, Flee, Surrender | Flee | incl. Mantis |
+| 12 | pirateIgnore | Attack, Ignore | Ignore | |
+| 13 | pirateFlee | Attack, Ignore | Ignore | |
+| 14 | pirateSurrender | Attack, Plunder | none | never initial |
+| 15 | pirateDisabled | Attack, Plunder | Plunder | never initial; C# only |
+| 16 | policeAttack | Attack, Flee, Surrender | Flee | |
+| 17 | policeIgnore | Attack, Ignore | Ignore | |
+| 18 | policeFlee | Attack, Ignore | Ignore | |
+| 19 | policeSurrender | Attack, Flee, Surrender | Flee | C# only |
+| 20 | policeDisabled | Attack, Ignore | Ignore | never initial; C# only |
+| 21 | policeInspect | Attack, Flee, Submit, Bribe | Submit | |
+| 22 | scarabAttack | Attack, Flee, Surrender | Flee | fixed |
+| 23 | scarabIgnore | Attack, Ignore | Ignore | fixed (cloaked) |
+| 24 | scorpionAttack | Attack, Flee | Flee | fixed; C# only |
+| 25 | scorpionIgnore | Attack, Ignore | Ignore | fixed (cloaked); C# only |
+| 26 | spaceMonsterAttack | Attack, Flee | Flee | fixed |
+| 27 | spaceMonsterIgnore | Attack, Ignore | Ignore | fixed (cloaked) |
+| 28 | traderAttack | Attack, Flee | Flee | never initial |
+| 29 | traderIgnore | Attack, Ignore | Ignore | |
+| 30 | traderFlee | Attack, Ignore | Ignore | |
+| 31 | traderSurrender | Attack, Plunder | none | never initial |
+| 32 | traderDisabled | Attack, Plunder | none | never initial; C# only |
+| 33 | traderBuy | Attack, Ignore, Trade | Ignore | trade in orbit |
+| 34 | traderSell | Attack, Ignore, Trade | Ignore | trade in orbit |
+
+- **ENC-130** {M3} [M][W][P] The available actions for each `EncounterType` are exactly those in table 6.1. Any other `EncounterAction` is rejected with `.encounterActionUnavailable` and changes no state. (source: Form_Encounter.cs:1066-1150; Palm: Src/Encounter.c:EncounterButtons)
+- **ENC-131** {M3} [M][W][P] `interrupt` is available iff `continueAttacking || continueFleeing`, in addition to the type's actions. (source: Form_Encounter.cs:1152-1153; Palm: Src/Encounter.c:EncounterButtons)
+- **ENC-132** {M3} [M][W][P] [UI] `preview(.encounter).defaultAction` equals the Default column of table 6.1 (nil for "none"), and the app binds Return to it. (source: UX-VISION §5.2)
+- **ENC-133** {M5} [P] Palm shows the same action sets for the 28 types it has. The six types marked "C# only" are unreachable in Palm, because Palm has no disabling, no police surrender demand and no Scorpion. (source: Palm: Src/Encounter.c:EncounterButtons)
+
+### 6.2 Attack
+- **ENC-140** {M3} [M][W][P] Attack validation runs in this order, each failure rejecting with no state change. (1) Total weapon strength 0 → `.attackNoWeapons`. (2) The opponent is not disableable (Bottle, Mantis, Space Monster) and laser strength (pulse…Morgan's) is 0 → `.attackNoHullDamagingWeapons`. (3) The opponent is the Scorpion and disruptor strength is 0 → `.attackNoDisablingWeapons`. (source: Game.cs:1590-1605, Ship.cs:905-912; Palm: Src/Encounter.c:EncounterFormHandleEvent)
+- **ENC-141** {M3} [M][W][P] Attacking from `dragonflyIgnore`, `pirateIgnore`, `scarabIgnore`, `scorpionIgnore` or `spaceMonsterIgnore` changes the type to the matching `…Attack` (raw value − 1), with no confirmation. (source: Game.cs:1609-1616)
+- **ENC-142** {M3} [M][W] Attacking police. From `policeInspect` with nothing detectable (POL), confirmation `submitWithNothingIllegal` comes first. Then, for `policeInspect`, `marieCelestePolice`, `policeFlee`, `policeIgnore` and `policeSurrender`: if rec > −30, confirmation `attackPolice`. The record change follows POL (`min(rec, −30) − 3`), and the type becomes `policeAttack`, except that `policeFlee` stays `policeFlee`. `policeAttack` and `policeDisabled` have no verification step. (source: Game.cs:1617-1641)
+- **ENC-143** {M3} [M][W] Attacking a trader. From `traderBuy`, `traderIgnore` or `traderSell`: if rec < 0, the POL record change (−2) applies with no confirmation; else confirmation `attackTrader`, then rec = −5. Then, as for `traderAttack` and `traderSurrender`: draw `rand(1500)`; if `draw ≤ rep×10 / (type + 1)` or the trader has no weapons → `traderFlee`, else `traderAttack`. The draw is always made. (source: Game.cs:1642-1669)
+- **ENC-144** {M3} [M][W] Attacking a famous captain (`captainAhab`, `captainConrad`, `captainHuie`): confirmation `attackCaptain`, then the POL record change `min(rec, −70) − 2`, a news event `captAhabAttacked`, `captConradAttacked` or `captHuieAttacked`, and type `famousCaptainAttack`. (source: Game.cs:1670-1697)
+- **ENC-145** {M3} [M][W][P] Attacking from any other type keeps the type unchanged (pirate attack, flee, surrender and disabled; police attack and disabled; trader flee and disabled; famous captain attack and disabled; the special-ship attack types). After a successful verification, `commanderFleeing = false` and one CMB round runs. (source: Game.cs:1699-1705, Form_Encounter.cs:1216-1222)
+- **ENC-146** {M3} [M][W] Every manual Attack re-runs the verification of ENC-142…145, but auto-repeat does not (ENC-187). So in Windows 2.01 and Modern, each manual Attack on `policeFlee` (with rec > −30 confirmed) applies the police penalty again, and each manual Attack on `traderAttack` or `traderSurrender` makes a fresh `rand(1500)` flee roll. (source: Game.cs:1630-1668, Form_Encounter.cs:1216-1222, Form_Encounter.cs:1321-1326)
+- **ENC-147** {M5} [P] Palm attack verification:
+  - The nothing-illegal confirmation tests only firearms and narcotics cargo.
+  - **Every** police type, including attack and flee, asks to confirm when rec > −10 and applies `min(rec, −10) − 3` on every click. Ignore, inspect and customs become attack.
+  - A trader ignore, buy or sell gets a confirmation and −5 when rec ≥ 0, else −2.
+  - Every trader type except flee re-rolls: no weapons → flee (no draw), else `rand(1500) ≤ rep×10 / (1 + type)` → flee, else attack.
+  - Captains ask to confirm unless the type is already captain attack, and apply `min(rec, −30) − 2` on every click.
+
+  Flag `attackReverification`. (source: Palm: Src/Encounter.c:EncounterFormHandleEvent)
+
+### 6.3 Flee
+- **ENC-150** {M3} [M][W] Flee, available as table 6.1. From `policeInspect` with nothing detectable: confirmation `fleeInspection` first. From `marieCelestePolice`: confirmation `fleeMariePolice`, always. Fleeing an inspection sets the type to `policeAttack` with the POL record change `min(rec − 2, −5 − (D ≥ Normal ? 1 : 0))`. Fleeing customs sets the type to `policeAttack` with `min(rec − 3, −30)`. Every other type is unchanged. Then `commanderFleeing = true` and one CMB round runs. (source: Game.cs:1762-1789, Form_Encounter.cs:1243-1249)
+- **ENC-151** {M5} [P] Palm flee: the inspection nothing-illegal check also counts Wild aboard and the reactor (status not 0 or 21). The record changes follow RUL-134 and RUL-135. (source: Palm: Src/Encounter.c:EncounterFormHandleEvent)
+
+### 6.4 Surrender, submit, yield, bribe
+- **ENC-152** {M3} [M][W] Surrender (`pirateAttack`, `policeAttack`, `policeSurrender`, `scarabAttack`) dispatches in this order:
+  - **Mantis opponent**: with the artifact aboard, confirmation `surrenderArtifact`, then QST (artifact → 0) and the encounter ends Normal; without it, rejected `.surrenderRefused`.
+  - **`policeAttack` or `policeSurrender`**: rec ≤ −100 → `.surrenderRefused`; else confirmation `surrenderToPolice`, then the encounter ends **Arrested** (POL).
+  - **Otherwise**: Princess aboard without hidden bays → `.surrenderRefusedPrincessAboard`; else the POL pirate raid runs (raided = true, sculpture, theft or blackmail, Wild, reactor) and the encounter ends Normal. A pirate surrender needs no confirmation.
+
+  (source: Game.cs:1833-1935, Form_Encounter.cs:1285-1291)
+- **ENC-153** {M3} [M][W] Surrendering to the Scarab is handled as a pirate raid. Stolen cargo goes into the Scarab's hold and persists with it (ENC-012). (source: Game.cs:1860-1932)
+- **ENC-154** {M3} [M][W][P] After a raid, `TransitState.raided` stays true until the next departure, which suppresses (or in Palm redirects) the pirate band for the rest of the trip. `inspected` likewise suppresses further inspections in the trip. (source: Game.cs:3116-3118, 942, 1867; Palm: Src/Traveler.c:Travel)
+- **ENC-155** {M3} [M][W] Submit (`policeInspect`): with detectable illegal cargo or illegal passengers (POL), confirmation `submitWithIllegalGoods` (listing what will be found and whether arrest follows), then POL submission. The encounter ends **Arrested** if Wild, the reactor or the sculpture is aboard, else Normal. With nothing detectable there is no confirmation, the POL clean result (+1 record) applies and the encounter ends Normal. (source: Game.cs:1791-1830, Form_Encounter.cs:1279-1283)
+- **ENC-156** {M3} [M][W] Yield (`marieCelestePolice`): with illegal special cargo (Wild, reactor, sculpture), confirmation `surrenderToPolice`, then **Arrested**. Otherwise confirmation `submitWithIllegalGoods`, then POL yield (rec = min(rec, −5), illegal goods removed), and the encounter ends Normal. (source: Game.cs:1938-1965, Form_Encounter.cs:1300-1304)
+- **ENC-157** {M3} [M][W] Bribe (`policeInspect`, `marieCelestePolice`) checks in this order:
+  1. Customs → `.bribeRefusedCustoms`.
+  2. Destination bribe level ≤ 0 → `.bribeNotPossible`.
+  3. Nothing detectable → confirmation `submitWithNothingIllegal`.
+  4. Compute the POL bribe amount → confirmation `bribe` with `amounts: [bribe]`.
+  5. Cash < bribe → rejected `.bribeInsufficientCash`, no state change, the encounter continues.
+  6. Otherwise cash −= bribe and the encounter ends Normal.
+
+  (source: Game.cs:1728-1760, Form_Encounter.cs:1230-1234)
+
+### 6.5 Plunder, trade, ignore, board, drink, meet
+- **ENC-158** {M3} [M][W][P] Plunder (`pirateDisabled`, `pirateSurrender`, `traderDisabled`, `traderSurrender`) opens `PendingDecision.plunder` over the opponent's cargo (CMB). After it resolves, the CMB/POL plunder effects apply and the encounter ends Normal. No confirmation. (source: Game.cs:1441-1467, Form_Encounter.cs:1270-1277; Palm: Src/Encounter.c:EncounterFormHandleEvent)
+- **ENC-159** {M3} [M][W][P] Trade (`traderBuy`, `traderSell`) opens the ECO-081 decision; the item pick and price roll happen at that moment (ECO-065/066). After resolution with any quantity, including 0, the encounter ends Normal. (source: Game.cs:1502-1517, Form_Encounter.cs:1293-1297)
+- **ENC-160** {M3} [M][W][P] Ignore ends the encounter Normal with no RNG draw and no state change other than clearing the continue flags. (source: Form_Encounter.cs:1251-1256; Palm: Src/Encounter.c:EncounterFormHandleEvent)
+- **ENC-161** {M3} [M][W][P] Board (`marieCeleste`): confirmation `boardMarieCeleste`, then `PendingDecision.plunder` over the Marie's cargo. If the commander holds more narcotics afterwards than before, `justLootedMarie = true`. The encounter ends Normal. Declining the confirmation leaves the encounter open. (source: Game.cs:1709-1725, Form_Encounter.cs:1224-1228; Palm: Src/Encounter.c:EncounterFormHandleEvent, Src/Cargo.c:450)
+- **ENC-162** {M3} [M][W][P] Drink (`bottleGood`, `bottleOld`): confirmation `drinkTonic`; good → CRW-056, old → CRW-057; emits `tonicConsumed`; the encounter ends Normal. C# ends the encounter even when the player declines. The engine leaves it open instead (the player can then Ignore, with the same result): a documented deviation forced by two-phase confirmation. (source: Game.cs:1122-1140, Form_Encounter.cs:1236-1241)
+- **ENC-163** {M3} [M][W][P] Meet (captains): confirmation `meetCaptain` with `amounts: [skill, points]`. Ahab removes the first reflective shield and raises pilot; Conrad and Huie remove the first military laser and raise engineer or trader respectively. The skill becomes `min(10, skill + (D ≤ Normal ? 2 : 1))`. Emits `trainingCompleted(skill:points:)` and ends Normal. Declining leaves the encounter open (same deviation as ENC-162). Palm removes the **last** matching shield or laser. (source: Game.cs:1393-1438, Ship.cs:706-719; Palm: Src/Encounter.c:EncounterFormHandleEvent)
+- **ENC-164** {M3} [M][W][P] After an Attack or Flee round, a CMB result of Continue keeps the encounter, with the type possibly changed by the CMB post-round update. The action set is re-derived from the new type (ENC-130), and `encounterTypeChanged(from:to:)` is emitted when the type changed. A result of Normal, Killed or EscapePod ends the encounter per ENC-003. (source: Game.cs:1142-1286, Form_Encounter.cs:1043-1056)
+- **ENC-165** {M3} [M][W][P] When any encounter ends, the special-ship write-back of ENC-012/013 runs before transit resumes, and `EncounterState` is discarded. (source: Game.cs:786-813; Palm: Src/Encounter.c:ExecuteAction)
+- **ENC-166** {M4} [M][W][P] Quest-specific action outcomes are owned by QST and POL and are triggered as follows: surrendering the artifact to the Mantis (artifact → 0); pirates taking the unhidden sculpture (sculpture → 0); Wild joining pirates whose ship has more than one crew quarter (wild → 0); a famous-captain kill replacing the "attacked" news with "destroyed"; boarding the Marie Celeste (ENC-161). (source: Game.cs:1843, 1882-1884, 1915-1926, 1983-1985)
+
+## 7. Engine API
+- **ENC-180** {M3} [M][W][P] `Command.encounter(EncounterAction)` with `EncounterAction` cases: `attack, flee, surrender, ignore, bribe, submit, yield, plunder, trade, board, drink, meet, autoRepeat, interrupt, resolve`. Outside the encounter phase it is rejected with `.notAllowedInPhase`; while a `PendingDecision` is open, with `.pendingDecisionFirst`. (source: PRD §6.2; Form_Encounter.cs:1216-1326)
+- **ENC-181** {M3} [M][W][P] Confirmations are two-phase (PRD §6.2): a command whose required consent is missing from `acknowledging` returns `.confirm(Confirmation)` and changes no state, including the RNG. When a command needs several consents, the first missing one in source order is returned. The app resends with the accumulated set. (source: PRD §6.2; Game.cs:1617-1641, 1735-1760)
+- **ENC-182** {M3} [M][W][P] Encounter `WarningID`s and their C# alerts:
+
+  | WarningID | Alert | Raised by |
+  |---|---|---|
+  | `attackPolice` | EncounterAttackPolice | ENC-142 |
+  | `attackTrader` | EncounterAttackTrader | ENC-143 |
+  | `attackCaptain` | EncounterAttackCaptain | ENC-144 |
+  | `submitWithNothingIllegal` | EncounterPoliceNothingIllegal | ENC-142, ENC-157 |
+  | `fleeInspection` | EncounterPoliceNothingIllegal | ENC-150 |
+  | `fleeMariePolice` | EncounterPostMarieFlee | ENC-150 |
+  | `surrenderToPolice` | EncounterPoliceSurrender | ENC-152, ENC-156 |
+  | `bribe` | EncounterPoliceBribe | ENC-157 |
+  | `drinkTonic` | EncounterDrinkContents | ENC-162 |
+  | `boardMarieCeleste` | EncounterMarieCeleste | ENC-161 |
+  | `meetCaptain` | MeetCaptainAhab / Conrad / Huie | ENC-163 |
+  | `submitWithIllegalGoods` (new) | EncounterPoliceSubmit | ENC-155, ENC-156 |
+  | `surrenderArtifact` (new) | EncounterAliensSurrender | ENC-152 |
+
+  `Confirmation.amounts` carries the resulting record score for `attackPolice`, `attackTrader`, `attackCaptain`, `fleeInspection` and `fleeMariePolice`, and the amount for `bribe`. `takeMarieCargo` matches no alert in either source and is never returned. (source: Form_Alert.cs:373-476, 626-632; Game.cs:1617-1964)
+- **ENC-183** {M3} [M][W][P] Encounter `CommandError`s: `.encounterActionUnavailable`, `.attackNoWeapons`, `.attackNoHullDamagingWeapons`, `.attackNoDisablingWeapons`, `.bribeRefusedCustoms`, `.bribeNotPossible`, `.bribeInsufficientCash`, `.surrenderRefused`, `.surrenderRefusedPrincessAboard` (ALR-038…040, 053, 058, 061, 062, 073). Each rejection leaves the state, including the RNG, unchanged. (source: Game.cs:1590-1605, 1733-1756, 1848-1864)
+- **ENC-184** {M3} [M][W][P] Encounter `GameEvent`s:
+  - `encounterStarted(type:opponent:clicksRemaining:playerCloaked:)`, with `opponent` a `ShipType`;
+  - `encounterTypeChanged(from:to:)`;
+  - `encounterEnded(type:outcome:)`, where `EncounterOutcome` is one of `ignored, playerEscaped, opponentEscaped, opponentDestroyed, questShipDisabled, plundered, traded, bribed, inspected, yielded, raided, artifactSurrendered, boarded, drank, met, arrested, escapePod, killed`.
+
+  Each shown encounter emits exactly one `encounterStarted` and one `encounterEnded`; hidden encounters emit none. Outcome events named in ALR (for example `playerEscaped(hit:)`, `bountyEarned`, `policeFine`, `piratesLooted`, `tonicConsumed`, `trainingCompleted`) are emitted by the owning CMB/POL/CRW step in the same `StepResult`. (source: ALR §2; Game.cs:1142-1286)
+- **ENC-185** {M3} [M][W][P] `EncounterState` (Codable, part of the state hash) holds: `type`; `opponent: Ship`; `source` (generated opponent kind, or which special ship, for ENC-165); `opponentDisabled`; `commanderFleeing`; `opponentFleeing`; `opponentFleeingPrevious`; `commanderHit` and `opponentHit` (last round); `continueAttacking`; `continueFleeing`; `forceContinuous` (ENC-190); `round`; `clicksRemaining`. `TransitState` keeps `raided`, `inspected` and `litterWarning` for the trip. A save made mid-encounter resumes identically. (source: Game.cs:1093-1098, Game.cs:3116-3118, Game.cs:4226)
+- **ENC-186** {M3} [M][W][P] `preview(.encounter)` is pure. It returns the type, badge category (ENC-113), opponent ship type with public equipment, hull and shield percentages for both ships, the available actions each with an enabled flag and the `CommandError` its command would return (ENC-140, ENC-152, ENC-157), the default action (ENC-132), and whether `interrupt` and `autoRepeat` are available. It exposes no RNG state and no opponent crew skills. (source: PRD §6.6 tactical readout; Form_Encounter.cs:1066-1185)
+- **ENC-187** {M3} [M][W] Auto-repeat. After a round that ends neither in escape, destruction nor the non-quest disabled path, if `continuousAttack` is on and (`commanderFleeing` or not `opponentFleeing` or (`continuousAttackFleeing` and (type unchanged by the round or the type is neither `pirateSurrender` nor `traderSurrender`))), the engine sets `continueFleeing` if the commander was fleeing, else `continueAttacking`. `autoRepeat` is accepted only while one flag is set. It clears both flags, then runs one CMB round with the current `commanderFleeing`, without re-verification or confirmation. Any other action clears both flags first. (source: Game.cs:1203-1232, 1258-1283; Form_Encounter.cs:1033-1056, 1216-1326)
+- **ENC-188** {M3} [M][W][P] [UI] The app repeats: while `continueAttacking` or `continueFleeing` is set, it sends `.encounter(.autoRepeat)` after 0.6 s (UX-VISION §5.2; C# used 1 s), and Esc sends `.interrupt`. Timing is outside the engine and never changes the RNG sequence. (source: Form_Encounter.cs:948-951; UX-VISION §5.2)
+- **ENC-189** {M5} [P] Palm auto-repeat: with `Continuous` on, Attack sets AutoAttack and Flee sets AutoFlee. When the type changes, AutoFlee is cleared, and AutoAttack is cleared unless the new type is a flee type. Each idle tick repeats the action through the normal Attack/Flee handler, so Palm re-runs verification (ENC-147). The `AttackFleeing` option is stored but never read [verify]. (source: Palm: Src/Encounter.c:ExecuteAction, EncounterFormHandleEvent; Src/Global.c:663)
+- **ENC-190** {M3} [M][W][P] `resolve` (UX "Resolve", QoL) behaves as `attack` and sets `forceContinuous`. For the rest of the encounter, ENC-187 is evaluated as if `continuousAttack` and `continuousAttackFleeing` were on. The resulting state and RNG sequence equal those of Attack followed by `autoRepeat` with both options on. (source: UX-VISION §5.2)
+- **ENC-191** {M3} [M][W][P] Every `PendingDecision` raised inside an encounter (confirm, plunder, trade in orbit, scoop) only accepts its resolving command. Its resolution returns control to the encounter, or ends it per §6. (source: PRD §6.2; Form_Plunder.cs, Game.cs:1471-1500)
+- **ENC-192** {M3} [M][W][P] Fuzzer invariants in the encounter phase: the type's action set is non-empty; `opponent.hull > 0` unless the encounter has just ended; `opponentDisabled` implies the type is a disabled type or a quest ship; and `raided` implies no further non-Mantis pirate encounter in the trip (C#; Palm redirects the band to police). (source: PRD §6.2; Game.cs:940-942)
+
+## 8. Test notes (non-normative)
+- Golden fixtures for §4 come from the harness (`new Ship(OpponentType)` with seeds × difficulty × worth × government), with the RNG position checked afterwards.
+- One scenario per `EncounterType` and action reaches every row of table 6.1. The {M3} scenarios cover Windows 2.01; the Palm and Modern variants come at M5.
+- The C# visibility rules (ENC-102, 105, 108) are tested with each always-ignore option and both cloak directions.
+
+## 9. Discrepancies against the research docs (verified 2026-11-17)
+1. **01 §7 ship pick** "indices 0..9": wrong (errata 01 #1 confirmed). Also not in the research: the walk's off-by-one (`sum = −1` start, `sum < x`) gives the first allowed type `occ + 1` of `total` outcomes and the last allowed type `occ − 1` (ENC-065).
+2. **01 §7 weapons** "duplicates aren't excluded": wrong (errata 01 #2 confirmed). Not in the research: the index-0 fallback applies to gadgets (extra bays) and shields (energy) too.
+3. **Cloak** is engineer against engineer (effective skills), not pilot (ENC-100). The research never stated the operand.
+4. **Very-rare reachability**: the research says "if nothing happened". A raided pirate-band roll and a failed Kravat roll also reach the very-rare check in C#; a hidden encounter does not (ENC-023, ENC-040).
+5. **Police surrender visibility**: `policeSurrender` is hidden by `alwaysIgnorePolice` or a cloaked police ship. This follows from the research's rule but was not called out (ENC-105).
+6. **Not in the research**: C# `UpdateTribbles` consumes game-RNG draws (`rand(36)`, `rand(8)` per sprite) each time the encounter form opens. This matters for harness alignment (ENC-087).
+7. **Not in the research**: surrendering to the Scarab runs the pirate-raid path (ENC-153).
+8. **Not in the research**: repeated manual Attack on `policeFlee` re-applies the police penalty, and on `traderAttack`/`traderSurrender` re-rolls the flee draw; auto-repeat does neither (ENC-146).
+9. **Not in the research**: opponent extra crew may include Zeethibal (id 30, not in `SpecialCrewMemberIds`) and mercenaries aboard the player's ship (ENC-072).
+10. **Crew roll order**: C# tests the Kravat boost *before* the engineer draw (and never draws); Palm draws engineer first, then the boost check (ENC-070, ENC-073). Research 04 lists only the Palm order.
+11. **Palm special ships** (missing from 04): Dragonfly and Scarab damage does not persist between meetings; the monster hull persists only when the player escapes. C# persists all four (ENC-012/013; new flag `specialShipDamagePersists`).
+12. **Palm RNG extras** (missing from 04): a Palm Mantis consumes `1 + D` ship-type draws, and Palm bottles consume a full trader generation (ENC-067, ENC-046).
+13. **Palm police inspection**: `rand(12 − D)` is drawn even when already inspected, and the final "flee → inspection" fallback is unreachable (ENC-106). RUL-087 is confirmed: the unarmed-police branch is overwritten (dead code).
+14. **Palm attack** re-applies the police (−10 family) and captain penalties on every click, including on `policeAttack`/`policeFlee`. Research 04 describes only the first attack (ENC-147).
+15. **Palm `AttackFleeing`** is saved and shown in options but unused by the encounter code. Palm keeps AutoAttack through a change to a flee type regardless of it (ENC-189, [verify]).
+16. **C# Drink/Meet** end the encounter even when the player declines the confirmation (ENC-162/163, documented deviation).
+17. **C# destroying a disabled ship** (`pirateDisabled`, `traderDisabled`, `policeDisabled`, `famousCaptDisabled`) falls through `EncounterWon`'s switch: no kill count, no record change, and no bounty credited, although the bounty alert is shown for `pirateDisabled`. Only reputation is added. Owned by CMB; flagged here because ENC-145 allows the attack (Game.cs:1968-2025).
+18. **Naming drift with ALR {M3} rows**. ALR uses `resistWithNothingIllegal`, `submitWithIllegalGoods(...)`, `offerBribe(amount:)`, `fleeCustomsPolice`, `attackFamousCaptain(captain:)`, `captainAhabTrade`/`captainConradTrade`/`captainHuieTrade`, `surrenderArtifact` and `spaceLittering`. The code enum (`GameEngine.swift`) has `submitWithNothingIllegal`, `fleeInspection`, `bribe`, `fleeMariePolice`, `attackCaptain`, `meetCaptain` and `litteringWarning`. ENC follows the code and adds `submitWithIllegalGoods` and `surrenderArtifact`. ALR rows 35, 37, 41, 42, 60, 65, 66, 67, 69 and 119–121 should be aligned. `takeMarieCargo` has no source alert.
+19. **Flag naming**: RUL `kravatEngineerBoostChecksPlayer` is `kravatEngineerChecksPlayerWild` in `RuleFlags`. RUL rows are still needed for `specialShipDamagePersists`, `encounterTribbleSpriteDraws`, `attackReverification` and `autoRepeatRule`.
+20. **Confirmed unchanged**: the fixed-encounter conditions, Flea doubling, policeModifier ≡ `STRENGTHPOLICE`, Kravat 25/25/33/50/50, the artifact Mantis `rand(20) ≤ 3`, Gemulon `rand(10) > 4`, the C# trade roll and visibility, very-rare `days > 10 && rand(1000) < 5`, the C# remaining-list pick against Palm `rand(6)`, the captain conditions (> −30 / > −10), the C# police tries, best-of-5 shield charge, best-of-5 hull rules, the cargo formulas, and opponent crew skills `1 + rand(10)` in slot 31.

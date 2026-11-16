@@ -28,6 +28,7 @@ namespace Fryz.Apps.SpaceTrader
 			if (cmd == "opponents" || cmd == "all") Write(dir, "opponents-windows201.json", Opponents());
 			if (cmd == "combat" || cmd == "all") Write(dir, "combat-windows201.json", Combat());
 			if (cmd == "travel" || cmd == "all") Write(dir, "travel-windows201.json", Travel());
+			if (cmd == "actions" || cmd == "all") Write(dir, "actions-windows201.json", Actions());
 			return 0;
 		}
 
@@ -273,6 +274,75 @@ namespace Fryz.Apps.SpaceTrader
 							stock = (int[])sys.TradeItems.Clone(), news, opponentSkills = (int[])game.Mercenaries[(int)CrewMemberId.Opponent].Skills.Clone() });
 					}
 					list.Add(new { seed, difficulty = (int)d, warps });
+				}
+			}
+			return list;
+		}
+
+		static object Snap(Game g)
+		{
+			var c = g.Commander;
+			return new { cash = c.Cash, debt = c.Debt, record = c.PoliceRecordScore, reputation = c.ReputationScore, days = c.Days,
+				cargo = (int[])c.Ship.Cargo.Clone(), priceCargo = (int[])c.PriceCargo.Clone(), shipType = (int)c.Ship.Type,
+				skills = (int[])g.Mercenaries[0].Skills.Clone(), insurance = c.Insurance, oppCargo = (int[])g.Opponent.Cargo.Clone(),
+				weapons = c.Ship.Weapons.Length, killsP = c.KillsPirate, killsT = c.KillsTrader, encType = (int)g.EncounterType };
+		}
+
+		/// Encounter actions with all dialogs answered "Yes": submit, bribe, surrender (police/pirates), arrest,
+		/// plunder, drink, meet, attack verification. Each case starts from scripted state and records the result.
+		static object Actions()
+		{
+			Harness.Policy = _ => DialogResult.Yes;
+			var list = new List<object>();
+			foreach (int seed in new[] { 4, 42 })
+			{
+				foreach (Difficulty d in new[] { Difficulty.Easy, Difficulty.Normal, Difficulty.Hard })
+				{
+					SeedRandom(seed);
+					var game = new Game("Harness", d, 5, 5, 5, 5, new SpaceTrader());
+					var cases = new List<object>();
+					string[] kinds = { "submit", "bribe", "surrenderPirate", "surrenderPolice", "arrest", "plunderTrader", "plunderPirateDisabled", "drinkGood", "drinkOld", "meetAhab", "attackPolice", "attackTrader", "fleeInspect" };
+					for (int k = 0; k < kinds.Length * 2; k++)
+					{
+						string kind = kinds[k % kinds.Length];
+						int warp = (k * 13 + seed) % game.Universe.Length;
+						typeof(Game).GetField("_warpSystemId", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(game, (StarSystemId)warp);
+						var c = game.Commander;
+						var ship = new Ship(ShipType.Beetle); ship.Crew[0] = c; ship.AddEquipment(Consts.Shields[(int)ShieldType.Reflective]);
+						c.Ship = ship;
+						for (int i = 0; i < 10; i++) { c.Ship.Cargo[i] = 0; c.PriceCargo[i] = 0; }
+						c.Ship.Cargo[(int)TradeItemType.Narcotics] = 3 + k % 4; c.PriceCargo[(int)TradeItemType.Narcotics] = 9000;
+						c.Ship.Cargo[(int)TradeItemType.Ore] = 5 + k % 7; c.PriceCargo[(int)TradeItemType.Ore] = 1750;
+						c.Ship.Cargo[(int)TradeItemType.Robots] = k % 3; c.PriceCargo[(int)TradeItemType.Robots] = 4000 * (k % 3);
+						c.Cash = (k % 2 == 0) ? 50000 : 900; c.Debt = (k % 4 == 3) ? 2000 : 0;
+						c.PoliceRecordScore = new[] { 0, -8, -40, 12, -120 }[k % 5]; c.ReputationScore = new[] { 0, 50, 400 }[k % 3];
+						game.Mercenaries[0].Skills[0] = 5; game.Mercenaries[0].Skills[1] = 5; game.Mercenaries[0].Skills[2] = 5; game.Mercenaries[0].Skills[3] = 5;
+						OpponentType ot = kind.StartsWith("plunderTrader") || kind == "attackTrader" ? OpponentType.Trader :
+							(kind.Contains("Police") || kind == "submit" || kind == "bribe" || kind == "arrest" || kind == "fleeInspect" ? OpponentType.Police :
+							(kind == "meetAhab" ? OpponentType.FamousCaptain : (kind.StartsWith("drink") ? OpponentType.Bottle : OpponentType.Pirate)));
+						game.Opponent = new Ship(ot);
+						game.OpponentDisabled = kind == "plunderPirateDisabled";
+						var before = Snap(game);
+						object result = null;
+						switch (kind)
+						{
+							case "submit": game.EncounterType = EncounterType.PoliceInspect; result = game.EncounterVerifySubmit(null); break;
+							case "bribe": game.EncounterType = EncounterType.PoliceInspect; result = game.EncounterVerifyBribe(null); break;
+							case "surrenderPirate": game.EncounterType = EncounterType.PirateAttack; result = (int)game.EncounterVerifySurrender(null); break;
+							case "surrenderPolice": game.EncounterType = EncounterType.PoliceAttack; result = (int)game.EncounterVerifySurrender(null); break;
+							case "arrest": game.EncounterType = EncounterType.PoliceAttack; game.Arrested(); break;
+							case "plunderTrader": game.EncounterType = EncounterType.TraderSurrender; game.EncounterPlunder(null); break;
+							case "plunderPirateDisabled": game.EncounterType = EncounterType.PirateDisabled; game.EncounterPlunder(null); break;
+							case "drinkGood": game.EncounterType = EncounterType.BottleGood; game.EncounterDrink(null); break;
+							case "drinkOld": game.EncounterType = EncounterType.BottleOld; game.EncounterDrink(null); break;
+							case "meetAhab": game.EncounterType = EncounterType.CaptainAhab; game.EncounterMeet(null); break;
+							case "attackPolice": game.EncounterType = EncounterType.PoliceIgnore; result = game.EncounterVerifyAttack(null); break;
+							case "attackTrader": game.EncounterType = EncounterType.TraderIgnore; result = game.EncounterVerifyAttack(null); break;
+							case "fleeInspect": game.EncounterType = EncounterType.PoliceInspect; result = game.EncounterVerifyFlee(null); break;
+						}
+						cases.Add(new { kind, warp, oppType = (int)ot, result, before, after = Snap(game) });
+					}
+					list.Add(new { seed, difficulty = (int)d, cases });
 				}
 			}
 			return list;

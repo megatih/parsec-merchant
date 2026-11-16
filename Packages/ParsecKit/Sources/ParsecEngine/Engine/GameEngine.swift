@@ -7,7 +7,7 @@ public enum WarningID: String, Codable, Sendable, Hashable, CaseIterable {
     case submitWithNothingIllegal, surrenderToPolice, bribe
     case buyEquipment, sellEquipment, buyShip, fireMercenary, stopInsurance
     case wildLeavesWithoutLaser, wildLeavesForReactor, litteringWarning, useSingularity, retire
-    case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain, buyEscapePod
+    case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain, buyEscapePod, nothingIllegal, surrenderArtifact, submitInspection
 }
 
 /// A consent request returned instead of performing a command.
@@ -75,6 +75,14 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case cannotPayWormholeTax
     case destinationOutOfRange
     case noSingularity
+    // Encounters (ENC/CMB/POL)
+    case noWeapons
+    case noLasers
+    case noDisruptors
+    case surrenderRefused
+    case surrenderPrincess
+    case bribeNotAccepted
+    case bribeNotPossible
 }
 
 /// Something that happened, for the feed, log, statistics and achievements.
@@ -120,6 +128,24 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case wildLeftShip
     case gemulonInvaded
     case experimentPerformed
+    case playerAttacked
+    case playerFled
+    case artifactRelinquished
+    case preciousHidden
+    case sculptureTaken
+    case blackmailed(Int)
+    case looted(units: Int)
+    case wildJoinedPirates
+    case bribed(Int)
+    case fined(Int)
+    case inspectionClean
+    case yielded
+    case tonicConsumed(good: Bool)
+    case captainTraining(skill: SkillType)
+    case plundered(item: TradeItemType, quantity: Int)
+    case scooped(TradeItemType)
+    case scoopNoRoom
+    case arrested(term: Int, fine: Int, shipSold: Bool)
     case boughtEscapePod(price: Int)
     case hired(crewID: Int)
     case fired(crewID: Int)
@@ -135,6 +161,8 @@ public enum GameEvent: Codable, Sendable, Equatable {
 public enum PendingDecision: Codable, Sendable, Equatable {
     case confirm(Confirmation)
     case tradeInOrbit(OrbitTradeOffer)
+    case plunder([Int])
+    case scoop(TradeItemType)
 }
 
 /// The result of performing a command.
@@ -176,6 +204,10 @@ public enum Command: Codable, Sendable, Equatable {
     case buildDesign(ShipDesign, transfers: [TransferItem])
     case warp
     case jump
+    case encounter(EncounterAction)
+    case plunderTake(TradeItemType, quantity: Int)
+    case plunderDone
+    case resolveScoop(accept: Bool)
     case selectTarget(Int)
     case track(Int?)
 }
@@ -249,7 +281,7 @@ public struct GameEngine: Sendable {
         state.pendingOrbitTrade = nil
         let event = state.resolveOrbitTrade(offer, quantity: q, trader: &enc.opponent)
         state.phase = .encounter(enc)
-        return StepResult(events: event.map { [$0] } ?? [])
+        return finish(.normal, events: event.map { [$0] } ?? [])
     }
 
     /// Economy and services commands (M2). Implemented in Systems/Economy and Systems/Services.
@@ -279,6 +311,10 @@ public struct GameEngine: Sendable {
         case let .buildDesign(d, transfers): return buildDesign(d, accepting: transfers, ack)
         case .warp: return warp(viaSingularity: false, ack)
         case .jump: return warp(viaSingularity: true, ack)
+        case let .encounter(a): return encounterAction(a, ack)
+        case let .plunderTake(item, q): return plunderTake(item, q)
+        case .plunderDone: return plunderDone()
+        case let .resolveScoop(accept): return resolveScoop(accept: accept)
         case .setOptions, .selectTarget, .track: return .rejected(.invalidArgument)
         }
     }

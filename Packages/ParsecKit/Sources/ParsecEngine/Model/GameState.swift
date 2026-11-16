@@ -145,6 +145,10 @@ public struct GameState: Codable, Sendable, Equatable {
     public var pendingOrbitTrade: OrbitTradeOffer?
     /// A floating canister the player may scoop after a kill (C# `EncounterScoop`).
     public var pendingScoop: TradeItemType?
+    /// A plunder (or Marie Celeste boarding) awaiting the player's choices.
+    public var pendingPlunder: PlunderOffer?
+    /// The encounter result to apply once a pending scoop is answered.
+    public var pendingEncounterResult: RoundResult?
     /// The most recent opponent (C# `Game.Opponent` persists between encounters and feeds the cloak test).
     public var lastOpponent: Ship?
     /// Transit flags of the current or last trip (C# `Raided`, `Inspected`).
