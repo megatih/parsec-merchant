@@ -50,6 +50,15 @@ public extension GameState {
         }
     }
 
+    /// ECO-059: a trader that would ignore you may offer a trade: `GetRandom(1000) < chanceOfTradeInOrbit`; then
+    /// TraderSell if you have a free bay and the trader has tradeable goods, else TraderBuy if you have tradeable goods.
+    mutating func tradeInOrbitRoll(trader: Ship) -> EncounterType? {
+        guard rng.next(below: 1000) < chanceOfTradeInOrbit else { return nil }
+        if freeCargoBays > 0, !tradeableItems(in: trader, isTraderShip: true).isEmpty { return .traderSell }
+        if !tradeableItems(in: commander.ship, isTraderShip: false).isEmpty { return .traderBuy }
+        return nil
+    }
+
     /// ECO-061: picks the traded item: `idx = GetRandom(10)`, advancing until it qualifies.
     mutating func pickTradeItem(in ship: Ship, isTraderShip: Bool) -> TradeItemType? {
         let ok = Set(tradeableItems(in: ship, isTraderShip: isTraderShip).map(\.rawValue))

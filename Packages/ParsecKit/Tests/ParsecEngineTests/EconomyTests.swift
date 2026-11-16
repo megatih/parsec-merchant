@@ -74,7 +74,7 @@ struct MarketTests {
 
     @Test("ECO-056 ECO-080 jettison needs the littering warning once; declining changes nothing")
     func litteringWarning() {
-        var e = makeEngine { s in s.commander.ship.cargo[0] = 5 }
+        var e = makeEngine { s in s.commander.ship.cargo[0] = 5; s.phase = .inTransit(TransitState(destination: 0, clicksRemaining: 10, viaWormhole: false)) }
         let before = e.state
         let r = e.perform(.jettisonCargo(.water, quantity: 1))
         #expect(r.decision == .confirm(Confirmation(.litteringWarning)))
@@ -90,7 +90,10 @@ struct MarketTests {
         // Impossible: GetRandom(10) < 5 → caught half the time; run until caught.
         var caught = false
         for seed in 1...40 where !caught {
-            var e = makeEngine(seed: UInt64(seed), difficulty: .impossible) { s in s.commander.ship.cargo[0] = 5; s.litterWarning = true }
+            var e = makeEngine(seed: UInt64(seed), difficulty: .impossible) { s in
+                s.commander.ship.cargo[0] = 5; s.litterWarning = true
+                s.phase = .inTransit(TransitState(destination: 0, clicksRemaining: 10, viaWormhole: false))
+            }
             let r = e.perform(.jettisonCargo(.water, quantity: 1))
             if r.events.contains(.caughtLittering(newRecord: -5)) {
                 caught = true

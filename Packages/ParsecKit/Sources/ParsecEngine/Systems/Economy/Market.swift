@@ -113,6 +113,8 @@ extension GameEngine {
 
     /// ECO-055…057, ECO-080: jettison in space with the littering warning and the chance to be caught.
     mutating func jettisonCargo(_ item: TradeItemType, quantity q: Int, acknowledging ack: Set<WarningID>) -> StepResult {
+        // ECO-055: jettisoning is only possible in space.
+        if case .docked = state.phase { return .rejected(.notAllowedInPhase) }
         let held = state.commander.ship.cargo[item.rawValue]
         if held == 0 { return .rejected(.cargoNoneToSell) }
         guard q >= 1, q <= held else { return .rejected(.invalidQuantity) }

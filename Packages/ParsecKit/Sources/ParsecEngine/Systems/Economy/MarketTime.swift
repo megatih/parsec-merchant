@@ -24,6 +24,12 @@ public extension GameState {
         sellPrices = sellPrices.map { $0 * 100 / 90 }
     }
 
+    /// ECO-041: the market part of the arrival pipeline — pressures and quantities, then prices for the arrival system.
+    mutating func arrivalMarketUpdate(arrival: Int) {
+        updatePressuresAndQuantities(arrival: arrival)
+        calculatePrices(for: arrival)
+    }
+
     /// ECO-034…037: per-system pressure shuffle and countdown/restock on arrival, in index order (Windows 2.01 order).
     /// `arrival` is the system being arrived at (C# `WarpSystem`), used by the drift port bug (ECO-037).
     mutating func updatePressuresAndQuantities(arrival: Int) {
