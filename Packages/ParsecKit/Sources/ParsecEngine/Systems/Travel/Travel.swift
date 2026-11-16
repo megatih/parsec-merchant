@@ -3,6 +3,31 @@
 // C# Game.Warp / NormalDeparture / Travel / Determine*Encounter / Arrival / IncDays (docs/specs/TRV.md, ENC.md).
 import Foundation
 
+/// TRV-086: the warp panel for one target system.
+public struct WarpTargetPreview: Sendable, Equatable {
+    public var target: Int
+    public var distance: Int
+    public var viaWormhole: Bool
+    /// C# `DestOk`.
+    public var inRange: Bool
+    public var fuelAfter: Int
+    public var costs: DailyCosts
+    /// The error `.warp` would return (range first, then BNK-057 affordability); the Wild consent is separate.
+    public var blocking: CommandError?
+    public var wildWillLeave: Bool
+}
+
+/// TRV-087: the singularity jump button.
+public struct JumpPreview: Sendable, Equatable {
+    public var destination: Int
+    /// `noSingularity` or `singularityTargetIsCurrentSystem`; nil when the jump can be confirmed.
+    public var rejection: CommandError?
+    /// The departure check that would fail after consent (the singularity would then be lost, TRV-021).
+    public var blocking: CommandError?
+    public var wildWillLeave: Bool
+    public var available: Bool { rejection == nil }
+}
+
 public extension GameState {
     /// C# `Ship.Cloaked` for the commander: cloaking device and engineer skill above the opponent's.
     var commanderCloaked: Bool {
@@ -40,6 +65,38 @@ public extension GameState {
         if commander.cash < mercenaryCosts + insuranceCosts { return .cannotPayInsurance }
         if commander.cash < mercenaryCosts + insuranceCosts + wormholeCosts { return .cannotPayWormholeTax }
         return nil
+    }
+
+    /// TRV-014: Wild leaves unless the ship carries a beam laser or better (C# `HasWeapon(BeamLaser, false)`).
+    var wildWillLeave: Bool { wildOnBoard && !commander.ship.has(.beamLaser, exact: false) }
+
+    /// TRV-086 / TRV-017: everything the warp panel shows for `target`, without changing state.
+    func warpTargetPreview(_ target: Int) -> WarpTargetPreview {
+        let cur = commander.currentSystem
+        let via = galaxy.wormholeExists(from: cur, to: target)
+        let distance = GalaxyGenerator.distance(galaxy.systems[cur], galaxy.systems[target], rule: ruleset.flags.distance)
+        var copy = self
+        copy.warpSystem = target
+        let inRange = destinationOK(target)
+        return WarpTargetPreview(target: target, distance: distance, viaWormhole: via, inRange: inRange,
+                                 fuelAfter: commander.ship.fuel - (via ? 0 : distance), costs: dailyCosts(to: target),
+                                 blocking: inRange ? copy.warpBlocker() : .destinationOutOfRange, wildWillLeave: wildWillLeave)
+    }
+
+    /// TRV-087: whether a singularity jump to the current target is possible, and what it would hit after consent.
+    var jumpPreview: JumpPreview {
+        let rejection: CommandError? = !quests.canSuperWarp ? .noSingularity
+            : warpSystem == commander.currentSystem ? .singularityTargetIsCurrentSystem : nil
+        return JumpPreview(destination: warpSystem, rejection: rejection, blocking: warpBlocker(), wildWillLeave: wildWillLeave)
+    }
+
+    /// TRV-088: the trip in progress (also while an encounter interrupts it); nil when docked or the game is over.
+    var transitPreview: TransitState? {
+        switch phase {
+        case let .inTransit(t): t
+        case .encounter: encounterTransit
+        default: nil
+        }
     }
 
     /// C# `Game.IncDays`.
@@ -503,19 +560,64 @@ public extension GameState {
 }
 
 extension GameEngine {
+    // MARK: Target selection (TRV-003/004/007)
+
+    /// C# `SelectedSystemId` setter: any system, in range or not.
+    mutating func selectTarget(_ s: Int) -> StepResult {
+        guard docked else { return .rejected(.notAllowedInPhase) }
+        guard state.galaxy.systems.indices.contains(s) else { return .rejected(.invalidArgument) }
+        state.warpSystem = s
+        state.targetWormhole = false
+        return StepResult()
+    }
+
+    /// C# `TargetWormhole` setter: targets the far end of the wormhole at `w` (any wormhole system).
+    mutating func selectWormhole(_ w: Int) -> StepResult {
+        guard docked else { return .rejected(.notAllowedInPhase) }
+        guard let k = state.galaxy.wormholes.firstIndex(of: w) else { return .rejected(.invalidArgument) }
+        state.warpSystem = state.galaxy.wormholes[(k + 1) % state.galaxy.wormholes.count]
+        state.targetWormhole = true
+        return StepResult()
+    }
+
+    /// C# `Game.SelectNextSystemWithinRange`.
+    mutating func selectNextTarget(forward: Bool) -> StepResult {
+        guard docked else { return .rejected(.notAllowedInPhase) }
+        let dest = state.destinations
+        guard !dest.isEmpty else { return StepResult() }
+        var index: Int
+        if let i = dest.firstIndex(of: state.warpSystem) {
+            index = (dest.count + i + (forward ? 1 : -1)) % dest.count
+        } else {
+            index = forward ? 0 : dest.count - 1
+        }
+        let cur = state.commander.currentSystem
+        if state.galaxy.wormholeExists(from: cur, to: dest[index]) { return selectWormhole(cur) }
+        return selectTarget(dest[index])
+    }
+
+    // MARK: Warp and jump
+
     /// C# `Game.Warp` (TRV): checks, departure, then transit until an encounter or arrival.
+    /// A jump (C# `btnJump_Click`) asks for `.useSingularity` consent and consumes the singularity before the checks.
     mutating func warp(viaSingularity: Bool, _ ack: Set<WarningID>) -> StepResult {
         guard docked else { return .rejected(.notAllowedInPhase) }
         let target = state.warpSystem
         if viaSingularity {
-            guard state.quests.canSuperWarp else { return .rejected(.noSingularity) }
-            guard target != state.commander.currentSystem else { return .rejected(.destinationOutOfRange) }
-        } else {
-            guard state.destinationOK(target) else { return .rejected(.destinationOutOfRange) }
+            let jump = state.jumpPreview
+            if let error = jump.rejection { return .rejected(error) }
+            guard ack.contains(.useSingularity) else {
+                return .needsConfirmation(Confirmation(.useSingularity, amounts: [target]))
+            }
+            if let blocker = jump.blocking {
+                state.quests.canSuperWarp = false
+                return StepResult(events: [.singularityLost, .departureBlocked(blocker)])
+            }
+        } else if let blocker = state.warpTargetPreview(target).blocking {
+            return .rejected(blocker)
         }
-        if let blocker = state.warpBlocker() { return .rejected(blocker) }
         var events: [GameEvent] = []
-        if state.wildOnBoard, !state.commander.ship.has(.beamLaser, exact: false) {
+        if state.wildWillLeave {
             guard ack.contains(.wildLeavesWithoutLaser) else {
                 return .needsConfirmation(Confirmation(.wildLeavesWithoutLaser))
             }
@@ -525,8 +627,8 @@ extension GameEngine {
         let from = state.commander.currentSystem
         state.arrivedViaWormhole = state.galaxy.wormholeExists(from: from, to: target)
         if viaSingularity {
-            state.newsEvents.append(.experimentArrival)
             state.quests.canSuperWarp = false
+            state.newsEvents.append(.experimentArrival)
         } else {
             let distance = state.arrivedViaWormhole ? 0
                 : GalaxyGenerator.distance(state.galaxy.systems[from], state.galaxy.systems[target], rule: ruleset.flags.distance)
@@ -543,6 +645,7 @@ extension GameEngine {
         if state.quests.experiment == QuestStatus.Experiment.performed, state.quests.fabricRipProbability > 0,
            state.quests.fabricRipProbability == 25 || state.rng.next(below: 100) < state.quests.fabricRipProbability {
             state.warpSystem = state.rng.next(below: state.galaxy.systems.count)
+            state.targetWormhole = false
             events.append(.fabricRip(newDestination: state.warpSystem))
         }
         state.raided = false
