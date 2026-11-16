@@ -6,7 +6,7 @@ public enum WarningID: String, Codable, Sendable, Hashable, CaseIterable {
     case attackPolice, attackTrader, attackCaptain, fleeInspection, fleeMariePolice
     case submitWithNothingIllegal, surrenderToPolice, bribe
     case buyEquipment, sellEquipment, buyShip, fireMercenary, stopInsurance
-    case wildLeavesWithoutLaser, wildLeavesForReactor, dumpCargoLittering, useSingularity, retire
+    case wildLeavesWithoutLaser, wildLeavesForReactor, litteringWarning, useSingularity, retire
     case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain
 }
 
@@ -28,12 +28,13 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     case pendingDecisionFirst
     case invalidArgument
     // Economy
-    case debtTooLarge
-    case noneAvailable
+    case debtTooLargeToTrade
+    case cargoNoneAvailable
     case noEmptyBays
-    case cannotAfford
-    case noneToSell
-    case notInterested
+    case insufficientFunds
+    case invalidQuantity
+    case cargoNoneToSell
+    case marketNotInterested
     // Generic services
     case tankFull
     case noRepairsNeeded

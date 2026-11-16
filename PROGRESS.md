@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M0 (in progress)
-- **Next step:** M0 specs: csharp-index.md, ALR.md (188), RUL.md, full RNG/GAL/ECO/SHP/CRW/BNK specs, skeletons for all other areas
+- **Next step:** M0 exit once RUL.md+csharp-index (agent a813b…) and RNG.md+GAL.md (agent abe1…) land: map test names GAL-H01..03 → GAL IDs, RNG tests → RNG IDs, run verify (spec-trace), tag m0-done. Parallel: M2 economy commands in Systems/Economy/Market.swift + Services (ECO-045..083, SHP-011..057, BNK-011..063, CRW-027..037); CommandError names must follow spec names (e.g. .debtTooLargeToTrade, .cargoNoneAvailable, .insufficientFunds, .equipmentAlreadyOwned, .debtTooLargeForLoan, .insuranceRequiresEscapePod).
 - **Last gate result:** verify.sh default: ALL GATES PASSED (7/7) @ f477122
 - **Blockers:** none
 
@@ -33,13 +33,16 @@
 - [x] Palm source fetched (gitignored, sha recorded); MOD-017 swap re-confirmed (DataTypes.h SHIPTYPE order; Global.c Gnat CostOfFuel 2 / RepairCosts 1 vs C# fuelCost 1 / repairCost 2)
 - [x] Apple skills exported to .claude/skills (11 skills; must use an absolute --output-dir)
 - [x] GitHub repo megatih/parsec-merchant created (public) and pushed
-- [ ] docs/reference/csharp-index.md
-- [ ] docs/specs: skeletons for every area + full RNG, GAL, ECO, SHP, CRW, BNK
-- [ ] ALR.md (188 AlertTypes) and RUL.md matrix
-- [ ] final-check.sh / release.sh / make-icon.sh / harness.sh stubs
+- [ ] docs/reference/csharp-index.md (agent running)
+- [x] docs/specs skeletons; ECO (83), SHP (85), CRW (69), BNK (63), ALR (188) written; [ ] RNG, GAL (agent running)
+- [x] ALR.md; [ ] RUL.md (agent running)
+- [x] final-check.sh (full), release/make-icon stubs, harness.sh (working; .NET 10 via dotnet-install.sh into build/harness/dotnet — brew cask needs sudo)
 - [ ] M0 exit: verify.sh PASS, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-16: Harness: .NET SDK installed with dotnet-install.sh into gitignored build/harness/dotnet (Homebrew cask is a sudo .pkg).
+- 2026-11-16: Ahead of plan (M1 work done during M0): RNGs bit-exact vs .NET; galaxy/crew/start/prices bit-exact vs harness for 15 snapshots.
+- 2026-11-16: Ruleset is a struct (tables/flags/content/rngKind) rather than a protocol; same capability as PRD §4.1.
 - 2026-11-16: LSApplicationCategoryType = public.app-category.simulation-games (a Games sub-category).
 - 2026-11-16: Test bundles access the engine via `@testable import ParsecMerchant`, not by linking package products, to avoid duplicate static linking (ADR-0001).
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
