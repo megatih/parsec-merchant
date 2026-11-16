@@ -130,7 +130,7 @@ extension GameEngine {
             } else {
                 state.commander.policeRecordScore -= 1
             }
-            state.newsEvents.append(.caughtLittering)
+            state.addNewsEvent(.caughtLittering)
             events.append(.caughtLittering(newRecord: state.commander.policeRecordScore))
         }
         return StepResult(events: events)

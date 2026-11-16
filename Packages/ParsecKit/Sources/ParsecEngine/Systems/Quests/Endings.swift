@@ -8,11 +8,21 @@ public extension GameState {
         return .gameEnded(end, score: score(for: end))
     }
 
-    /// SCORE: C# `Game.Score` for an end type, in tenths of a percent. 32-bit arithmetic wraps like the C# source.
+    /// SCORE: C# `Game.Score` for an end type, in tenths of a percent, or Palm `GetScore` (SCORE-020, `scoreFormula`).
+    /// 32-bit arithmetic wraps like the sources.
     func score(for end: GameEndType) -> Int {
         let w = worth
         let scaled = Int32(truncatingIfNeeded: w < 1_000_000 ? w : 1_000_000 + (w - 1_000_000) / 10)
         let d = Int32(difficulty.rawValue + 1)
+        if ruleset.flags.travel.scoreFormula == .palm {
+            switch end {
+            case .killed: return Int(d &* ((scaled &* 90) / 50_000))
+            case .retired: return Int(d &* ((scaled &* 95) / 50_000))
+            case .boughtMoon, .boughtMoonGirl:
+                let dm = max(0, d &* 100 &- Int32(truncatingIfNeeded: commander.days))
+                return Int(d &* ((scaled &+ dm &* 1_000) / 500))
+            }
+        }
         var daysMoon: Int32 = 0
         let modifier: Int32
         switch end {
@@ -23,6 +33,25 @@ public extension GameState {
             modifier = 100
         }
         return Int(d &* modifier &* (daysMoon &* 1_000 &+ scaled) / 250_000)
+    }
+
+    /// SCORE-024/025: the score in tenths of a percent for display (Palm `a / 5`, C truncation).
+    func scoreTenths(for end: GameEndType) -> Int {
+        ruleset.flags.travel.scoreFormula == .palm ? score(for: end) / 5 : score(for: end)
+    }
+
+    /// RUL-150 `highScoreBlock`: cheats block the entry in every ruleset (PRD §8.3); Palm also blocks a reloaded game
+    /// (its "Timewarp" rule, SCORE-035).
+    var highScoreBlocked: Bool {
+        switch ruleset.flags.travel.highScoreBlock {
+        case .cheats: cheatsUsed
+        case .reload: cheatsUsed || reloadCount > 0
+        }
+    }
+
+    /// SCORE-008: claiming the moon ends with the Modern moon-girl variant once the Princess quest is done.
+    var moonEndType: GameEndType {
+        ruleset.flags.travel.moonGirlEnding && quests.princess == QuestStatus.Princess.done ? .boughtMoonGirl : .boughtMoon
     }
 }
 
