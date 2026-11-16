@@ -4,8 +4,8 @@
 
 ## Status
 - **Current milestone:** M0 (in progress)
-- **Next step:** M0 exit once RUL.md+csharp-index (agent a813b…) and RNG.md+GAL.md (agent abe1…) land: map test names GAL-H01..03 → GAL IDs, RNG tests → RNG IDs, run verify (spec-trace), tag m0-done. Parallel: M2 economy commands in Systems/Economy/Market.swift + Services (ECO-045..083, SHP-011..057, BNK-011..063, CRW-027..037); CommandError names must follow spec names (e.g. .debtTooLargeToTrade, .cargoNoneAvailable, .insufficientFunds, .equipmentAlreadyOwned, .debtTooLargeForLoan, .insuranceRequiresEscapePod).
-- **Last gate result:** verify.sh default: ALL GATES PASSED (7/7) @ f477122
+- **Next step:** When RUL.md (agent) lands: verify, commit, tag m0-done, set milestone M1, then M1 exit check (RNG/GAL {M1} IDs must all be traced: spec-trace lists missing), then M2: add tests for every {M2} ID in ECO/SHP/CRW/BNK/ALR (spec-trace shows the list) + remaining M2 features (IncDays, preview APIs, special-event price check, price breakdown ECO-082, options OPT).
+- **Last gate result:** verify.sh default ALL GATES PASSED @ c21cb4a (50 tests)
 - **Blockers:** none
 
 ## Milestones
@@ -48,5 +48,6 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M2 economy/services implemented (Market.swift, Services.swift) with 30 ID-named tests; RNG vectors (all generators) + galaxy invariants 1000 seeds pass; harness has 21 galaxy snapshots; pmsim dump-galaxy.
 - 2026-11-16: M0 setup done (ladder step 2 succeeded), gates green, repo published.
 - 2026-11-16: Docs created: PRD v1.1, UX vision, research 01–06 (with QA errata), QA logs 07–08, CLAUDE.md, GOAL.md. Owner approved D6 (dotnet differential harness).
