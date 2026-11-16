@@ -183,7 +183,7 @@ public extension GameState {
         return nil
     }
 
-    private mutating func determinePirate(mantis: Bool, clicks: Int) -> EncounterState? {
+    mutating func determinePirate(mantis: Bool, clicks: Int) -> EncounterState? {
         let opp: Ship
         var type: EncounterType
         if mantis {
@@ -206,7 +206,7 @@ public extension GameState {
         return shown ? EncounterState(type: type, opponent: opp, clicks: clicks) : nil
     }
 
-    private mutating func determinePolice(clicks: Int) -> EncounterState? {
+    mutating func determinePolice(clicks: Int) -> EncounterState? {
         let opp = generateOpponent(.police)
         lastOpponent = opp
         var type: EncounterType = .policeIgnore
@@ -232,7 +232,7 @@ public extension GameState {
         return shown ? EncounterState(type: type, opponent: opp, clicks: clicks) : nil
     }
 
-    private mutating func determineTrader(clicks: Int) -> EncounterState? {
+    mutating func determineTrader(clicks: Int) -> EncounterState? {
         let opp = generateOpponent(.trader)
         lastOpponent = opp
         var type: EncounterType = .traderIgnore
@@ -250,7 +250,7 @@ public extension GameState {
         return shown ? EncounterState(type: type, opponent: opp, clicks: clicks) : nil
     }
 
-    private mutating func determineVeryRare(clicks: Int) -> EncounterState? {
+    mutating func determineVeryRare(clicks: Int) -> EncounterState? {
         let pick = veryRareEncounters[rng.next(below: veryRareEncounters.count)]
         let cmdrRaw = mercenaries[CrewID.commander].skills
         func remove(_ v: VeryRareEncounter) { veryRareEncounters.removeAll { $0 == v } }
@@ -562,11 +562,8 @@ extension GameEngine {
             let clicks = t.clicksRemaining
             if let enc = state.determineFixedEncounter(clicks: clicks) ?? state.determineRandomEncounter(clicks: clicks) {
                 t.hadEncounter = true
-                state.phase = .inTransit(t)
                 state.encounterTransit = t
-                state.phase = .encounter(enc)
-                events.append(.encounterStarted(type: enc.type, opponent: enc.opponent.type, clicks: clicks,
-                                                 playerCloaked: state.commanderCloaked))
+                events.append(startEncounter(enc))
                 return events
             }
             t.clicksRemaining -= 1
@@ -577,9 +574,40 @@ extension GameEngine {
         return events
     }
 
+    /// Enters the encounter phase for a shown encounter (C# FormEncounter constructor + EncounterActionInitial).
+    mutating func startEncounter(_ shown: EncounterState) -> GameEvent {
+        var enc = shown
+        // ENC-110: the opponent starts fleeing only for an initial flee type.
+        enc.oppFleeing = [.pirateFlee, .policeFlee, .traderFlee].contains(enc.type)
+        // ENC-087: the cosmetic tribble-sprite draws of C# UpdateTribbles keep the game RNG in step.
+        let toShow = min(36, Int((Double(state.commander.ship.tribbles) / 74.0).squareRoot()))
+        for _ in 0..<toShow {
+            _ = state.rng.next(below: 36)
+            _ = state.rng.next(below: 8)
+        }
+        state.phase = .encounter(enc)
+        // ENC-112: "doesn't notice you" applies to an ignore type caused by the player's cloak.
+        let ignoreTypes: [EncounterType] = [.dragonflyIgnore, .pirateIgnore, .policeIgnore, .scarabIgnore, .scorpionIgnore,
+                                            .spaceMonsterIgnore, .traderIgnore]
+        return .encounterStarted(type: enc.type, opponent: enc.opponent.type, clicks: enc.clicks,
+                                 playerCloaked: ignoreTypes.contains(enc.type) && state.commanderCloaked)
+    }
+
+    /// ENC-012: C# assigns the quest ships by reference, so their damage, shield charges and cargo persist.
+    mutating func writeBackSpecialShip(_ opp: Ship) {
+        switch opp.type {
+        case .dragonfly: state.specialShips.dragonfly = opp
+        case .scarab: state.specialShips.scarab = opp
+        case .scorpion: state.specialShips.scorpion = opp
+        case .spaceMonster: state.specialShips.spaceMonster = opp
+        default: break
+        }
+    }
+
     /// Ends the current encounter and resumes transit (C# `Clicks--` after the encounter form closes).
     mutating func finishEncounter(_ result: RoundResult) -> [GameEvent] {
-        guard case .encounter = state.phase, var t = state.encounterTransit else { return [] }
+        guard case let .encounter(enc) = state.phase, var t = state.encounterTransit else { return [] }
+        writeBackSpecialShip(enc.opponent)
         state.encounterTransit = nil
         switch result {
         case .killed:

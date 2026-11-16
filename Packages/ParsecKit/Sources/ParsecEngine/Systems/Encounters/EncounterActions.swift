@@ -44,6 +44,28 @@ public extension EncounterType {
     }
 }
 
+/// ENC-113: the badge category of an encounter.
+public enum EncounterBadge: String, Codable, Sendable {
+    case special, pirate, alien, police, trader
+}
+
+public extension EncounterType {
+    /// ENC-113: the badge for this type against an opponent of `opponent` ship type.
+    func badge(opponent: ShipType) -> EncounterBadge {
+        switch self {
+        case .bottleGood, .bottleOld, .captainAhab, .captainConrad, .captainHuie, .famousCaptainAttack, .famousCaptDisabled,
+             .marieCeleste:
+            return .special
+        case .spaceMonsterAttack, .spaceMonsterIgnore: return .alien
+        case .marieCelestePolice, .policeAttack, .policeIgnore, .policeFlee, .policeSurrender, .policeDisabled, .policeInspect:
+            return .police
+        case .traderAttack, .traderIgnore, .traderFlee, .traderSurrender, .traderDisabled, .traderBuy, .traderSell: return .trader
+        case .pirateAttack, .pirateIgnore, .pirateFlee, .pirateSurrender, .pirateDisabled: return opponent == .mantis ? .alien : .pirate
+        case .dragonflyAttack, .dragonflyIgnore, .scarabAttack, .scarabIgnore, .scorpionAttack, .scorpionIgnore: return .pirate
+        }
+    }
+}
+
 /// ENC-186 / CMB-098: one action's availability for the current encounter.
 public struct EncounterActionPreview: Sendable, Equatable {
     public var action: EncounterAction
@@ -57,6 +79,8 @@ public struct EncounterActionPreview: Sendable, Equatable {
 /// ENC-186: pure description of the current encounter for the encounter screen.
 public struct EncounterPreview: Sendable, Equatable {
     public var type: EncounterType
+    /// ENC-113: the badge category.
+    public var badge: EncounterBadge
     public var opponentType: ShipType
     public var playerHullPercent, playerShieldPercent, opponentHullPercent, opponentShieldPercent: Int
     public var actions: [EncounterActionPreview]
@@ -151,6 +175,8 @@ public struct PlunderOffer: Codable, Sendable, Equatable {
     public var victimCargo: [Int]
     /// True when boarding the Marie Celeste (narcotics taken trigger the customs police).
     public var marieCeleste: Bool
+    /// ENC-161: the commander's narcotics before boarding (C# EncounterVerifyBoard `narcs`).
+    public var narcoticsBefore = 0
 }
 
 extension GameEngine {
@@ -170,8 +196,8 @@ extension GameEngine {
         case .resolve: if !enc.type.actions.contains(.attack) { return .rejected(.encounterActionUnavailable) }
         default: if !enc.type.actions.contains(action) { return .rejected(.encounterActionUnavailable) }
         }
-        if action != .autoRepeat, repeating {
-            // CMB-068: every command except the auto-repeat tick interrupts continuous combat. A rejected or
+        if action != .autoRepeat, action != .stop, repeating {
+            // CMB-068: every command except the auto-repeat tick (and `stop` itself) interrupts continuous combat. A rejected or
             // confirmation-requesting command must not change state, so the flags are cleared on a copy first.
             var probe = self
             var cleared = enc
@@ -207,7 +233,8 @@ extension GameEngine {
         case .board:
             guard enc.type == .marieCeleste else { return .rejected(.invalidArgument) }
             guard ack.contains(.boardMarieCeleste) else { return .needsConfirmation(Confirmation(.boardMarieCeleste)) }
-            state.pendingPlunder = PlunderOffer(victimCargo: enc.opponent.cargo, marieCeleste: true)
+            state.pendingPlunder = PlunderOffer(victimCargo: enc.opponent.cargo, marieCeleste: true,
+                                                narcoticsBefore: state.commander.ship.cargo[TradeItemType.narcotics.rawValue])
             return StepResult(events: [], decision: .plunder(enc.opponent.cargo), rejection: nil)
         case .drink: return drink(enc, ack)
         case .meet: return meet(enc, ack)
@@ -232,7 +259,7 @@ extension GameEngine {
             if case let .confirm(c) = res.decision { conf = c }
             return EncounterActionPreview(action: action, rejection: res.rejection, confirmation: conf)
         }
-        return EncounterPreview(type: enc.type, opponentType: opp.type,
+        return EncounterPreview(type: enc.type, badge: enc.type.badge(opponent: opp.type), opponentType: opp.type,
                                 playerHullPercent: pct(me.hull, me.hullStrength(r)),
                                 playerShieldPercent: pct(me.shieldCharge, me.shieldStrength(r)),
                                 opponentHullPercent: pct(opp.hull, opp.hullStrength(r)),
@@ -512,7 +539,7 @@ extension GameEngine {
         guard let offer = state.pendingPlunder, let enc = encounter else { return .rejected(.notAllowedInPhase) }
         state.pendingPlunder = nil
         if offer.marieCeleste {
-            if state.commander.ship.cargo[TradeItemType.narcotics.rawValue] > 0 { state.quests.justLootedMarie = true }
+            if state.commander.ship.cargo[TradeItemType.narcotics.rawValue] > offer.narcoticsBefore { state.quests.justLootedMarie = true }
             return finish(.normal)
         }
         var events: [GameEvent] = []
