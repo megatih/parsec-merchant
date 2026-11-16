@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M7 (starting)
-- **Next step:** M7 phase 1 running (worktree agents): app foundation (GameSession, routing, text, Welcome/wizard, shell, inspector, interim encounter/game-over) and engine UI queries (GalaxyCode, questLog, equipmentMarket, ShipQuote.blocker). Phase 2 after merge: sections (Bridge/Market; Shipyard/Designer/Outfitter; Crew/Bank/Quests), menus+Settings+Options+save/load/About/Help/App Intents, UI flows 1/3/4; verify --ui at M7 exit.
-- **Last gate result:** verify.sh default ALL GATES PASSED @ M6 exit (7/7; 0 untraced {M6} IDs; 1088 tests; persistence coverage 98%+)
+- **Current milestone:** M8 (starting)
+- **Next step:** M8: galaxy chart — write MAP.md (spec skeleton) first; Canvas map with zoom/pan, hover overlay cards (no .popover), range ring, wormholes, tracking, context search, route planner, detachable window, accessibility children/rotors; map benchmark baseline (pmsim bench / app perf test); UI flow 5; verify --ui at M8 exit.
+- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M7 exit (8/8 incl. UI flows 1, 3, 4 and the identifier walk)
 - **Blockers:** none
 
 ## Milestones
@@ -16,7 +16,7 @@
 - [x] M4 Quests, endings, scoring (2026-11-17, tag m4-done; 46 special events bit-exact vs C# harness; QST scenario tests per chain incl. failures; SCORE; tribble/passenger notices)
 - [x] M5 Rulesets (Palm 1.2.2 and Modern) (2026-11-17, tag m5-done; Palm content pack + galaxy, all RUL flags in per-area rule groups, MOD-001…021, no open [verify] (accepted assumptions in QA-REPORT), 1546 spec IDs)
 - [x] M6 Persistence, high scores, cheats (2026-11-17, tag m6-done; SAV/SCORE/CHEAT/OPT traced; 500 fuzzed byte-identical round trips; v1 fixtures per ruleset)
-- [ ] M7 App shell and docked screens
+- [x] M7 App shell and docked screens (2026-11-17, tag m7-done; GameSession, Welcome/wizard, Bridge/Market/Shipyard+Designer/Outfitter/Crew/Bank/Quests, menus, files, Settings/Options, About/Help, App Intents, cheat console; UI flows 1/3/4 + identifier walk green)
 - [ ] M8 Galaxy chart
 - [ ] M9 Encounter, transit, event UX
 - [ ] M10 Trade intelligence, log, stats, achievements, flavor
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M7 exit: app built by six worktree agents (foundation, engine UI queries, four section/area agents) + UI-flow agent. Flows found two real bugs: AppKit opened a leftover launch argument as a document (fixed with NSTreatUnknownArgumentsAsOpen=NO) and container accessibilityIdentifiers overwrote children (fixed with .accessibilityElement(children: .contain)). NEWS-047 retagged M9 (styled newspaper). Interim encounter/game-over surfaces remain until M9.
 - 2026-11-17: M6 exit: persistence rewrite (gameID/generation, backup recovery, validation, versioned high scores, loadForPlay reload rule, import clears Ironman), cheats (all C# Find codes + Palm codes/cheat form, cheatsUsed permanent), options (docked-only, normalized, Palm defaults). M7 specs UI-SHELL (129) + MENU (45) written. Decisions: galaxy code includes difficulty (generator needs it); interim encounter/game-over surfaces in M7 replaced in M9.
 - 2026-11-17: M6 started: ParsecPersistence SaveEnvelope/SaveCodec (sorted-key JSON, byte-identical round trips)/SaveMigrator (raw JSON, v1)/SlotStore (atomic, 3 rotating backups, autosave, import/export, Corrupt/ quarantine)/HighScoreStore; engine HighScoreTable (top 10, SCORE-031…036).
 - 2026-11-17: M5 exit: cross-area finish (Palm passengers outside the crew array, Palm Gemulon `> 7` rule, duplicate economy flags removed). Fuzz cash invariant now checks negative-cash transitions (allowed only for ECO-068 C# orbit cap and RUL-043 Palm dump precedence bug) — stricter than before (Windows now checked).
