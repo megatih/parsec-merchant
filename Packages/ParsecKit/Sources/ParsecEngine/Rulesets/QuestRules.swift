@@ -44,6 +44,14 @@ public enum SpecialShipDamageRule: String, Codable, Sendable {
     case monsterHullOnEscape
 }
 
+/// The order and conditions of the quest list (UI-SHELL-121/122).
+public enum QuestLogOrder: String, Codable, Sendable {
+    /// C# `Form_ViewQuests.GetQuestStrings`: status-driven, Gemulon first.
+    case csharp
+    /// Palm `DrawQuestsForm` (QuestEvent.c): space monster first; reward entries keyed on the event still in place.
+    case palm
+}
+
 /// Quest behaviour switches. Each case of every switch is selected by the ruleset presets below; engine code reads
 /// these values and never branches on the ruleset id.
 public struct QuestRules: Sendable, Equatable {
@@ -70,6 +78,8 @@ public struct QuestRules: Sendable, Equatable {
     public var wildRequiresRealLaser = false
     /// RUL-173.
     public var specialShipDamagePersists: SpecialShipDamageRule = .allShips
+    /// UI-SHELL-121/122: which source's quest list `GameState.questLog` follows.
+    public var questLogOrder: QuestLogOrder = .csharp
 
     /// Windows 2.01 (faithful C# port).
     public static let windows201 = QuestRules()
@@ -96,6 +106,7 @@ public struct QuestRules: Sendable, Equatable {
         q.sellPriceRecalc = .eraseRecordOnly
         q.wildRequiresRealLaser = true
         q.specialShipDamagePersists = .monsterHullOnEscape
+        q.questLogOrder = .palm
         return q
     }()
 }

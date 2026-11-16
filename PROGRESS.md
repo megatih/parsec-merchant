@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M7 (starting)
-- **Next step:** M7: app shell per UI-SHELL.md/MENU.md (specs committed): GameSession, Welcome/Quick Start, New Game wizard, docked sections, inspector, menus, Settings, Options sheet, save/load/import/export/Finder-open, Retire, About, Help, App Intents; interim encounter panel + game-over card; app unit tests + UI flows 1/3/4; verify --ui at M7 exit.
+- **Next step:** M7 phase 1 running (worktree agents): app foundation (GameSession, routing, text, Welcome/wizard, shell, inspector, interim encounter/game-over) and engine UI queries (GalaxyCode, questLog, equipmentMarket, ShipQuote.blocker). Phase 2 after merge: sections (Bridge/Market; Shipyard/Designer/Outfitter; Crew/Bank/Quests), menus+Settings+Options+save/load/About/Help/App Intents, UI flows 1/3/4; verify --ui at M7 exit.
 - **Last gate result:** verify.sh default ALL GATES PASSED @ M6 exit (7/7; 0 untraced {M6} IDs; 1088 tests; persistence coverage 98%+)
 - **Blockers:** none
 

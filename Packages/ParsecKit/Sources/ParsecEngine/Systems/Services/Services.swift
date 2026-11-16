@@ -15,9 +15,12 @@ public struct ShipQuote: Sendable, Equatable {
     public var candidates: [(item: TransferItem, price: Int)]
     /// Unique items that will be lost because the new ship has no slot of their type.
     public var lost: [TransferItem]
+    /// UI-SHELL-119: the first error `perform(.buyShip(type, transfers: []))` returns before its confirmation, or nil.
+    /// Quotes built for a custom design leave it nil (`DesignQuote.blocker` covers them).
+    public var blocker: CommandError?
 
     public static func == (a: ShipQuote, b: ShipQuote) -> Bool {
-        a.type == b.type && a.netPrice == b.netPrice && a.lost == b.lost
+        a.type == b.type && a.netPrice == b.netPrice && a.lost == b.lost && a.blocker == b.blocker
             && a.candidates.map(\.item) == b.candidates.map(\.item) && a.candidates.map(\.price) == b.candidates.map(\.price)
     }
 }
@@ -100,7 +103,9 @@ public extension GameState {
     /// SHP-034: net price of buying `type` (list price minus current ship worth including cargo cost basis).
     func shipQuote(_ type: ShipType) -> ShipQuote {
         let newSpec = ruleset.tables.ship(type)
-        return shipQuote(type, spec: newSpec, netPrice: shipNetPrice(newSpec))
+        var quote = shipQuote(type, spec: newSpec, netPrice: shipNetPrice(newSpec))
+        quote.blocker = shipBlocker(type)
+        return quote
     }
 
     /// SHP-034/SHP-035 (RUL-052): `Price − tradeIn`; Palm `Price × (100 − Trader)/100 − tradeIn`, where 0 becomes 1.
@@ -133,6 +138,30 @@ public extension GameState {
         }
         if ship.escapePod, !palm { candidates.append((.escapePod, 200)) }
         return ShipQuote(type: type, netPrice: net, candidates: candidates, lost: lost)
+    }
+
+    /// SHP-036/SHP-037: the first error C# `Commander.TradeShip` (Palm `BuyShip`) raises before its confirmation for a
+    /// new ship with `newSpec` at net price `net`, or nil.
+    func tradeShipBlocker(spec newSpec: ShipSpec, netPrice net: Int) -> CommandError? {
+        if net > 0, commander.debt > 0 { return .inDebt }
+        if net > cashToSpend { return .insufficientFunds }
+        // SHP-037: a Palm passenger (not in the crew array) needs a ship with at least 2 quarters.
+        let needed = passengersOutsideCrew > 0 ? 2 : specialCrewCount
+        if newSpec.crewQuarters < needed { return .passengersNeedQuarters }
+        // SHP-037: Palm checks the reactor before the crew count, and counts hired crew (commander + mercenaries)
+        // without the passengers, who are not in its crew array.
+        if ruleset.flags.economy.shipTradeFlow == .palm, reactorOnBoard { return .reactorOnBoard }
+        if newSpec.crewQuarters < commander.ship.crewCount { return .notEnoughQuarters }
+        if reactorOnBoard { return .reactorOnBoard }
+        return nil
+    }
+
+    /// UI-SHELL-119 (SHP-079): the rejection `perform(.buyShip(type, transfers: []))` returns before its confirmation.
+    func shipBlocker(_ type: ShipType) -> CommandError? {
+        if let phaseError = dockedCommandError { return phaseError }
+        guard shipsForSale.contains(type) else { return type == commander.ship.type ? .alreadyOwnThisShipType : .notSoldHere }
+        let spec = ruleset.tables.ship(type)
+        return tradeShipBlocker(spec: spec, netPrice: shipNetPrice(spec))
     }
 
     /// SHP-033: ship types offered here.
@@ -264,31 +293,21 @@ extension GameEngine {
                                _ ack: Set<WarningID>) -> StepResult {
         guard docked else { return .rejected(.notAllowedInPhase) }
         let r = ruleset
-        let price: Int
-        let freeSlots: Int
-        if let weapon {
-            price = state.equipmentBuyPrice(weapon: weapon)
-            freeSlots = state.commander.ship.freeWeaponSlots(r)
-        } else if let shield {
-            price = state.equipmentBuyPrice(shield: shield)
-            freeSlots = state.commander.ship.freeShieldSlots(r)
-        } else if let gadget {
-            if gadget != .extraCargoBays, state.commander.ship.has(gadget) { return .rejected(.equipmentAlreadyOwned) }
-            price = state.equipmentBuyPrice(gadget: gadget)
-            freeSlots = state.commander.ship.freeGadgetSlots(r)
+        let item: EquipmentItem
+        if let weapon { item = .weapon(weapon) } else if let shield { item = .shield(shield) } else if let gadget {
+            item = .gadget(gadget)
         } else {
             return .rejected(.invalidArgument)
         }
-        if price <= 0 { return .rejected(.notSoldHere) }
-        if state.commander.debt > 0 { return .rejected(.inDebt) }
-        if price > state.cashToSpend { return .rejected(.insufficientFunds) }
-        if freeSlots <= 0 { return .rejected(.noFreeSlot) }
+        if let blocker = state.equipmentBuyBlocker(item) { return .rejected(blocker) }
+        let price = state.equipmentBuyPrice(item)
         guard ack.contains(.buyEquipment) else { return .needsConfirmation(Confirmation(.buyEquipment, amounts: [price])) }
-        if let weapon { state.commander.ship.weapons.append(weapon) }
-        if let shield { state.commander.ship.shields.append(ShieldInstance(type: shield, charge: r.tables.shield(shield).power)) }
-        if let gadget {
-            state.commander.ship.gadgets.append(gadget)
-            if r.tables.gadget(gadget).skillBonus == .trader { recalculateBuyPrices() }
+        switch item {
+        case let .weapon(w): state.commander.ship.weapons.append(w)
+        case let .shield(s): state.commander.ship.shields.append(ShieldInstance(type: s, charge: r.tables.shield(s).power))
+        case let .gadget(g):
+            state.commander.ship.gadgets.append(g)
+            if r.tables.gadget(g).skillBonus == .trader { recalculateBuyPrices() }
         }
         state.commander.cash -= price
         return StepResult(events: [.boughtEquipment(price: price)])
@@ -297,23 +316,19 @@ extension GameEngine {
     mutating func sellEquipment(weaponIndex: Int? = nil, shieldIndex: Int? = nil, gadgetIndex: Int? = nil,
                                 _ ack: Set<WarningID>) -> StepResult {
         guard docked else { return .rejected(.notAllowedInPhase) }
-        let t = ruleset.tables
         var ship = state.commander.ship
-        let price: Int
+        let item: EquipmentItem
         if let i = weaponIndex, ship.weapons.indices.contains(i) {
-            price = t.weapon(ship.weapons[i]).price * 3 / 4
-            ship.weapons.remove(at: i)
+            item = .weapon(ship.weapons.remove(at: i))
         } else if let i = shieldIndex, ship.shields.indices.contains(i) {
-            price = t.shield(ship.shields[i].type).price * 3 / 4
-            ship.shields.remove(at: i)
+            item = .shield(ship.shields.remove(at: i).type)
         } else if let i = gadgetIndex, ship.gadgets.indices.contains(i) {
-            let g = ship.gadgets[i]
-            if g == .extraCargoBays || g == .hiddenCargoBays, state.freeCargoBays < 5 { return .rejected(.extraBaysInUse) }
-            price = t.gadget(g).price * 3 / 4
-            ship.gadgets.remove(at: i)
+            item = .gadget(ship.gadgets.remove(at: i))
         } else {
             return .rejected(.invalidArgument)
         }
+        if let blocker = state.equipmentSellBlocker(item) { return .rejected(blocker) }
+        let price = state.equipmentSellPrice(item)
         guard ack.contains(.sellEquipment) else { return .needsConfirmation(Confirmation(.sellEquipment, amounts: [price])) }
         state.commander.ship = ship
         state.commander.cash += price
@@ -349,17 +364,7 @@ extension GameEngine {
                             _ ack: Set<WarningID>) -> StepResult {
         let quote = state.shipQuote(type, spec: newSpec, netPrice: net)
         let palm = ruleset.flags.economy.shipTradeFlow == .palm
-        if net > 0, state.commander.debt > 0 { return .rejected(.inDebt) }
-        if net > state.cashToSpend { return .rejected(.insufficientFunds) }
-        // SHP-037: a Palm passenger (not in the crew array) needs a ship with at least 2 quarters.
-        let needed = state.passengersOutsideCrew > 0 ? 2 : state.specialCrewCount
-        if newSpec.crewQuarters < needed { return .rejected(.passengersNeedQuarters) }
-        // SHP-037: Palm checks the reactor before the crew count, and counts hired crew (commander + mercenaries)
-        // without the passengers, who are not in its crew array.
-        let hired = state.commander.ship.crewCount
-        if palm, state.reactorOnBoard { return .rejected(.reactorOnBoard) }
-        if newSpec.crewQuarters < hired { return .rejected(.notEnoughQuarters) }
-        if state.reactorOnBoard { return .rejected(.reactorOnBoard) }
+        if let blocker = state.tradeShipBlocker(spec: newSpec, netPrice: net) { return .rejected(blocker) }
 
         var events: [GameEvent] = quote.lost.map { .cannotTransfer($0) }
         // SHP-042: Palm's pre-check also adds items that cannot be transferred.
