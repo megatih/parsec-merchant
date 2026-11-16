@@ -197,6 +197,10 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case sealedCanisters(TradeItemType)
     /// SCORE: the game ended.
     case gameEnded(GameEndType, score: Int)
+    /// CHEAT-001: a cheat command was accepted (the game is now flagged `cheatsUsed`).
+    case cheatUsed
+    /// CHEAT-020/031/035/045: a read-only cheat listing.
+    case cheatReadout(CheatReadout)
 }
 
 /// How tribbles died on arrival (QST-TRIBBLES-006/007; ALR-169/172/174).
@@ -267,6 +271,8 @@ public enum Command: Codable, Sendable, Equatable {
     case track(Int?)
     case selectWormhole(Int)
     case selectNextTarget(forward: Bool)
+    /// CHEAT-001: a cheat code of the ruleset's cheat set.
+    case cheat(CheatCode)
 }
 
 /// The rules engine. A value type; copying it forks the game.
@@ -303,8 +309,11 @@ public struct GameEngine: Sendable {
         if case .gameOver = state.phase { return .rejected(.gameOver) }
         switch command {
         case let .setOptions(o):
-            state.options = o
+            // OPT-007: docked only, with no pending decision; stored normalized.
+            guard docked, !state.hasPendingDecision else { return .rejected(.notAllowedInPhase) }
+            state.options = o.normalized(for: ruleset)
             return StepResult(events: [.optionsChanged])
+        case let .cheat(code): return cheat(code)
         case let .selectTarget(s): return selectTarget(s)
         case let .selectWormhole(w): return selectWormhole(w)
         case let .selectNextTarget(forward): return selectNextTarget(forward: forward)

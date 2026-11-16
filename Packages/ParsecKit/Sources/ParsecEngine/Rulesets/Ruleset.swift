@@ -81,6 +81,12 @@ public struct RuleFlags: Sendable {
     public var arrestFineNeverNegative: Bool
     /// MOD-012 (RUL-112): pirate looting clamps the hidden-bay protection (C# `RemoveRange` throws: POL-080).
     public var pirateLootHiddenBaysClamp = false
+    /// OPT-008/009: the Options dialog's dependent checkboxes (C# Form_Options) are enforced by `GameOptions.normalized`.
+    public var optionDependencies = true
+    /// OPT-002/003: the options of a new game when `NewGameConfig.options` is nil (Palm globals' first-launch values).
+    public var defaultOptions = GameOptions()
+    /// OPT-005: Palm `StartNewGame` forces `remindLoans` and `showTrackedRange` on for every new game.
+    public var newGameForcesReminderOptions = false
     /// Area rule groups (M5). Each preset lives in its own file (GalaxyRules.swift, EconomyRules.swift, …).
     public var galaxy: GalaxyRules = .windows201
     public var economy: EconomyRules = .windows201
@@ -106,6 +112,8 @@ public struct ContentPacks: Sendable {
     /// Ids whose drawn system is cleared after generation: Palm Zeethibal (30, `CurSystem = 255`) and the opponent
     /// scratch slot (31, never hireable).
     public var unplacedMercenaryIDs: [Int]
+    /// CHEAT-007: which cheat codes exist (C# Find-box codes, or the Palm Find-box codes and Cheat form).
+    public var cheatSet: CheatSet = .windows
 }
 
 /// A complete ruleset.
@@ -189,8 +197,13 @@ public struct Ruleset: Sendable {
         r.content = ContentPacks(hasShipyards: false, hasSculptureQuest: false, hasPrincessQuest: false,
                                  hasDisruptors: false, hasHiddenBays: false, mercenariesPerSystem: 1,
                                  randomMercenaryIDs: Array(1...31), kravatMercenaryPreCount: 1,
-                                 unplacedMercenaryIDs: [CrewID.zeethibal, CrewID.opponent])
+                                 unplacedMercenaryIDs: [CrewID.zeethibal, CrewID.opponent], cheatSet: .palm)
         r.flags.distance = .rounded
+        // OPT-003/005/009: Palm options defaults (Src/Global.c:648-649), new-game resets and independent checkboxes.
+        r.flags.optionDependencies = false
+        r.flags.defaultOptions.alwaysIgnorePolice = true
+        r.flags.defaultOptions.alwaysIgnoreTraders = false
+        r.flags.newGameForcesReminderOptions = true
         // Flat MOD flags whose Palm value equals Modern (RUL-101, 105, 106, 107, 108).
         r.flags.resetPriceCargoOnHoldClear = true
         r.flags.randomSkillIncreaseReachesTen = true
