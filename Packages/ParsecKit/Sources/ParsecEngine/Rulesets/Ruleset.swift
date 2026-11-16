@@ -125,6 +125,8 @@ public struct Ruleset: Sendable {
     public var rngKind: RNGKind
     /// Newspaper generator variant (RNG-002): C# for Windows 2.01 and Modern, Palm for Palm 1.2.2.
     public var newspaperRNG: PieterRand.Variant
+    /// UI-SHELL-116: the first symbol of a galaxy code (a Crockford base-32 letter).
+    public var galaxyCodeLetter: Character = "W"
 
     public static func named(_ id: RulesetID) -> Ruleset {
         switch id {
@@ -160,6 +162,7 @@ public struct Ruleset: Sendable {
     public static let modern: Ruleset = {
         var r = Ruleset.windows201
         r.id = .modern
+        r.galaxyCodeLetter = "M"
         r.rngKind = .xoshiro
         r.flags.distinctShipyards = true
         r.flags.resourcesAffectUnvisitedSystems = true
@@ -186,6 +189,7 @@ public struct Ruleset: Sendable {
     public static let palm122: Ruleset = {
         var r = Ruleset.windows201
         r.id = .palm122
+        r.galaxyCodeLetter = "P"
         r.rngKind = .palmLCG
         r.newspaperRNG = .palm
         r.tables = RulesTables(
