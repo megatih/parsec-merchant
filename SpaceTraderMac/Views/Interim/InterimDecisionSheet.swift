@@ -33,6 +33,7 @@ private struct TradeInOrbitSheet: View {
     @Environment(GameSession.self) private var session
     let offer: OrbitTradeOffer
     @State private var quantity = 0
+    private var model: InterimDecisionModel.Trade { InterimDecisionModel.Trade(offer: offer) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -41,26 +42,26 @@ private struct TradeInOrbitSheet: View {
             LabeledContent("Item") { Text(Names.item(offer.item)) }
             LabeledContent("Price per unit") { Text(verbatim: "\(offer.unitPrice.formatted()) cr.").monospacedDigit() }
             LabeledContent("Available") { Text(verbatim: offer.unitsAvailable.formatted()).monospacedDigit() }
-            Stepper(value: $quantity, in: 0...max(0, offer.maxQuantity)) {
+            Stepper(value: $quantity, in: model.range) {
                 Text("Quantity: \(quantity) of at most \(offer.maxQuantity)")
             }
             .accessibilityIdentifier(AXID.Interim.tradeQuantity)
             HStack {
                 Spacer()
-                Button("Decline") { answer(0) }
+                Button("Decline") { answer(model.declineCommand) }
                     .accessibilityIdentifier(AXID.Interim.tradeDecline)
-                Button("Trade") { answer(quantity) }
+                Button("Trade") { answer(model.acceptCommand(quantity)) }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(quantity == 0)
+                    .disabled(!model.canAccept(quantity))
                     .accessibilityIdentifier(AXID.Interim.tradeAccept)
             }
         }
-        .onAppear { quantity = offer.maxQuantity }
+        .onAppear { quantity = model.initialQuantity }
     }
 
-    private func answer(_ q: Int) {
+    private func answer(_ command: Command) {
         session.dismissPresentation()
-        session.send(.resolveTradeInOrbit(quantity: q))
+        session.send(command)
     }
 }
 
@@ -73,15 +74,18 @@ private struct PlunderSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Plunder")
                 .font(.title3.bold())
-            ForEach(TradeItemType.allCases.filter { cargo.indices.contains($0.rawValue) && cargo[$0.rawValue] > 0 }, id: \.self) { item in
-                let available = cargo[item.rawValue]
+            ForEach(InterimDecisionModel.Plunder.rows(cargo: cargo), id: \.item) { row in
+                let item = row.item
+                let available = row.available
                 HStack {
                     Text(Names.item(item))
                     Spacer()
                     Stepper(value: binding(item, max: available), in: 1...available) {
                         Text(verbatim: "\(min(amounts[item] ?? available, available)) / \(available)").monospacedDigit()
                     }
-                    Button("Take") { session.send(.plunderTake(item, quantity: min(amounts[item] ?? available, available))) }
+                    Button("Take") {
+                        session.send(InterimDecisionModel.Plunder.takeCommand(item, amount: amounts[item], available: available))
+                    }
                         .accessibilityIdentifier(AXID.Interim.plunderTake(item))
                 }
             }
@@ -92,7 +96,7 @@ private struct PlunderSheet: View {
                 Spacer()
                 Button("Done") {
                     session.dismissPresentation()
-                    session.send(.plunderDone)
+                    session.send(InterimDecisionModel.Plunder.doneCommand)
                 }
                 .keyboardShortcut(.defaultAction)
                 .accessibilityIdentifier(AXID.Interim.plunderDone)
@@ -126,7 +130,7 @@ private struct ScoopSheet: View {
 
     private func answer(_ accept: Bool) {
         session.dismissPresentation()
-        session.send(.resolveScoop(accept: accept))
+        session.send(InterimDecisionModel.scoopCommand(accept: accept))
     }
 }
 
@@ -139,8 +143,8 @@ private struct NewspaperSheet: View {
             if let state = session.state {
                 Text("The \(Names.system(paper.system, in: state)) News")
                     .font(.title3.bold())
-                ForEach(Array(paper.headlines.enumerated()), id: \.offset) { _, headline in
-                    Text(NewspaperText.interimLine(headline, state: state))
+                ForEach(Array(InterimDecisionModel.newspaperLines(paper, state: state).enumerated()), id: \.offset) { _, line in
+                    Text(line)
                 }
             }
             HStack {
