@@ -168,7 +168,7 @@ extension GameEngine {
             state.removeSpecialCrew(CrewID.jarek)
         case .wild:
             guard hasQuarters else { return .stop(.rejected(.noFreeQuarters)) }
-            guard state.commander.ship.has(.beamLaser, exact: false) else { return .stop(.rejected(.wildRequiresLaser)) }
+            guard state.hasLaserForWild else { return .stop(.rejected(.wildRequiresLaser)) }
             guard !state.reactorOnBoard else { return .stop(.rejected(.wildRefusesReactor)) }
             state.hireCrew(CrewID.wild)
             state.quests.wild = QuestStatus.Wild.started

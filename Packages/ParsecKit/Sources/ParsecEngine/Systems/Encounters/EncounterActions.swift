@@ -96,28 +96,113 @@ public extension GameState {
     var illegalSpecialCargo: Bool { wildOnBoard || reactorOnBoard || sculptureOnBoard }
     var detectableIllegalCargoOrPassengers: Bool { detectableIllegalCargo || illegalSpecialCargo }
 
-    /// C# `Ship.RemoveIllegalGoods` (also clears their cost basis).
-    mutating func removeIllegalGoods() {
+    /// C# `Ship.RemoveIllegalGoods` (also clears their cost basis unless `keepCostBasis`, RUL-138).
+    mutating func removeIllegalGoods(keepCostBasis: Bool = false) {
         for item in TradeItemType.allCases where item.isIllegal {
             commander.ship.cargo[item.rawValue] = 0
-            commander.priceCargo[item.rawValue] = 0
+            if !keepCostBasis { commander.priceCargo[item.rawValue] = 0 }
         }
     }
 
-    /// POL: the bribe amount demanded by police at the destination (C# EncounterVerifyBribe).
+    /// POL-052 / POL-054: Palm's "illegal goods" test: Firearms or Narcotics in the hold.
+    var carriesIllegalGoods: Bool {
+        commander.ship.cargo[TradeItemType.firearms.rawValue] > 0 || commander.ship.cargo[TradeItemType.narcotics.rawValue] > 0
+    }
+
+    /// POL-054: whether the nothing-illegal confirmation applies to `action` (C#: one rule for attack, flee and bribe).
+    func nothingIllegal(for action: EncounterAction) -> Bool {
+        guard ruleset.flags.encounter.nothingIllegalPerAction else { return !detectableIllegalCargoOrPassengers }
+        switch action {
+        case .flee: return !carriesIllegalGoods && !wildOnBoard && !reactorOnBoard
+        case .bribe: return !carriesIllegalGoods && !wildOnBoard
+        default: return !carriesIllegalGoods
+        }
+    }
+
+    /// POL: the bribe amount demanded by police at the destination (C# EncounterVerifyBribe; RUL-140).
     var bribeAmount: Int? {
         let level = ruleset.tables.politics(galaxy.systems[warpSystem].politics).bribeLevel
         guard level > 0 else { return nil }
         let diffMod = 10 + 5 * (Difficulty.impossible.rawValue - difficulty.rawValue)
-        let passMod = illegalSpecialCargo ? (difficulty <= .normal ? 2 : 3) : 1
-        let base = Int((Double(worth) / Double(level) / Double(diffMod) / 100).rounded(.up)) * 100 * passMod
-        return max(100, min(10_000, base))
+        let k = difficulty <= .normal ? 2 : 3
+        switch ruleset.flags.encounter.bribeComputation {
+        case .realCeiling:
+            let passMod = illegalSpecialCargo ? k : 1
+            let base = Int((Double(worth) / Double(level) / Double(diffMod) / 100).rounded(.up)) * 100 * passMod
+            return max(100, min(10_000, base))
+        case .integerModulo:
+            // POL-067: integer quotient, rounded up to 100 with C `%`; ×k only with Wild or the reactor.
+            var bribe = worth / (diffMod * level)
+            if bribe % 100 != 0 { bribe += 100 - bribe % 100 }
+            if wildOnBoard || reactorOnBoard { bribe *= k }
+            return max(100, min(10_000, bribe))
+        }
     }
 
-    /// POL: the inspection fine (C# EncounterVerifySubmit).
+    /// POL: the inspection fine (C# EncounterVerifySubmit; POL-061 Palm integer rounding).
     var inspectionFine: Int {
-        let divisor = Double((Difficulty.impossible.rawValue - difficulty.rawValue + 2) * 10)
+        let divisorInt = (Difficulty.impossible.rawValue - difficulty.rawValue + 2) * 10
+        if ruleset.flags.encounter.inspectionFineIntegerRounding {
+            var fine = worth / divisorInt
+            if fine % 50 != 0 { fine += 50 - fine % 50 }
+            return max(100, min(10_000, fine))
+        }
+        let divisor = Double(divisorInt)
         return Int(max(100, min(10_000, (Double(worth) / divisor / 50).rounded(.up) * 50)))
+    }
+
+    /// POL-098 / POL-110: Palm's short `Arrival()`: system, status shuffle, quantities, prices.
+    mutating func shortArrival() {
+        commander.currentSystem = warpSystem
+        galaxy.systems[warpSystem].visited = true
+        updatePressuresAndQuantities(arrival: commander.currentSystem)
+        calculatePrices(for: commander.currentSystem)
+        paidForNewspaper = false
+    }
+
+    /// RUL-137 / POL-098: Palm's arrest sequence.
+    private mutating func arrestedPalm(term: Int, fine: Int) -> [GameEvent] {
+        let keep = ruleset.flags.encounter.impoundedGoodsKeepCostBasis
+        let jarek = jarekOnBoard, wild = wildOnBoard
+        if carriesIllegalGoods { removeIllegalGoods(keepCostBasis: keep) }
+        if commander.insurance {
+            commander.insurance = false
+            commander.noClaim = 0
+        }
+        if commander.ship.crew.count > 1, commander.ship.crew[1] != nil {
+            for i in 1..<commander.ship.crew.count { commander.ship.crew[i] = nil }
+        }
+        if quests.japori == QuestStatus.Japori.inTransit { quests.japori = QuestStatus.Japori.done }
+        if jarek { quests.jarek = QuestStatus.Jarek.notStarted }
+        if wild {
+            newsEvents.append(.wildArrested)
+            quests.wild = QuestStatus.Wild.notStarted
+        }
+        if reactorOnBoard { quests.reactor = QuestStatus.Reactor.notStarted }
+        shortArrival()
+        var events: [GameEvent] = []
+        var tail = incDays(term)
+        var shipSold = false
+        if commander.cash >= fine {
+            commander.cash -= fine
+        } else {
+            commander.cash += shipWorth(forInsurance: true)
+            commander.cash = commander.cash >= fine ? commander.cash - fine : 0
+            createFlea()
+            // POL-099: CreateFlea leaves the Scarab status, so a hardened commander keeps +50 hull on the Flea.
+            commander.ship.hullUpgraded = quests.scarab == QuestStatus.Scarab.done
+            shipSold = true
+        }
+        commander.policeRecordScore = -5
+        if commander.debt > 0 {
+            let paydown = min(commander.cash, commander.debt)
+            commander.debt -= paydown
+            commander.cash -= paydown
+        }
+        for _ in 0..<term { payInterest() }
+        events.append(.arrested(term: term, fine: fine, shipSold: shipSold))
+        tail.append(.arrived(system: commander.currentSystem))
+        return events + tail
     }
 
     /// C# `Game.Arrested`.
@@ -125,6 +210,7 @@ public extension GameState {
         var events: [GameEvent] = []
         let term = arrestTerm
         let fine = arrestFine
+        if ruleset.flags.encounter.arrestSequence == .palm { return arrestedPalm(term: term, fine: fine) }
         commander.ship.gadgets.removeAll { $0 == .hiddenCargoBays }
         if reactorOnBoard { quests.reactor = QuestStatus.Reactor.notStarted }
         if sculptureOnBoard { quests.sculpture = QuestStatus.Sculpture.notStarted }
@@ -132,7 +218,7 @@ public extension GameState {
             newsEvents.append(.wildArrested)
             quests.wild = QuestStatus.Wild.notStarted
         }
-        if commander.ship.illegalCargoUnits > 0 { removeIllegalGoods() }
+        if commander.ship.illegalCargoUnits > 0 { removeIllegalGoods(keepCostBasis: ruleset.flags.encounter.impoundedGoodsKeepCostBasis) }
         if commander.insurance {
             commander.insurance = false
             commander.noClaim = 0
@@ -206,8 +292,13 @@ extension GameEngine {
         }
         switch action {
         case .autoRepeat:
+            let fleeing = enc.continueFleeing
             enc.continueAttacking = false
             enc.continueFleeing = false
+            if ruleset.flags.encounter.continuousAttackRule == .palm {
+                // CMB-067 / ENC-189: Palm's tick re-enters the full Attack (or Flee) handler, verification included.
+                return fleeing ? flee(&enc, ack) : attack(&enc, ack)
+            }
             return runRound(&enc, events: [])
         case .resolve:
             var forced = enc
@@ -222,6 +313,10 @@ extension GameEngine {
         case .yield: return yieldToPolice(enc, ack)
         case .ignore: return finish(.normal)
         case .plunder:
+            if ruleset.flags.encounter.plunderPenaltyOnPress {
+                // RUL-096 / CMB-092: Palm applies the record change when Plunder is pressed.
+                state.commander.policeRecordScore += enc.type.rawValue >= EncounterType.traderAttack.rawValue ? -2 : -1
+            }
             state.pendingPlunder = PlunderOffer(victimCargo: enc.opponent.cargo, marieCeleste: false)
             return StepResult(events: [], decision: .plunder(enc.opponent.cargo), rejection: nil)
         case .trade:
@@ -298,19 +393,29 @@ extension GameEngine {
         if enc.opponent.type == .scorpion, ship.weaponStrength(r, from: .photonDisruptor, to: .quantumDisruptor) == 0 {
             return .rejected(.noDisruptors)
         }
+        let rules = r.flags.encounter
+        let k = rules.policeConstants
         switch enc.type {
         case .dragonflyIgnore, .pirateIgnore, .scarabIgnore, .scorpionIgnore, .spaceMonsterIgnore:
             enc.type = EncounterType(rawValue: enc.type.rawValue - 1) ?? enc.type
-        case .policeInspect, .marieCelestePolice, .policeFlee, .policeIgnore, .policeSurrender:
-            if enc.type == .policeInspect, !state.detectableIllegalCargoOrPassengers, !ack.contains(.submitWithNothingIllegal) {
+        case .policeInspect, .marieCelestePolice, .policeFlee, .policeIgnore, .policeSurrender, .policeAttack:
+            // POL-031 / ENC-147: Palm also charges an ongoing police fight (attack type) on every click.
+            if enc.type == .policeAttack, !rules.attackReverification { break }
+            if enc.type == .policeInspect, state.nothingIllegal(for: .attack), !ack.contains(.submitWithNothingIllegal) {
                 return .needsConfirmation(Confirmation(.submitWithNothingIllegal))
             }
-            if state.commander.policeRecordScore > -30, !ack.contains(.attackPolice) {
-                return .needsConfirmation(Confirmation(.attackPolice, amounts: [-33]))
+            // RUL-131: confirm above the criminal constant, then record = min(record, criminal) − 3.
+            if state.commander.policeRecordScore > k.criminal, !ack.contains(.attackPolice) {
+                return .needsConfirmation(Confirmation(.attackPolice, amounts: [k.criminal - 3]))
             }
-            if state.commander.policeRecordScore > -30 { state.commander.policeRecordScore = -30 }
+            if state.commander.policeRecordScore > k.criminal { state.commander.policeRecordScore = k.criminal }
             state.commander.policeRecordScore -= 3
             if enc.type != .policeFlee { enc.type = .policeAttack }
+        case .famousCaptainAttack:
+            // POL-034: Palm applies the captain clamp on every attack round (no confirmation, no news).
+            guard rules.attackReverification else { break }
+            if state.commander.policeRecordScore > k.villain { state.commander.policeRecordScore = k.villain }
+            state.commander.policeRecordScore -= 2
         case .traderBuy, .traderIgnore, .traderSell, .traderAttack, .traderSurrender:
             if [.traderBuy, .traderIgnore, .traderSell].contains(enc.type) {
                 if state.commander.policeRecordScore < 0 {
@@ -320,7 +425,12 @@ extension GameEngine {
                     state.commander.policeRecordScore = -5
                 }
             }
-            if state.rng.next(below: 1_500) <= state.commander.reputationScore * 10 / (enc.opponent.type.rawValue + 1)
+            if rules.attackReverification {
+                // CMB-008: Palm tests the opponent's weapons first (no draw when unarmed).
+                let flees = enc.opponent.weaponStrength(r) == 0
+                    || state.rng.next(below: 1_500) <= state.commander.reputationScore * 10 / (enc.opponent.type.rawValue + 1)
+                enc.type = flees ? .traderFlee : .traderAttack
+            } else if state.rng.next(below: 1_500) <= state.commander.reputationScore * 10 / (enc.opponent.type.rawValue + 1)
                 || enc.opponent.weaponStrength(r) == 0 {
                 enc.type = .traderFlee
             } else {
@@ -328,7 +438,8 @@ extension GameEngine {
             }
         case .captainAhab, .captainConrad, .captainHuie:
             guard ack.contains(.attackCaptain) else { return .needsConfirmation(Confirmation(.attackCaptain)) }
-            if state.commander.policeRecordScore > -70 { state.commander.policeRecordScore = -70 }
+            // RUL-132: record = min(record, villain) − 2.
+            if state.commander.policeRecordScore > k.villain { state.commander.policeRecordScore = k.villain }
             state.commander.policeRecordScore -= 2
             state.newsEvents.append(enc.type == .captainAhab ? .captAhabAttacked : (enc.type == .captainConrad ? .captConradAttacked : .captHuieAttacked))
             enc.type = .famousCaptainAttack
@@ -348,7 +459,7 @@ extension GameEngine {
 
     /// C# `EncounterVerifyFlee`: returns a confirmation, or nil when fleeing may proceed.
     mutating func verifyFlee(_ enc: inout EncounterState, _ ack: Set<WarningID>) -> StepResult? {
-        if enc.type == .policeInspect, !state.detectableIllegalCargoOrPassengers, !ack.contains(.fleeInspection) {
+        if enc.type == .policeInspect, state.nothingIllegal(for: .flee), !ack.contains(.fleeInspection) {
             return .needsConfirmation(Confirmation(.fleeInspection))
         }
         if enc.type == .marieCelestePolice, !ack.contains(.fleeMariePolice) {
@@ -356,10 +467,21 @@ extension GameEngine {
         }
         if enc.type == .policeInspect || enc.type == .marieCelestePolice {
             let inspect = enc.type == .policeInspect
-            let mod = inspect ? -2 : -3
-            let minScore = inspect ? -5 - (state.difficulty < .normal ? 0 : 1) : -30
+            let rec = state.commander.policeRecordScore
             enc.type = .policeAttack
-            state.commander.policeRecordScore = min(state.commander.policeRecordScore + mod, minScore)
+            if ruleset.flags.encounter.palmFleePenalties {
+                // RUL-134 / RUL-135: Palm resets a mild record to the floor, else subtracts.
+                let criminal = ruleset.flags.encounter.policeConstants.criminal
+                if inspect {
+                    state.commander.policeRecordScore = rec > -5 ? -5 - (state.difficulty >= .normal ? 1 : 0) : rec - 2
+                } else {
+                    state.commander.policeRecordScore = rec >= criminal ? criminal : rec - 3
+                }
+            } else {
+                let mod = inspect ? -2 : -3
+                let minScore = inspect ? -5 - (state.difficulty < .normal ? 0 : 1) : -30
+                state.commander.policeRecordScore = min(rec + mod, minScore)
+            }
         }
         enc.cmdrFleeing = true
         setEncounter(enc)
@@ -376,7 +498,8 @@ extension GameEngine {
             return finish(.normal, events: [.artifactRelinquished])
         }
         if enc.type == .policeAttack || enc.type == .policeSurrender {
-            if state.commander.policeRecordScore <= -100 { return .rejected(.surrenderRefused) }
+            // RUL-133: refused at the psychopath constant.
+            if state.commander.policeRecordScore <= ruleset.flags.encounter.policeConstants.psychopath { return .rejected(.surrenderRefused) }
             guard ack.contains(.surrenderToPolice) else { return .needsConfirmation(Confirmation(.surrenderToPolice)) }
             let events = state.arrested()
             return finish(.arrested, events: events)
@@ -384,6 +507,7 @@ extension GameEngine {
         if state.princessOnBoard, !state.commander.ship.has(.hiddenCargoBays) { return .rejected(.surrenderPrincess) }
         var events: [GameEvent] = []
         state.raided = true
+        if ruleset.flags.encounter.pirateStealPolicy == .allOrRandom { return raidPalm(enc, events: events) }
         if state.commander.ship.has(.hiddenCargoBays) {
             events.append(.preciousHidden)
         } else if state.sculptureOnBoard {
@@ -430,11 +554,52 @@ extension GameEngine {
         return finish(.normal, events: events)
     }
 
+    /// RUL-098 / POL-083 / POL-085: Palm's raid: everything if it fits, else random units; nothing goes to the pirate.
+    private mutating func raidPalm(_ enc: EncounterState, events prior: [GameEvent]) -> StepResult {
+        var events = prior
+        let total = state.commander.ship.cargo.reduce(0, +)
+        if total <= 0 {
+            let blackmail = min(25_000, max(500, state.worth / 20))
+            let cashPayment = min(state.commander.cash, blackmail)
+            state.commander.debt += blackmail - cashPayment
+            state.commander.cash -= cashPayment
+            events.append(.blackmailed(blackmail))
+        } else {
+            var bays = enc.opponent.cargoBays(ruleset) - enc.opponent.cargo.reduce(0, +)
+            var stolen = 0
+            if bays >= total {
+                stolen = total
+                state.commander.ship.cargo = Array(repeating: 0, count: 10)
+                state.commander.priceCargo = Array(repeating: 0, count: 10)
+            } else {
+                while bays > 0 {
+                    let i = state.rng.next(below: 10)
+                    let c = state.commander.ship.cargo[i]
+                    guard c > 0 else { continue }
+                    state.commander.priceCargo[i] = state.commander.priceCargo[i] * (c - 1) / c
+                    state.commander.ship.cargo[i] -= 1
+                    bays -= 1
+                    stolen += 1
+                }
+            }
+            events.append(.looted(units: stolen))
+        }
+        if state.wildOnBoard, enc.opponent.spec(ruleset).crewQuarters > 1 {
+            state.quests.wild = QuestStatus.Wild.notStarted
+            state.removeSpecialCrew(CrewID.wild) // POL-085: Palm's Wild exists only through his status
+            events.append(.wildJoinedPirates)
+        }
+        setEncounter(enc)
+        return finish(.normal, events: events)
+    }
+
     // MARK: Bribe / submit / yield (POL)
     mutating func bribe(_ enc: EncounterState, _ ack: Set<WarningID>) -> StepResult {
+        // POL-067: Palm tests the bribe level before the customs refusal.
+        if ruleset.flags.encounter.bribeComputation == .integerModulo, state.bribeAmount == nil { return .rejected(.bribeNotPossible) }
         if enc.type == .marieCelestePolice { return .rejected(.bribeNotAccepted) }
         guard let amount = state.bribeAmount else { return .rejected(.bribeNotPossible) }
-        if !state.detectableIllegalCargoOrPassengers, !ack.contains(.submitWithNothingIllegal) {
+        if state.nothingIllegal(for: .bribe), !ack.contains(.submitWithNothingIllegal) {
             return .needsConfirmation(Confirmation(.submitWithNothingIllegal))
         }
         guard ack.contains(.bribe) else { return .needsConfirmation(Confirmation(.bribe, amounts: [amount])) }
@@ -443,7 +608,37 @@ extension GameEngine {
         return finish(.normal, events: [.bribed(amount)])
     }
 
+    /// RUL-139 / POL-060…062: Palm's submit (reactor confiscated without arrest; Wild still arrests).
+    private mutating func submitPalm(_ ack: Set<WarningID>) -> StepResult {
+        var events: [GameEvent] = []
+        let warn = state.carriesIllegalGoods || state.wildOnBoard
+            || (state.quests.reactor > QuestStatus.Reactor.fuelOK && state.quests.reactor < QuestStatus.Reactor.delivered)
+        if warn, !ack.contains(.submitInspection) { return .needsConfirmation(Confirmation(.submitInspection)) }
+        if state.carriesIllegalGoods {
+            state.removeIllegalGoods()
+            let fine = state.inspectionFine
+            let cash = min(state.commander.cash, fine)
+            state.commander.debt += fine - cash
+            state.commander.cash -= cash
+            state.commander.policeRecordScore -= 1
+            events.append(.fined(fine))
+        } else if !state.wildOnBoard {
+            state.commander.policeRecordScore += 1
+            events.append(.inspectionClean)
+        }
+        if state.wildOnBoard {
+            events += state.arrested()
+            return finish(.arrested, events: events)
+        }
+        if state.reactorOnBoard {
+            state.quests.reactor = QuestStatus.Reactor.notStarted
+            events.append(.reactorConfiscated)
+        }
+        return finish(.normal, events: events)
+    }
+
     mutating func submit(_ enc: EncounterState, _ ack: Set<WarningID>) -> StepResult {
+        if ruleset.flags.encounter.reactorConfiscatedOnSubmit { return submitPalm(ack) }
         var events: [GameEvent] = []
         if state.detectableIllegalCargoOrPassengers {
             guard ack.contains(.submitInspection) else { return .needsConfirmation(Confirmation(.submitInspection)) }
@@ -473,9 +668,13 @@ extension GameEngine {
             let events = state.arrested()
             return finish(.arrested, events: events)
         }
-        guard ack.contains(.submitInspection) else { return .needsConfirmation(Confirmation(.submitInspection)) }
+        // POL-073: Palm yields without confirmation and keeps the goods' cost basis (RUL-138).
+        let rules = ruleset.flags.encounter
+        if !rules.yieldWithoutConfirmation, !ack.contains(.submitInspection) {
+            return .needsConfirmation(Confirmation(.submitInspection))
+        }
         if state.commander.policeRecordScore > -5 { state.commander.policeRecordScore = -5 }
-        state.removeIllegalGoods()
+        state.removeIllegalGoods(keepCostBasis: rules.impoundedGoodsKeepCostBasis)
         return finish(.normal, events: [.yielded])
     }
 
@@ -543,6 +742,7 @@ extension GameEngine {
             if state.commander.ship.cargo[TradeItemType.narcotics.rawValue] > offer.narcoticsBefore { state.quests.justLootedMarie = true }
             return finish(.normal)
         }
+        if ruleset.flags.encounter.plunderPenaltyOnPress { return finish(.normal) } // RUL-096: no reputation, kills or bounty
         var events: [GameEvent] = []
         if enc.type.rawValue >= EncounterType.traderAttack.rawValue {
             state.commander.policeRecordScore -= 2

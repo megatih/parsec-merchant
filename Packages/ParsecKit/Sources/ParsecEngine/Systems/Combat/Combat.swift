@@ -18,8 +18,12 @@ public extension GameState {
     func bounty(of ship: Ship) -> Int {
         let t = ruleset.tables
         var price = ship.spec(ruleset).price
-        for w in ship.weapons { price += buyPrice(basePrice: t.weapon(w).price, minTech: t.weapon(w).minTechLevel) }
-        for s in ship.shields { price += buyPrice(basePrice: t.shield(s.type).price, minTech: t.shield(s.type).minTechLevel) }
+        // RUL-094: Palm sums base equipment prices (C# uses the commander's discounted local price, 0 above the tech level).
+        let base = ruleset.flags.encounter.bountyEquipmentBasePrice
+        for w in ship.weapons { price += base ? t.weapon(w).price : buyPrice(basePrice: t.weapon(w).price, minTech: t.weapon(w).minTechLevel) }
+        for s in ship.shields {
+            price += base ? t.shield(s.type).price : buyPrice(basePrice: t.shield(s.type).price, minTech: t.shield(s.type).minTechLevel)
+        }
         let sk = skills(of: ship)
         price = price * (2 * sk[0] + sk[3] + 3 * sk[1]) / 60
         return max(25, min(2_500, price / 200 / 25 * 25))
@@ -33,6 +37,7 @@ public extension GameState {
     /// C# `EncounterExecuteAttack`. Returns whether damage was dealt.
     mutating func executeAttack(commanderAttacks: Bool, fleeing: Bool, encounter enc: inout EncounterState) -> Bool {
         let r = ruleset
+        let rules = r.flags.encounter
         let attacker = commanderAttacks ? commander.ship : enc.opponent
         var defender = commanderAttacks ? enc.opponent : commander.ship
         let aSkills = commanderAttacks ? shipSkills : skills(of: attacker)
@@ -56,16 +61,19 @@ public extension GameState {
                 var lasers = attacker.weaponStrength(r, from: .pulseLaser, to: .morgansLaser)
                 var disruptors = attacker.weaponStrength(r, from: .photonDisruptor, to: .quantumDisruptor)
                 if defender.type == .scarab {
-                    lasers -= attacker.weaponStrength(r, from: .beamLaser, to: .militaryLaser)
-                    disruptors -= attacker.weaponStrength(r, from: .photonDisruptor, to: .photonDisruptor)
+                    // RUL-091: only the ruleset's Scarab-vulnerable weapons count.
+                    let hurts = attacker.weapons.filter { rules.scarabVulnerableWeapons.contains($0) }
+                    lasers = hurts.filter(\.isLaser).reduce(0) { $0 + r.tables.weapon($1).power }
+                    disruptors = hurts.filter { !$0.isLaser }.reduce(0) { $0 + r.tables.weapon($1).power }
                 }
                 let weapons = lasers + disruptors
+                let skill = aSkills[rules.damageSkill.rawValue] // RUL-090: Fighter (C#) or Engineer (Palm)
                 var disrupt = 0
                 let canDisable = !defenderIsCommander && disableable(defender)
                 if canDisable, defender.shieldCharge == 0, !enc.opponentDisabled, options.disableOpponents, disruptors > 0 {
-                    disrupt = rng.next(below: disruptors * (100 + 2 * aSkills[1]) / 100)
+                    disrupt = rng.next(below: disruptors * (100 + 2 * skill) / 100)
                 } else {
-                    var damage = weapons == 0 ? 0 : rng.next(below: weapons * (100 + 2 * aSkills[1]) / 100)
+                    var damage = weapons == 0 ? 0 : rng.next(below: weapons * (100 + 2 * skill) / 100)
                     if damage > 0 {
                         hit = true
                         if defenderIsCommander, reactorOnBoard {
@@ -88,9 +96,15 @@ public extension GameState {
                             disrupt = damage * disruptors / weapons
                             damage -= disrupt
                             let divisor = defenderIsCommander ? max(1, Difficulty.impossible.rawValue - difficulty.rawValue) : 2
-                            damage = min(damage, defender.hullStrength(r) / divisor)
                             let hardened = quests.scarab == QuestStatus.Scarab.done
-                            if hardened, defenderIsCommander || !r.flags.hardenedHullProtectsPlayerOnly { damage /= 2 }
+                            // CMB-030: Palm caps with the base hull, except the upgraded hull of a hardened player ship.
+                            let capHull = rules.hullDamageCapUsesBaseHull && !(defenderIsCommander && hardened)
+                                ? defender.spec(r).hullStrength : defender.hullStrength(r)
+                            damage = min(damage, capHull / divisor)
+                            // RUL-104: Palm never halves; Modern halves for the player only; Windows for every defender.
+                            if hardened, rules.hardenedHullHalvesDamage, defenderIsCommander || !r.flags.hardenedHullProtectsPlayerOnly {
+                                damage /= 2
+                            }
                             defender.hull = max(0, defender.hull - damage)
                         }
                     }
@@ -114,8 +128,54 @@ public extension GameState {
         return hit
     }
 
+    /// CMB-059: Palm's stance update; draws `rand(10)` only where a branch needs it and only after hull damage.
+    mutating func updateEncounterTypeOnDemand(prevCmdrHull: Int, prevOppHull: Int, encounter enc: inout EncounterState) {
+        let oppHull = enc.opponent.hull
+        let cmdrHull = commander.ship.hull
+        guard oppHull < prevOppHull else { return }
+        switch enc.type {
+        case .policeAttack, .policeFlee, .policeIgnore, .policeInspect:
+            if oppHull < prevOppHull >> 1 {
+                if cmdrHull < prevCmdrHull >> 1 {
+                    if rng.next(below: 10) > 5 { enc.type = .policeFlee }
+                } else {
+                    enc.type = .policeFlee
+                }
+            }
+        case .marieCelestePolice:
+            enc.type = .policeAttack
+        case .pirateAttack, .pirateFlee, .pirateSurrender, .pirateIgnore:
+            if oppHull < (prevOppHull * 2) / 3 {
+                if cmdrHull < (prevCmdrHull * 2) / 3 {
+                    if rng.next(below: 10) > 3 { enc.type = .pirateFlee }
+                } else {
+                    enc.type = .pirateFlee
+                    if rng.next(below: 10) > 8, enc.opponent.type != .mantis { enc.type = .pirateSurrender }
+                }
+            }
+        case .traderAttack, .traderFlee, .traderSurrender, .traderIgnore:
+            if oppHull < (prevOppHull * 2) / 3 {
+                enc.type = rng.next(below: 10) > 3 ? .traderSurrender : .traderFlee
+            } else if oppHull < (prevOppHull * 9) / 10 {
+                if cmdrHull < (prevCmdrHull * 2) / 3 {
+                    if rng.next(below: 10) > 7 { enc.type = .traderFlee }
+                } else if cmdrHull < (prevCmdrHull * 9) / 10 {
+                    if rng.next(below: 10) > 3 { enc.type = .traderFlee }
+                } else {
+                    enc.type = .traderFlee
+                }
+            }
+        default:
+            break // CMB-060: famous captains and quest ships never change stance
+        }
+    }
+
     /// C# `EncounterUpdateEncounterType`.
     mutating func updateEncounterType(prevCmdrHull: Int, prevOppHull: Int, encounter enc: inout EncounterState) {
+        if ruleset.flags.encounter.stanceUpdateDrawsOnDemand {
+            updateEncounterTypeOnDemand(prevCmdrHull: prevCmdrHull, prevOppHull: prevOppHull, encounter: &enc)
+            return
+        }
         let chance = rng.next(below: 100)
         let oppHull = enc.opponent.hull
         let cmdrHull = commander.ship.hull
@@ -154,6 +214,8 @@ public extension GameState {
         }
     }
 
+    static func isSurrender(_ t: EncounterType) -> Bool { t == .pirateSurrender || t == .traderSurrender }
+
     static func isFleeOrSurrender(_ t: EncounterType) -> Bool {
         [.pirateFlee, .pirateSurrender, .policeFlee, .traderFlee, .traderSurrender].contains(t)
     }
@@ -176,7 +238,9 @@ public extension GameState {
             enc.cmdrHit = executeAttack(commanderAttacks: false, fleeing: enc.cmdrFleeing, encounter: &enc)
             enc.oppHit = !enc.cmdrFleeing && executeAttack(commanderAttacks: true, fleeing: false, encounter: &enc)
         case .pirateFlee, .pirateSurrender, .policeFlee, .traderFlee, .traderSurrender:
-            enc.oppHit = !enc.cmdrFleeing && executeAttack(commanderAttacks: true, fleeing: true, encounter: &enc)
+            // RUL-092: Palm shoots a surrendering ship with the normal to-hit modifier.
+            let asFleeing = ruleset.flags.encounter.surrenderingTargetShotAsFleeing || !Self.isSurrender(enc.type)
+            enc.oppHit = !enc.cmdrFleeing && executeAttack(commanderAttacks: true, fleeing: asFleeing, encounter: &enc)
             enc.oppFleeing = true
         default:
             enc.oppHit = !enc.cmdrFleeing && executeAttack(commanderAttacks: true, fleeing: false, encounter: &enc)
@@ -212,9 +276,16 @@ public extension GameState {
                 let lhs = (rng.next(below: 7) + shipSkills[0] / 3) * 2
                 escaped = lhs >= rng.next(below: skills(of: enc.opponent)[0]) * (2 + difficulty.rawValue)
             }
-            if escaped { events.append(.playerEscaped(wasHit: enc.cmdrHit)) }
+            if escaped {
+                events.append(.playerEscaped(wasHit: enc.cmdrHit))
+                // ENC-013: Palm writes the monster's hull back only when the player escapes.
+                if ruleset.flags.encounter.specialShipDamage == .monsterHullOnEscape, enc.opponent.type == .spaceMonster {
+                    specialShips.spaceMonster.hull = enc.opponent.hull
+                }
+            }
         }
-        if !escaped, enc.oppFleeing {
+        // CMB-051: Palm checks the opponent's escape only when the player is not fleeing.
+        if !escaped, enc.oppFleeing, !(ruleset.flags.encounter.opponentEscapeOnlyWhenPlayerStays && enc.cmdrFleeing) {
             if rng.next(below: shipSkills[0]) * 4 <= rng.next(below: 7 + skills(of: enc.opponent)[0] / 3) * 2 {
                 escaped = true
                 events.append(.opponentEscaped)
@@ -224,6 +295,19 @@ public extension GameState {
         let prev = enc.type
         updateEncounterType(prevCmdrHull: prevCmdrHull, prevOppHull: prevOppHull, encounter: &enc)
         enc.oppFleeing = Self.isFleeOrSurrender(enc.type)
+        if ruleset.flags.encounter.continuousAttackRule == .palm {
+            // CMB-069 / ENC-189: Attack sets AutoAttack, Flee sets AutoFlee; a type change keeps AutoAttack only for a
+            // flee type and always clears AutoFlee.
+            if options.continuousAttack || enc.forceContinuous {
+                if enc.cmdrFleeing { enc.continueFleeing = true } else { enc.continueAttacking = true }
+            }
+            if enc.type != prev {
+                if ![.traderFlee, .pirateFlee, .policeFlee].contains(enc.type) { enc.continueAttacking = false }
+                enc.continueFleeing = false
+                events.append(.encounterChanged(enc.type))
+            }
+            return (.continue, events)
+        }
         let continuous = options.continuousAttack || enc.forceContinuous
         let continuousFleeing = options.continuousAttackFleeing || enc.forceContinuous
         if continuous, enc.cmdrFleeing || !enc.oppFleeing
@@ -236,6 +320,7 @@ public extension GameState {
 
     /// ENC-012 / CMB-052: writes a quest opponent back to `specialShips` (C# `Opponent` references the shared ship).
     mutating func persistSpecialShip(_ ship: Ship) {
+        guard ruleset.flags.encounter.specialShipDamage == .always else { return } // ENC-013: Palm meets a fresh copy
         switch ship.type {
         case .spaceMonster: specialShips.spaceMonster = ship
         case .scarab: specialShips.scarab = ship
@@ -262,7 +347,7 @@ public extension GameState {
         var events: [GameEvent] = []
         switch enc.type {
         case .famousCaptainAttack:
-            commander.kills.traders += 1
+            if ruleset.flags.encounter.famousCaptainKillCountsTrader { commander.kills.traders += 1 } // RUL-095
             commander.reputationScore = commander.reputationScore < 300 ? 300 : commander.reputationScore + 100
             if let last = newsEvents.last, let destroyed = NewsEvent(rawValue: last.rawValue + 1) {
                 newsEvents[newsEvents.count - 1] = destroyed
@@ -275,7 +360,10 @@ public extension GameState {
                 if commander.policeRecordScore >= -5 || ruleset.flags.bountyCreditedRegardlessOfRecord {
                     let b = bounty(of: enc.opponent)
                     commander.cash += b
-                    events.append(.bountyPaid(b))
+                    // CMB-072: Palm shows the bounty dialog only at record ≥ −5 even though it always credits.
+                    if commander.policeRecordScore >= -5 || !ruleset.flags.encounter.bountyEventRequiresRecord {
+                        events.append(.bountyPaid(b))
+                    }
                 }
                 commander.policeRecordScore += 1
                 scoopRoll(enc.opponent)
@@ -304,6 +392,14 @@ public extension GameState {
     /// C# `EncounterScoop` draws: success (100% below Normal, else 1/difficulty) and the cargo unit picked.
     /// Sets `pendingScoop` for the player to accept or decline.
     mutating func scoopRoll(_ victim: Ship) {
+        if ruleset.flags.encounter.scoopSource == .cheapRandom {
+            // RUL-097 / CMB-085: Palm triggers on `rand(D) == 1` and favours cheap goods; the victim's cargo is ignored.
+            guard difficulty < .normal || rng.next(below: difficulty.rawValue) == 1 else { return }
+            var d = rng.next(below: 10)
+            if d >= 5 { d = rng.next(below: 10) }
+            pendingScoop = TradeItemType(rawValue: d)
+            return
+        }
         let filled = victim.filledNormalCargoBays
         let lucky = difficulty < .normal || rng.next(below: difficulty.rawValue) == 0
         guard lucky, filled > 0 else { return }

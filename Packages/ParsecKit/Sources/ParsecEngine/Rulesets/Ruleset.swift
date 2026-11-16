@@ -168,6 +168,11 @@ public struct Ruleset: Sendable {
         r.flags.travel = .palm122
         r.flags.encounter = .palm122
         r.flags.quest = .palm122
+        // Encounter-area flat flags whose Palm value matches Modern (RUL-093, RUL-109, RUL-114, RUL-120).
+        r.flags.bountyCreditedRegardlessOfRecord = true
+        r.flags.kravatEngineerChecksPlayerWild = true
+        r.flags.reactorDamageRealFactor = true
+        r.flags.waspOpponentReachable = true
         return r
     }()
 }

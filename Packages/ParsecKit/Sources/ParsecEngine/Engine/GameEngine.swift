@@ -161,6 +161,8 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case bribed(Int)
     case fined(Int)
     case inspectionClean
+    /// POL-062 / RUL-139: Palm police confiscated the reactor at an inspection without arresting.
+    case reactorConfiscated
     case yielded
     case tonicConsumed(good: Bool)
     case captainTraining(skill: SkillType)
