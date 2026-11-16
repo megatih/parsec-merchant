@@ -22,6 +22,27 @@ public struct GameOptions: Codable, Sendable, Equatable {
     public var leaveEmpty = 0
 
     public init() {}
+
+    /// OPT-004: the defaults of a ruleset (C# class defaults for Modern and Windows 2.01, Palm first-launch globals).
+    public static func defaults(for ruleset: RulesetID) -> GameOptions {
+        Ruleset.named(ruleset).flags.defaultOptions
+    }
+
+    /// OPT-008…010: the options as the ruleset's Options dialog allows them.
+    public func normalized(for ruleset: Ruleset) -> GameOptions {
+        var o = self
+        if ruleset.flags.optionDependencies {
+            // Form_Options.cs:381-431: a dependent checkbox is unchecked and disabled while its parent is off.
+            if !o.continuousAttack { o.continuousAttackFleeing = false }
+            if !o.alwaysIgnoreTraders { o.alwaysIgnoreTradeInOrbit = false }
+            if !o.newsAutoPay { o.newsAutoShow = false }
+        }
+        // OPT-009: options that do not exist in the ruleset (NEWS-013; RUL-015/CMB-041: no disruptors, no disable attempt).
+        if !ruleset.flags.travel.newsAutoShowAvailable { o.newsAutoShow = false }
+        if !ruleset.content.hasDisruptors { o.disableOpponents = false }
+        o.leaveEmpty = min(99, max(0, o.leaveEmpty))
+        return o
+    }
 }
 
 /// Quest progress. Status integers keep the original codes (SpecialEvent.cs) so day-counting logic ports exactly.
@@ -160,6 +181,8 @@ public struct GameState: Codable, Sendable, Equatable {
     public var encounterTransit: TransitState?
     public var phase: GamePhase = .docked
     public var cheatsUsed = false
+    /// CHEAT-037: C# `EasyEncounters` (the "Yellow" cheat): encounters can be dismissed with `.cheat(.dismissEncounter)`.
+    public var easyEncounters = false
     public var reloadCount = 0
     public var ironman = false
 
@@ -177,9 +200,13 @@ public struct NewGameConfig: Codable, Sendable, Equatable {
     public var seed: UInt64
     public var ironman: Bool
     public var shipName: String?
+    /// OPT-004: the options to start with (the app's defaults template); nil uses `GameOptions.defaults(for:)`.
+    public var options: GameOptions?
 
     public init(commanderName: String, difficulty: Difficulty = .normal, skills: [Int] = [5, 5, 5, 5],
-                ruleset: RulesetID = .modern, seed: UInt64, ironman: Bool = false, shipName: String? = nil) {
+                ruleset: RulesetID = .modern, seed: UInt64, ironman: Bool = false, shipName: String? = nil,
+                options: GameOptions? = nil) {
+        self.options = options
         self.commanderName = commanderName
         self.difficulty = difficulty
         self.skills = skills
@@ -210,6 +237,11 @@ public extension GameState {
         veryRareEncounters = g.veryRareEncounters
         warpSystem = g.commander.currentSystem
         ironman = config.ironman
+        options = config.options?.normalized(for: ruleset) ?? ruleset.flags.defaultOptions
+        if ruleset.flags.newGameForcesReminderOptions {
+            options.remindLoans = true
+            options.showTrackedRange = true
+        }
         lastOpponent = Ship(type: .gnat, spec: ruleset.tables.ship(.gnat))
     }
 }
