@@ -3,16 +3,16 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M3 (in progress)
-- **Next step:** M3: merge the five tracing branches (ENC, CMB, POL, TRV+NEWS, ALR/BNK/CRW tests; agents in worktrees), resolve reported engine/spec discrepancies, reach engine coverage ≥90% (83.3% before tracing), then verify.sh default and tag m3-done.
-- **Last gate result:** verify.sh --quick ALL GATES PASSED (encounter API commit); default gate pending coverage
+- **Current milestone:** M4 (starting)
+- **Next step:** M4: write quest specs (QST-*: per-quest state machines from Game.cs special events, Palm differences noted), endings and scoring (SCORE); harness quest flows against C#; implement Systems/Quests; trace {M4} IDs.
+- **Last gate result:** verify.sh default ALL GATES PASSED @ M3 exit (7/7; engine coverage 95.7%; 0 untraced {M3} IDs)
 - **Blockers:** none
 
 ## Milestones
 - [x] M0 Tooling, project setup, specs, Palm source, GitHub repo (2026-11-17, tag m0-done)
 - [x] M1 RNGs, tables, galaxy generation (2026-11-17, tag m1-done; RNG bit-exact vs .NET, galaxy bit-exact vs C# harness on 21 snapshots, invariants on 1000 seeds × 2 rulesets)
 - [x] M2 Economy and services (2026-11-17, tag m2-done; 146 tests; engine coverage 94.2%; market evolution bit-exact vs harness; designer)
-- [ ] M3 Travel, encounters, combat, police, news
+- [x] M3 Travel, encounters, combat, police, news (2026-11-17, tag m3-done; opponents/combat/journeys/actions/newspaper bit-exact vs C# harness; fuzz 6000 games 0 violations; 382+ tests)
 - [ ] M4 Quests, endings, scoring
 - [ ] M5 Rulesets (Palm 1.2.2 and Modern)
 - [ ] M6 Persistence, high scores, cheats
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M3 exit: five worktree agents traced all {M3} IDs (ENC, CMB, POL, TRV/NEWS, ALR/BNK/CRW); engine fixes found by tracing: Int32 arrest-fine wrap, Windows hidden-bay raid abort (+Modern clamp flag), quest-ship damage persists, stop while auto-repeating, Marie Celeste narcotics comparison, tribble sprite draws, initial oppFleeing, playerCloaked only for cloak-caused ignores, singularity consent/loss, selectWormhole/selectNextTarget, previews. Single arrested/escapePodUsed events (app derives report sections from state). Retags: ENC-188→M9, BNK-026/048 & CRW-048→M5.
 - 2026-11-17: M3: encounter actions + Arrested bit-exact vs C# action harness; newspaper bit-exact (225 arrivals); real pmsim fuzz (2000 games × 3 rulesets, invariants, replay every 50th game, 0 violations); ENC/CMB/POL/TRV/NEWS specs written; action availability table, autoRepeat/resolve, encounter preview. 397 {M3} IDs were untraced; tracing delegated to five worktree agents.
 - 2026-11-17: M3 progress: opponent generation (216 cases), combat rounds (162 fights/1834 rounds), journeys (225 warps/1415 encounters/arrival pipeline) all bit-exact vs C# harness. Harness commands: rng galaxy market opponents combat travel.
 - 2026-11-17: M2 economy/services implemented (Market.swift, Services.swift) with 30 ID-named tests; RNG vectors (all generators) + galaxy invariants 1000 seeds pass; harness has 21 galaxy snapshots; pmsim dump-galaxy.
