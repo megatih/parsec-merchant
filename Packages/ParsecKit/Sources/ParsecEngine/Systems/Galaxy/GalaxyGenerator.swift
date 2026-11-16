@@ -288,7 +288,9 @@ public enum GalaxyGenerator {
                     : .none
                 var s = StarSystem(id: i, x: x, y: y, size: size, techLevel: tech, politics: pol.type, pressure: pressure,
                                    specialResource: resource)
-                s.tradeItems = Pricing.initialQuantities(for: s, difficulty: difficulty, ruleset: ruleset, rng: &rng)
+                // RUL-032 / GAL-027: Palm scales item i by system #i's size (0 if not generated yet).
+                s.tradeItems = Pricing.initialQuantities(for: s, difficulty: difficulty, ruleset: ruleset,
+                                                         systemSizes: systems.map(\.size) + [size], rng: &rng)
                 systems.append(s)
             }
         }

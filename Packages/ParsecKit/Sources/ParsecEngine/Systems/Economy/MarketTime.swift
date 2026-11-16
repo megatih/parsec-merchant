@@ -31,37 +31,56 @@ public extension GameState {
     }
 
     /// ECO-034…037: per-system pressure shuffle and countdown/restock on arrival, in index order (Windows 2.01 order).
-    /// `arrival` is the system being arrived at (C# `WarpSystem`), used by the drift port bug (ECO-037).
+    /// `arrival` is the system being arrived at (C# `WarpSystem`), used by the drift port bug (ECO-037). Palm (RUL-035,
+    /// ECO-040) shuffles every status first, then runs the quantity pass over every system.
     mutating func updatePressuresAndQuantities(arrival: Int) {
-        let r = ruleset
-        let arrivalSystem = galaxy.systems[arrival]
-        for i in galaxy.systems.indices {
-            // ECO-034 pressure shuffle
-            if rng.next(below: 100) < 15 {
-                if galaxy.systems[i].pressure == .none {
-                    galaxy.systems[i].pressure = SystemPressure(rawValue: rng.next(in: SystemPressure.war.rawValue,
-                                                                                   SystemPressure.employment.rawValue + 1)) ?? .none
-                } else {
-                    galaxy.systems[i].pressure = .none
-                }
+        switch ruleset.flags.economy.statusShuffleOrder {
+        case .interleaved:
+            for i in galaxy.systems.indices {
+                shufflePressure(i)
+                updateQuantities(i, arrival: arrival)
             }
-            // ECO-036 countdown step
-            guard galaxy.systems[i].countDown > 0 else { continue }
-            galaxy.systems[i].countDown -= 1
-            if galaxy.systems[i].countDown > countDownStart {
-                galaxy.systems[i].countDown = countDownStart
-            } else if galaxy.systems[i].countDown <= 0 {
-                galaxy.systems[i].tradeItems = Pricing.initialQuantities(for: galaxy.systems[i], difficulty: difficulty,
-                                                                         ruleset: r, rng: &rng)
-            } else {
-                for (j, item) in r.tables.tradeItems.enumerated() {
-                    let tradedHere = r.flags.restockUsesOwnSystemItemTraded
-                        ? Pricing.itemTraded(item, in: galaxy.systems[i], ruleset: r)
-                        : Pricing.itemTraded(item, in: arrivalSystem, ruleset: r)
-                    if tradedHere {
-                        galaxy.systems[i].tradeItems[j] = max(0, galaxy.systems[i].tradeItems[j] + rng.next(in: -4, 5))
-                    }
+        case .statusesFirst:
+            for i in galaxy.systems.indices { shufflePressure(i) }
+            for i in galaxy.systems.indices { updateQuantities(i, arrival: arrival) }
+        }
+    }
+
+    /// ECO-034: C# per-system pressure step; Palm `ShuffleStatus` draws in the same order.
+    private mutating func shufflePressure(_ i: Int) {
+        guard rng.next(below: 100) < 15 else { return }
+        if galaxy.systems[i].pressure == .none {
+            galaxy.systems[i].pressure = SystemPressure(rawValue: rng.next(in: SystemPressure.war.rawValue,
+                                                                           SystemPressure.employment.rawValue + 1)) ?? .none
+        } else {
+            galaxy.systems[i].pressure = .none
+        }
+    }
+
+    /// ECO-036…039: countdown step, reset or drift for system `i`.
+    private mutating func updateQuantities(_ i: Int, arrival: Int) {
+        let r = ruleset
+        guard galaxy.systems[i].countDown > 0 else { return }
+        galaxy.systems[i].countDown -= 1
+        if galaxy.systems[i].countDown > countDownStart {
+            galaxy.systems[i].countDown = countDownStart
+        } else if galaxy.systems[i].countDown <= 0 {
+            galaxy.systems[i].tradeItems = Pricing.initialQuantities(for: galaxy.systems[i], difficulty: difficulty,
+                                                                     ruleset: r, systemSizes: galaxy.systems.map(\.size),
+                                                                     rng: &rng)
+        } else {
+            let tradeability = r.flags.restockUsesOwnSystemItemTraded ? galaxy.systems[i] : galaxy.systems[arrival]
+            for (j, item) in r.tables.tradeItems.enumerated() {
+                guard Pricing.itemTraded(item, in: tradeability, ruleset: r) else {
+                    // RUL-034: Palm zeroes items the system cannot trade.
+                    if r.flags.economy.zeroUntradeableOnDrift { galaxy.systems[i].tradeItems[j] = 0 }
+                    continue
                 }
+                let drift = switch r.flags.economy.quantityDriftDistribution {
+                case .uniform: rng.next(in: -4, 5)
+                case .triangular: rng.next(below: 5) - rng.next(below: 5)
+                }
+                galaxy.systems[i].tradeItems[j] = max(0, galaxy.systems[i].tradeItems[j] + drift)
             }
         }
     }

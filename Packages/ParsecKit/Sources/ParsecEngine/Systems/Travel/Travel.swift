@@ -324,6 +324,9 @@ public extension GameState {
             } else if let orbit = tradeInOrbitRoll(trader: opp) {
                 type = orbit
             }
+        } else if ruleset.flags.economy.tradeInOrbitWhileCloaked, let orbit = tradeInOrbitRoll(trader: opp) {
+            // RUL-042: in Palm a cloaked player yields TRADERIGNORE, which still gets the trade-in-orbit roll.
+            type = orbit
         }
         let ignoredByOption = options.alwaysIgnoreTraders && (type == .traderIgnore || type == .traderFlee)
         let ignoredTrade = (type == .traderBuy || type == .traderSell) && options.alwaysIgnoreTradeInOrbit
@@ -664,85 +667,34 @@ public extension GameState {
         return events
     }
 
+    /// MOD-016 (RUL-116, CRW-051): mercenaries lost to jail or the escape pod relocate like fired ones, in ascending
+    /// slot order, measured from the system where the commander arrives.
+    mutating func relocateLostMercenaries(_ ids: [Int]) {
+        guard ruleset.flags.economy.lostMercenariesRelocate else { return }
+        let special: Set<Int> = [CrewID.commander, CrewID.jarek, CrewID.princess, CrewID.wild]
+        for id in ids where !special.contains(id) { relocateMercenary(id, near: warpSystem) }
+    }
+
+    /// CRW-039: `GetRandom(systems)` until the floor distance to `systemID` is < 20.
+    mutating func relocateMercenary(_ id: Int, near systemID: Int) {
+        let here = galaxy.systems[systemID]
+        var candidate: Int
+        repeat {
+            candidate = rng.next(below: galaxy.systems.count)
+        } while GalaxyGenerator.distance(galaxy.systems[candidate], here, rule: ruleset.flags.distance) >= 20
+        mercenaries[id].systemID = candidate
+    }
+
     /// C# `CreateFlea`.
     mutating func createFlea() {
+        let lost = commander.ship.crew.dropFirst().compactMap { $0 }
+        defer { relocateLostMercenaries(lost) }
         var flea = Ship(type: .flea, spec: ruleset.tables.ship(.flea))
         flea.crew[0] = CrewID.commander
         commander.ship = flea
         commander.insurance = false
         commander.noClaim = 0
         if ruleset.flags.resetPriceCargoOnHoldClear { commander.priceCargo = Array(repeating: 0, count: 10) }
-    }
-
-    /// Debt warning and loan reminder (BNK-034/036/037, MOD-018 `debtWarningAndReminder`).
-    func debtNotices() -> [GameEvent] {
-        var events: [GameEvent] = []
-        let warn = commander.debt >= 75_000
-        if warn { events.append(.debtWarning(debt: commander.debt)) }
-        if !warn || ruleset.flags.travel.debtWarningAndReminder, commander.debt > 0, options.remindLoans, commander.days % 5 == 0 {
-            events.append(.debtReminder(debt: commander.debt))
-        }
-        return events
-    }
-
-    /// Palm `Arrival()`: current system, status shuffle and quantities, prices, newspaper unpaid.
-    mutating func arrivalMarket() {
-        commander.currentSystem = warpSystem
-        updatePressuresAndQuantities(arrival: commander.currentSystem)
-        calculatePrices(for: commander.currentSystem)
-        paidForNewspaper = false
-    }
-
-    /// Palm System Information on arrival (TRV-067): news flags, then the visited mark.
-    mutating func palmSystemInformation() {
-        addArrivalNews()
-        galaxy.systems[commander.currentSystem].visited = true
-    }
-
-    /// Palm `EscapeWithPod` (it runs `Arrival()` first) for the meltdown path (TRV-061).
-    private mutating func palmEscapeWithPod() -> [GameEvent] {
-        arrivalMarket()
-        return escapeWithPod()
-    }
-
-    /// The arrival after an arrest or the escape pod: Palm runs only `Arrival()` (TRV-062), C# the full pipeline.
-    mutating func arrivalAfterArrestOrPod(pod: Bool) -> [GameEvent] {
-        guard ruleset.flags.travel.arrivalPipelineAfterArrest == .marketOnly else {
-            return (pod ? escapeWithPod() : []) + arrival()
-        }
-        var events: [GameEvent] = []
-        if pod {
-            events += palmEscapeWithPod()
-        } else {
-            arrivalMarket()
-        }
-        palmSystemInformation()
-        return events + [.arrived(system: commander.currentSystem)]
-    }
-
-    /// Palm arrival pipeline (TRV-060): debt → Arrival() → reactor → tracking → tribbles → repair → auto-buy → egg.
-    private mutating func palmArrival() -> [GameEvent] {
-        var events = debtNotices()
-        arrivalMarket()
-        if [QuestStatus.Reactor.fuelOK + 1, QuestStatus.Reactor.date - 4, QuestStatus.Reactor.date - 2].contains(quests.reactor) {
-            events.append(.reactorWarning(status: quests.reactor))
-        }
-        if quests.reactor == QuestStatus.Reactor.date {
-            events.append(.reactorMeltdown)
-            quests.reactor = QuestStatus.Reactor.notStarted
-            guard commander.ship.escapePod else { return events + [endGame(.killed)] }
-            events += palmEscapeWithPod()
-            palmSystemInformation()
-            return events + [.arrived(system: commander.currentSystem)]
-        }
-        if trackedSystem == commander.currentSystem, options.trackAutoOff { trackedSystem = nil }
-        events += arrivalTribbles()
-        events += arrivalRepairs()
-        events += arrivalEasterEgg()
-        commander.ship.cargo = commander.ship.cargo.map { max(0, $0) }
-        palmSystemInformation()
-        events.append(.arrived(system: commander.currentSystem))
-        return events
     }
 
     /// C# `Arrival` (the reactor meltdown path may end the game); Palm order per `arrivalPipelineOrder`.
@@ -964,7 +916,8 @@ public extension GameState {
         } else {
             payInterest()
             events += incDays(1)
-            if commander.insurance, tr.noClaimTiming == .perWarp { setNoClaim(commander.noClaim + 1) }
+            // BNK-044: Palm adds 1 per normal warp after IncDays; the stored value is not clamped (display/premium clamp).
+            if commander.insurance, tr.noClaimTiming == .perWarp { commander.noClaim += 1 }
         }
         if tr.monsterRegeneration == .perWarp, !viaSingularity || palmJump {
             let monsterMax = specialShips.spaceMonster.hullStrength(ruleset)

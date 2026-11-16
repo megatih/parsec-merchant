@@ -21,3 +21,6 @@
 | GAL-027 Size 0 for not-yet-generated systems in Palm's starting quantities | The original read uninitialised memory there. | accepted |
 | GAL-044 A failed Palm artifact delivery zeroes the Alien Artifact occurrence for that game only | The original wrote into a global table that could leak into later games in the same session. | accepted |
 | RNG-026, RUL-019 Palm game RNG is a documented LCG stand-in | The ROM `SysRandom` algorithm is not in the game source; the Palm ruleset is rule-faithful, not sequence-faithful (PRD §4.2). | accepted |
+| ECO-070 | Palm typed trade-in-orbit purchases are capped at the free bays like "All" — the source lets a typed amount overfill the hold; the engine keeps the hold-capacity invariant (ECO-076) that the fuzz gate checks for every ruleset | accepted (M5) |
+| CRW-055 | Palm `DecreaseRandomSkill(n)` with no skill above n makes no change — the source re-draws forever (hang) | accepted (M5) |
+| CRW-058 | Palm strange tonic below Hard with every skill at 10 ends with no change — the source loops forever (hang) | accepted (M5) |

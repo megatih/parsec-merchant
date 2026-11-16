@@ -42,7 +42,12 @@ public extension GameState {
         let price = sellPrices[item.rawValue]
         if dump {
             if price > 0 { return .failure(.invalidArgument) }
-            return .success(max(0, min(held, cashToSpend / dumpCostPerUnit)))
+            // RUL-043: Palm's precedence bug caps at toSpend / 5 × (D+1).
+            let cap = switch ruleset.flags.economy.dumpQuantityCap {
+            case .divided: cashToSpend / dumpCostPerUnit
+            case .precedenceBug: cashToSpend / 5 * (difficulty.rawValue + 1)
+            }
+            return .success(max(0, min(held, cap)))
         }
         if price <= 0 { return .failure(.marketNotInterested) }
         return .success(held)
@@ -118,6 +123,10 @@ extension GameEngine {
         let held = state.commander.ship.cargo[item.rawValue]
         if held == 0 { return .rejected(.cargoNoneToSell) }
         guard q >= 1, q <= held else { return .rejected(.invalidQuantity) }
+        // ECO-058: Palm's "jettison all" first confirms, showing what the goods cost.
+        if state.ruleset.flags.economy.dumpAllConfirmShowsCostBasis, q == held, !ack.contains(.jettisonAll) {
+            return .needsConfirmation(Confirmation(.jettisonAll, amounts: [state.commander.priceCargo[item.rawValue]]))
+        }
         if !state.litterWarning, state.commander.policeRecordScore > -5 {
             guard ack.contains(.litteringWarning) else { return .needsConfirmation(Confirmation(.litteringWarning)) }
             state.litterWarning = true

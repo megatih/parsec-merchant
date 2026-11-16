@@ -7,6 +7,8 @@ public enum WarningID: String, Codable, Sendable, Hashable, CaseIterable {
     case submitWithNothingIllegal, surrenderToPolice, bribe
     case buyEquipment, sellEquipment, buyShip, fireMercenary, stopInsurance
     case wildLeavesWithoutLaser, wildLeavesForReactor, litteringWarning, useSingularity, retire
+    /// ECO-058: Palm asks before jettisoning a whole holding (amount: its cost basis).
+    case jettisonAll
     case drinkTonic, boardMarieCeleste, meetCaptain, buyEscapePod, surrenderArtifact, acceptSpecialEvent, submitInspection, buyNewspaper
 }
 
@@ -63,6 +65,8 @@ public enum CommandError: Codable, Sendable, Equatable, Error {
     // Crew (CRW)
     case notForHire
     case commanderNameRequired
+    /// CRW-005: the Palm name field holds at most 20 characters.
+    case commanderNameTooLong
     case invalidSkillAllocation
     case noFreeQuarters
     case notInCrew

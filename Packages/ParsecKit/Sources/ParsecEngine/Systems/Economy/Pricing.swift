@@ -38,15 +38,21 @@ public enum Pricing {
         return price
     }
 
-    /// C# `StarSystem.InitializeTradeItems` (StarSystem.cs:84).
+    /// C# `StarSystem.InitializeTradeItems` (StarSystem.cs:84). With `marketQuantitySizeSource == .systemAtItemIndex`
+    /// (Palm `InitializeTradeitems`, RUL-032) item i is scaled by the size of system #i from `systemSizes`; an index
+    /// not yet generated counts as size 0 (Palm's zero-initialised globals).
     public static func initialQuantities(for system: StarSystem, difficulty: Difficulty, ruleset: Ruleset,
-                                         rng: inout some RandomSource) -> [Int] {
+                                         systemSizes: [SystemSize] = [], rng: inout some RandomSource) -> [Int] {
         var qty = Array(repeating: 0, count: ruleset.tables.tradeItems.count)
         let res = effectiveResource(system, ruleset: ruleset)
         let d = difficulty.rawValue
         for (i, item) in ruleset.tables.tradeItems.enumerated() {
             guard itemTraded(item, in: system, ruleset: ruleset) else { qty[i] = 0; continue }
-            var q = (system.size.rawValue + 1)
+            let size = switch ruleset.flags.economy.marketQuantitySizeSource {
+            case .ownSystem: system.size.rawValue
+            case .systemAtItemIndex: systemSizes.indices.contains(i) ? systemSizes[i].rawValue : 0
+            }
+            var q = (size + 1)
                 * (rng.next(in: 9, 14) - abs(item.techTopProduction.rawValue - system.techLevel.rawValue))
             if i >= TradeItemType.narcotics.rawValue {
                 q = ((q * (5 - d)) / (6 - d)) + 1
@@ -67,8 +73,16 @@ public enum Pricing {
             var price = standardPrice(item, in: system, ruleset: ruleset)
             if price > 0 {
                 if item.pressurePriceHike == system.pressure { price = price * 3 / 2 }
-                let variance = min(item.variance, price - 1)
-                price += rng.next(in: -variance, variance + 1)
+                switch ruleset.flags.economy.priceVariance {
+                case .clampedUniform:
+                    let variance = min(item.variance, price - 1)
+                    price += rng.next(in: -variance, variance + 1)
+                case .twoRolls:
+                    // RUL-036/ECO-013: Palm `+GetRandom(V) − GetRandom(V)`, left to right; ≤ 0 → not traded.
+                    price += rng.next(below: item.variance)
+                    price -= rng.next(below: item.variance)
+                    if price <= 0 { return 0 }
+                }
                 if criminal { price = price * 90 / 100 }
             }
             return price

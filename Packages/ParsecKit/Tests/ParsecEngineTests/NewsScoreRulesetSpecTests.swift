@@ -37,13 +37,16 @@ private func encounterEngine(_ id: RulesetID, _ type: EncounterType, opponent: S
     }
 }
 
-/// A docked state with the given ruleset, difficulty, day and worth (ship list price + cash − debt).
+/// A docked state with the given ruleset, difficulty, day and worth (ship value per RUL-119 + cash − debt).
 private func scored(_ id: RulesetID, _ d: Difficulty, days: Int = 1, worth: Int) -> GameState {
     var s = makeEngine(id, difficulty: d).state
     s.commander.days = days
-    let price = s.commander.ship.spec(s.ruleset).price
-    s.commander.cash = max(0, worth - price)
-    s.commander.debt = max(0, price - worth)
+    // The ship's contribution follows the ruleset's worth rule (RUL-119: list price or trade-in value).
+    s.commander.cash = 0
+    s.commander.debt = 0
+    let base = s.worth
+    s.commander.cash = max(0, worth - base)
+    s.commander.debt = max(0, base - worth)
     #expect(s.worth == worth)
     return s
 }
@@ -55,8 +58,12 @@ struct NewsRulesetStoreTests {
     @Test("NEWS-005 Palm checks the price against cash to spend (reserve money can block it); Windows against cash")
     func palmPrice() {
         func setup(_ s: inout GameState) {
-            s.commander.cash = 50
-            s.commander.debt = 1_000
+            // A paid mercenary is reserved by Palm's ToSpend (BNK-055); interest and debt are not.
+            var ship = Ship(type: .beetle, spec: s.ruleset.tables.ship(.beetle))
+            ship.crew[0] = CrewID.commander
+            ship.crew[1] = 1
+            s.commander.ship = ship
+            s.commander.cash = s.mercenaryCosts + s.newspaperCost - 1
             s.options.reserveMoney = true
         }
         var palm = makeEngine(.palm122, setup)
@@ -131,7 +138,7 @@ struct NewsRulesetStoreTests {
             s.commander.ship.cargo[TradeItemType.water.rawValue] = 1
             s.litterWarning = true
         }
-        let (_, caught) = try #require(m4Scan(litter, { $0.perform(.jettisonCargo(.water, quantity: 1)) },
+        let (_, caught) = try #require(m4Scan(litter, { $0.perform(.jettisonCargo(.water, quantity: 1), acknowledging: [.jettisonAll]) },
                                               until: { r, _ in r.events.contains { if case .caughtLittering = $0 { true } else { false } } }))
         #expect(caught.state.newsEvents == [.caughtLittering])
     }

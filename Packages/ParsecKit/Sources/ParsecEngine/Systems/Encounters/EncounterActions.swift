@@ -139,7 +139,9 @@ public extension GameState {
         }
         let crewIDs = commander.ship.crew.compactMap { $0 }
         let special = crewIDs.filter { [CrewID.commander, CrewID.jarek, CrewID.princess, CrewID.wild].contains($0) }.count
-        if crewIDs.count - special > 1 {
+        // CRW-048: Palm clears the mercenary slots when any mercenary is aboard.
+        if crewIDs.count - special > (ruleset.flags.economy.arrestClearsAnyMercenary ? 0 : 1) {
+            relocateLostMercenaries(Array(crewIDs.dropFirst()))
             for i in 1..<commander.ship.crew.count { commander.ship.crew[i] = nil }
         }
         if jarekOnBoard { quests.jarek = QuestStatus.Jarek.notStarted }
@@ -490,8 +492,10 @@ extension GameEngine {
             let old = state.mercenaries[CrewID.commander].skills
             if state.difficulty < .hard {
                 while state.mercenaries[CrewID.commander].skills == old {
-                    state.changeRandomSkill(1)
-                    state.changeRandomSkill(-1)
+                    let increased = state.changeRandomSkill(1)
+                    let decreased = state.changeRandomSkill(-1)
+                    // CRW-058: Palm would loop forever when neither change is possible; the engine stops.
+                    if !increased, !decreased { break }
                 }
             } else {
                 state.changeRandomSkill(1)
@@ -518,6 +522,7 @@ extension GameEngine {
         }
         let gain = state.difficulty <= .normal ? 2 : 1
         state.mercenaries[CrewID.commander].skills[skill.rawValue] = min(10, state.mercenaries[CrewID.commander].skills[skill.rawValue] + gain)
+        if enc.type == .captainHuie, ruleset.flags.economy.recalculateBuyPricesAfterHuie { recalculateBuyPrices() }
         return finish(.normal, events: [.captainTraining(skill: skill)])
     }
 

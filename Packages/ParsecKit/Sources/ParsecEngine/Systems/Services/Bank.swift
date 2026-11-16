@@ -14,6 +14,8 @@ public struct BankPreview: Sendable, Equatable {
     public var noClaim: Int
     public var noClaimAtMaximum: Bool
     public var canBuyInsurance: Bool
+    /// BNK-019: what "pay back everything" repays (Palm caps it at 99999).
+    public var repayAllAmount: Int
 }
 
 /// BNK-061: the costs breakdown for a warp target.
@@ -44,15 +46,24 @@ public extension GameState {
     }
 
     /// BNK-040: the insurance premium for the current ship and a given no-claim value.
+    /// RUL-044: double precision in C#; Palm integer `((W×5)/2000)×(100−min(NoClaim,90))/100`.
     func insurancePremium(noClaim: Int) -> Int {
-        max(1, Int(Double(baseWorth(of: commander.ship, forInsurance: true)) * 0.0025 * Double(100 - noClaim) / 100.0))
+        let value = baseWorth(of: commander.ship, forInsurance: true)
+        switch ruleset.flags.economy.insuranceFormula {
+        case .doublePrecision: return max(1, Int(Double(value) * 0.0025 * Double(100 - noClaim) / 100.0))
+        case .integer: return max(1, ((value * 5) / 2000) * (100 - min(noClaim, 90)) / 100)
+        }
     }
 
     var bankPreview: BankPreview {
         BankPreview(debt: commander.debt, maxLoan: maxLoan, availableToBorrow: availableToBorrow, maxRepay: maxRepay,
                     insured: commander.insurance, currentPremium: insuranceCosts, premiumQuote: insurancePremium(noClaim: 0),
-                    noClaim: commander.noClaim, noClaimAtMaximum: commander.noClaim >= 90,
-                    canBuyInsurance: commander.ship.escapePod && !commander.insurance)
+                    noClaim: min(commander.noClaim, 90),
+                    // BNK-045: Palm shows "(maximum)" only at exactly 90 (its counter is stored unclamped).
+                    noClaimAtMaximum: ruleset.flags.economy.noClaimTiming == .perWarp
+                        ? commander.noClaim == 90 : commander.noClaim >= 90,
+                    canBuyInsurance: commander.ship.escapePod && !commander.insurance,
+                    repayAllAmount: ruleset.flags.economy.repayAllCap.map { min(maxRepay, $0) } ?? maxRepay)
     }
 
     /// BNK-051/061: the daily costs if warping to `target`.

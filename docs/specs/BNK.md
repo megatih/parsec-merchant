@@ -52,7 +52,7 @@
 
 - **BNK-028** {M3} [M][W][P] A warp is blocked with `CommandError.debtTooLargeToTravel` when `debt > 100000` (strictly greater). (source: Game.cs:3155-3156 `DebtTooLargeGrounded`; Palm: Src/Traveler.c:501-505)
 - **BNK-029** {M2} [M][W] Buying cargo from the system market is blocked with `CommandError.debtTooLargeToTrade` when `debt > 100000`. Trade-in-orbit purchases and plunder are not blocked by debt. (source: Game.cs:589-590 `op == CargoBuyOp.BuySystem`, `DebtTooLargeTrade`)
-- **BNK-030** {M5} [P] Palm `BuyCargo` (the market buy path) is blocked when `debt > 100000`. Palm's trade-in-orbit purchase does not go through `BuyCargo`. [verify: orbit path has no debt check] (source: Palm: Src/Cargo.c:858-866, :533-539, Src/Traveler.c:2709)
+- **BNK-030** {M5} [P] Palm `BuyCargo` (the market buy path) is blocked when `debt > 100000`. Palm's trade-in-orbit purchase does not go through `BuyCargo`. Re-checked: the orbit buy (`Src/Encounter.c:1725-1803`) has no debt test. (source: Palm: Src/Cargo.c:858-866, :533-539, Src/Traveler.c:2709)
 - **BNK-031** {M2} [M][W][P] Buying equipment is blocked with `CommandError.inDebt` when `debt > 0`. C# checks in this order: gadget already owned, debt, cash-to-spend, free slot. Palm checks: price ≤ 0, debt, to-spend, free slot. (source: Form_Equipment.cs:572-581 `DebtNoBuy`; Palm: Src/Cargo.c:1075-1082 `YoureInDebtAlert`)
 - **BNK-032** {M2} [M][W][P] Buying a ship is blocked with `CommandError.inDebt` when `netPrice > 0 && debt > 0`. A ship trade with net price ≤ 0 is allowed while in debt. (source: Commander.cs:124-125; Palm: Src/BuyShipEvent.c:203-205)
 

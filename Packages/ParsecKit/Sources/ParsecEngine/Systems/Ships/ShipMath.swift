@@ -5,7 +5,10 @@ public extension Ship {
     /// The static spec for this ship (custom designs carry their own spec).
     func spec(_ ruleset: Ruleset) -> ShipSpec {
         if type == .custom, let customSpec { return customSpec }
-        return ruleset.tables.ship(type)
+        var s = ruleset.tables.ship(type)
+        // RUL-117 (MOD-017): Modern reads the C# table's swapped fuel/repair columns back in Palm order.
+        if ruleset.flags.economy.swapFuelAndRepairColumns { (s.fuelCost, s.repairCost) = (s.repairCost, s.fuelCost) }
+        return s
     }
 
     func count(_ g: GadgetType) -> Int { gadgets.filter { $0 == g }.count }
@@ -31,8 +34,14 @@ public extension Ship {
     func freeShieldSlots(_ ruleset: Ruleset) -> Int { spec(ruleset).shieldSlots - shields.count }
     func freeGadgetSlots(_ ruleset: Ruleset) -> Int { spec(ruleset).gadgetSlots - gadgets.count }
 
-    /// C# `Ship.FuelTanks`: spec tanks + 3 with a fuel compactor (Windows/Modern).
-    func fuelTanks(_ ruleset: Ruleset) -> Int { spec(ruleset).fuelTanks + (has(.fuelCompactor) ? 3 : 0) }
+    /// C# `Ship.FuelTanks`: spec tanks + 3 with a fuel compactor; Palm `GetFuelTanks`: 18 with a compactor (RUL-047).
+    func fuelTanks(_ ruleset: Ruleset) -> Int {
+        guard has(.fuelCompactor) else { return spec(ruleset).fuelTanks }
+        switch ruleset.flags.economy.fuelCompactorRule {
+        case .addsThree: return spec(ruleset).fuelTanks + 3
+        case .setsEighteen: return 18
+        }
+    }
     /// C# `Ship.HullStrength`: spec hull + 50 when upgraded.
     func hullStrength(_ ruleset: Ruleset) -> Int { spec(ruleset).hullStrength + (hullUpgraded ? 50 : 0) }
 
@@ -74,10 +83,15 @@ public extension GameState {
 
     /// Effective ship skills of the commander's ship (Pilot, Fighter, Trader, Engineer).
     var shipSkills: [Int] {
-        Skills.shipSkills(commander.ship, crew: mercenaries, difficulty: difficulty, ruleset: ruleset)
+        Skills.shipSkills(commander.ship, crew: mercenaries, difficulty: difficulty, ruleset: ruleset,
+                          haggling: hagglingComputer)
     }
     func skill(_ s: SkillType) -> Int {
-        shipSkills[s.rawValue] + (s == .trader && hagglingComputer ? 1 : 0)
+        switch ruleset.flags.economy.skillComputation {
+        case .adjustThenGadgets: shipSkills[s.rawValue] + (s == .trader && hagglingComputer ? 1 : 0)
+        // RUL-051: Palm adds the haggling bonus before the difficulty adjustment (inside `palmSkill`).
+        case .gadgetsThenAdjust: shipSkills[s.rawValue]
+        }
     }
 
     /// C# `Equipment.Price` for the commander: base × (100 − trader)/100, or 0 if the current system's tech is too low.
@@ -89,9 +103,14 @@ public extension GameState {
     func baseWorth(of ship: Ship, forInsurance: Bool) -> Int {
         let r = ruleset
         let spec = ship.spec(r)
+        // RUL-056: Palm subtracts (type base tanks − min(fuel, tanks)) × fuel cost.
+        let missingFuel = switch r.flags.economy.tradeInFuelTerm {
+        case .actualTanks: ship.fuelTanks(r) - ship.fuel
+        case .baseTanks: spec.fuelTanks - min(ship.fuel, ship.fuelTanks(r))
+        }
         var price = spec.price * (ship.tribbles > 0 && !forInsurance ? 1 : 3) / 4
             - (ship.hullStrength(r) - ship.hull) * spec.repairCost
-            - (ship.fuelTanks(r) - ship.fuel) * spec.fuelCost
+            - missingFuel * spec.fuelCost
         for w in ship.weapons { price += r.tables.weapon(w).price * 3 / 4 }
         for s in ship.shields { price += r.tables.shield(s.type).price * 3 / 4 }
         for g in ship.gadgets { price += r.tables.gadget(g).price * 3 / 4 }
@@ -103,25 +122,33 @@ public extension GameState {
         baseWorth(of: commander.ship, forInsurance: forInsurance) + commander.priceCargo.reduce(0, +)
     }
 
-    /// C# `Commander.Worth` (Commander.cs:389): ship list price + cash − debt (+ moon).
+    /// C# `Commander.Worth` (Commander.cs:389): ship list price + cash − debt (+ moon). With MOD-019 (RUL-119) and in
+    /// Palm (`CurrentWorth`) the ship counts at its trade-in value plus the cargo cost basis.
     var worth: Int {
-        commander.ship.spec(ruleset).price + commander.cash - commander.debt
+        let ship = ruleset.flags.economy.worthUsesTradeInValue
+            ? shipWorth(forInsurance: false) : commander.ship.spec(ruleset).price
+        return ship + commander.cash - commander.debt
             + (quests.moon > QuestStatus.Moon.notStarted ? QuestStatus.moonCost : 0)
     }
 
-    /// C# `CrewMember.Rate`: (P+F+T+E)×3, free for special crew and Zeethibal.
+    /// C# `CrewMember.Rate`: (P+F+T+E)×3, free for special crew and Zeethibal (Palm pays Zeethibal: RUL-059).
     func dailyRate(of id: Int) -> Int {
-        let free: Set<Int> = [CrewID.commander, CrewID.wild, CrewID.jarek, CrewID.princess, CrewID.zeethibal,
+        var free: Set<Int> = [CrewID.commander, CrewID.wild, CrewID.jarek, CrewID.princess, CrewID.zeethibal,
                               CrewID.dragonfly, CrewID.famousCaptain, CrewID.opponent, CrewID.scarab, CrewID.scorpion,
                               CrewID.spaceMonster]
+        if ruleset.flags.economy.zeethibalPaid { free.remove(CrewID.zeethibal) }
         return free.contains(id) ? 0 : mercenaries[id].skills.reduce(0, +) * 3
     }
 
-    /// C# `Game.MercenaryCosts` (Game.cs:3872): sums `Rate` from crew slot 1 up to the first vacancy.
+    /// C# `Game.MercenaryCosts` (Game.cs:3872): sums `Rate` from crew slot 1 up to the first vacancy; Palm
+    /// `MercenaryMoney` skips vacancies (CRW-033).
     var mercenaryCosts: Int {
         var total = 0
         for slot in commander.ship.crew.indices.dropFirst() {
-            guard let id = commander.ship.crew[slot] else { break }
+            guard let id = commander.ship.crew[slot] else {
+                if ruleset.flags.economy.mercenaryCostSkipsVacancies { continue }
+                break
+            }
             total += dailyRate(of: id)
         }
         return total
@@ -130,8 +157,7 @@ public extension GameState {
     /// C# `Game.InsuranceCosts`: max(1, BaseWorth(true) × 0.25% × (100 − noClaim)/100) when insured.
     var insuranceCosts: Int {
         guard commander.insurance else { return 0 }
-        return max(1, Int(Double(baseWorth(of: commander.ship, forInsurance: true)) * 0.0025
-                          * Double(100 - commander.noClaim) / 100.0))
+        return insurancePremium(noClaim: commander.noClaim)
     }
 
     /// C# `Commander` interest: max(1, debt × 10%) when in debt.
@@ -147,5 +173,12 @@ public extension GameState {
     var currentCosts: Int { insuranceCosts + interestCosts + mercenaryCosts + wormholeCosts }
 
     /// C# `Commander.CashToSpend`: cash, minus current costs when "reserve money" is on.
-    var cashToSpend: Int { options.reserveMoney ? commander.cash - currentCosts : commander.cash }
+    /// Palm `ToSpend` (ECO-043): max(0, cash − mercenaries − insurance) when reserving.
+    var cashToSpend: Int {
+        guard options.reserveMoney else { return commander.cash }
+        switch ruleset.flags.economy.cashToSpend {
+        case .reserveAllCosts: return commander.cash - currentCosts
+        case .reserveCrewAndInsurance: return max(0, commander.cash - mercenaryCosts - insuranceCosts)
+        }
+    }
 }
