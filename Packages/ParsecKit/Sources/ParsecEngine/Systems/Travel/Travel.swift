@@ -62,8 +62,8 @@ public extension GameState {
         return nil
     }
 
-    /// TRV-014: Wild leaves unless the ship carries a beam laser or better (C# `HasWeapon(BeamLaser, false)`).
-    var wildWillLeave: Bool { wildOnBoard && !commander.ship.has(.beamLaser, exact: false) }
+    /// TRV-014: Wild leaves unless the ship carries a qualifying laser (`wildRequiresRealLaser`, RUL-111).
+    var wildWillLeave: Bool { wildOnBoard && !hasWildQualifyingLaser }
 
     /// TRV-086 / TRV-017: everything the warp panel shows for `target`, without changing state.
     func warpTargetPreview(_ target: Int) -> WarpTargetPreview {

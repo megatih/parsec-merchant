@@ -23,7 +23,7 @@
 - **QST-JAPORI-005** {M4} [M][W] `japori` with consent: if free cargo bays < 10, the command is rejected with `.noEmptyBays` (C# `CargoNoEmptyBays`) and nothing changes. Otherwise `japori = 1`. In **both** cases C# keeps the pickup event on the system (`remove = false`), so the quest can start again after a failure (QST-JAPORI-009). It is hidden while the status is not 0. (source: Game.cs:2347-2358)
 - **QST-JAPORI-006** {M4} [M][W][P] While `japori == 1`, the antidote fills 10 cargo bays (SHP-015): free bays drop by 10 and filled bays rise by 10. The antidote is not a trade item. It is not in `ship.cargo`, has no cost basis, cannot be sold, dumped or jettisoned, and pirates cannot take it. (source: Ship.cs:961-973; Palm: Src/Cargo.c:1025-1026)
 - **QST-JAPORI-007** {M4} [M][W][P] `japoriDelivery` (message-only) sets `japori = 2`, calls `IncreaseRandomSkill` twice on the commander (CRW-063, RNG draws as CRW specifies), and removes the event. The 10 bays become free. If a skill change alters the effective Trader skill, buy prices are recalculated as CRW specifies. (source: Game.cs:2359-2363, CrewMember.cs:92-95; Palm: Src/SpecialEvent.c:184-188)
-- **QST-JAPORI-008** {M5} [P] Palm removes the pickup once it has been accepted (`JAPORIDISEASE` is removed unless the bay check fails). New flag `japoriPickupPersists` (needs a RUL row): Modern and Windows true, Palm false. (source: Palm: Src/SpecialEvent.c:379-391, :394-395)
+- **QST-JAPORI-008** {M5} [P] Palm removes the pickup once it has been accepted (`JAPORIDISEASE` is removed unless the bay check fails). Flag `japoriPickupPersists` (RUL-171): Modern and Windows true, Palm false. (source: Palm: Src/SpecialEvent.c:379-391, :394-395)
 
 ## 4. Failure paths
 

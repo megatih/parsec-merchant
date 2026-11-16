@@ -22,7 +22,7 @@
 ## 3. Boarding
 
 - **QST-WILD-006** {M4} [M][W][P] `wild` with consent checks, in this order, rejecting with the state unchanged and the offer kept: (1) no free crew quarter → `.noFreeQuarters` (ALR-154); (2) no weapon whose type is ≥ Beam laser (`has(.beamLaser, exact: false)`: Beam, Military, Morgan's, Photon or Quantum) → `.wildRequiresLaser` (ALR-185); (3) reactor aboard → `.wildRefusesReactor` (ALR-186). (source: Game.cs:2533-2548, Ship.cs:597-606, Enums.cs:871-879; Palm: Src/SpecialEvent.c:249-268)
-- **QST-WILD-007** {M5} [M][P] `wildRequiresRealLaser` (RUL-111, MOD-011): in Modern and Palm only Beam, Military and Morgan's lasers qualify, for boarding (QST-WILD-006 check 2) and for staying (QST-WILD-012). Until the flag exists, every ruleset uses the Windows predicate (TRV-014). (source: PRD MOD-011)
+- **QST-WILD-007** {M5} [M][P] `wildRequiresRealLaser` (RUL-111, MOD-011): in Modern and Palm only Beam, Military and Morgan's lasers qualify, for boarding (QST-WILD-006 check 2) and for staying (QST-WILD-012). Windows 2.01 keeps `HasWeapon(BeamLaser, false)` (TRV-014); the shared predicate is `GameState.hasWildQualifyingLaser`. (source: PRD MOD-011)
 - **QST-WILD-008** {M4} [M][W] When all checks pass, Wild (crew 32) goes into the first free crew slot (buy prices are recalculated if the ship's effective Trader changes, `Ship.Hire`), `wild = 1`, and the event is removed. With the sculpture aboard, the app shows the "Wild admires the sculpture" follow-up (ALR-184) from the state (`quests.sculpture == 1`); the engine emits no extra event. (source: Game.cs:2549-2558, Ship.cs:608-622)
 - **QST-WILD-009** {M5} [P] Palm Wild is a passenger: `WildStatus = 1`, no crew slot or skills, and one fewer available quarter (RUL-057, CRW-044, CRW-045). (source: Palm: Src/SpecialEvent.c:269-271, Src/SystemInfoEvent.c:79-83)
 
@@ -47,7 +47,7 @@
 
 - **QST-WILD-018** {M4} [M][W] `wildGetsOut` (message-only), in this order: (1) Zeethibal (crew 30) is placed at Kravat with skill 10 in the commander's lowest raw skill, 8 in the second lowest and 5 in the other two, with ties in the order Pilot, Fighter, Trader, Engineer (CRW-065); (2) `wild = 12`; (3) police record = 0 exactly, so a Hero (≥ 75) drops to 0 (RUL-037); (4) Wild is removed from the crew, and buy prices are recalculated if the effective Trader changes; (5) every sell price becomes `sell * 100 / 90` (integer, `RecalculateSellPrices`), and buy prices are not recalculated by this step; (6) the event is removed. (source: Game.cs:2560-2575, CrewMember.cs:103-121, Game.cs:2985-2989)
 - **QST-WILD-019** {M5} [M] `sellPriceRecalcOnlyIfCriminal` (RUL-115, MOD-015): Modern applies step (5) only if the record before step (3) was < −5. (source: PRD MOD-015)
-- **QST-WILD-020** {M5} [P] Palm delivery: `WildStatus = 2`, Zeethibal as CRW-065, record = `max(record, 0)` (RUL-037), and no sell-price recalculation (RUL-115). (source: Palm: Src/SpecialEvent.c:283-325)
+- **QST-WILD-020** {M5} [P] Palm delivery: `WildStatus = 2` (the engine's done status 12), Zeethibal as CRW-065, record = `max(record, 0)` (RUL-037), and no sell-price recalculation (RUL-115). (source: Palm: Src/SpecialEvent.c:283-325)
 - **QST-WILD-021** {M5} [P] Palm has no Wild impatience (`passengerImpatience`, RUL-061). The Kravat engineer boost reads the player's Wild (RUL-109). (source: Palm: Src/Traveler.c:1705-1746, :1168)
 
 ## 8. News and research notes

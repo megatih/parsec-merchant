@@ -14,7 +14,54 @@ public extension GameState {
         return specialEventShown(type) ? type : nil
     }
 
-    internal func specialEventShown(_ type: SpecialEventType) -> Bool {
+    /// C# `ShowSpecialButton`, plus the ruleset's content guards and Palm quest cap (RUL-013, RUL-141, RUL-142).
+    /// `rules` defaults to the game's ruleset; tests pass variants.
+    internal func specialEventShown(_ type: SpecialEventType, rules: Ruleset? = nil) -> Bool {
+        let rules = rules ?? ruleset
+        if !rules.content.hasSculptureQuest, Self.sculptureEvents.contains(type) { return false }
+        if !rules.content.hasPrincessQuest, Self.princessEvents.contains(type) { return false }
+        if let cap = rules.flags.quest.openQuestCap, openQuests > cap, Self.cappedQuestStarts.contains(type) { return false }
+        return baseEventShown(type, moonRule: rules.flags.quest.moonOfferThreshold)
+    }
+
+    static let sculptureEvents: Set<SpecialEventType> = [.sculpture, .sculptureDelivered, .sculptureHiddenBays]
+    static let princessEvents: Set<SpecialEventType> = [.princess, .princessCentauri, .princessInthara, .princessQonos,
+                                                        .princessReturned, .princessQuantum]
+    /// RUL-141: the 11 quest starts Palm hides while more than 3 quests are open (`SystemInfoEvent.c`).
+    static let cappedQuestStarts: Set<SpecialEventType> = [.tribble, .spaceMonster, .dragonfly, .japori, .artifact, .jarek,
+                                                           .gemulon, .experiment, .wild, .reactor, .scarab]
+
+    /// RUL-141: Palm `OpenQuests`, read from the engine's quest statuses (Palm "aboard" = status in started..<done).
+    var openQuests: Int {
+        let q = quests
+        func held(_ e: SpecialEventType) -> Bool { galaxy.systems.contains { $0.specialEvent == e } }
+        let open: [Bool] = [
+            q.spaceMonster == QuestStatus.SpaceMonster.atAcamar,
+            (QuestStatus.Dragonfly.flyBaratas...QuestStatus.Dragonfly.flyZalkon).contains(q.dragonfly) || held(.dragonflyShield),
+            q.japori == QuestStatus.Japori.inTransit,
+            artifactOnBoard,
+            (QuestStatus.Wild.started..<QuestStatus.Wild.done).contains(q.wild),
+            (QuestStatus.Jarek.started..<QuestStatus.Jarek.done).contains(q.jarek),
+            (QuestStatus.Gemulon.started..<QuestStatus.Gemulon.date).contains(q.gemulon) || held(.gemulonFuel),
+            (QuestStatus.Experiment.started..<QuestStatus.Experiment.date).contains(q.experiment),
+            (QuestStatus.Reactor.fuelOK..<QuestStatus.Reactor.date).contains(q.reactor),
+            held(.reactorLaser),
+            q.scarab == QuestStatus.Scarab.hunting,
+            commander.ship.tribbles > 0,
+            q.moon == QuestStatus.Moon.bought,
+        ]
+        return open.filter { $0 }.count
+    }
+
+    /// RUL-111: Wild's laser test (C# `HasWeapon(BeamLaser, false)`, which disruptors pass; MOD-011/Palm: real lasers).
+    var hasWildQualifyingLaser: Bool {
+        if ruleset.flags.quest.wildRequiresRealLaser {
+            return [.beamLaser, .militaryLaser, .morgansLaser].contains { commander.ship.has($0) }
+        }
+        return commander.ship.has(.beamLaser, exact: false)
+    }
+
+    private func baseEventShown(_ type: SpecialEventType, moonRule: MoonOfferThreshold) -> Bool {
         let record = commander.policeRecordScore
         let reputation = commander.reputationScore
         let dubious = -5, lawful = 5, average = 40
@@ -36,7 +83,10 @@ public extension GameState {
         case .japori: return q.japori == QuestStatus.Japori.notStarted && record >= dubious
         case .japoriDelivery: return q.japori == QuestStatus.Japori.inTransit
         case .jarekGetsOut: return jarekOnBoard
-        case .moon: return q.moon == QuestStatus.Moon.notStarted && worth > QuestStatus.moonCost * 4 / 5
+        case .moon:
+            let threshold = QuestStatus.moonCost * 4 / 5
+            let rich = moonRule == .aboveFourFifths ? worth > threshold : worth >= threshold
+            return q.moon == QuestStatus.Moon.notStarted && rich
         case .moonRetirement: return q.moon == QuestStatus.Moon.bought
         case .princess: return record >= lawful && reputation >= average
         case .princessCentauri: return q.princess >= QuestStatus.Princess.flyCentauri && q.princess <= QuestStatus.Princess.flyQonos
@@ -108,13 +158,24 @@ extension GameEngine {
         if !spec.messageOnly, !ack.contains(.acceptSpecialEvent) {
             return .needsConfirmation(Confirmation(.acceptSpecialEvent, amounts: [spec.price]))
         }
+        return handleSpecialEvent(type, spec: spec, ack)
+    }
+
+    /// C# HandleSpecialEvent / Palm SpecialEventFormHandleEvent after consent. RUL-143: Palm charges the price before
+    /// the effect and keeps it on a refusal (a priced refusal is committed as `specialEventRefused`).
+    mutating func handleSpecialEvent(_ type: SpecialEventType, spec: SpecialEventSpec, _ ack: Set<WarningID>) -> StepResult {
         if state.cashToSpend < spec.price { return .rejected(.insufficientFunds) }
+        let chargeFirst = ruleset.flags.quest.specialEventPriceTiming == .beforeEffect && spec.price != 0
+        if chargeFirst { state.commander.cash -= spec.price }
         let step = questShipEvent(type) ?? passengerEvent(type, ack) ?? deliveryEvent(type) ?? oneOffEvent(type, spec)
         switch step {
         case let .stop(result):
+            if chargeFirst, let reason = result.rejection {
+                return StepResult(events: [.specialEventRefused(type, reason: reason)])
+            }
             return result
         case let .done(remove, events):
-            if spec.price != 0 { state.commander.cash -= spec.price }
+            if spec.price != 0, !chargeFirst { state.commander.cash -= spec.price }
             if remove { state.galaxy.systems[state.commander.currentSystem].specialEvent = nil }
             return StepResult(events: events + [.specialEventCompleted(type)])
         }
@@ -168,7 +229,7 @@ extension GameEngine {
             state.removeSpecialCrew(CrewID.jarek)
         case .wild:
             guard hasQuarters else { return .stop(.rejected(.noFreeQuarters)) }
-            guard state.commander.ship.has(.beamLaser, exact: false) else { return .stop(.rejected(.wildRequiresLaser)) }
+            guard state.hasWildQualifyingLaser else { return .stop(.rejected(.wildRequiresLaser)) }
             guard !state.reactorOnBoard else { return .stop(.rejected(.wildRefusesReactor)) }
             state.hireCrew(CrewID.wild)
             state.quests.wild = QuestStatus.Wild.started
@@ -178,9 +239,14 @@ extension GameEngine {
             let lowest1 = state.nthLowestSkill(1), lowest2 = state.nthLowestSkill(2)
             state.mercenaries[CrewID.zeethibal].skills = (0..<4).map { $0 == lowest1 ? 10 : ($0 == lowest2 ? 8 : 5) }
             state.quests.wild = QuestStatus.Wild.done
-            state.commander.policeRecordScore = 0
+            let recordBefore = state.commander.policeRecordScore
+            switch ruleset.flags.quest.wildDeliveredRecord {
+            case .resetToZero: state.commander.policeRecordScore = 0
+            case .raiseToZero: state.commander.policeRecordScore = max(recordBefore, 0)
+            }
             state.removeSpecialCrew(CrewID.wild)
-            state.recalculateSellPrices()
+            let rule = ruleset.flags.quest.sellPriceRecalc
+            if rule == .always || (rule == .onlyIfCriminal && recordBefore < -5) { state.recalculateSellPrices() }
         case .reactor:
             guard state.freeCargoBays >= 15 else { return .stop(.rejected(.noEmptyBays)) }
             var events: [GameEvent] = []
@@ -226,7 +292,8 @@ extension GameEngine {
             // The Japori quest is never removed: it can fail and start again.
             guard state.freeCargoBays >= 10 else { return .stop(.rejected(.noEmptyBays)) }
             state.quests.japori = QuestStatus.Japori.inTransit
-            return .kept
+            // RUL-171: Palm removes the pickup once accepted.
+            return r.flags.quest.japoriPickupPersists ? .kept : .removed
         case .japoriDelivery:
             state.quests.japori = QuestStatus.Japori.done
             state.changeRandomSkill(1)
@@ -245,6 +312,8 @@ extension GameEngine {
         case .gemulonFuel:
             guard state.commander.ship.freeGadgetSlots(r) > 0 else { return .stop(.rejected(.noFreeSlot)) }
             state.commander.ship.gadgets.append(.fuelCompactor)
+            // RUL-172: Palm `Ship.Fuel = GetFuelTanks()`.
+            if r.flags.quest.gemulonRewardRefuels { state.commander.ship.fuel = state.commander.ship.fuelTanks(r) }
             state.quests.gemulon = QuestStatus.Gemulon.done
         case .experiment: state.quests.experiment = QuestStatus.Experiment.started
         case .experimentStopped:
@@ -264,7 +333,9 @@ extension GameEngine {
         case .moon: state.quests.moon = QuestStatus.Moon.bought
         case .moonRetirement:
             state.quests.moon = QuestStatus.Moon.done
-            return .stop(StepResult(events: [.specialEventCompleted(type), state.endGame(.boughtMoon)]))
+            // RUL-006: the Modern moon-girl variant after the Princess quest is done (same score).
+            let girl = r.flags.quest.moonGirlEnding && state.quests.princess == QuestStatus.Princess.done
+            return .stop(StepResult(events: [.specialEventCompleted(type), state.endGame(girl ? .boughtMoonGirl : .boughtMoon)]))
         default:
             return nil
         }
@@ -280,8 +351,9 @@ extension GameEngine {
             state.commander.priceCargo[item] += spec.price
             return .done(remove: true, events: [.sealedCanisters(TradeItemType(rawValue: item) ?? .water)])
         case .eraseRecord:
+            let criminal = state.commander.policeRecordScore < -5
             state.commander.policeRecordScore = 0
-            state.recalculateSellPrices()
+            if ruleset.flags.quest.sellPriceRecalc != .onlyIfCriminal || criminal { state.recalculateSellPrices() }
         case .skill: state.changeRandomSkill(1)
         case .tribble: state.commander.ship.tribbles = 1
         case .tribbleBuyer:

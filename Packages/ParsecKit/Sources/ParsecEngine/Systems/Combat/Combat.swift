@@ -161,7 +161,8 @@ public extension GameState {
     /// C# `EncounterExecuteAction`: one round after the player chose Attack (or Flee: `enc.cmdrFleeing == true`).
     mutating func executeRound(_ enc: inout EncounterState) -> (RoundResult, [GameEvent]) {
         // CMB-052: C# fights the shared Space Monster / Scarab / Dragonfly / Scorpion object, so damage persists.
-        defer { persistSpecialShip(enc.opponent) }
+        var playerEscaped = false
+        defer { persistSpecialShip(enc.opponent, playerEscaped: playerEscaped) }
         var events: [GameEvent] = []
         let prevCmdrHull = commander.ship.hull
         let prevOppHull = enc.opponent.hull
@@ -212,6 +213,7 @@ public extension GameState {
                 let lhs = (rng.next(below: 7) + shipSkills[0] / 3) * 2
                 escaped = lhs >= rng.next(below: skills(of: enc.opponent)[0]) * (2 + difficulty.rawValue)
             }
+            playerEscaped = escaped
             if escaped { events.append(.playerEscaped(wasHit: enc.cmdrHit)) }
         }
         if !escaped, enc.oppFleeing {
@@ -235,7 +237,12 @@ public extension GameState {
     }
 
     /// ENC-012 / CMB-052: writes a quest opponent back to `specialShips` (C# `Opponent` references the shared ship).
-    mutating func persistSpecialShip(_ ship: Ship) {
+    /// RUL-173 (Palm, ENC-013): a copy is fought; only the monster's hull is written back, when the player escapes.
+    mutating func persistSpecialShip(_ ship: Ship, playerEscaped: Bool = false) {
+        if ruleset.flags.quest.specialShipDamagePersists == .monsterHullOnEscape {
+            if ship.type == .spaceMonster, playerEscaped { specialShips.spaceMonster.hull = ship.hull }
+            return
+        }
         switch ship.type {
         case .spaceMonster: specialShips.spaceMonster = ship
         case .scarab: specialShips.scarab = ship
