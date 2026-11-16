@@ -108,7 +108,8 @@ final class GameSession {
         audio.play(events: result.events)
         haptics.perform(events: result.events)
         achievements.observe(events: result.events, state: state)
-        runPersistenceTriggers(phaseBefore: phaseBefore, state: state)
+        let arrived = result.events.contains { if case .arrived = $0 { true } else { false } }
+        runPersistenceTriggers(phaseBefore: phaseBefore, state: state, arrived: arrived)
     }
 
     /// The player confirmed: resend the same command with every warning acknowledged so far plus this one.
@@ -284,11 +285,12 @@ final class GameSession {
 
     // MARK: Persistence triggers (SAV-038, SAV-046) and high scores (SCORE-037)
 
-    private func runPersistenceTriggers(phaseBefore: GamePhase, state: GameState) {
+    /// `arrived`: the step docked at a new system (a warp without encounters goes docked → docked in one step).
+    private func runPersistenceTriggers(phaseBefore: GamePhase, state: GameState, arrived: Bool) {
         let endedNow: GameEndType? = if case let .gameOver(e) = state.phase, !Self.isGameOver(phaseBefore) { e } else { nil }
         if state.ironman {
             writeIronmanSlot()
-        } else if (phaseBefore != .docked && state.phase == .docked) || endedNow != nil {
+        } else if (state.phase == .docked && (phaseBefore != .docked || arrived)) || endedNow != nil {
             writeAutosave()
         }
         if let endedNow { recordHighScore(end: endedNow) }

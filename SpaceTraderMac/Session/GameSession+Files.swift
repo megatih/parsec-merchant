@@ -8,7 +8,7 @@ import ParsecPersistence
 extension GameSession {
     /// Slots newest first (empty on a read error).
     func listSlots() -> [SlotInfo] {
-        ((try? slotStore.list()) ?? []).sorted { $0.modified > $1.modified }
+        SlotListCache.slots(of: slotStore)
     }
 
     /// The 10 newest slots for Welcome and Open Recent (SAV-042).
@@ -18,7 +18,12 @@ extension GameSession {
 
     /// SAV-040: the newest autosave or Ironman slot that has not ended.
     var continueCandidate: SlotInfo? {
-        listSlots().first { ($0.isAutosave || $0.summary.ironman) && !$0.summary.ended }
+        Self.continueCandidate(in: listSlots())
+    }
+
+    /// SAV-040 over a newest-first list (shared with `CommanderStatusQuery`).
+    nonisolated static func continueCandidate(in slots: [SlotInfo]) -> SlotInfo? {
+        slots.first { ($0.isAutosave || $0.summary.ironman) && !$0.summary.ended }
     }
 
     /// The game id passed to `loadForPlay`: the loaded game, or nil when none is loaded or it has ended (SAV-034).
@@ -41,7 +46,7 @@ extension GameSession {
             let loaded = try slotStore.loadForPlay(slot: slotID, revert: revert, currentGameID: currentGameIDForReload)
             install(loaded)
         } catch {
-            present(.systemAlert(.openFailed(reason: String(describing: error), suggestion: nil)))
+            present(SlotText.openFailedAlert(error).presentation)
         }
     }
 
@@ -75,7 +80,7 @@ extension GameSession {
             lastManualSaveDays = state.commander.days
             appendNote(.gameSaved)
         } catch {
-            present(.systemAlert(.saveFailed(reason: String(describing: error))))
+            present(.systemAlert(.saveFailed(reason: SlotText.saveFailure(error))))
         }
     }
 
@@ -97,7 +102,7 @@ extension GameSession {
             try slotStore.delete(slot: id)
             if currentSlotID == id { currentSlotID = nil }
         } catch {
-            present(.systemAlert(.saveFailed(reason: String(describing: error))))
+            present(.systemAlert(.saveFailed(reason: SlotText.saveFailure(error))))
         }
     }
 
@@ -107,7 +112,48 @@ extension GameSession {
             let id = try slotStore.importSave(data)
             present(.appConfirmation(.loadImportedSave(id)))
         } catch {
-            present(.systemAlert(.openFailed(reason: String(describing: error), suggestion: nil)))
+            present(SlotText.openFailedAlert(error).presentation)
+        }
+    }
+
+    /// SAV-030: imports a file chosen in the import panel or opened from Finder (security-scoped in the sandbox).
+    func importFile(at url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        do {
+            importSave(try Data(contentsOf: url))
+        } catch {
+            present(SlotText.openFailedAlert(error).presentation)
+        }
+    }
+
+    /// UI-SHELL-093: Finder-open imports each file in turn; the confirmations queue one at a time.
+    func openFromFinder(_ urls: [URL]) {
+        for url in urls { importFile(at: url) }
+    }
+
+    /// UI-SHELL-092: the export of the current game, or nil (with an alert on failure) when there is none.
+    func makeCurrentExport() -> PendingExport? {
+        guard let state else { return nil }
+        do {
+            guard let data = try exportCurrentGame() else { return nil }
+            return PendingExport(document: SaveFileDocument(data: data),
+                                 defaultName: SlotText.exportBaseName(commander: state.commander.name, day: state.commander.days))
+        } catch {
+            present(.systemAlert(.saveFailed(reason: SlotText.saveFailure(error))))
+            return nil
+        }
+    }
+
+    /// UI-SHELL-092: the export of a stored slot (Open sheet), or nil with an alert.
+    func makeSlotExport(_ slot: SlotInfo) -> PendingExport? {
+        do {
+            let data = try slotStore.exportSave(slot: slot.id)
+            return PendingExport(document: SaveFileDocument(data: data),
+                                 defaultName: SlotText.exportBaseName(commander: slot.summary.commander, day: slot.summary.day))
+        } catch {
+            present(SlotText.openFailedAlert(error).presentation)
+            return nil
         }
     }
 
@@ -122,7 +168,29 @@ extension GameSession {
         do {
             try highScoreStore.clear(ruleset)
         } catch {
-            present(.systemAlert(.saveFailed(reason: String(describing: error))))
+            present(.systemAlert(.saveFailed(reason: SlotText.saveFailure(error))))
         }
+    }
+}
+
+/// Caches `SlotStore.list()` per store until the Saves folder changes (menus re-read it on every session change).
+@MainActor
+enum SlotListCache {
+    private struct Entry {
+        var stamp: Date?
+        var slots: [SlotInfo]
+    }
+
+    private static var entries: [URL: Entry] = [:]
+
+    static func slots(of store: SlotStore) -> [SlotInfo] {
+        let dir = store.savesDirectory
+        let stamp = (try? dir.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        if let e = entries[dir], e.stamp == stamp, stamp != nil { return e.slots }
+        let slots = ((try? store.list()) ?? []).sorted { $0.modified > $1.modified }
+        // Listing can quarantine files, which changes the folder again: stamp after listing.
+        let after = (try? dir.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        entries[dir] = Entry(stamp: after, slots: slots)
+        return slots
     }
 }

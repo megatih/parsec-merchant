@@ -5,6 +5,8 @@
 | ID / Item | Evidence | Status |
 |---|---|---|
 | APP-003 product naming | `project.xcproj`: PRODUCT_NAME "Parsec Merchant", bundle ids per ADR-0001 | ✓ |
+| UI-SHELL-107 credits visible | `LICENSE` and `CREDITS.md` are bundled as `Resources/Legal/License.txt` and `AppCredits.md` (an app test checks they equal the repo files); About shows the credits, the GPL notice and View License. Screenshot due with the M7 UI run. | partly (screenshot pending) |
+| UI-SHELL-108 no popovers | SwiftLint custom rule `no_popover` (`.swiftlint.yml`) runs in `verify.sh` step 6 with `--strict` over every Swift file. | ✓ |
 
 ## Accepted assumptions
 

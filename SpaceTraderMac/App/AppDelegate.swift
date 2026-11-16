@@ -7,12 +7,15 @@ import ParsecPersistence
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let launchOptions: LaunchOptions
     let session: GameSession
+    let helpRouter = HelpRouter()
 
     override init() {
         let options = LaunchOptions.current
         launchOptions = options
         session = AppBootstrap.makeSession(options: options, defaults: .standard)
         super.init()
+        // App Intents reach the session through this bridge (UI-SHELL-112…114).
+        IntentSessionBridge.session = session
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -36,13 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Finder-open of `.parsecsave` files (UI-SHELL-093): each file is imported and offered in turn.
     func application(_ application: NSApplication, open urls: [URL]) {
-        for url in urls {
-            guard let data = try? Data(contentsOf: url) else {
-                session.present(.systemAlert(.openFailed(reason: url.lastPathComponent, suggestion: nil)))
-                continue
-            }
-            session.importSave(data)
-        }
+        session.openFromFinder(urls)
     }
 }
 

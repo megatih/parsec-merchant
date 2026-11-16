@@ -19,7 +19,13 @@ struct SheetRouteView: View {
             ShipPurchaseSheet(request: request)
         case .findSystem:
             FindSystemSheet()
-        case .openSavedGame, .gameOptions, .cheatConsole, .encounterInterim:
+        case .openSavedGame:
+            OpenSavedGameSheet()
+        case .gameOptions:
+            GameOptionsSheet()
+        case .cheatConsole:
+            CheatConsoleSheet()
+        case .encounterInterim:
             PlaceholderSheet(route: route)
         }
     }
