@@ -24,6 +24,8 @@ final class GameSession {
     private(set) var pendingPresentations: [Presentation] = []
     var selectedSection: Section = .bridge
     var marketSelection: TradeItemType?
+    /// Find System's "Track this system" toggle, remembered for the session as in C# (UI-SHELL-085).
+    var findTrackSystem = false
     /// The last rejected command's reason, shown briefly in the status bar (UI-SHELL-045).
     private(set) var lastRejection: CommandError?
     /// Bumped on every rejection so views can restart their 4-second timer even for a repeated error.
