@@ -58,6 +58,10 @@ public struct RuleFlags: Sendable {
     public var tradeInOrbitCashCapUsesOrbitPrice: Bool
     /// MOD-005: random skill increases can reach 10 (C# stops at 9: CRW-052).
     public var randomSkillIncreaseReachesTen: Bool
+    /// MOD-020: the Wasp can be a random opponent (C# weights only ships 0…8).
+    public var waspOpponentReachable: Bool
+    /// MOD-009: the Kravat/Wild engineer boost checks Wild aboard the player's ship (C# checks the opponent: never true).
+    public var kravatEngineerChecksPlayerWild: Bool
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -100,7 +104,8 @@ public struct Ruleset: Sendable {
             centralOffset: 13, startingCash: 1000),
         flags: RuleFlags(distance: .floor, distinctShipyards: false, resourcesAffectUnvisitedSystems: false,
                          resetPriceCargoOnHoldClear: false, restockUsesOwnSystemItemTraded: false,
-                         tradeInOrbitCashCapUsesOrbitPrice: false, randomSkillIncreaseReachesTen: false),
+                         tradeInOrbitCashCapUsesOrbitPrice: false, randomSkillIncreaseReachesTen: false,
+                         waspOpponentReachable: false, kravatEngineerChecksPlayerWild: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
                               hasHiddenBays: true, mercenariesPerSystem: 3),
         rngKind: .dotNet, newspaperRNG: .csharp)
@@ -116,6 +121,8 @@ public struct Ruleset: Sendable {
         r.flags.restockUsesOwnSystemItemTraded = true
         r.flags.tradeInOrbitCashCapUsesOrbitPrice = true
         r.flags.randomSkillIncreaseReachesTen = true
+        r.flags.waspOpponentReachable = true
+        r.flags.kravatEngineerChecksPlayerWild = true
         return r
     }()
 

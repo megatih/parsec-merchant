@@ -24,6 +24,7 @@ namespace Fryz.Apps.SpaceTrader
 			if (cmd == "rng" || cmd == "all") Write(dir, "rng-dotnet.json", Rng());
 			if (cmd == "galaxy" || cmd == "all") Write(dir, "galaxy-windows201.json", Galaxies());
 			if (cmd == "market" || cmd == "all") Write(dir, "market-windows201.json", MarketSteps());
+			if (cmd == "opponents" || cmd == "all") Write(dir, "opponents-windows201.json", Opponents());
 			return 0;
 		}
 
@@ -123,6 +124,48 @@ namespace Fryz.Apps.SpaceTrader
 							buyPrices = (int[])game.PriceCargoBuy.Clone(), sellPrices = (int[])game.PriceCargoSell.Clone() });
 					}
 					list.Add(new { seed, difficulty = (int)d, steps });
+				}
+			}
+			return list;
+		}
+
+		static object ShipDump(Ship sh)
+		{
+			var w = new List<int>(); foreach (Weapon x in sh.Weapons) w.Add(x == null ? -1 : (int)x.Type);
+			var sl = new List<int>(); var sc = new List<int>(); foreach (Shield x in sh.Shields) { sl.Add(x == null ? -1 : (int)x.Type); sc.Add(x == null ? 0 : x.Charge); }
+			var g = new List<int>(); foreach (Gadget x in sh.Gadgets) g.Add(x == null ? -1 : (int)x.Type);
+			var crew = new List<object>(); foreach (CrewMember c in sh.Crew) crew.Add(c == null ? null : (object)new { id = (int)c.Id, skills = (int[])c.Skills.Clone() });
+			return new { type = (int)sh.Type, hull = sh.Hull, fuel = sh.Fuel, weapons = w, shields = sl, charges = sc, gadgets = g, cargo = (int[])sh.Cargo.Clone(), crew };
+		}
+
+		/// Opponent generation: for several games, warp targets, records and worth levels, generate opponents in sequence.
+		static object Opponents()
+		{
+			var list = new List<object>();
+			foreach (int seed in new[] { 3, 42 })
+			{
+				foreach (Difficulty d in new[] { Difficulty.Beginner, Difficulty.Normal, Difficulty.Impossible })
+				{
+					SeedRandom(seed);
+					var game = new Game("Harness", d, 5, 5, 5, 5, new SpaceTrader());
+					var cases = new List<object>();
+					int n = 0;
+					foreach (int cash in new[] { 1000, 400000, 2000000 })
+					{
+						foreach (int record in new[] { 10, -10, -80, -150 })
+						{
+							foreach (OpponentType t in new[] { OpponentType.Pirate, OpponentType.Police, OpponentType.Trader, OpponentType.Mantis, OpponentType.FamousCaptain, OpponentType.Bottle })
+							{
+								int warp = (n * 29 + seed) % game.Universe.Length; n++;
+								typeof(Game).GetField("_warpSystemId", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(game, (StarSystemId)warp);
+								game.Commander.Cash = cash;
+								game.Commander.PoliceRecordScore = record;
+								var opp = new Ship(t);
+								cases.Add(new { warp, cash, record, oppType = (int)t, ship = ShipDump(opp) });
+							}
+						}
+					}
+					list.Add(new { seed, difficulty = (int)d, cases });
 				}
 			}
 			return list;
