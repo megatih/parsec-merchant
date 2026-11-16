@@ -7,7 +7,7 @@ public enum WarningID: String, Codable, Sendable, Hashable, CaseIterable {
     case submitWithNothingIllegal, surrenderToPolice, bribe
     case buyEquipment, sellEquipment, buyShip, fireMercenary, stopInsurance
     case wildLeavesWithoutLaser, wildLeavesForReactor, litteringWarning, useSingularity, retire
-    case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain, buyEscapePod, nothingIllegal, surrenderArtifact, submitInspection
+    case drinkTonic, boardMarieCeleste, takeMarieCargo, meetCaptain, buyEscapePod, nothingIllegal, surrenderArtifact, submitInspection, buyNewspaper
 }
 
 /// A consent request returned instead of performing a command.
@@ -163,6 +163,7 @@ public enum PendingDecision: Codable, Sendable, Equatable {
     case tradeInOrbit(OrbitTradeOffer)
     case plunder([Int])
     case scoop(TradeItemType)
+    case newspaper(Newspaper)
 }
 
 /// The result of performing a command.
@@ -208,6 +209,7 @@ public enum Command: Codable, Sendable, Equatable {
     case plunderTake(TradeItemType, quantity: Int)
     case plunderDone
     case resolveScoop(accept: Bool)
+    case readNewspaper
     case selectTarget(Int)
     case track(Int?)
 }
@@ -315,6 +317,7 @@ public struct GameEngine: Sendable {
         case let .plunderTake(item, q): return plunderTake(item, q)
         case .plunderDone: return plunderDone()
         case let .resolveScoop(accept): return resolveScoop(accept: accept)
+        case .readNewspaper: return readNewspaper(ack)
         case .setOptions, .selectTarget, .track: return .rejected(.invalidArgument)
         }
     }

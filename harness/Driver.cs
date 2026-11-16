@@ -29,6 +29,7 @@ namespace Fryz.Apps.SpaceTrader
 			if (cmd == "combat" || cmd == "all") Write(dir, "combat-windows201.json", Combat());
 			if (cmd == "travel" || cmd == "all") Write(dir, "travel-windows201.json", Travel());
 			if (cmd == "actions" || cmd == "all") Write(dir, "actions-windows201.json", Actions());
+			if (cmd == "strings" || cmd == "travel" || cmd == "all") Write(dir, "news-strings.json", NewsStrings());
 			return 0;
 		}
 
@@ -271,7 +272,8 @@ namespace Fryz.Apps.SpaceTrader
 							days = game.Commander.Days, cash = game.Commander.Cash, debt = game.Commander.Debt,
 							record = game.Commander.PoliceRecordScore, fuel = game.Commander.Ship.Fuel, hull = game.Commander.Ship.Hull,
 							shields = Charges(game.Commander.Ship), buy = (int[])game.PriceCargoBuy.Clone(), sell = (int[])game.PriceCargoSell.Clone(),
-							stock = (int[])sys.TradeItems.Clone(), news, opponentSkills = (int[])game.Mercenaries[(int)CrewMemberId.Opponent].Skills.Clone() });
+							stock = (int[])sys.TradeItems.Clone(), news, opponentSkills = (int[])game.Mercenaries[(int)CrewMemberId.Opponent].Skills.Clone(),
+							paperHead = game.NewspaperHead, paperText = game.NewspaperText });
 					}
 					list.Add(new { seed, difficulty = (int)d, warps });
 				}
@@ -347,6 +349,12 @@ namespace Fryz.Apps.SpaceTrader
 			}
 			return list;
 		}
+
+		static object NewsStrings() => new {
+			mastheads = Strings.NewsMastheads, headlines = Strings.NewsHeadlines, villain = Strings.NewsPoliceRecordPsychopath,
+			hero = Strings.NewsPoliceRecordHero, external = Strings.NewsPressureExternal, externalPressures = Strings.NewsPressureExternalPressures,
+			internalPressure = Strings.NewsPressureInternal, events = Strings.NewsEvent, moon = Strings.NewsMoonForSale,
+			tribbleBuyer = Strings.NewsTribbleBuyer, shipyard = Strings.NewsShipyard, systems = Strings.SystemNames, ships = Strings.ShipNames };
 
 		static int[] Charges(Ship sh)
 		{
