@@ -27,8 +27,8 @@
 
 ## 4. Failure paths
 
-- **QST-JAPORI-009** {M4} [M][W] Escape pod with `japori == 1` (POL-104 step 4): `japori = 0` and event `antidoteDestroyed(returnTo:)` (ALR-003). `returnTo` is the id of the first system, in index order, whose event is `japori`. Because the pickup was kept, it shows again at that system once the record is ≥ −5. (source: Game.cs:2047-2053)
-- **QST-JAPORI-010** {M4} [M][W] Arrest with `japori == 1` (POL-093 step 10): `japori = 2` and event `antidoteTakenOnArrest` (ALR-004). The Space Corps completes the delivery, but the commander gets **no** skill increase. The quest is over, and the pickup stays on its system but hidden. (source: Game.cs:273-277)
+- **QST-JAPORI-009** {M4} [M][W] Escape pod with `japori == 1` (POL-104 step 4): `japori = 0`. There is no separate event (POL-093/104 decision): the app derives the "antidote destroyed" notice (ALR-003) by comparing the state before and after the `escapePodUsed` step, and its "return to" system is the first system, in index order, whose event is `japori`. Because the pickup was kept, it shows again at that system once the record is ≥ −5. (source: Game.cs:2047-2053)
+- **QST-JAPORI-010** {M4} [M][W] Arrest with `japori == 1` (POL-093 step 10): `japori = 2`. There is no separate event: the app derives the "antidote taken" notice (ALR-004) by comparing the state before and after the `arrested` step. The Space Corps completes the delivery, but the commander gets **no** skill increase. The quest is over, and the pickup stays on its system but hidden. (source: Game.cs:273-277)
 - **QST-JAPORI-011** {M5} [P] Palm arrest sets status 2 (POL-098). The Palm escape pod sets status 0 (POL-107), and with `japoriPickupPersists == false` the quest cannot be restarted. (source: Palm: Src/Encounter.c:600-603, :713-716)
 - **QST-JAPORI-012** {M4} [M][W][P] The quest has no deadline: no `IncDays` rule reads `quests.japori`.
 
@@ -39,4 +39,4 @@
 ## 6. Scenarios
 
 - **QST-JAPORI-014** {M4} [M][W] Scenario (happy path): with record 0 and 12 free bays, `.specialEvent` at the pickup returns the `.acceptSpecialEvent` confirmation. With consent, `japori == 1`, free bays are 2, and the pickup is still on the system but hidden. Warp to Japori and take `japoriDelivery`: `japori == 2`, two random skill increases (scripted RNG decides which), 12 free bays, and Japori has no event.
-- **QST-JAPORI-015** {M4} [M][W] Scenario (failures): (a) with 9 free bays the consented accept returns `.noEmptyBays` with the state unchanged. (b) With record −6 the pickup is hidden. (c) With the antidote aboard, lose the ship with a pod: `japori == 0` with `antidoteDestroyed(returnTo: pickup)`, and back at the pickup (record ≥ −5) the button shows again. (d) With the antidote aboard, get arrested: `japori == 2` with `antidoteTakenOnArrest`, the commander's skills are unchanged, and no Japori button appears.
+- **QST-JAPORI-015** {M4} [M][W] Scenario (failures): (a) with 9 free bays the consented accept returns `.noEmptyBays` with the state unchanged. (b) With record −6 the pickup is hidden. (c) With the antidote aboard, lose the ship with a pod: `japori == 0`, the first system holding `japori` is the pickup, and back at the pickup (record ≥ −5) the button shows again. (d) With the antidote aboard, get arrested: `japori == 2`, the commander's skills are unchanged, and no Japori button appears.
