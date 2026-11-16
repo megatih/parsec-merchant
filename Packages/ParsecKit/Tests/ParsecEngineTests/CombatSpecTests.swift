@@ -421,7 +421,7 @@ struct CombatSpecTests {
                     let roll = copy.next(below: 33)
                     guard roll > 0 else { continue }
                     var dmg = min(50, max(1, roll - copy.next(below: 4)))
-                    if scarabDone, ruleset == .windows201 { dmg /= 2 }  // Modern (MOD-004) never halves an opponent's damage
+                    if scarabDone, ruleset == .windows201 { dmg /= 2 }  // Modern (RUL-104) never halves an opponent's damage
                     _ = s.executeAttack(commanderAttacks: true, fleeing: false, encounter: &enc)
                     #expect(enc.opponent.hull == 100 - dmg)
                     checked += 1
