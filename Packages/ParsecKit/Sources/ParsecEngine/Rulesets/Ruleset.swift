@@ -72,6 +72,8 @@ public struct RuleFlags: Sendable {
     public var marieCelesteChecksDestination: Bool
     /// MOD-002: the arrest fine never goes negative (C# can pay a commander with a positive record).
     public var arrestFineNeverNegative: Bool
+    /// MOD-012 (RUL-112): pirate looting clamps the hidden-bay protection (C# `RemoveRange` throws: POL-080).
+    public var pirateLootHiddenBaysClamp = false
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -140,6 +142,7 @@ public struct Ruleset: Sendable {
         r.flags.hardenedHullProtectsPlayerOnly = true
         r.flags.marieCelesteChecksDestination = true
         r.flags.arrestFineNeverNegative = true
+        r.flags.pirateLootHiddenBaysClamp = true
         return r
     }()
 

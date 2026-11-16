@@ -16,12 +16,7 @@ public extension GameState {
     }
 
     /// C# `PoliceRecord.GetPoliceRecordFromScore` for the commander.
-    var policeRecord: PoliceRecordType {
-        let mins = [-100, -70, -30, -10, -5, 0, 5, 10, 25, 75]
-        var i = 0
-        while i < mins.count, commander.policeRecordScore >= mins[i] { i += 1 }
-        return PoliceRecordType(rawValue: max(0, i - 1)) ?? .psychopath
-    }
+    var policeRecord: PoliceRecordType { PoliceRecordType(score: commander.policeRecordScore) }
 
     /// C# `StarSystem.DestOk`.
     func destinationOK(_ target: Int) -> Bool {
