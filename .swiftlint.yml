@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+excluded:
+  - .build
+  - Packages/ParsecKit/.build
+  - build
+  - docs
+  - harness
+  - DerivedData
+opt_in_rules:
+  - force_unwrapping
+disabled_rules:
+  - todo
+  - nesting
+  - trailing_comma
+  - opening_brace
+force_try: error
+force_cast: error
+force_unwrapping: error
+line_length:
+  warning: 160
+  error: 220
+  ignores_comments: true
+  ignores_urls: true
+  ignores_interpolated_strings: true
+file_length:
+  warning: 900
+  error: 1600
+  ignore_comment_only_lines: true
+type_body_length:
+  warning: 500
+  error: 900
+function_body_length:
+  warning: 120
+  error: 250
+cyclomatic_complexity:
+  warning: 30
+  error: 60
+large_tuple:
+  warning: 4
+  error: 6
+identifier_name:
+  min_length: 1
+  max_length: 60
+  excluded: [id, x, y, i, j, k, n, p, q, r, w, h, d, t]
+type_name:
+  min_length: 2
+  max_length: 60
+function_parameter_count:
+  warning: 8
+  error: 12
+custom_rules:
+  engine_no_ui_imports:
+    name: "ParsecEngine must stay UI-free"
+    included: "Packages/ParsecKit/Sources/ParsecEngine/.*\\.swift"
+    regex: "^import (SwiftUI|AppKit|Combine)"
+    message: "ParsecEngine must not import SwiftUI, AppKit or Combine (PRD §6.2)"
+    severity: error
+  no_popover:
+    name: "No popovers (macOS 27 crash)"
+    included: ".*\\.swift"
+    regex: "\\.popover\\("
+    message: "Use overlays, sheets or the inspector instead of .popover (PRD §6.5)"
+    severity: error
