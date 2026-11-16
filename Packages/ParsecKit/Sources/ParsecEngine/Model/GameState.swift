@@ -125,6 +125,8 @@ public struct GameState: Codable, Sendable, Equatable {
     public var warpSystem: Int
     public var trackedSystem: Int?
     public var targetWormhole = false
+    /// A trade-in-orbit offer awaiting the player's quantity (ECO-081).
+    public var pendingOrbitTrade: OrbitTradeOffer?
     public var phase: GamePhase = .docked
     public var cheatsUsed = false
     public var reloadCount = 0

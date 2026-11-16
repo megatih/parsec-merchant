@@ -52,6 +52,10 @@ public struct RuleFlags: Sendable {
     public var resourcesAffectUnvisitedSystems: Bool
     /// MOD-001: reset the cargo cost basis whenever the hold is cleared (C# keeps it: infinite-money exploit).
     public var resetPriceCargoOnHoldClear: Bool
+    /// MOD-007: restock drift tests each system's own `ItemTraded` (C# tests the arrival system: ECO-037).
+    public var restockUsesOwnSystemItemTraded: Bool
+    /// MOD-008: in-orbit purchases are capped using the in-orbit price (C# uses the system price: ECO-068).
+    public var tradeInOrbitCashCapUsesOrbitPrice: Bool
 }
 
 /// Large content differences (quest sets, shipyards, disruptors…).
@@ -93,7 +97,8 @@ public struct Ruleset: Sendable {
             systemNames: GameNames.systems, galaxyWidth: 154, galaxyHeight: 110, minDistance: 7, closeDistance: 13,
             centralOffset: 13, startingCash: 1000),
         flags: RuleFlags(distance: .floor, distinctShipyards: false, resourcesAffectUnvisitedSystems: false,
-                         resetPriceCargoOnHoldClear: false),
+                         resetPriceCargoOnHoldClear: false, restockUsesOwnSystemItemTraded: false,
+                         tradeInOrbitCashCapUsesOrbitPrice: false),
         content: ContentPacks(hasShipyards: true, hasSculptureQuest: true, hasPrincessQuest: true, hasDisruptors: true,
                               hasHiddenBays: true, mercenariesPerSystem: 3),
         rngKind: .dotNet, newspaperRNG: .csharp)
@@ -106,6 +111,8 @@ public struct Ruleset: Sendable {
         r.flags.distinctShipyards = true
         r.flags.resourcesAffectUnvisitedSystems = true
         r.flags.resetPriceCargoOnHoldClear = true
+        r.flags.restockUsesOwnSystemItemTraded = true
+        r.flags.tradeInOrbitCashCapUsesOrbitPrice = true
         return r
     }()
 

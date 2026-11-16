@@ -89,11 +89,13 @@ public enum GameEvent: Codable, Sendable, Equatable {
     case insuranceBought
     case insuranceStopped
     case optionsChanged
+    case orbitTradeCompleted(direction: OrbitTradeDirection, item: TradeItemType, quantity: Int, total: Int)
 }
 
 /// A decision the engine needs before it can continue.
 public enum PendingDecision: Codable, Sendable, Equatable {
     case confirm(Confirmation)
+    case tradeInOrbit(OrbitTradeOffer)
 }
 
 /// The result of performing a command.
@@ -131,6 +133,7 @@ public enum Command: Codable, Sendable, Equatable {
     case sellShield(index: Int)
     case sellGadget(index: Int)
     case buyShip(ShipType, transfers: [TransferItem])
+    case resolveTradeInOrbit(quantity: Int)
     case selectTarget(Int)
     case track(Int?)
 }
@@ -185,6 +188,28 @@ public struct GameEngine: Sendable {
         }
     }
 
+    /// ECO-081: opens a trade-in-orbit decision with the current encounter's trader (called when the player picks Trade).
+    mutating func startOrbitTrade(direction: OrbitTradeDirection) -> StepResult {
+        guard case let .encounter(enc) = state.phase else { return .rejected(.notAllowedInPhase) }
+        guard let offer = state.makeOrbitTradeOffer(direction: direction, trader: enc.opponent) else {
+            return .rejected(.cargoNoneToSell)
+        }
+        state.pendingOrbitTrade = offer
+        return StepResult(events: [], decision: .tradeInOrbit(offer), rejection: nil)
+    }
+
+    /// ECO-081: accepts `0...maxQuantity` units of the pending offer (0 declines).
+    mutating func resolveTradeInOrbit(_ q: Int) -> StepResult {
+        guard let offer = state.pendingOrbitTrade, case var .encounter(enc) = state.phase else {
+            return .rejected(.notAllowedInPhase)
+        }
+        guard q >= 0, q <= offer.maxQuantity else { return .rejected(.invalidQuantity) }
+        state.pendingOrbitTrade = nil
+        let event = state.resolveOrbitTrade(offer, quantity: q, trader: &enc.opponent)
+        state.phase = .encounter(enc)
+        return StepResult(events: event.map { [$0] } ?? [])
+    }
+
     /// Economy and services commands (M2). Implemented in Systems/Economy and Systems/Services.
     mutating func applyEconomy(_ command: Command, acknowledging ack: Set<WarningID>) -> StepResult {
         switch command {
@@ -208,6 +233,7 @@ public struct GameEngine: Sendable {
         case let .sellShield(i): return sellEquipment(shieldIndex: i, ack)
         case let .sellGadget(i): return sellEquipment(gadgetIndex: i, ack)
         case let .buyShip(t, transfers): return buyShip(t, accepting: transfers, ack)
+        case let .resolveTradeInOrbit(q): return resolveTradeInOrbit(q)
         case .setOptions, .selectTarget, .track: return .rejected(.invalidArgument)
         }
     }

@@ -23,6 +23,7 @@ namespace Fryz.Apps.SpaceTrader
 			Directory.CreateDirectory(dir);
 			if (cmd == "rng" || cmd == "all") Write(dir, "rng-dotnet.json", Rng());
 			if (cmd == "galaxy" || cmd == "all") Write(dir, "galaxy-windows201.json", Galaxies());
+			if (cmd == "market" || cmd == "all") Write(dir, "market-windows201.json", MarketSteps());
 			return 0;
 		}
 
@@ -87,6 +88,44 @@ namespace Fryz.Apps.SpaceTrader
 				commander = new { system = (int)cmdr.CurrentSystemId, cash = cmdr.Cash, ship = (int)cmdr.Ship.Type, fuel = cmdr.Ship.Fuel, hull = cmdr.Ship.Hull },
 				buyPrices = game.PriceCargoBuy, sellPrices = game.PriceCargoSell
 			};
+		}
+
+		/// Restock/pressure/price evolution: after construction, set countdowns, mark some systems visited,
+		/// choose a warp system and run ArrivalUpdatePressuresAndQuantities + CalculatePrices(warp) several times.
+		static object MarketSteps()
+		{
+			var list = new List<object>();
+			MethodInfo arrive = typeof(Game).GetMethod("ArrivalUpdatePressuresAndQuantities", BindingFlags.NonPublic | BindingFlags.Instance);
+			MethodInfo calc = typeof(Game).GetMethod("CalculatePrices", BindingFlags.NonPublic | BindingFlags.Instance);
+			foreach (int seed in new[] { 7, 42 })
+			{
+				foreach (Difficulty d in new[] { Difficulty.Easy, Difficulty.Hard })
+				{
+					SeedRandom(seed);
+					var game = new Game("Harness", d, 5, 5, 5, 5, new SpaceTrader());
+					var steps = new List<object>();
+					for (int step = 0; step < 6; step++)
+					{
+						int warp = (step * 37 + seed) % game.Universe.Length;
+						for (int i = 0; i < game.Universe.Length; i += 3) game.Universe[i].CountDown = (i + step) % 7;
+						for (int i = 0; i < game.Universe.Length; i += 5) game.Universe[i].Visited = true;
+						game.Commander.PoliceRecordScore = step % 2 == 0 ? 0 : -10;
+						typeof(Game).GetField("_warpSystemId", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(game, (StarSystemId)warp);
+						arrive.Invoke(game, null);
+						calc.Invoke(game, new object[] { game.Universe[warp] });
+						var qty = new List<int[]>(); var press = new List<int>(); var cd = new List<int>();
+						foreach (StarSystem sys in game.Universe)
+						{
+							var q = new int[10]; for (int i = 0; i < 10; i++) q[i] = sys.TradeItems[i];
+							qty.Add(q); press.Add((int)sys.SystemPressure); cd.Add(sys.CountDown);
+						}
+						steps.Add(new { warp, record = game.Commander.PoliceRecordScore, quantities = qty, pressures = press, countdowns = cd,
+							buyPrices = (int[])game.PriceCargoBuy.Clone(), sellPrices = (int[])game.PriceCargoSell.Clone() });
+					}
+					list.Add(new { seed, difficulty = (int)d, steps });
+				}
+			}
+			return list;
 		}
 
 		/// StarSystem.SpecialResource hides the value until visited; read the backing field instead.
