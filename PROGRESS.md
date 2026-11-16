@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M4 (starting)
-- **Next step:** M4: integrate QST-* chain specs (two spec agents running) and SCORE.md; trace {M4} IDs with QST scenario tests per chain incl. failures (delegate per chain group in worktrees); retire docked-only check (SCORE); align ALR {M4} rows; then verify default, tag m4-done.
-- **Last gate result:** verify.sh --quick ALL GATES PASSED (special events + endings commit)
+- **Current milestone:** M5 (starting)
+- **Next step:** M5: Palm 1.2.2 content pack + flags (RUL.md rows: tables, 120-system galaxy, distance rounding, quest subset, Palm RNG back-end, police constants, newspaper variant…) and Modern fixes (MOD-*); trace {M5} IDs (RUL/MOD and the [P]/{M5} bullets across specs); differential checks vs Palm source where feasible.
+- **Last gate result:** verify.sh default ALL GATES PASSED @ M4 exit (7/7; 0 untraced {M4} IDs; 744+ tests)
 - **Blockers:** none
 
 ## Milestones
@@ -13,7 +13,7 @@
 - [x] M1 RNGs, tables, galaxy generation (2026-11-17, tag m1-done; RNG bit-exact vs .NET, galaxy bit-exact vs C# harness on 21 snapshots, invariants on 1000 seeds × 2 rulesets)
 - [x] M2 Economy and services (2026-11-17, tag m2-done; 146 tests; engine coverage 94.2%; market evolution bit-exact vs harness; designer)
 - [x] M3 Travel, encounters, combat, police, news (2026-11-17, tag m3-done; opponents/combat/journeys/actions/newspaper bit-exact vs C# harness; fuzz 6000 games 0 violations; 382+ tests)
-- [ ] M4 Quests, endings, scoring
+- [x] M4 Quests, endings, scoring (2026-11-17, tag m4-done; 46 special events bit-exact vs C# harness; QST scenario tests per chain incl. failures; SCORE; tribble/passenger notices)
 - [ ] M5 Rulesets (Palm 1.2.2 and Modern)
 - [ ] M6 Persistence, high scores, cheats
 - [ ] M7 App shell and docked screens
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M4 exit: 15 QST chain specs + index (304 IDs) and SCORE (41); four worktree agents traced all {M4} IDs with multi-step chain scenarios; engine additions: passengerConcerned/Impatient, tribblesDied/AteFood/InspectorWarning notices, retire docked-only. Decision: arrest/pod quest losses are derived by the app from state (no separate events). POL-085 retagged M5.
 - 2026-11-17: M4 started: Command.specialEvent ports ShowSpecialButton + HandleSpecialEvent for all 46 events, bit-exact vs C# quest harness (46 events × 4 ship setups × 2 seeds); retire; C# score formula with Int32 wrap; gameEnded(type, score:) on every ending. SCORE.md written (top 10 per ruleset per PRD §6.4).
 - 2026-11-17: M3 exit: five worktree agents traced all {M3} IDs (ENC, CMB, POL, TRV/NEWS, ALR/BNK/CRW); engine fixes found by tracing: Int32 arrest-fine wrap, Windows hidden-bay raid abort (+Modern clamp flag), quest-ship damage persists, stop while auto-repeating, Marie Celeste narcotics comparison, tribble sprite draws, initial oppFleeing, playerCloaked only for cloak-caused ignores, singularity consent/loss, selectWormhole/selectNextTarget, previews. Single arrested/escapePodUsed events (app derives report sections from state). Retags: ENC-188→M9, BNK-026/048 & CRW-048→M5.
 - 2026-11-17: M3: encounter actions + Arrested bit-exact vs C# action harness; newspaper bit-exact (225 arrivals); real pmsim fuzz (2000 games × 3 rulesets, invariants, replay every 50th game, 0 violations); ENC/CMB/POL/TRV/NEWS specs written; action availability table, autoRepeat/resolve, encounter preview. 397 {M3} IDs were untraced; tracing delegated to five worktree agents.
