@@ -75,7 +75,8 @@ case "write-save-fixtures":
         exit(1)
     }
 case "bench":
-    print("pmsim bench: benchmarks start in M8 — no-op PASS")
+    // PRD §8.1: engine perform and arrival medians against their budgets; --check fails when over budget.
+    exit(runBench(check: args.options["check"] != nil))
 default:
     print("pmsim \(ParsecEngineInfo.version) — usage: pmsim fuzz|bench|replay|scenario|bot|dump-galaxy [--ruleset r|all] [--seed n]")
 }
