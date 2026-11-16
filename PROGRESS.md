@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M5 (starting)
-- **Next step:** M5: five worktree agents implementing + tracing rulesets (Content/Galaxy/RNG incl. Palm122Tables; Economy/Ships/Crew/Bank; Travel/News/Score; Encounters/Combat/Police; Quests), flags in per-area Rulesets/*Rules.swift. Then merge, resolve [verify] marks (or log accepted assumptions), check ≥400 spec IDs, fuzz all rulesets, verify default, tag m5-done.
+- **Next step:** M5: finish the last 38 cross-area {M5} IDs + remaining [verify] marks (agent running in a worktree), merge, fuzz all rulesets, verify default, tag m5-done; then M6 persistence.
 - **Last gate result:** verify.sh default ALL GATES PASSED @ M4 exit (7/7; 0 untraced {M4} IDs; 744+ tests)
 - **Blockers:** none
 
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M5: five area branches merged (Palm content pack + galaxy; economy; travel/news/score; encounters/combat/police; quests). Deduplicated flags (one per behaviour: moon-girl → quest, record decay → travel, Wild laser/quest-ship damage → quest); Palm arrest/pod run Arrival() once (meltdown twice); 971 tests; fuzz clean on all rulesets; 1530 spec IDs (≥400 ✓). MOD-n cited as RUL-1nn in tests.
 - 2026-11-17: M5 started: 411 {M5} IDs (137 RUL). Added per-area rule groups (GalaxyRules, EconomyRules, TravelRules, EncounterRules, QuestRules) under RuleFlags so parallel agents never edit the same struct.
 - 2026-11-17: M4 exit: 15 QST chain specs + index (304 IDs) and SCORE (41); four worktree agents traced all {M4} IDs with multi-step chain scenarios; engine additions: passengerConcerned/Impatient, tribblesDied/AteFood/InspectorWarning notices, retire docked-only. Decision: arrest/pod quest losses are derived by the app from state (no separate events). POL-085 retagged M5.
 - 2026-11-17: M4 started: Command.specialEvent ports ShowSpecialButton + HandleSpecialEvent for all 46 events, bit-exact vs C# quest harness (46 events × 4 ship setups × 2 seeds); retire; C# score formula with Int32 wrap; gameEnded(type, score:) on every ending. SCORE.md written (top 10 per ruleset per PRD §6.4).
