@@ -105,18 +105,16 @@ struct CaptainsLogView: View {
 
     var body: some View {
         if let state = session.state, let journal = session.journal {
-            let _ = session.journalRevision
-            let groups = model.groups(journal: journal, text: { LogEntryText.text(for: $0, journal: journal, state: state) },
-                                      flavor: { FlavorCatalogText.text(for: $0.flavor, state: state) })
+            let rows = groups(journal: journal, state: state)
             VStack(spacing: 0) {
                 toolbar(state: state, journal: journal)
                 Divider()
-                if groups.isEmpty {
+                if rows.isEmpty {
                     ContentUnavailableView(model.isFiltered ? "No entries match" : "No entries yet",
                                            systemImage: "book.closed")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    list(groups, journal: journal, state: state)
+                    list(rows, journal: journal, state: state)
                 }
             }
             .focusedSceneValue(\.contextSearch, ContextSearchAction { searchFocused = true })
@@ -125,6 +123,13 @@ struct CaptainsLogView: View {
                 exportDocument = nil
             }
         }
+    }
+
+    /// Reads `journalRevision` so generated flavor refreshes the rows (LOG-027).
+    private func groups(journal: GameJournal, state: GameState) -> [LogDayGroup] {
+        _ = session.journalRevision
+        return model.groups(journal: journal, text: { LogEntryText.text(for: $0, journal: journal, state: state) },
+                            flavor: { FlavorCatalogText.text(for: $0.flavor, state: state) })
     }
 
     private func toolbar(state: GameState, journal: GameJournal) -> some View {

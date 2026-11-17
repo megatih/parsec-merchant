@@ -20,23 +20,31 @@ enum UITestFixtures {
     static let ambushExpectedAttacks = 6
     static let ambushMaxAttacks = 12
     /// UI-ENC-094 step 1.
-    static let ambushLaunchArguments = ["-PMResetState", "-PMScenario", "pirateAmbush", "-PMFastTravel", "-PMAudio", "off"]
+    static let ambushLaunchArguments = ["-PMResetState", "-PMScenario", "pirateAmbush", "-PMFastTravel", "-PMAudio", "off", "-PMFlavor", "template"]
     /// UI-ENC-096: `-PMScenario encounter:<EncounterType>` (the app's `EncounterFixtureScenario`), for the sheets no
     /// played scenario reaches.
     static func encounterFixtureArguments(_ type: String) -> [String] {
-        ["-PMResetState", "-PMScenario", "encounter:\(type)", "-PMFastTravel", "-PMAudio", "off"]
+        ["-PMResetState", "-PMScenario", "encounter:\(type)", "-PMFastTravel", "-PMAudio", "off", "-PMFlavor", "template"]
     }
     /// `-PMScenario specialEvent`: docked at a system offering an available special event.
-    static let specialEventArguments = ["-PMResetState", "-PMScenario", "specialEvent", "-PMFastTravel", "-PMAudio", "off"]
+    static let specialEventArguments = ["-PMResetState", "-PMScenario", "specialEvent", "-PMFastTravel", "-PMAudio", "off", "-PMFlavor", "template"]
     /// The flow seed with the transit playback shown (no `-PMFastTravel`), for the walk of the Transit view.
-    static let playbackArguments = ["-PMResetState", "-PMSeed", String(flowSeed), "-PMAudio", "off"]
+    static let playbackArguments = ["-PMResetState", "-PMSeed", String(flowSeed), "-PMAudio", "off", "-PMFlavor", "template"]
+    /// ACH-022 (checked by the app test JournalSessionTests.achievementSeed): Quick Start with this seed, buy one unit of
+    /// `achievementItem`, warp to the next target (uneventful) and sell it at a profit.
+    static let achievementSeed: UInt64 = 11
+    static let achievementItem = "games"
+    /// LLM-029: the localized template lines of the `flavor.encounter.won` group (`FlavorCatalogText`), with the ship
+    /// name left out.
+    static let encounterWonFlavor = ["learned to leave us alone", "Our guns had the last word", "drifted dark behind us"]
     /// The commander name typed in the wizard.
     static let commanderName = "Flow"
 
-    /// Every flow starts from a wiped Debug container (CHEAT-051) with the flow seed, instant travel and no audio.
+    /// Every flow starts from a wiped Debug container (CHEAT-051) with the flow seed, instant travel, no audio and
+    /// template flavor (LLM-024, LLM-029).
     static var launchArguments: [String] { launchArguments(seed: flowSeed) }
 
     static func launchArguments(seed: UInt64) -> [String] {
-        ["-PMResetState", "-PMSeed", String(seed), "-PMFastTravel", "-PMAudio", "off"]
+        ["-PMResetState", "-PMSeed", String(seed), "-PMFastTravel", "-PMAudio", "off", "-PMFlavor", "template"]
     }
 }

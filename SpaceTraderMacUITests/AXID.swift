@@ -56,6 +56,7 @@ enum AXID {
         static func buy(_ item: String) -> String { "market.row.\(item).buy" }
         static func held(_ item: String) -> String { "market.row.\(item).held" }
         static func buyPrice(_ item: String) -> String { "market.row.\(item).buyPrice" }
+        static func sell(_ item: String) -> String { "market.row.\(item).sell" }
     }
 
     enum Files {

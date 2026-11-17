@@ -10,9 +10,7 @@ struct AchievementsView: View {
 
     var body: some View {
         if let state = session.state {
-            let _ = session.achievementsRevision
-            let m = AchievementsModel.make(stats: session.careerStats, ruleset: state.ruleset, records: session.achievements.records,
-                                           journal: session.journal, cheatsUsed: state.cheatsUsed)
+            let m = model(state)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(verbatim: m.headerText).font(.headline)
@@ -39,6 +37,13 @@ struct AchievementsView: View {
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(AXID.Logbook.achievements)
         }
+    }
+
+    /// Reads `achievementsRevision` so the grid refreshes after an unlock or a reset.
+    private func model(_ state: GameState) -> AchievementsModel {
+        _ = session.achievementsRevision
+        return AchievementsModel.make(stats: session.careerStats, ruleset: state.ruleset, records: session.achievements.records,
+                                      journal: session.journal, cheatsUsed: state.cheatsUsed)
     }
 
     private func grid(_ badges: [AchievementsModel.Badge]) -> some View {

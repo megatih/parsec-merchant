@@ -52,7 +52,7 @@
 
 ### 3.3 Edit (system)
 
-- **MENU-018** {M7} [UI] [M][W][P] The Edit menu is the system one. No game action registers with the `UndoManager`, so Undo and Redo are disabled except inside text fields, where Cut, Copy, Paste and Select All work as standard. The standard Find submenu's Find… ⌘F (`menu.edit.find`) performs the context search: in Market it focuses the item filter (UI-SHELL-067), in the Galaxy section or while the Galaxy Chart window is key it focuses the map search field (MAP-070, from M8), in other sections it opens Find System (UI-SHELL-085); enabled as a game command. Copy of selected log and statistics content is {M10} (LOG, STAT). (source: UX-VISION §10.1 "Edit", §4.7 "Find (⌘F is context search …)")
+- **MENU-018** {M7} [UI] [M][W][P] The Edit menu is the system one. No game action registers with the `UndoManager`, so Undo and Redo are disabled except inside text fields, where Cut, Copy, Paste and Select All work as standard. The standard Find submenu's Find… ⌘F (`menu.edit.find`) performs the context search: in Market it focuses the item filter (UI-SHELL-067), in the Galaxy section or while the Galaxy Chart window is key it focuses the map search field (MAP-070, from M8), in other sections it opens Find System (UI-SHELL-085); enabled as a game command. Copy of selected log and statistics content is {M10} (LOG, STAT). From {M10} the context search gains `logbook`: with the Logbook shown, ⌘F focuses `logbook.search` (LOG-032; `SearchContext.logbook`). (source: UX-VISION §10.1 "Edit", §4.7 "Find (⌘F is context search …)")
 
 ### 3.4 View
 

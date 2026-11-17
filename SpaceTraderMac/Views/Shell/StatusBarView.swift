@@ -66,7 +66,7 @@ struct StatusBarView: View {
                 if showFeed {
                     FeedOverlay(groups: FeedGroup.make(session.feed), state: state,
                                 showLogbookEnabled: LogbookLinks.feedShowLogbookEnabled(state: state, inputLocked: session.isInputLocked),
-                                showLogbook: { session.showLogbook(tab: .log) }) { showFeed = false }
+                                showLogbook: { session.showLogbook(tab: .log) }, dismiss: { showFeed = false })
                         .offset(y: -34)
                 }
             }

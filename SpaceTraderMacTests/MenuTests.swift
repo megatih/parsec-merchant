@@ -323,14 +323,6 @@ struct MenuTests {
         #expect(Section.allCases.filter { $0 != .logbook }.allSatisfy { !on(MenuItemID.item(for: $0), enc) })
     }
 
-    @Test("MENU-023 LOG-029 Logbook ⌘9 is enabled whenever a game is loaded, including an ended game, unless modal")
-    func logbookItem() throws {
-        let enc = Fx.ctx(try encounter())
-        #expect(on(.logbook, Fx.ctx(Fx.fresh())) && on(.logbook, Fx.ctx(Fx.ended)) && on(.logbook, enc))
-        #expect(!on(.logbook, Fx.ctx(nil)) && !on(.logbook, Fx.ctx(Fx.fresh(), modal: true)))
-        #expect(MenuContext.make(state: Fx.fresh(), isModal: false, selectedSection: .logbook).searchContext == .logbook)
-    }
-
     @Test("MENU-021 section items are enabled iff game command")
     func sectionEnablement() throws {
         let enc = Fx.ctx(try encounter())

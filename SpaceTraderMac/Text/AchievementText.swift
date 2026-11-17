@@ -4,6 +4,7 @@ import ParsecInsights
 
 /// ACH §6: localized achievement names and one-line descriptions.
 nonisolated enum AchievementText {
+    // swiftlint:disable:next cyclomatic_complexity
     static func name(_ id: AchievementID) -> String {
         switch id {
         case .firstProfit: String(localized: "First Profit")

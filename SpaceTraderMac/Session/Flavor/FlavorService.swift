@@ -72,10 +72,10 @@ final class FlavorService: SessionFlavor {
         let n = names()
         for r in requests {
             waiting.append(Job(request: r, gameID: gameID, names: n, epoch: epoch))
+            pump()
             // LLM-019: the oldest waiting request is dropped first (it keeps its template).
             if waiting.count > Self.maxWaiting { waiting.removeFirst() }
         }
-        pump()
     }
 
     /// LLM-019: Close Game, New Game, load and leaving the mode cancel everything waiting and in flight.
