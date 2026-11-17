@@ -31,7 +31,7 @@ final class M8FlowUITests: ParsecUITestCase {
     /// Flow 5, Galaxy: hover, select, set target, warp with ⌘J.
     @MainActor
     func testFlow5GalaxyHoverSelectWarp() throws {
-        // covers: MAP-101, MAP-044, MAP-081, MAP-075
+        // covers: MAP-101, MAP-044, MAP-081, MAP-075, UI-ENC-095
         openGalaxy()
         let row = element(AXID.Galaxy.sidebarRow)
         expect("sidebar.galaxy is selected") {
@@ -65,6 +65,12 @@ final class M8FlowUITests: ParsecUITestCase {
         expect("the system is now the current system") {
             element(g.system(UITestFixtures.mapFlowTarget)).label.contains("current system")
         }
+        // UI-ENC-095: the arrival keeps the Galaxy section selected; its arrival card waits on the Bridge.
+        XCTAssertFalse(element(AXID.Transit.view).exists, "no transit playback with -PMFastTravel")
+        XCTAssertTrue(element(AXID.Galaxy.root).exists, "the Galaxy section stays selected after ⌘J")
+        XCTAssertFalse(element(AXID.Arrival.card).exists, "the arrival card is on the Bridge, not the Galaxy section")
+        type("1")
+        waitFor(AXID.Arrival.card)
     }
 
     /// Scenario: tracking and routes.

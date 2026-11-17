@@ -9,13 +9,23 @@ class ParsecUITestCase: XCTestCase {
     let timeout: TimeInterval = 10
     /// The `-PMSeed` of this test class (flow 5 uses its own seed).
     var launchSeed: UInt64 { UITestFixtures.flowSeed }
+    /// The launch arguments of this test class (flow 2 launches a `-PMScenario` instead of a seed).
+    var launchArguments: [String] { UITestFixtures.launchArguments(seed: launchSeed) }
 
     override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = UITestFixtures.launchArguments(seed: launchSeed)
+        app.launchArguments = launchArguments
         app.launch()
         XCTAssertTrue(mainWindow.waitForExistence(timeout: timeout), "the main window opens at launch")
+    }
+
+    /// Terminates the app and launches it again with `arguments` (for tests that walk several scenarios).
+    func relaunch(_ arguments: [String], file: StaticString = #filePath, line: UInt = #line) {
+        app.terminate()
+        app.launchArguments = arguments
+        app.launch()
+        XCTAssertTrue(mainWindow.waitForExistence(timeout: timeout), "the main window opens at launch", file: file, line: line)
     }
 
     override func tearDown() async throws {
@@ -157,6 +167,11 @@ class ParsecUITestCase: XCTestCase {
         expect("the warp ends docked at \(name) on day 1 (subtitle: \(subtitle))", file: file, line: line) {
             subtitle.hasPrefix("Day 1 · \(name) · ")
         }
+        // UI-ENC-095: the playback is instant with -PMFastTravel, and the uneventful arrival shows the arrival card on
+        // the Bridge, which stays the selected section.
+        XCTAssertFalse(element(AXID.Transit.view).exists, "no transit playback with -PMFastTravel", file: file, line: line)
+        waitFor(AXID.Arrival.card, file: file, line: line)
+        XCTAssertTrue(element("bridge.root").exists, "the arrival keeps the Bridge selected", file: file, line: line)
         return name
     }
 

@@ -21,6 +21,15 @@ enum UITestFixtures {
     static let ambushMaxAttacks = 12
     /// UI-ENC-094 step 1.
     static let ambushLaunchArguments = ["-PMResetState", "-PMScenario", "pirateAmbush", "-PMFastTravel", "-PMAudio", "off"]
+    /// UI-ENC-096: `-PMScenario encounter:<EncounterType>` (the app's `EncounterFixtureScenario`), for the sheets no
+    /// played scenario reaches.
+    static func encounterFixtureArguments(_ type: String) -> [String] {
+        ["-PMResetState", "-PMScenario", "encounter:\(type)", "-PMFastTravel", "-PMAudio", "off"]
+    }
+    /// `-PMScenario specialEvent`: docked at a system offering an available special event.
+    static let specialEventArguments = ["-PMResetState", "-PMScenario", "specialEvent", "-PMFastTravel", "-PMAudio", "off"]
+    /// The flow seed with the transit playback shown (no `-PMFastTravel`), for the walk of the Transit view.
+    static let playbackArguments = ["-PMResetState", "-PMSeed", String(flowSeed), "-PMAudio", "off"]
     /// The commander name typed in the wizard.
     static let commanderName = "Flow"
 

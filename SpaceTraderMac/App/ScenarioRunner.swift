@@ -15,6 +15,14 @@ enum ScenarioRunner {
         case "pirateAmbush":
             runPirateAmbush(session: session)
             return nil
+        case EncounterFixtureScenario.specialEventName:
+            session.install(EncounterFixtureScenario.makeSpecialEvent(), gameID: SlotStore.newSlotID(), slotID: nil)
+            return nil
+        case let name where EncounterFixtureScenario.type(named: name) != nil:
+            if let type = EncounterFixtureScenario.type(named: name) {
+                session.install(EncounterFixtureScenario.make(type), gameID: SlotStore.newSlotID(), slotID: nil)
+            }
+            return nil
         default: return 2
         }
     }
@@ -61,6 +69,52 @@ enum PirateAmbushScenario {
         engine.perform(.cheat(.enable))
         engine.perform(.cheat(.iron(slot: 0, weapon: 2)))
         engine.perform(.selectTarget(target))
+        return engine
+    }
+}
+
+/// UI-ENC-096: `-PMScenario encounter:<EncounterType>` (Debug only) puts a Modern Normal game into an encounter of that
+/// type, 7 clicks from the warp system, with an opponent gnat carrying 5 furs and 2 ore. The identifier walk uses it to
+/// reach the plunder, trade-in-orbit and arrest-report sheets, which no played scenario reaches deterministically. The
+/// game is flagged `cheatsUsed` (CHEAT-049).
+enum EncounterFixtureScenario {
+    static let prefix = "encounter:"
+    static let seed: UInt64 = 1
+
+    static func type(named name: String) -> EncounterType? {
+        guard name.hasPrefix(prefix) else { return nil }
+        let wanted = String(name.dropFirst(prefix.count))
+        return EncounterType.allCases.first { "\($0)" == wanted }
+    }
+
+    static func make(_ type: EncounterType) -> GameEngine {
+        var engine = GameEngine(config: NewGameConfig(commanderName: "Fixture", difficulty: .normal, skills: [5, 5, 5, 5],
+                                                      ruleset: .modern, seed: seed))
+        engine.perform(.cheat(.enable))
+        var state = engine.state
+        var opponent = Ship(type: .gnat, spec: state.ruleset.tables.ship(.gnat))
+        opponent.weapons = [.pulseLaser]
+        opponent.cargo[TradeItemType.furs.rawValue] = 5
+        opponent.cargo[TradeItemType.ore.rawValue] = 2
+        state.encounterTransit = TransitState(destination: state.warpSystem, clicksRemaining: 7, viaWormhole: false)
+        state.phase = .encounter(EncounterState(type: type, opponent: opponent, clicks: 7))
+        return GameEngine(state: state)
+    }
+
+    /// `-PMScenario specialEvent` (Debug only): the same game docked, its current system offering the first special
+    /// event (in `SpecialEventType` order) that is available there, for the walk of the Bridge card and narrative sheet.
+    static let specialEventName = "specialEvent"
+
+    static func makeSpecialEvent() -> GameEngine {
+        var engine = GameEngine(config: NewGameConfig(commanderName: "Fixture", difficulty: .normal, skills: [5, 5, 5, 5],
+                                                      ruleset: .modern, seed: seed))
+        engine.perform(.cheat(.enable))
+        let base = engine.state
+        for type in SpecialEventType.allCases {
+            var state = base
+            state.galaxy.systems[state.commander.currentSystem].specialEvent = type
+            if state.specialEventAvailable != nil { return GameEngine(state: state) }
+        }
         return engine
     }
 }

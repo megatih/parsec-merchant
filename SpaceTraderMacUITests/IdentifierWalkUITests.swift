@@ -59,20 +59,29 @@ final class IdentifierWalkUITests: ParsecUITestCase {
         }
         click(AXID.NewGame.cancel)
     }
+}
 
-    // MARK: Walk
+// MARK: Walk
 
-    private static let interactive: Set<XCUIElement.ElementType> = [
+/// The identifier walk shared by the M7/M8 surfaces and the M9 surfaces (UI-SHELL-127, UI-ENC-096).
+extension ParsecUITestCase {
+
+    static let interactiveTypes: Set<XCUIElement.ElementType> = [
         .button, .checkBox, .switch, .toggle, .radioButton, .textField, .secureTextField, .textView, .searchField,
         .comboBox, .slider, .stepper, .incrementArrow, .decrementArrow, .popUpButton, .menuButton, .segmentedControl,
         .tableRow, .outlineRow, .link,
     ]
 
-    private func sheet() -> XCUIElement { mainWindow.sheets.firstMatch }
+    func sheet() -> XCUIElement { mainWindow.sheets.firstMatch }
 
     /// Asserts every interactive element under `root` has an identifier matching the scheme.
-    private func walk(_ root: XCUIElement, surface: String, file: StaticString = #filePath, line: UInt = #line) {
+    func walk(_ root: XCUIElement, surface: String, file: StaticString = #filePath, line: UInt = #line) {
         guard let snapshot = try? root.snapshot() else { return XCTFail("snapshot of \(surface)", file: file, line: line) }
+        walk(snapshot, surface: surface, file: file, line: line)
+    }
+
+    /// The walk over a snapshot already taken (for surfaces that exist only briefly, such as the transit playback).
+    func walk(_ snapshot: XCUIElementSnapshot, surface: String, file: StaticString = #filePath, line: UInt = #line) {
         var offenders: [String] = []
         var checked = 0
         visit(snapshot, ancestors: [], offenders: &offenders, checked: &checked)
@@ -81,10 +90,10 @@ final class IdentifierWalkUITests: ParsecUITestCase {
                       file: file, line: line)
     }
 
-    private func visit(_ e: XCUIElementSnapshot, ancestors: [XCUIElementSnapshot], offenders: inout [String], checked: inout Int) {
+    fileprivate func visit(_ e: XCUIElementSnapshot, ancestors: [XCUIElementSnapshot], offenders: inout [String], checked: inout Int) {
         if isSystemChrome(e, ancestors: ancestors) { return }
         // Stepper arrows belong to their stepper, whose identifier is checked.
-        if Self.interactive.contains(e.elementType), e.elementType != .incrementArrow, e.elementType != .decrementArrow {
+        if Self.interactiveTypes.contains(e.elementType), e.elementType != .incrementArrow, e.elementType != .decrementArrow {
             checked += 1
             if !hasSchemeIdentifier(e) {
                 offenders.append("  \(e.elementType.rawValue) label='\(e.label)' title='\(e.title)' id='\(e.identifier)'")
@@ -97,23 +106,23 @@ final class IdentifierWalkUITests: ParsecUITestCase {
 
     /// Table and outline rows are drawn by AppKit and take no SwiftUI identifier: their content carries it
     /// (`market.row.<item>`, `sidebar.<section>`, `openSaved.row.<slot>`).
-    private func hasSchemeIdentifier(_ e: XCUIElementSnapshot) -> Bool {
+    fileprivate func hasSchemeIdentifier(_ e: XCUIElementSnapshot) -> Bool {
         if matchesScheme(e.identifier) { return true }
         guard e.elementType == .tableRow || e.elementType == .outlineRow else { return false }
         return containsSchemeIdentifier(e)
     }
 
-    private func containsSchemeIdentifier(_ e: XCUIElementSnapshot) -> Bool {
+    fileprivate func containsSchemeIdentifier(_ e: XCUIElementSnapshot) -> Bool {
         e.children.contains { matchesScheme($0.identifier) || containsSchemeIdentifier($0) }
     }
 
-    private func matchesScheme(_ id: String) -> Bool {
+    fileprivate func matchesScheme(_ id: String) -> Bool {
         !id.isEmpty && id.range(of: AXID.pattern, options: .regularExpression) != nil
     }
 
     /// Controls AppKit adds on its own: window buttons, scroll bars, table column headers and the split view's
     /// sidebar toggle. None of them is app content.
-    private func isSystemChrome(_ e: XCUIElementSnapshot, ancestors: [XCUIElementSnapshot]) -> Bool {
+    fileprivate func isSystemChrome(_ e: XCUIElementSnapshot, ancestors: [XCUIElementSnapshot]) -> Bool {
         if e.identifier.hasPrefix("_XCUI:") || e.elementType == .scrollBar { return true }
         if e.elementType == .button, e.identifier.isEmpty, ancestors.count >= 2 {
             let header = ancestors[ancestors.count - 1], table = ancestors[ancestors.count - 2]
@@ -126,7 +135,7 @@ final class IdentifierWalkUITests: ParsecUITestCase {
     }
 
     /// A table's header row: a group, directly in the table, of titled column buttons.
-    private func isTableHeader(_ group: XCUIElementSnapshot) -> Bool {
+    fileprivate func isTableHeader(_ group: XCUIElementSnapshot) -> Bool {
         !group.children.isEmpty && group.children.allSatisfy { $0.elementType == .button && !$0.title.isEmpty }
     }
 }

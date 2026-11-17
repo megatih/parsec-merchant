@@ -237,6 +237,7 @@ private struct DockServiceCard: View {
                         Slider(value: sliderBinding(range), in: Double(range.lowerBound)...Double(range.upperBound))
                             .frame(minWidth: 100)
                             .accessibilityLabel(Text(isFuel ? "Fuel amount in credits" : "Repair amount in credits"))
+                            .accessibilityIdentifier(isFuel ? AXID.Bridge.fuelSlider : AXID.Bridge.repairSlider)
                     }
                     TextField(value: $amount, format: .number) {
                         Text("Credits")

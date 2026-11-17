@@ -24,6 +24,8 @@ enum AXID {
 
     enum Sidebar {
         static let list = "sidebar.list"
+        static let phaseLabel = "sidebar.phaseLabel"
+        static let market = "sidebar.market"
     }
 
     enum Toolbar {
@@ -65,6 +67,9 @@ enum AXID {
 
     enum Dialog {
         static let appConfirmationConfirm = "appConfirmation.confirm"
+        static let confirmationConfirm = "confirmation.confirm"
+        static let retireSheet = "retire.sheet"
+        static let retireConfirm = "retire.confirm"
     }
 
     enum Options {
@@ -87,6 +92,72 @@ enum AXID {
         static let saveAs = "menu.file.saveAs"
         static let revert = "menu.file.revert"
         static let options = "menu.game.options"
+    }
+
+    /// The Encounter view (UI-ENC §17).
+    enum Encounter {
+        static let view = "encounter.view"
+        static let intro = "encounter.intro"
+        static let badge = "encounter.badge"
+        static let playerHull = "encounter.player.hull"
+        static let opponentHull = "encounter.opponent.hull"
+        static let log = "encounter.log"
+        static func logRow(_ index: Int) -> String { "encounter.log.row.\(index)" }
+        static let attack = "encounter.action.attack"
+        static let flee = "encounter.action.flee"
+        static let surrender = "encounter.action.surrender"
+        static let resolve = "encounter.action.resolve"
+        static let plunder = "encounter.action.plunder"
+        static let trade = "encounter.action.trade"
+        static let tactical = "encounter.tactical"
+    }
+
+    enum Transit {
+        static let view = "transit.view"
+    }
+
+    enum Decision {
+        static let plunderSheet = "decision.plunder.sheet"
+        static let plunderDone = "decision.plunder.done"
+        static let tradeSheet = "decision.trade.sheet"
+        static let tradeDecline = "decision.trade.decline"
+    }
+
+    enum Report {
+        static let sheet = "report.sheet"
+        static let continueButton = "report.continue"
+    }
+
+    /// The arrival card on the Bridge (UI-ENC §17).
+    enum Arrival {
+        static let card = "arrival.card"
+        static let toggle = "arrival.card.toggle"
+        static let dismiss = "arrival.card.dismiss"
+        static func encounter(_ index: Int) -> String { "arrival.encounter.\(index)" }
+        static let newsRead = "arrival.news.read"
+    }
+
+    enum Newspaper {
+        static let sheet = "newspaper.sheet"
+        static let close = "decision.newspaper.close"
+        static let bridgeRead = "bridge.newspaper.read"
+    }
+
+    enum Narrative {
+        static let sheet = "narrative.sheet"
+        static let decline = "narrative.decline"
+        static let bridgeCard = "bridge.special"
+        static let bridgeAccept = "bridge.special.accept"
+    }
+
+    enum GameOver {
+        static let card = "gameOver.card"
+        static let highScores = "gameOver.highScores"
+        static let mainMenu = "gameOver.mainMenu"
+    }
+
+    enum Scores {
+        static let window = "scores.window"
     }
 
     /// Section roots visited by ⌘1…⌘8.

@@ -24,8 +24,11 @@ extension AXID {
         static let targetJump = "bridge.target.jump"
         static let galaxyCode = "bridge.galaxyCode"
         static let galaxyCodeCopy = "bridge.galaxyCode.copy"
+        /// The partial-purchase sliders beside the amount fields (UI-ENC-096 walk).
+        static let fuelSlider = "bridge.fuel.slider"
+        static let repairSlider = "bridge.repair.slider"
         static let all = [systemCard, fuelFillUp, fuelAmount, fuelBuy, repairFull, repairAmount, repairBuy, special, specialAccept,
                           specialDecline, mercenaries, newspaperRead, targetCard, targetWarp, targetPrevious, targetNext,
-                          targetTrack, targetJump, galaxyCode, galaxyCodeCopy]
+                          targetTrack, targetJump, galaxyCode, galaxyCodeCopy, fuelSlider, repairSlider]
     }
 }

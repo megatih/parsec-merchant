@@ -175,6 +175,7 @@ struct TripAccumulator: Equatable, Sendable {
     mutating func fold(_ step: StepRecord, log: [String] = []) -> Trip? {
         var pendingLog = log
         var finished: Trip?
+        resumeIfNeeded(before: step.before, command: step.command)
         for e in step.events {
             if case let .departed(from, to, viaWormhole) = e {
                 open = nil
@@ -228,6 +229,18 @@ struct TripAccumulator: Equatable, Sendable {
             trip = t
         }
         return finished
+    }
+
+    /// A game loaded in an encounter (or put there by a fixture) has no departing step: the trip resumes from the
+    /// encounter, so its end still shows the arrival card or report sheet. The departure costs were paid before the save.
+    private mutating func resumeIfNeeded(before: GameState, command: Command) {
+        guard trip == nil, case let .encounter(enc) = before.phase else { return }
+        var none = DepartureCosts.make(command: command, before: before)
+        (none.mercenaries, none.insurance, none.interest, none.wormholeTax) = (0, 0, 0, 0)
+        let transit = before.encounterTransit
+        trip = Trip(departureCosts: none, before: before, after: before, from: before.commander.currentSystem,
+                    destination: transit?.destination ?? before.warpSystem, viaWormhole: transit?.viaWormhole ?? false)
+        open = OpenEncounter(type: enc.type, opponent: enc.opponent.type, clicks: enc.clicks)
     }
 
     private mutating func close(into t: inout Trip, endedBy: Command, log: inout [String]) {

@@ -6,7 +6,7 @@ final class M7FlowUITests: ParsecUITestCase {
     /// Flow 1, New Game → buy → warp → arrive.
     @MainActor
     func testFlow1NewGameBuyWarpArrive() throws {
-        // covers: UI-SHELL-124
+        // covers: UI-SHELL-124, UI-ENC-095
         startFlowGame()
         XCTAssertTrue(subtitle.contains("Day 0"), subtitle)
         XCTAssertTrue(subtitle.contains("Credits \(1_000.formatted())"), subtitle)
@@ -35,7 +35,7 @@ final class M7FlowUITests: ParsecUITestCase {
     /// Flow 3, Save → load.
     @MainActor
     func testFlow3SaveLoad() throws {
-        // covers: UI-SHELL-125
+        // covers: UI-SHELL-125, UI-ENC-095
         startFlowGame()
         let startSystem = systemInSubtitle()
         XCTAssertFalse(startSystem.isEmpty, subtitle)

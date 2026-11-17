@@ -98,6 +98,52 @@ struct ScenarioTests {
         #expect(LaunchOptions.parse(["-PMScenario", "pirateAmbush"], isDebug: true).scenario == "pirateAmbush")
     }
 
+    @Test("UI-ENC-096 encounter:<type> fixtures reach the plunder, trade and arrest-report sheets for the identifier walk")
+    func encounterFixtures() throws {
+        #expect(EncounterFixtureScenario.type(named: "encounter:pirateSurrender") == .pirateSurrender)
+        #expect(EncounterFixtureScenario.type(named: "encounter:nope") == nil && EncounterFixtureScenario.type(named: "x") == nil)
+        #expect(LaunchOptions.parse(["-PMScenario", "encounter:traderSell"], isDebug: false).scenario == nil)
+
+        func session(_ type: EncounterType) throws -> GameSession {
+            let s = try TestSessions.make()
+            #expect(ScenarioRunner.run("encounter:\(type)", session: s) == nil)
+            let st = try #require(s.state)
+            #expect(st.cheatsUsed && EncFx.encounter(st)?.type == type)
+            return s
+        }
+        let pirate = try session(.pirateSurrender)
+        pirate.performEncounterAction(.plunder)
+        guard case .sheet(.plunder) = pirate.presentation else {
+            Issue.record("Plunder opens the plunder sheet (got \(String(describing: pirate.presentation)))")
+            return
+        }
+        let trader = try session(.traderSell)
+        trader.performEncounterAction(.trade)
+        guard case .sheet(.tradeInOrbit) = trader.presentation else {
+            Issue.record("Trade opens the trade-in-orbit sheet (got \(String(describing: trader.presentation)))")
+            return
+        }
+        // A game installed in an encounter (as a loaded mid-encounter save is) resumes its trip, so the end of the
+        // encounter still shows its report (UI-ENC-053, -061).
+        let police = try session(.policeAttack)
+        police.performEncounterAction(.surrender)
+        if case let .confirmation(pending) = police.presentation { police.confirm(pending) }
+        guard case let .sheet(.report(.arrest(report))) = police.presentation else {
+            Issue.record("Surrendering to the police opens the arrest report (got \(String(describing: police.presentation)))")
+            return
+        }
+        #expect(report.arrival?.encounters.map(\.outcome) == [.arrested])
+        #expect(report.arrival?.section(.costs) == nil, "a resumed trip has no departure costs")
+
+        // `specialEvent`: docked, the current system offers an available special event; Read opens the offer page.
+        let special = try TestSessions.make()
+        #expect(ScenarioRunner.run(EncounterFixtureScenario.specialEventName, session: special) == nil)
+        let offered = try #require(special.state?.specialEventAvailable)
+        #expect(special.state?.phase == .docked && special.state?.cheatsUsed == true)
+        special.openSpecialEvent()
+        #expect(special.presentation == .sheet(.narrative(.offer(offered))))
+    }
+
     @Test("UI-ENC-092 CHEAT-038 Test opens the developer tester in Debug; it lists every ALR row and narrative page")
     func developerTester() throws {
         #expect(DeveloperTester.opens(after: .cheat(.test), isDebug: true))
