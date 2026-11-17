@@ -76,4 +76,59 @@ struct SourceAuditTests {
         #expect(!bridge[warp...].prefix(5).contains { $0.contains(".defaultAction") })
         #expect(code("Views/Shell/MainShellView.swift").contains { $0.contains("WindowEscapeRouter") })
     }
+
+    /// The literal parts of a string literal that starts at `start` (interpolations `\(…)` removed), or nil.
+    static func literalText(_ code: String, from start: String.Index) -> String? {
+        guard code[start...].hasPrefix("\"") else { return nil }
+        var out = "", i = code.index(after: start), depth = 0, escaped = false
+        while i < code.endIndex {
+            let ch = code[i]
+            if depth > 0 {
+                if ch == "(" { depth += 1 } else if ch == ")" { depth -= 1 }
+            } else if escaped {
+                escaped = false
+                if ch == "(" { depth = 1 } else { out.append(ch) }
+            } else if ch == "\\" {
+                escaped = true
+            } else if ch == "\"" {
+                return out
+            } else {
+                out.append(ch)
+            }
+            i = code.index(after: i)
+        }
+        return nil
+    }
+
+    @Test("A11Y-036 localizable code: verbatim text is data only, no concatenated literals, no fragment or empty keys")
+    func localizableCode() throws {
+        let lines = try Self.lines()
+        let allowText = try String(contentsOf: SourceAuditTests.appRoot.deletingLastPathComponent()
+            .appendingPathComponent("scripts/l10n-allowlist.txt"), encoding: .utf8)
+        let fragments = [" (loss %@ cr.)", " (profit %@ cr.)", " · Ended", " · Ironman", " · “%@”"]
+        for l in lines {
+            var search = l.code.startIndex
+            while let r = l.code.range(of: "Text(verbatim:", range: search..<l.code.endIndex) {
+                search = r.upperBound
+                let start = l.code[r.upperBound...].firstIndex { $0 != " " } ?? l.code.endIndex
+                if let literal = Self.literalText(l.code, from: start) {
+                    #expect(!literal.contains { $0.isLetter }, "\(l.file):\(l.number) Text(verbatim:) with words: \(literal)")
+                }
+            }
+            #expect(l.code.firstMatch(of: /(Text\(|String\(localized:)\s*"[^"]*"\s*\+/) == nil,
+                    "\(l.file):\(l.number) concatenates a literal inside Text( or String(localized:")
+            #expect(l.code.firstMatch(of: /(Text\(|String\(localized:)[^)]*\+\s*"/) == nil,
+                    "\(l.file):\(l.number) concatenates a literal inside Text( or String(localized:")
+        }
+        // The fragment keys of the 2026-11-17 trial sync and the empty key are gone from the source and the catalog.
+        let catalog = try String(contentsOf: SourceAuditTests.appRoot.appendingPathComponent("Resources/Localizable.xcstrings"),
+                                 encoding: .utf8)
+        for f in fragments where !allowText.contains(f) {
+            if !f.contains("%@") {
+                #expect(!lines.contains { $0.code.contains("\"" + f + "\"") }, "fragment \(f) is still in the source")
+            }
+            #expect(!catalog.contains("\n    \"" + f + "\" : {"), "fragment key \(f) is still in the catalog")
+        }
+        #expect(!catalog.contains("\n    \"\" : {"), "the empty key is in the catalog")
+    }
 }

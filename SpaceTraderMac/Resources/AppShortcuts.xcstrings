@@ -1,0 +1,30 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Continue my ${applicationName} game" : {
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Continue my ${applicationName} game"
+            ]
+          }
+        }
+      }
+    },
+    "Show my ${applicationName} commander status" : {
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Show my ${applicationName} commander status"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

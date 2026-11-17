@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Localization check allowlist (A11Y-033 steps 3-4, A11Y-036). One catalog key per line, written as a JSON string
+# literal, then the reason it is exempt. Read by scripts/l10n-check.sh and LocalizationCatalogTests.
+#
+# Count-bearing keys (%lld) without a plural variation, because no noun that inflects follows the number:
+"%@ (%lld)"  the number follows its label (no noun follows it)
+"%@ Score %lld."  the number follows its label (no noun follows it)
+"%@ · Day %lld"  the number follows its label (no noun follows it)
+"%@ — Day %lld, %@ (%@)"  the number follows its label (no noun follows it)
+"%@ — Day %lld, %@ (%@) · Ended"  the number follows its label (no noun follows it)
+"%@ — Day %lld, %@ (%@) · Ironman"  the number follows its label (no noun follows it)
+"%@ — Day %lld, %@ (%@) · Ironman · Ended"  the number follows its label (no noun follows it)
+"%@, locked, %lld of %lld"  a count out of a total
+"%@: %lld"  no noun follows the number
+"%lld (pirates %lld, police %lld, traders %lld)"  a total, then each number follows its label (no noun follows it)
+"%lld at %@ cr."  no noun follows the number; 'cr.' is an abbreviation
+"%lld cr."  'cr.' is an abbreviation
+"%lld d ago"  'd' is an abbreviation
+"%lld free quarters"  'quarters' is the same in the singular
+"%lld installed"  no noun follows the number
+"%lld of %lld"  a count out of a total
+"%lld of %lld unlocked"  a count out of a total
+"%lld percent"  'percent' does not inflect
+"%lld × %@"  a multiplier
+"%lld × %@ (charge %lld)"  a multiplier; no noun follows the number
+"%lld%%"  a percentage
+"%lld%% (max)"  a percentage
+"%lld/%lld"  a count out of a total
+"(−%lld hull)"  'hull' is a mass noun here (hull points lost)
+"Arrived at %@, day %lld."  the number follows its label (no noun follows it)
+"Bays %lld/%lld"  a count out of a total
+"Bays: %lld/%lld, %lld free for buying"  a count out of a total; no noun follows the number
+"Bought %lld %@ for %@ cr."  the goods name that follows is game data
+"Bought %lld %@ in orbit for %@ cr."  the goods name that follows is game data
+"Buy %lld fuel (%lld cr.)"  'fuel' is a mass noun; 'cr.' is an abbreviation
+"Buy as many as you can (%lld)"  the number follows its label (no noun follows it)
+"Caught littering. Police record score now %lld."  no noun follows the number
+"Charge %lld"  the number follows its label (no noun follows it)
+"Click %lld of %lld"  a count out of a total
+"Commander %@, day %lld, at %@. %@ credits, debt %@, worth %@."  the number follows its label (no noun follows it)
+"Completed (%lld)"  the number follows its label (no noun follows it)
+"Day %lld · %@"  the number follows its label (no noun follows it)
+"Day %lld · %@ · %lld cr."  the number follows its label (no noun follows it); 'cr.' is an abbreviation
+"Day %lld · %@ · Worth %@ cr. · %@"  the number follows its label (no noun follows it)
+"Day %lld: %@"  the number follows its label (no noun follows it)
+"Dumped %lld %@ for %@ cr."  the goods name that follows is game data
+"Free bays %lld"  the number follows its label (no noun follows it)
+"Free quarters: %lld"  the number follows its label (no noun follows it)
+"Fuel %lld/%lld"  a count out of a total
+"Full tank %lld"  the number follows its label (no noun follows it)
+"Hull %lld%%"  a percentage
+"Hull repaired, %lld percent."  'percent' does not inflect
+"In range · %lld fuel left after the jump"  'fuel' is a mass noun
+"Jettisoned %lld %@."  the goods name that follows is game data
+"Kills: %lld"  the number follows its label (no noun follows it)
+"Last visit: Day %lld"  the number follows its label (no noun follows it)
+"News on day %lld: %@"  the number follows its label (no noun follows it)
+"No fuel used · tax %lld cr."  'cr.' is an abbreviation
+"Plundered %lld %@."  the goods name that follows is game data
+"Points remaining: %lld"  the number follows its label (no noun follows it)
+"Police record: %@ (%lld)"  the number follows its label (no noun follows it)
+"Quantity: %lld of at most %lld"  the number follows its label (no noun follows it); no noun follows the number
+"Range %lld"  the number follows its label (no noun follows it)
+"Rank %lld, %@, score %@."  the number follows its label (no noun follows it)
+"Rank %lld, empty"  the number follows its label (no noun follows it)
+"Refuelled, %lld of %lld."  a count out of a total
+"Round %lld: %@, %@."  the number follows its label (no noun follows it)
+"Scooped up %lld %@."  the goods name that follows is game data
+"Seen on day %lld."  the number follows its label (no noun follows it)
+"Shields %lld%%"  a percentage
+"Sold %lld %@ for %@ cr."  the goods name that follows is game data
+"Sold %lld %@ for %@ cr. (loss %@ cr.)"  the goods name that follows is game data
+"Sold %lld %@ for %@ cr. (profit %@ cr.)"  the goods name that follows is game data
+"Sold %lld %@ for %@ cr. (profit %@ cr.)."  the goods name that follows is game data
+"Sold %lld %@ in orbit for %@ cr."  the goods name that follows is game data
+"Sold %lld %@ in orbit for %@ cr. (loss %@ cr.)"  the goods name that follows is game data
+"Sold %lld %@ in orbit for %@ cr. (profit %@ cr.)"  the goods name that follows is game data
+"Statistics since day %lld"  the number follows its label (no noun follows it)
+"Step %lld of %lld: %@"  a count out of a total
+"The reactor is getting hot (status %lld)."  the number follows its label (no noun follows it)
+"This game's score was already recorded, at rank %lld."  the number follows its label (no noun follows it)
+"Units used: %lld of %lld (%lld%%)"  a count out of a total; a percentage
+"Via wormhole · tax %lld cr."  'cr.' is an abbreviation
+"Warp costs %lld cr."  'cr.' is an abbreviation
+"You entered the high-score table at rank %lld."  the number follows its label (no noun follows it)
+"^[%lld credit](inflect: true)"  automatic grammar agreement (inflect: true) makes the noun agree with the number
+"^[%lld day](inflect: true)"  automatic grammar agreement (inflect: true) makes the noun agree with the number
+"bought %lld %@ for %@ cr."  the goods name that follows is game data
+"held %lld"  the number follows its label (no noun follows it)
+"hull %lld%%, no shields"  a percentage
+"hull %lld%%, shields %lld%%"  a percentage
+"in this game, day %lld"  the number follows its label (no noun follows it)
+"lowest hull %lld%%"  a percentage
+"route stop %lld"  the number follows its label (no noun follows it)
+"sold %lld %@ for %@ cr."  the goods name that follows is game data
+"won %lld, fled %lld, surrendered %lld"  the number follows its label (no noun follows it)

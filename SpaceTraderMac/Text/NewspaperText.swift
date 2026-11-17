@@ -80,7 +80,7 @@ enum NewspaperText {
         case let .event(e):
             return String(localized: event(e, commander: c.commander, system: c.currentSystem, ship: c.shipType))
         case let .internalPressure(p):
-            return String(localized: internalPressure(p))
+            return internalPressure(p).map { String(localized: $0) } ?? ""
         case let .villain(index):
             let all = villain(commander: c.commander, system: c.currentSystem)
             return String(localized: all[min(max(0, index), all.count - 1)])
@@ -94,7 +94,7 @@ enum NewspaperText {
         case let .tribbleBuyer(system):
             return String(localized: "Collector in \(c.systemName(system)) System seeks to purchase Tribbles.")
         case let .externalPressure(template, pressure, system):
-            let word = String(localized: externalPressureWord(pressure))
+            let word = externalPressureWord(pressure).map { String(localized: $0) } ?? ""
             return String(localized: externalPressure(template: template, word: word, system: c.systemName(system), wording: c.wording))
         case let .canned(government, index):
             let all = canned(government)
@@ -150,9 +150,9 @@ enum NewspaperText {
     // swiftlint:enable cyclomatic_complexity
 
     /// `NewsPressureInternal[p]` (index 0 is empty in C#; `.none` never makes a headline).
-    static func internalPressure(_ p: SystemPressure) -> LocalizedStringResource {
+    static func internalPressure(_ p: SystemPressure) -> LocalizedStringResource? {
         switch p {
-        case .none: ""
+        case .none: nil
         case .war: "War News: Offensives Continue!"
         case .plague: "Plague Spreads! Outlook Grim."
         case .drought: "No Rain in Sight!"
@@ -193,9 +193,9 @@ enum NewspaperText {
     }
 
     /// `NewsPressureExternalPressures[p]`.
-    static func externalPressureWord(_ p: SystemPressure) -> LocalizedStringResource {
+    static func externalPressureWord(_ p: SystemPressure) -> LocalizedStringResource? {
         switch p {
-        case .none: ""
+        case .none: nil
         case .war: "Strife and War"
         case .plague: "Plague Outbreaks"
         case .drought: "Severe Drought"

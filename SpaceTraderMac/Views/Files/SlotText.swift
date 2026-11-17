@@ -15,10 +15,14 @@ enum SlotText {
     static func recentTitle(_ slot: SlotInfo) -> String {
         let s = slot.summary
         let ruleset = String(localized: Names.ruleset(slot.rulesetID))
-        var title = String(localized: "\(s.commander) — Day \(s.day), \(systemName(slot)) (\(ruleset))")
-        if s.ironman { title += String(localized: " · Ironman") }
-        if s.ended { title += String(localized: " · Ended") }
-        return title
+        let name = s.commander, day = s.day, system = systemName(slot)
+        // Whole titles per flag combination (A11Y-036): no appended fragments.
+        switch (s.ironman, s.ended) {
+        case (false, false): return String(localized: "\(name) — Day \(day), \(system) (\(ruleset))")
+        case (true, false): return String(localized: "\(name) — Day \(day), \(system) (\(ruleset)) · Ironman")
+        case (false, true): return String(localized: "\(name) — Day \(day), \(system) (\(ruleset)) · Ended")
+        case (true, true): return String(localized: "\(name) — Day \(day), \(system) (\(ruleset)) · Ironman · Ended")
+        }
     }
 
     /// SAV-030: the default export name "<Commander> – Day <N>.parsecsave".

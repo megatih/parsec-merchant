@@ -92,7 +92,7 @@ struct TradeInOrbitSheet: View {
                 let model = TradeOfferModel.make(offer: offer, state: state)
                 let q = model.clamp(quantity ?? model.initialQuantity)
                 Text(verbatim: model.title).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
-                LabeledContent("Price per unit") { Text(verbatim: "\(offer.unitPrice.formatted()) cr.").monospacedDigit() }
+                LabeledContent("Price per unit") { Text("\(offer.unitPrice.formatted()) cr.").monospacedDigit() }
                 LabeledContent(model.traderBuys ? "You hold" : "Available") {
                     Text(verbatim: offer.unitsAvailable.formatted()).monospacedDigit()
                 }
@@ -106,13 +106,13 @@ struct TradeInOrbitSheet: View {
                     Button("Max") { quantity = model.range.upperBound }
                         .accessibilityIdentifier(AXID.Decision.tradeMax)
                 }
-                LabeledContent("Total") { Text(verbatim: "\(model.total(q).formatted()) cr.").monospacedDigit() }
+                LabeledContent("Total") { Text("\(model.total(q).formatted()) cr.").monospacedDigit() }
                 if let perUnit = model.profitPerUnit, let total = model.profitTotal(q) {
                     LabeledContent("Profit per unit") { Text(verbatim: TradeOfferModel.signed(perUnit)).monospacedDigit() }
                     LabeledContent("Profit") { Text(verbatim: TradeOfferModel.signed(total)).monospacedDigit() }
                 }
                 if let after = model.cashAfter(q) {
-                    LabeledContent("Cash after the trade") { Text(verbatim: "\(after.formatted()) cr.").monospacedDigit() }
+                    LabeledContent("Cash after the trade") { Text("\(after.formatted()) cr.").monospacedDigit() }
                 }
                 HStack {
                     Spacer()

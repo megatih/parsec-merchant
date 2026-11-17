@@ -52,16 +52,27 @@ enum LogEntryText {
 
     private static func trade(_ t: TradeEntry) -> LocalizedStringResource {
         let item = s(Names.item(t.item))
-        let profit = t.profit.map { $0 >= 0 ? s(" (profit \(n($0)) cr.)") : s(" (loss \(n(-$0)) cr.)") } ?? ""
+        let q = t.quantity, total = n(t.total)
         switch t.action {
-        case .buy: return "Bought \(t.quantity) \(item) for \(n(t.total)) cr."
-        case .sell: return "Sold \(t.quantity) \(item) for \(n(t.total)) cr.\(profit)"
+        case .buy: return "Bought \(q) \(item) for \(total) cr."
+        case .sell:
+            // Whole sentences per outcome (A11Y-036): no appended fragments.
+            switch t.profit {
+            case nil: return "Sold \(q) \(item) for \(total) cr."
+            case let p? where p >= 0: return "Sold \(q) \(item) for \(total) cr. (profit \(n(p)) cr.)"
+            case let p?: return "Sold \(q) \(item) for \(total) cr. (loss \(n(-p)) cr.)"
+            }
         case .dump: return "Dumped \(t.quantity) \(item) for \(n(t.total)) cr."
         case .jettison: return "Jettisoned \(t.quantity) \(item)."
         case .plunder: return "Plundered \(t.quantity) \(item)."
         case .scoop: return "Scooped up \(t.quantity) \(item)."
         case .orbitBuy: return "Bought \(t.quantity) \(item) in orbit for \(n(t.total)) cr."
-        case .orbitSell: return "Sold \(t.quantity) \(item) in orbit for \(n(t.total)) cr.\(profit)"
+        case .orbitSell:
+            switch t.profit {
+            case nil: return "Sold \(q) \(item) in orbit for \(total) cr."
+            case let p? where p >= 0: return "Sold \(q) \(item) in orbit for \(total) cr. (profit \(n(p)) cr.)"
+            case let p?: return "Sold \(q) \(item) in orbit for \(total) cr. (loss \(n(-p)) cr.)"
+            }
         case .sealedCanisters: return "Three sealed canisters of \(item) were loaded."
         }
     }
