@@ -147,6 +147,7 @@ struct OutfitterSectionView: View {
                     }
                 }
                 .formStyle(.grouped)
+                .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
             } else {
                 // A11Y-029: an own placeholder (ContentUnavailableView draws its title below 4.5:1 contrast).
                 VStack(spacing: 8) {

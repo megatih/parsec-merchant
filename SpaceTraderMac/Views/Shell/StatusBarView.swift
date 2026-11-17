@@ -13,21 +13,24 @@ struct StatusBarView: View {
             let model = StatusBarModel.make(state: state, feed: session.feed)
             HStack(spacing: 16) {
                 Text("Bays \(model.filledBays)/\(model.totalBays)")
+                    .fontWeight(.medium)  // A11Y-029: short values at the window edge
                     .help(Text("Cargo bays in use / total."))
                     .accessibilityLabel(Text("Cargo bays"))
                     .accessibilityValue(Text(verbatim: AccessibilityText.of(model.filledBays, model.totalBays)))  // A11Y-004
                     .accessibilityIdentifier(AXID.Status.bays)
                 Text("Fuel \(model.fuel)/\(model.fuelCapacity)")
+                    .fontWeight(.medium)
                     .help(Text("Fuel in parsecs / tank size."))
                     .accessibilityLabel(Text("Fuel"))
                     .accessibilityValue(Text(verbatim: AccessibilityText.of(model.fuel, model.fuelCapacity)))
                     .accessibilityIdentifier(AXID.Status.fuel)
                 Text("Hull \(model.hullPercent)%")
+                    .fontWeight(.medium)
                     .help(Text("Hull strength."))
                     .accessibilityLabel(Text("Hull"))
                     .accessibilityValue(Text(verbatim: AccessibilityText.percent(model.hullPercent)))
                     .accessibilityIdentifier(AXID.Status.hull)
-                Divider().frame(height: 14)
+                Divider().frame(height: 14).padding(.horizontal, 4)
                 if let reason = visibleRejection {
                     Text(ReasonText.text(for: reason))
                         .foregroundStyle(.signalOrange)
@@ -73,7 +76,7 @@ struct StatusBarView: View {
                     FeedOverlay(groups: FeedGroup.make(session.feed), state: state,
                                 showLogbookEnabled: LogbookLinks.feedShowLogbookEnabled(state: state, inputLocked: session.isInputLocked),
                                 showLogbook: { session.showLogbook(tab: .log) }, dismiss: { showFeed = false })
-                        .offset(y: -34)
+                        .offset(y: -44)  // clear of the status bar text, shadow included (A11Y-029)
                 }
             }
             // UI-KEYS-018: the window's Esc router closes the overlay (level 7).

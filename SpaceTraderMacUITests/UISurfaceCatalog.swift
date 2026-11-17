@@ -239,6 +239,8 @@ extension ParsecUITestCase {
         if element(AXID.Dialog.appConfirmationConfirm).waitForExistence(timeout: 2) { click(AXID.Dialog.appConfirmationConfirm) }
         for page in 1...6 {
             at("wizard-page-\(page)", waitFor(AXID.NewGame.sheet))
+            // The skills page lets Next through only once every point is spent.
+            if page == 4 { click(AXID.NewGame.balanced) }
             if page < 6 { click(AXID.NewGame.next) }
         }
         click(AXID.NewGame.cancel)
@@ -308,27 +310,22 @@ extension ParsecUITestCase {
 
         relaunch(UITestFixtures.specialEventArguments + extra)
         type("1")
-        at("narrative-card", waitFor(AXID.Narrative.bridgeCard))
+        // The card is the last on Bridge: scroll it above the status bar first.
+        let card = waitFor(AXID.Narrative.bridgeCard)
+        let shown = { () -> Bool in
+            let w = self.mainWindow.frame
+            return CGRect(x: w.minX, y: w.minY, width: w.width, height: w.height - 40).contains(card.frame)
+        }
+        for _ in 0..<20 where !shown() { element("bridge.root").scroll(byDeltaX: 0, deltaY: -120) }
+        at("narrative-card", card)
         click(AXID.Narrative.bridgeAccept)
         at("narrative-offer-sheet", waitFor(AXID.Narrative.sheet))
         click(AXID.Narrative.decline)
 
-        // An uneventful warp of the flow seed without fast travel plays 20 clicks (about a second): retry until reached.
-        var reached = false
-        for _ in 0..<3 where !reached {
-            relaunch(UITestFixtures.playbackArguments + extra)
-            click(AXID.Welcome.quickStart)
-            expect("the Quick Start game runs") { quickStartRuns }
-            type("1")
-            click(AXID.Bridge.targetNext)
-            type("j")
-            let view = element(AXID.Transit.view)
-            if view.waitForExistence(timeout: 3) {
-                reached = true
-                at("transit-view", view)
-            }
-        }
-        if !reached { XCTFail("transit-view: the playback was not caught") }
+        // A played-back trip lasts 1.2 s, too short to walk reliably: the Transit view of a game resting in transit stays
+        // up (the same view, frozen at its click, UI-ENC-013).
+        relaunch(UITestFixtures.transitArguments + extra)
+        at("transit-view", waitFor(AXID.Transit.view))
     }
 
     /// A system element of the map that lies inside the map's visible frame and outside its HUD corners (the window may

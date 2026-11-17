@@ -36,9 +36,11 @@ struct IntelligenceSettingsView: View {
             } footer: {
                 Text("Apple Intelligence runs on this Mac only. Flavor text never changes the game.")
                     .foregroundStyle(.readableSecondary)
+                    .lineSpacing(3)  // A11Y-029: wrapped lines with room between them
             }
         }
         .formStyle(.grouped)
+        .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
         .onAppear {
             // LLM-024: no availability check runs when templates are forced.
             if !session.launchOptions.flavorTemplate { availability = FlavorAvailability.current }

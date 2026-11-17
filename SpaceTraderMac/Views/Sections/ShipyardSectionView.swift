@@ -102,7 +102,7 @@ private struct ShipCardView: View {
                     .frame(width: 66, height: 44)
                 VStack(alignment: .leading) {
                     Text(Names.ship(card.type)).scaledFont(.headline)
-                    Text(Names.size(card.spec.size)).scaledFont(.caption).foregroundStyle(.readableSecondary)
+                    Text(Names.size(card.spec.size)).scaledFont(.callout).foregroundStyle(.readableSecondary)
                 }
                 Spacer()
                 if card.isYours {
@@ -117,7 +117,7 @@ private struct ShipCardView: View {
                 ForEach(ShipStatField.allCases, id: \.self) { f in
                     GridRow {
                         Text(f.title).foregroundStyle(.readableSecondary)
-                        Text(verbatim: f.value(card.spec).formatted()).monospacedDigit()
+                        Text(verbatim: f.value(card.spec).formatted()).fontWeight(.medium).monospacedDigit()  // A11Y-029
                     }
                 }
             }
@@ -186,10 +186,10 @@ private struct ShipCompareView: View {
                 ForEach(rows) { row in
                     GridRow {
                         Text(row.field.title).foregroundStyle(.readableSecondary)
-                        Text(verbatim: row.current.formatted()).monospacedDigit()
+                        Text(verbatim: row.current.formatted()).fontWeight(.medium).monospacedDigit()
                         ForEach(row.cells, id: \.type) { cell in
                             HStack(spacing: 4) {
-                                Text(verbatim: cell.value.formatted()).monospacedDigit()
+                                Text(verbatim: cell.value.formatted()).fontWeight(.medium).monospacedDigit()
                                 Text(verbatim: ShipCompare.deltaText(cell.delta))
                                     .scaledFont(.caption)
                                     .foregroundStyle(cell.delta > 0 ? .signalGreen : (cell.delta < 0 ? .signalRed : .secondary))

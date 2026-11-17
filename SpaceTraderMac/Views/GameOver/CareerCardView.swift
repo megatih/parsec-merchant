@@ -19,7 +19,7 @@ struct CareerCardView: View {
             Divider()
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 6) {
                 row("Rules", Text("\(Text(Names.ruleset(card.ruleset))) · \(Text(Names.difficulty(card.difficulty)))"))
-                row("Galaxy code", Text(verbatim: card.galaxyCode).monospaced())
+                row("Galaxy code", Text(verbatim: card.galaxyCode))
                 row("Ending", Text(Names.ending(card.end)))
                 row("Days", Text(card.days, format: .number).monospacedDigit())
                 row("Worth", Text("\(card.worth.formatted()) cr.").monospacedDigit())
@@ -60,7 +60,7 @@ struct CareerCardView: View {
     private func row(_ label: LocalizedStringResource, _ value: Text) -> some View {
         GridRow {
             Text(label).foregroundStyle(.readableSecondary)
-            value
+            value.fontWeight(.medium)  // A11Y-029: short values ("1", codes) stay legible on the light card
         }
     }
 }

@@ -26,7 +26,8 @@ extension EnvironmentValues {
     @Entry var textScale: CGFloat = 1
 }
 
-/// The macOS point sizes of the text styles (the system's values at the default size).
+/// The point sizes of the text styles: the macOS values at the default size, except that footnote, caption and caption2
+/// are 11 pt instead of 10 (A11Y-029: 10 pt text on light backgrounds does not pass the contrast audit).
 nonisolated enum AppFontMetrics {
     static func pointSize(_ style: Font.TextStyle) -> CGFloat {
         switch style {
@@ -38,9 +39,9 @@ nonisolated enum AppFontMetrics {
         case .subheadline: 11
         case .body: 13
         case .callout: 12
-        case .footnote: 10
-        case .caption: 10
-        case .caption2: 10
+        case .footnote: 11
+        case .caption: 11
+        case .caption2: 11
         case .extraLargeTitle: 36
         case .extraLargeTitle2: 28
         @unknown default: 13

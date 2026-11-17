@@ -69,6 +69,7 @@ struct SoundSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
         // A11Y-029: only the controls are disabled when audio is off for this launch; the explanatory text keeps
         // full contrast (a disabled Form dims its text).
     }
@@ -82,6 +83,7 @@ struct SoundSettingsView: View {
                     .accessibilityValue(Text(SoundSettingsModel.percent(value.wrappedValue)))
                     .accessibilityIdentifier(id)
                 Text(SoundSettingsModel.percent(value.wrappedValue))
+                    .fontWeight(.medium)
                     .monospacedDigit()
                     .frame(width: 44, alignment: .trailing)
             }

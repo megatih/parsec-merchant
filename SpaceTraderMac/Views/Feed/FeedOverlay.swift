@@ -53,11 +53,15 @@ struct FeedOverlay: View {
                 .padding(10)
             }
         }
-        .frame(width: 480, height: 320)
-        // A11Y-019/029: opaque, so the Bridge art behind the list never shows through its lines.
-        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+        .frame(width: 480, height: 280)
+        // A11Y-019/029: opaque, so the Bridge art behind the list never shows through its lines. The shadow belongs to
+        // the card's shape only: on the whole view it would put a dark halo around every line of text.
+        .background {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(nsColor: .windowBackgroundColor))
+                .shadow(radius: 6)
+        }
         .contrastCardBorder(ContrastStyle.make(prefs: a11yPrefs))
-        .shadow(radius: 8)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Status.feedList)
     }

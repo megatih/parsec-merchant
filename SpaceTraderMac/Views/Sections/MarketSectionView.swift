@@ -44,7 +44,7 @@ struct MarketSectionView: View {
                     TableColumn("Sell") { (r: MarketRowModel) in SellCell(row: r) }
                         .width(min: 66, ideal: 72)
                     TableColumn("Stock") { (r: MarketRowModel) in
-                        Text(verbatim: r.row.stock.formatted()).monospacedDigit()
+                        Text(verbatim: r.row.stock.formatted()).fontWeight(.medium).monospacedDigit()
                     }
                     .width(min: 44, ideal: 50)
                     TableColumn("Held") { (r: MarketRowModel) in heldCell(r) }
@@ -130,7 +130,7 @@ struct MarketSectionView: View {
     private func heldCell(_ r: MarketRowModel) -> some View {
         let advice = intel?.row(r.item)?.sellAdvice
         return VStack(alignment: .leading, spacing: 0) {
-            Text(verbatim: r.row.held.formatted()).monospacedDigit()
+            Text(verbatim: r.row.held.formatted()).fontWeight(.medium).monospacedDigit()
                 .accessibilityIdentifier(AXID.Market.held(r.item))
             if r.row.held > 0 {
                 Text("avg \(r.row.costBasisPerUnit.formatted()) cr.").scaledFont(.caption).foregroundStyle(.readableSecondary).monospacedDigit()
@@ -308,7 +308,7 @@ private struct PriceCell: View {
 
     var body: some View {
         if let price {
-            Text(verbatim: price.formatted()).monospacedDigit()
+            Text(verbatim: price.formatted()).fontWeight(.medium).monospacedDigit()  // A11Y-029: short numbers
         } else {
             Image(systemName: "minus").accessibilityLabel(Text("Not available"))  // A11Y-029: a dash glyph is too thin to measure
         }
@@ -336,6 +336,7 @@ private struct ProfitCell: View {
         if let value {
             let text = (value > 0 ? "▲ +" : value < 0 ? "▼ " : "") + value.formatted()
             Text(verbatim: text)
+                .fontWeight(.medium)
                 .monospacedDigit()
                 .foregroundStyle(value > 0 ? Color.signalGreen : value < 0 ? Color.signalRed : Color.primary)
                 .accessibilityLabel(value >= 0 ? Text("Profit \(value) credits per unit") : Text("Loss \(-value) credits per unit"))

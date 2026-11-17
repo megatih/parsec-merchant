@@ -69,7 +69,7 @@ private struct BadgeView: View {
                         Image(systemName: "checkmark.seal.fill").foregroundStyle(.signalGreen).accessibilityLabel(Text("Unlocked"))
                     }
                 }
-                Text(verbatim: badge.description).scaledFont(.caption).foregroundStyle(.readableSecondary)
+                Text(verbatim: badge.description).scaledFont(.callout).foregroundStyle(.readableSecondary).lineSpacing(3)  // A11Y-029
                     .fixedSize(horizontal: false, vertical: true)
                 if let p = badge.progress, !badge.unlocked {
                     ProgressView(value: Double(p.current), total: Double(max(1, p.target)))

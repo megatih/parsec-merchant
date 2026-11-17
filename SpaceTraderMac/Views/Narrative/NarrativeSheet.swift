@@ -113,6 +113,7 @@ struct SpecialEventCardView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(SpecialEventText.title(model.type)).scaledFont(.headline)
                 Text(verbatim: NarrativeModel.excerpt(String(localized: SpecialEventText.story(model.type))))
+                    .fontWeight(.medium)
                     .fixedSize(horizontal: false, vertical: true)
                 if let price = NarrativeModel.priceLine(model.price) {
                     Text(verbatim: price).monospacedDigit()

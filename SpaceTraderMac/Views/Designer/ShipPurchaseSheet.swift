@@ -22,6 +22,7 @@ struct ShipPurchaseSheet: View {
                     }
                 }
                 .formStyle(.grouped)
+                .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
                 footer(model)
             } else {
                 Text("This ship can't be built here.")
@@ -143,6 +144,6 @@ struct ShipPurchaseSheet: View {
     }
 
     private func credits(_ n: Int) -> some View {
-        Text("\(n.formatted()) cr.").monospacedDigit()
+        Text("\(n.formatted()) cr.").fontWeight(.medium).monospacedDigit()
     }
 }

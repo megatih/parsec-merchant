@@ -117,7 +117,7 @@ private struct SeatCard: View {
             Text("Reputation: \(String(localized: Names.reputation(standing.reputation)))")
             Text("Kills: \(standing.kills)")
         }
-        .scaledFont(.caption)
+        .scaledFont(.callout)
         .foregroundStyle(.readableSecondary)
     }
 }

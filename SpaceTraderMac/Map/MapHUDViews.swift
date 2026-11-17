@@ -19,6 +19,7 @@ struct HoverCardView: View {
         }
         .padding(10)
         .overlayBackground(cornerRadius: 10)  // A11Y-019
+        .compositingGroup()  // one shadow for the card, not a halo around each text
         .shadow(radius: 4)
     }
 }

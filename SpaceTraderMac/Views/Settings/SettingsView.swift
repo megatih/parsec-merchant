@@ -71,7 +71,7 @@ struct GeneralSettingsView: View {
             LabeledContent {
                 if let code = SettingsGalaxyCode.text(state: session.state) {
                     HStack {
-                        Text(verbatim: code).monospaced().textSelection(.enabled)
+                        Text(verbatim: code).textSelection(.enabled)
                             .accessibilityIdentifier(AXID.Settings.galaxyCode)
                         Button("Copy") { SettingsGalaxyCode.copy(code) }
                             .accessibilityIdentifier(AXID.Settings.galaxyCodeCopy)
@@ -86,6 +86,7 @@ struct GeneralSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
     }
 }
 
@@ -152,6 +153,7 @@ struct AdvancedSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
         .confirmationDialog(Text(verbatim: resetContent.title), isPresented: $pendingReset, titleVisibility: .visible) {
             Button(resetContent.confirmLabel, role: .destructive) { session.confirm(.resetAchievements) }
                 .accessibilityIdentifier(AXID.Dialog.appConfirmationConfirm)
