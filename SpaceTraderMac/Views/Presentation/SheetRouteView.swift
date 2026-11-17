@@ -27,13 +27,12 @@ struct SheetRouteView: View {
             TradeInOrbitSheet(offer: offer)
         case let .plunder(context):
             PlunderSheet(context: context)
-        // Interim and temporary sheets until the UI-ENC views replace them (UI-ENC-057, -071, -075, -092).
         case let .newspaper(paper):
-            InterimDecisionSheet(decision: .newspaper(paper))
+            NewspaperSheet(paper: paper)
         case let .narrative(page):
-            InterimNarrativeSheet(page: page)
-        case .report:
-            PlaceholderSheet(route: route)
+            NarrativeSheet(page: page)
+        case let .report(sheet):
+            ReportSheetView(sheet: sheet)
         case .developerTester:
             DeveloperTesterSheet()
         }

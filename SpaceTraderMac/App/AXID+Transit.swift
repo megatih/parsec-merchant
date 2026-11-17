@@ -14,5 +14,5 @@ nonisolated extension AXID {
     }
 
     /// The M9 encounter-area lists (UI-ENC-097). Later areas append their own `<Area>.all` here.
-    static var encounterAreaAll: [String] { Encounter.all + Decision.all + Transit.all + Narrative.all }
+    static var encounterAreaAll: [String] { Encounter.all + Decision.all + Transit.all + Narrative.all + arrivalAreaAll }
 }

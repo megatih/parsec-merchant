@@ -72,6 +72,18 @@ final class GameSession {
     /// UI-ENC §3–5: the Encounter view's log, header, auto-repeat and Make Room state (GameSession+… in EncounterSession.swift).
     let encounterUI = EncounterSession()
 
+    // MARK: Arrival, newspaper and narrative (UI-ENC §8–11; GameSession+Arrival.swift)
+    /// UI-ENC-053: the trip being collected from the step records.
+    @ObservationIgnored var tripAccumulator = TripAccumulator()
+    /// UI-ENC-055: the arrival card at the top of Bridge (until dismissed or the next departure).
+    var arrivalCard: ArrivalReport?
+    /// UI-ENC-061: the finished trip's form, shown when the playback ends.
+    @ObservationIgnored var pendingArrival: ArrivalPresentation?
+    /// UI-ENC-062: `.readNewspaper` is sent once the arrival form is shown.
+    @ObservationIgnored var pendingNewsAutoShow = false
+    /// Nesting depth of `send` (the auto-show runs after the outermost step).
+    @ObservationIgnored var sendDepth = 0
+
     // MARK: Services
     let slotStore: SlotStore
     let highScoreStore: HighScoreStore
@@ -124,6 +136,11 @@ final class GameSession {
     func send(_ command: Command, acknowledging: Set<WarningID>) {
         guard var engine else { return }
         encounterWillSend(command)
+        sendDepth += 1
+        defer {
+            sendDepth -= 1
+            if sendDepth == 0 { runNewsAutoShowIfPending() }
+        }
         let before = engine.state
         let result = engine.perform(command, acknowledging: acknowledging)
         self.engine = engine
@@ -182,8 +199,10 @@ final class GameSession {
         if transitPlayback != nil, !step.events.isEmpty || step.result.decision != nil { finishPlayback() }
         lastStep = step
         consumeEncounterStep(step)
+        consumeArrival(step)
         if step.encounterStarted != nil { attentionRequested = false }
         startPlayback(for: step)
+        if transitPlayback == nil { showPendingArrival() }
         updateDockAttention()
         if DeveloperTester.opens(after: step.command) { present(.sheet(.developerTester)) }
     }
@@ -197,6 +216,7 @@ final class GameSession {
         transitTick = 0
         deferredPresentations = []
         attentionRequested = false
+        resetArrivalState()
         dock.setProgress(nil)
         updateDockAttention()
         resetEncounterUI()
@@ -274,6 +294,7 @@ final class GameSession {
             appendToFeed([.event(.gameStarted(ruleset: config.ruleset, seed: config.seed))], state: newEngine.state)
             defaults.set(config.commanderName, forKey: DefaultsKey.lastCommanderName)
             writeCreationSave()
+            autoShowNewspaperForNewGame()
             return nil
         }
     }

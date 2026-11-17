@@ -487,12 +487,12 @@ struct BridgeMarketTests {
         #expect(pending.confirmation.warning == .buyNewspaper)
         session.confirm(pending)
         guard case let .sheet(.newspaper(paper)) = session.presentation else {
-            Issue.record("the paper opens the interim newspaper sheet")
+            Issue.record("the paper opens the newspaper sheet")
             return
         }
         let state = try #require(session.state)
         #expect(NewspaperCardModel.make(state: state).paid)
-        #expect(InterimDecisionModel.newspaperLines(paper, state: state).count == paper.headlines.count)
+        #expect(NewspaperText.shownHeadlines(state: state).count == paper.headlines.count)
         session.dismissPresentation()
         #expect(session.presentation == nil)
 

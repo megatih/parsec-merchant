@@ -55,6 +55,8 @@ nonisolated struct MenuContext: Sendable, Equatable {
     var canRepair = false
     var fuelFull = true
     var hullFull = true
+    /// UI-ENC-072: why Game › Newspaper is disabled (the unpaid paper is unaffordable, ALR-009).
+    var newspaperBlocker: CommandError?
     var selectedSection: Section = .bridge
     var searchContext: SearchContext = .other
     /// MAP-015: the map whose canvas has keyboard focus (enables the View zoom items).
@@ -100,6 +102,7 @@ nonisolated struct MenuContext: Sendable, Equatable {
         c.canBuyFuel = !c.fuelFull && state.commander.cash >= spec.fuelCost
         c.canRepair = !c.hullFull && state.commander.cash >= spec.repairCost
         if case .encounter = state.phase { c.encounter = EncounterMenuState.make(engine: GameEngine(state: state), autoRepeatOn: autoRepeatOn) }
+        c.newspaperBlocker = NewspaperCardModel.blocker(state: state)
         return c
     }
 
@@ -224,8 +227,10 @@ nonisolated enum MenuRules {
             return c.canRevertToAutosave ? .enabled : .disabled(.noAutosave)
         case .export, .closeGame:
             return anyGame(c)
-        case .find, .bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .findSystem, .newspaper, .options, .retire:
+        case .find, .bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .findSystem, .options, .retire:
             return gameCommand(c)
+        case .newspaper:
+            return gameCommand(c, and: c.newspaperBlocker == nil, else: .engine(c.newspaperBlocker ?? .insufficientFunds))
         case .plotRoute:
             return gameCommand(c, and: !c.targetIsCurrentSystem, else: .targetIsCurrentSystem)
         case .logbook, .galaxyChart:
