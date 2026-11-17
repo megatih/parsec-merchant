@@ -24,9 +24,10 @@ struct MapInteractionTests {
     @Test("MAP-044 the card shows after the rest and closes on exit and generation changes")
     func hoverDelay() async throws {
         let ui = MapViewModel(scope: .galaxy)
+        // Read the clock before hovering: the rest timer starts inside hover(), so the delay is measured from there.
+        let start = ContinuousClock.now
         ui.hover(at: CGPoint(x: 1, y: 1), hit: .system(2))
         #expect(ui.cardHit == nil)
-        let start = ContinuousClock.now
         while ui.cardHit == nil, ContinuousClock.now - start < .seconds(10) { try await Task.sleep(for: .milliseconds(20)) }
         #expect(ui.cardHit == .system(2) && ContinuousClock.now - start >= MapViewModel.hoverDelay)
         ui.closeCard()
