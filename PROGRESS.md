@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M10 (starting)
-- **Next step:** M10: trade intelligence, logbook, stats, achievements, on-device Foundation Models flavor — write INT/LOG/STAT/ACH/LLM specs (skeletons) first; ParsecInsights coverage ≥85% from M10; app UI per UX-VISION; verify default at exit (no --ui scheduled for M10), bench.
+- **Next step:** (spec agents running: INT/LOG/STAT/ACH/LLM for M10; ART/AUD ahead for M11) M10: trade intelligence, logbook, stats, achievements, on-device Foundation Models flavor — write INT/LOG/STAT/ACH/LLM specs (skeletons) first; ParsecInsights coverage ≥85% from M10; app UI per UX-VISION; verify default at exit (no --ui scheduled for M10), bench.
 - **Last gate result:** verify.sh --ui ALL GATES PASSED @ M9 exit (8/8 incl. flow 2 and the M9 identifier walk); pmsim bench --check OK
 - **Blockers:** none
 
