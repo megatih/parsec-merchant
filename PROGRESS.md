@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M9 (starting)
-- **Next step:** M9 (UI-ENC.md spec agent running): encounter mode + transit + arrival UX — write UI-ENC.md (skeleton) first; encounter mode (vector ships placeholder until M11, hull/shield bars, combat log from events, keyboard actions, auto-repeat via .encounter(.autoRepeat) timer 0.6 s + Esc stop, tactical readout), transit (Dock tile progress), plunder/trade/scoop/consent sheets, arrival report card, event feed, styled newspaper (NEWS-047 Palm override), special-event sheets, game over + career card, high scores view; every PendingDecision and ALR mapping has a presentation (test); UI flow 2 (-PMScenario pirateAmbush); verify --ui at M9 exit.
-- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M8 exit (8/8 incl. flow 5); pmsim bench --check all OK; map render baseline 0.41 ms median (QA-REPORT MAP-091)
+- **Current milestone:** M10 (starting)
+- **Next step:** M10: trade intelligence, logbook, stats, achievements, on-device Foundation Models flavor — write INT/LOG/STAT/ACH/LLM specs (skeletons) first; ParsecInsights coverage ≥85% from M10; app UI per UX-VISION; verify default at exit (no --ui scheduled for M10), bench.
+- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M9 exit (8/8 incl. flow 2 and the M9 identifier walk); pmsim bench --check OK
 - **Blockers:** none
 
 ## Milestones
@@ -18,7 +18,7 @@
 - [x] M6 Persistence, high scores, cheats (2026-11-17, tag m6-done; SAV/SCORE/CHEAT/OPT traced; 500 fuzzed byte-identical round trips; v1 fixtures per ruleset)
 - [x] M7 App shell and docked screens (2026-11-17, tag m7-done; GameSession, Welcome/wizard, Bridge/Market/Shipyard+Designer/Outfitter/Crew/Bank/Quests, menus, files, Settings/Options, About/Help, App Intents, cheat console; UI flows 1/3/4 + identifier walk green)
 - [x] M8 Galaxy chart (2026-11-17, tag m8-done; Canvas map, hover cards, range ring, wormholes, route planner (ParsecInsights) + follower, search, detachable window, mini chart, VoiceOver children + rotors; flow 5 green; pmsim bench real)
-- [ ] M9 Encounter, transit, event UX
+- [x] M9 Encounter, transit, event UX (2026-11-17, tag m9-done; encounter view + combat log + auto-repeat + tactical readout, transit + Dock progress, arrival report, feed, styled newspaper, special-event narratives, game over + career card, high scores window, every PendingDecision/ALR presentation covered by a test; flow 2 green)
 - [ ] M10 Trade intelligence, log, stats, achievements, flavor
 - [ ] M11 Art, icon, audio, haptics
 - [ ] M12 Polish, accessibility, localization, screenshots
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M9 exit: UI-ENC (106 IDs) built by 5 worktree agents; pirateAmbush scenario seed 292 → target 46, 6 attacks; flows found 2 bugs (no report after loading mid-encounter; unidentified Bridge sliders). Duplicate auto Window-menu items removed with .commandsRemoved().
 - 2026-11-17: M8 exit: MAP.md (104 IDs), route planner (lexicographic Dijkstra, verified vs brute force), app galaxy chart + flow 5. pmsim bench implemented (perform 0.0005 ms, arrival 0.04 ms, route 0.03 ms medians). Map render baseline 0.41 ms/frame (budget 8 ms). Deviation: flow 5 uses seed 13 (seed 11 meets police on the nearest warp).
 - 2026-11-17: M7 exit: app built by six worktree agents (foundation, engine UI queries, four section/area agents) + UI-flow agent. Flows found two real bugs: AppKit opened a leftover launch argument as a document (fixed with NSTreatUnknownArgumentsAsOpen=NO) and container accessibilityIdentifiers overwrote children (fixed with .accessibilityElement(children: .contain)). NEWS-047 retagged M9 (styled newspaper). Interim encounter/game-over surfaces remain until M9.
 - 2026-11-17: M6 exit: persistence rewrite (gameID/generation, backup recovery, validation, versioned high scores, loadForPlay reload rule, import clears Ironman), cheats (all C# Find codes + Palm codes/cheat form, cheatsUsed permanent), options (docked-only, normalized, Palm defaults). M7 specs UI-SHELL (129) + MENU (45) written. Decisions: galaxy code includes difficulty (generator needs it); interim encounter/game-over surfaces in M7 replaced in M9.
