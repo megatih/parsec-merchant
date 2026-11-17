@@ -8,13 +8,14 @@ struct SidebarView: View {
 
     var body: some View {
         let badges = SidebarBadges.make(state: session.state)
-        let lock = SidebarLock.make(phase: session.state?.phase)
+        let lock = SidebarLock.make(phase: session.state?.phase, transitPlaying: session.transitPlayback != nil)
         let context = session.sectionContext
         List(selection: selectionBinding(locked: lock != .none)) {
             if let label = lock.label {
                 Text(label)
                     .font(.caption.bold())
                     .foregroundStyle(.secondary)
+                    .accessibilityIdentifier(AXID.Transit.sidebarPhaseLabel)
             }
             ForEach(Section.allCases) { section in
                 SidebarRow(section: section, badge: badges.badge(for: section))

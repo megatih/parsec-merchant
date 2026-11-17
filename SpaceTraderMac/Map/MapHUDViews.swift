@@ -192,7 +192,7 @@ struct TargetStripView: View {
                         .accessibilityIdentifier(ids.trackedRange)
                 }
             }
-            let warp = WarpButtonModel.make(state: session.state, isModal: session.isModal)
+            let warp = WarpButtonModel.make(state: session.state, isModal: session.isInputLocked)
             Button {
                 session.send(.warp)
             } label: {
@@ -204,7 +204,7 @@ struct TargetStripView: View {
             .accessibilityIdentifier(ids.warp)
             if let state = session.state, state.quests.canSuperWarp {
                 Button("Use Singularity") { session.send(.jump) }
-                    .disabled(!state.jumpPreview.available || session.isModal)
+                    .disabled(!state.jumpPreview.available || session.isInputLocked)
                     .help(Text("Jump with the portable singularity."))
                     .accessibilityIdentifier(ids.jump)
             }

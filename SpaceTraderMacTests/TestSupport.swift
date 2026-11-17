@@ -7,13 +7,16 @@ import Testing
 /// Builds sessions on throwaway stores and defaults.
 @MainActor
 enum TestSessions {
-    static func make(seed: UInt64? = 1) throws -> GameSession {
+    static func make(seed: UInt64? = 1, fastTravel: Bool = true, dock: any SessionDock = NoDock()) throws -> GameSession {
         let id = UUID().uuidString
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("pm-tests-\(id)", isDirectory: true)
         let defaults = try #require(UserDefaults(suiteName: "pm-tests-\(id)"))
         var options = LaunchOptions()
         options.seed = seed
-        return GameSession(stores: SessionStores(root: root, appVersion: "test"), launchOptions: options, defaults: defaults)
+        // Transit playbacks are skipped unless a test opts in (TransitTests use `fastTravel: false`).
+        options.fastTravel = fastTravel
+        return GameSession(stores: SessionStores(root: root, appVersion: "test"), launchOptions: options, defaults: defaults,
+                           dock: dock)
     }
 
     /// A session with a Quick Start game (Modern, Normal, 5/5/5/5).
@@ -37,14 +40,17 @@ enum TestSessions {
         switch p {
         case let .confirmation(pending): session.confirm(pending)
         case let .sheet(.retire(pending)): session.confirm(pending)
-        case let .sheet(.decision(d)):
+        case .sheet(.tradeInOrbit):
             session.dismissPresentation()
-            switch d {
-            case .tradeInOrbit: session.send(.resolveTradeInOrbit(quantity: 0))
-            case .plunder: session.send(.plunderDone)
-            case .scoop: session.send(.resolveScoop(accept: false))
-            case .newspaper, .confirm: break
-            }
+            session.send(.resolveTradeInOrbit(quantity: 0))
+        case .sheet(.plunder):
+            session.dismissPresentation()
+            session.send(.plunderDone)
+        case .scoop:
+            session.answerScoop(accept: false)
+        case .sheet(.narrative(.offer)):
+            session.dismissPresentation()
+            session.send(.specialEvent, acknowledging: [.acceptSpecialEvent])
         case let .appConfirmation(c): session.confirm(c)
         case .systemAlert, .sheet: session.dismissPresentation()
         }

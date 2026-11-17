@@ -67,7 +67,7 @@ nonisolated struct MenuContext: Sendable, Equatable {
     /// The state-derived part of the context (pure; `make(session:)` adds the session and store facts).
     static func make(state: GameState?, isModal: Bool, selectedSection: Section = .bridge, currentSlotID: String? = nil,
                      canRevertToAutosave: Bool = false, recentSlots: [RecentSlot] = [], focusedMap: MapScope? = nil,
-                     galaxyIsKey: Bool = false) -> MenuContext {
+                     galaxyIsKey: Bool = false, transitPlaying: Bool = false) -> MenuContext {
         var c = MenuContext()
         c.isModal = isModal
         c.selectedSection = selectedSection
@@ -79,7 +79,8 @@ nonisolated struct MenuContext: Sendable, Equatable {
         c.recentSlots = recentSlots
         guard let state else { return c }
         c.hasGame = true
-        c.phase = MenuPhase(state.phase)
+        // UI-ENC-006: a running transit playback reads as `.inTransit` (the engine state is already final).
+        c.phase = transitPlaying ? .inTransit : MenuPhase(state.phase)
         c.isIronman = state.ironman
         let current = state.commander.currentSystem
         c.targetIsCurrentSystem = state.warpSystem == current
@@ -108,7 +109,8 @@ nonisolated struct MenuContext: Sendable, Equatable {
         }
         return make(state: session.state, isModal: session.isModal, selectedSection: session.selectedSection,
                     currentSlotID: session.currentSlotID, canRevertToAutosave: session.canRevertToAutosave, recentSlots: recent,
-                    focusedMap: focusedMap, galaxyIsKey: session.galaxyWindowIsKey)
+                    focusedMap: focusedMap, galaxyIsKey: session.galaxyWindowIsKey,
+                    transitPlaying: session.transitPlayback != nil)
     }
 }
 

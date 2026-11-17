@@ -8,6 +8,8 @@
 | UI-SHELL-107 credits visible | `LICENSE` and `CREDITS.md` are bundled as `Resources/Legal/License.txt` and `AppCredits.md` (an app test checks they equal the repo files); About shows the credits, the GPL notice and View License. Screenshot due with the M7 UI run. | partly (screenshot pending) |
 | UI-SHELL-108 no popovers | SwiftLint custom rule `no_popover` (`.swiftlint.yml`) runs in `verify.sh` step 6 with `--strict` over every Swift file. | ✓ |
 | MAP-091 map render baseline | `scripts/bench-map.sh` (Release, `MapRenderBenchmarkTests`, 1320×860, Modern seed 11 fixture with a three-hop route, tracked system, quest marker, every M8 layer): zoom 1 median 0.414 ms, p90 0.435 ms; zoom 4 median 0.249 ms, p90 0.265 ms; XCTClockMetric average 0.7 ms for both zooms. Apple M6, macOS 27.2.1 (26B131), 2026-11-17. Budget 8 ms. The `xcshareddata/xcbaselines` file is not committed yet (Xcode writes it only when a baseline is set in its UI). | ✓ baseline recorded; xcbaseline pending |
+| UI-ENC-010 Dock tile transit progress | `DockTileProgress.fraction` is unit-tested (TransitTests); `AppDock` draws the app icon with a progress bar and restores the plain icon at the end of a playback or on Skip. Screenshot due with the M9 UI run. | partly (screenshot pending) |
+| UI-ENC-011 Dock badge and attention | `DockAttention.badge` and the session's one-request-per-encounter rule are unit-tested with a recording Dock (TransitTests); the real badge and bounce are checked by hand with the app in the background during an encounter. | partly (manual check pending) |
 
 ## Accepted assumptions
 

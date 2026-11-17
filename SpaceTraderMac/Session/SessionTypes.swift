@@ -103,7 +103,7 @@ enum ShipPurchaseRequest: Equatable, Sendable {
     }
 }
 
-/// Sheets on the main window.
+/// Sheets on the main window (UI-SHELL-005, UI-ENC-002).
 enum SheetRoute: Equatable, Sendable {
     case newGame
     case openSavedGame
@@ -113,8 +113,18 @@ enum SheetRoute: Equatable, Sendable {
     /// The retire confirmation (ALR-104) is a sheet; it carries the pending confirmation to resend.
     case retire(PendingConfirmation)
     case cheatConsole
-    case decision(PendingDecision)
-    case encounterInterim
+    /// UI-ENC-047: the trade-in-orbit offer (ECO-081).
+    case tradeInOrbit(OrbitTradeOffer)
+    /// UI-ENC-045: plunder the victim's hold (an opponent, or the Marie Celeste after boarding).
+    case plunder(PlunderSheetContext)
+    /// UI-ENC-071: the styled newspaper.
+    case newspaper(Newspaper)
+    /// UI-ENC-074: a special event's offer or result page.
+    case narrative(NarrativePage)
+    /// UI-ENC-058: the arrival, arrest, escape-pod or reactor report.
+    case report(ReportSheet)
+    /// UI-ENC-092: the Debug developer tester (CHEAT-038).
+    case developerTester
 
     var key: String {
         switch self {
@@ -125,18 +135,12 @@ enum SheetRoute: Equatable, Sendable {
         case let .shipPurchase(r): "shipPurchase.\(r.key)"
         case .retire: "retire"
         case .cheatConsole: "cheatConsole"
-        case let .decision(d): "decision.\(Self.decisionKey(d))"
-        case .encounterInterim: "encounterInterim"
-        }
-    }
-
-    private static func decisionKey(_ d: PendingDecision) -> String {
-        switch d {
-        case let .confirm(c): "confirm.\(c.warning.rawValue)"
         case .tradeInOrbit: "tradeInOrbit"
-        case .plunder: "plunder"
-        case .scoop: "scoop"
+        case let .plunder(c): "plunder.\(c.source.rawValue)"
         case .newspaper: "newspaper"
+        case let .narrative(page): "narrative.\(page.key)"
+        case let .report(r): "report.\(r.kind.rawValue)"
+        case .developerTester: "developerTester"
         }
     }
 }
@@ -147,6 +151,8 @@ enum Presentation: Identifiable, Equatable, Sendable {
     case appConfirmation(AppConfirmation)
     case systemAlert(SystemAlert)
     case sheet(SheetRoute)
+    /// UI-ENC-049: the scoop question (ALR-070/071), a confirmation dialog.
+    case scoop(TradeItemType)
 
     var id: String {
         switch self {
@@ -154,6 +160,7 @@ enum Presentation: Identifiable, Equatable, Sendable {
         case let .appConfirmation(c): "appConfirmation.\(c.key)"
         case let .systemAlert(a): "systemAlert.\(a.key)"
         case let .sheet(s): "sheet.\(s.key)"
+        case let .scoop(item): "scoop.\(item)"
         }
     }
 }

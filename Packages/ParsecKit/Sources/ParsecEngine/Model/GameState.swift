@@ -107,6 +107,18 @@ public struct TransitState: Codable, Sendable, Equatable {
     public var inspected = false
     public var litterWarning = false
     public var hadEncounter = false
+
+    /// Public so the app's transit playback (UI-ENC-007/013) can be tested with fixture states.
+    public init(destination: Int, clicksRemaining: Int, viaWormhole: Bool, raided: Bool = false, inspected: Bool = false,
+                litterWarning: Bool = false, hadEncounter: Bool = false) {
+        self.destination = destination
+        self.clicksRemaining = clicksRemaining
+        self.viaWormhole = viaWormhole
+        self.raided = raided
+        self.inspected = inspected
+        self.litterWarning = litterWarning
+        self.hadEncounter = hadEncounter
+    }
 }
 
 /// An ongoing encounter (C# encounter fields of `Game`).

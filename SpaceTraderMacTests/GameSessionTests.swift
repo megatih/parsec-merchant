@@ -67,7 +67,7 @@ struct GameSessionTests {
         }
         #expect(pending.confirmation.warning == .buyNewspaper)
         s.confirm(pending)
-        guard case .sheet(.decision(.newspaper)) = s.presentation else {
+        guard case .sheet(.newspaper) = s.presentation else {
             Issue.record("the paper itself is a decision sheet")
             return
         }

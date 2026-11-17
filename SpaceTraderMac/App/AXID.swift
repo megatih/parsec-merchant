@@ -109,27 +109,10 @@ nonisolated enum AXID {
         static let all = [card, newGame, mainMenu]
     }
 
-    /// Interim surfaces (M7, replaced by UI-ENC in M9, which may reuse these identifiers).
-    enum Interim {
-        static let encounterPanel = "encounter.panel"
-        static func encounterAction(_ a: EncounterAction) -> String { "encounter.action.\(a.rawValue)" }
-        static let tradeQuantity = "decision.trade.quantity"
-        static let tradeAccept = "decision.trade.accept"
-        static let tradeDecline = "decision.trade.decline"
-        static func plunderTake(_ item: TradeItemType) -> String { "decision.plunder.take.\(item)" }
-        static let plunderDone = "decision.plunder.done"
-        static let scoopAccept = "decision.scoop.accept"
-        static let scoopDecline = "decision.scoop.decline"
-        static let newspaperClose = "decision.newspaper.close"
-        static let all: [String] = [encounterPanel, tradeQuantity, tradeAccept, tradeDecline, plunderDone, scoopAccept,
-                                    scoopDecline, newspaperClose]
-            + EncounterAction.allCases.map(encounterAction) + TradeItemType.allCases.map(plunderTake)
-    }
-
     /// Every fixed identifier plus the parameterised ones expanded over their engine enums (UI-SHELL-128).
     static var all: [String] {
         Welcome.all + NewGame.all + Sidebar.all + Toolbar.all + Status.all + Inspector.all + SectionRoot.all
-            + Dialog.all + GameOver.all + Interim.all + shipyardArea + crewBankQuestsAll
+            + Dialog.all + GameOver.all + encounterAreaAll + shipyardArea + crewBankQuestsAll
             + Bridge.all + Market.all + menusFilesSettingsAll + mapAll
     }
 

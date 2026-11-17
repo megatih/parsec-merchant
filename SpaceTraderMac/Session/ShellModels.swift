@@ -48,8 +48,10 @@ enum SidebarLock: Equatable, Sendable {
     case inTransit
     case inEncounter
 
-    static func make(phase: GamePhase?) -> SidebarLock {
-        switch phase {
+    /// `transitPlaying`: a running transit playback locks the sidebar as "In transit" (UI-ENC-009).
+    static func make(phase: GamePhase?, transitPlaying: Bool = false) -> SidebarLock {
+        if transitPlaying { return .inTransit }
+        return switch phase {
         case .inTransit: .inTransit
         case .encounter: .inEncounter
         case .docked, .gameOver, nil: .none

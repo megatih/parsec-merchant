@@ -124,6 +124,13 @@ public struct ContentPacks: Sendable {
     public var unplacedMercenaryIDs: [Int]
     /// CHEAT-007: which cheat codes exist (C# Find-box codes, or the Palm Find-box codes and Cheat form).
     public var cheatSet: CheatSet = .windows
+    /// UI-ENC-106 / NEWS-047: which newspaper wording table the app's formatter uses (content data, no engine behaviour).
+    public var newsWording: NewsWording = .csharp
+}
+
+/// UI-ENC-106: the newspaper wording variant (NEWS-047: Palm's distant-story template 3 reads "Sources say").
+public enum NewsWording: String, Codable, Sendable, CaseIterable {
+    case csharp, palm
 }
 
 /// A complete ruleset.
@@ -211,7 +218,8 @@ public struct Ruleset: Sendable {
         r.content = ContentPacks(hasShipyards: false, hasSculptureQuest: false, hasPrincessQuest: false,
                                  hasDisruptors: false, hasHiddenBays: false, mercenariesPerSystem: 1,
                                  randomMercenaryIDs: Array(1...31), kravatMercenaryPreCount: 1,
-                                 unplacedMercenaryIDs: [CrewID.zeethibal, CrewID.opponent], cheatSet: .palm)
+                                 unplacedMercenaryIDs: [CrewID.zeethibal, CrewID.opponent], cheatSet: .palm,
+                                 newsWording: .palm)
         r.flags.distance = .rounded
         // OPT-003/005/009: Palm options defaults (Src/Global.c:648-649), new-game resets and independent checkboxes.
         r.flags.optionDependencies = false

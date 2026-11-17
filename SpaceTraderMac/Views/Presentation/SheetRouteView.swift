@@ -13,8 +13,6 @@ struct SheetRouteView: View {
             NewGameWizard()
         case let .retire(pending):
             RetireSheet(pending: pending)
-        case let .decision(decision):
-            InterimDecisionSheet(decision: decision)
         case let .shipPurchase(request):
             ShipPurchaseSheet(request: request)
         case .findSystem:
@@ -25,7 +23,16 @@ struct SheetRouteView: View {
             GameOptionsSheet()
         case .cheatConsole:
             CheatConsoleSheet()
-        case .encounterInterim:
+        // Interim and temporary sheets until the UI-ENC views replace them (UI-ENC-045…047, -057, -071, -075, -092).
+        case let .tradeInOrbit(offer):
+            InterimDecisionSheet(decision: .tradeInOrbit(offer))
+        case let .plunder(context):
+            InterimDecisionSheet(decision: .plunder(context.victimCargo))
+        case let .newspaper(paper):
+            InterimDecisionSheet(decision: .newspaper(paper))
+        case let .narrative(page):
+            InterimNarrativeSheet(page: page)
+        case .report, .developerTester:
             PlaceholderSheet(route: route)
         }
     }
@@ -34,7 +41,7 @@ struct SheetRouteView: View {
 /// Stand-in for sheets that their owners add (Open, Options, Find, Purchase review, Cheat console).
 struct PlaceholderSheet: View {
     @Environment(GameSession.self) private var session
-    let route: SheetRoute
+    let route: SheetRoute?
 
     var body: some View {
         VStack(spacing: 16) {

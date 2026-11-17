@@ -195,7 +195,7 @@ struct GalaxyMapView: View {
             gesture = .click
         }
         ui.lastClick = gesture == .click ? (now, hit) : nil
-        perform(MapActions.action(for: hit, gesture: gesture, snapshot: snapshot, isModal: session.isModal))
+        perform(MapActions.action(for: hit, gesture: gesture, snapshot: snapshot, isModal: session.isInputLocked))
     }
 
     private func perform(_ action: MapAction) {
@@ -204,7 +204,7 @@ struct GalaxyMapView: View {
             sendFromMap(command)
         case let .sendAndFocusWarp(command):
             sendFromMap(command)
-            if WarpButtonModel.make(state: session.state, isModal: session.isModal).isEnabled { warpFocused = true }
+            if WarpButtonModel.make(state: session.state, isModal: session.isInputLocked).isEnabled { warpFocused = true }
         case .none:
             break
         }
@@ -230,7 +230,7 @@ struct GalaxyMapView: View {
 
     @ViewBuilder
     private func contextMenuItems(_ snapshot: MapSnapshot) -> some View {
-        ForEach(MapContextMenu.items(for: ui.hoverHit, snapshot: snapshot, isModal: session.isModal)) { item in
+        ForEach(MapContextMenu.items(for: ui.hoverHit, snapshot: snapshot, isModal: session.isInputLocked)) { item in
             Button {
                 if let command = item.command { sendFromMap(command) }
                 if item.kind == .plotRoute, let d = item.destination { session.planRoute(to: d) }
@@ -334,8 +334,8 @@ struct GalaxyMapView: View {
     // MARK: Accessibility (MAP-081, MAP-082)
 
     private func accessibilityChildren(_ snapshot: MapSnapshot, projected: ProjectedMap) -> some View {
-        let locked = MapActions.isLocked(snapshot, isModal: session.isModal)
-        let warpEnabled = WarpButtonModel.make(state: session.state, isModal: session.isModal).isEnabled
+        let locked = MapActions.isLocked(snapshot, isModal: session.isInputLocked)
+        let warpEnabled = WarpButtonModel.make(state: session.state, isModal: session.isInputLocked).isEnabled
         return ZStack(alignment: .topLeading) {
             ForEach(MapAccessibility.order(snapshot), id: \.self) { i in
                 let r = projected.metrics.systemHitRadius(snapshot.systems[i].size)

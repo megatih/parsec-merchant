@@ -25,7 +25,7 @@ public struct Confirmation: Codable, Sendable, Equatable {
 }
 
 /// Why a command was refused. The state is never changed when a command is rejected.
-public enum CommandError: Codable, Sendable, Equatable, Error {
+public enum CommandError: Codable, Sendable, Equatable, Error, CaseIterable {
     case notAllowedInPhase
     case pendingDecisionFirst
     case invalidArgument
@@ -224,6 +224,13 @@ public struct StepResult: Sendable, Equatable {
     public var events: [GameEvent] = []
     public var decision: PendingDecision?
     public var rejection: CommandError?
+
+    /// Public so app-side builders (UI-ENC step records) can be tested with fixture results.
+    public init(events: [GameEvent] = [], decision: PendingDecision? = nil, rejection: CommandError? = nil) {
+        self.events = events
+        self.decision = decision
+        self.rejection = rejection
+    }
 
     public static func rejected(_ e: CommandError) -> StepResult { StepResult(events: [], decision: nil, rejection: e) }
     public static func needsConfirmation(_ c: Confirmation) -> StepResult {

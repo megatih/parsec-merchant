@@ -16,6 +16,10 @@ struct PresentationHost: ViewModifier {
         let id: String
         let content: ConfirmationContent
         let onConfirm: @MainActor () -> Void
+        var onCancel: (@MainActor () -> Void)?
+        var confirmID: String
+        var cancelID: String
+        var cancelLabel = String(localized: "Cancel")
     }
 
     func body(content: Content) -> some View {
@@ -29,16 +33,16 @@ struct PresentationHost: ViewModifier {
                                 titleVisibility: .visible, presenting: dialog) { item in
                 if item.content.isDestructive {
                     Button(item.content.confirmLabel, role: .destructive) { item.onConfirm() }
-                        .accessibilityIdentifier(confirmID)
-                    Button("Cancel", role: .cancel) { session.cancel() }
+                        .accessibilityIdentifier(item.confirmID)
+                    Button(item.cancelLabel, role: .cancel) { cancel(item) }
                         .keyboardShortcut(.defaultAction)
-                        .accessibilityIdentifier(cancelID)
+                        .accessibilityIdentifier(item.cancelID)
                 } else {
                     Button(item.content.confirmLabel) { item.onConfirm() }
                         .keyboardShortcut(.defaultAction)
-                        .accessibilityIdentifier(confirmID)
-                    Button("Cancel", role: .cancel) { session.cancel() }
-                        .accessibilityIdentifier(cancelID)
+                        .accessibilityIdentifier(item.confirmID)
+                    Button(item.cancelLabel, role: .cancel) { cancel(item) }
+                        .accessibilityIdentifier(item.cancelID)
                 }
             } message: { item in
                 Text(verbatim: item.content.message)
@@ -69,17 +73,8 @@ struct PresentationHost: ViewModifier {
 
     // MARK: Confirmation dialogs
 
-    private var isEngineConfirmation: Bool {
-        if case .confirmation = session.presentation { return true }
-        return false
-    }
-
-    private var confirmID: String {
-        isEngineConfirmation ? AXID.Dialog.confirmationConfirm : AXID.Dialog.appConfirmationConfirm
-    }
-
-    private var cancelID: String {
-        isEngineConfirmation ? AXID.Dialog.confirmationCancel : AXID.Dialog.appConfirmationCancel
+    private func cancel(_ item: DialogItem) {
+        if let onCancel = item.onCancel { onCancel() } else { session.cancel() }
     }
 
     private var dialogItem: DialogItem? {
@@ -88,10 +83,20 @@ struct PresentationHost: ViewModifier {
         case let .confirmation(pending):
             guard let state = session.state else { return nil }
             let content = ConfirmationText.content(for: pending.confirmation, state: state)
-            return DialogItem(id: presentation.id, content: content) { [session] in session.confirm(pending) }
+            return DialogItem(id: presentation.id, content: content, onConfirm: { [session] in session.confirm(pending) },
+                              confirmID: AXID.Dialog.confirmationConfirm, cancelID: AXID.Dialog.confirmationCancel)
         case let .appConfirmation(c):
             let content = AppConfirmationText.content(for: c, session: session)
-            return DialogItem(id: presentation.id, content: content) { [session] in session.confirm(c) }
+            return DialogItem(id: presentation.id, content: content, onConfirm: { [session] in session.confirm(c) },
+                              confirmID: AXID.Dialog.appConfirmationConfirm, cancelID: AXID.Dialog.appConfirmationCancel)
+        case let .scoop(item):
+            // UI-ENC-049 (interim form): Pick It Up / Leave It; the full-hold Make Room flow is added with the decision views.
+            let content = ScoopText.content(for: item)
+            return DialogItem(id: presentation.id, content: content,
+                              onConfirm: { [session] in session.answerScoop(accept: true) },
+                              onCancel: { [session] in session.answerScoop(accept: false) },
+                              confirmID: AXID.Decision.scoopAccept, cancelID: AXID.Decision.scoopDecline,
+                              cancelLabel: String(localized: "Leave It"))
         case .systemAlert, .sheet:
             return nil
         }
@@ -120,21 +125,36 @@ struct PresentationHost: ViewModifier {
         }
     }
 
-    private var alertTitle: String {
-        switch currentAlert {
+    private var alertTitle: String { currentAlert.map(SystemAlertText.title) ?? "" }
+
+    private var alertMessage: String { currentAlert.map(SystemAlertText.message) ?? "" }
+}
+
+/// Text of the system alerts (ALR-091/092; UI-ENC-004 checks every case has a title).
+enum SystemAlertText {
+    static func title(_ alert: SystemAlert) -> String {
+        switch alert {
         case .saveFailed: String(localized: "The game couldn't be saved.")
         case .openFailed: String(localized: "The saved game couldn't be opened.")
         case .nothingToContinue: String(localized: "There's no game to continue.")
-        case nil: ""
         }
     }
 
-    private var alertMessage: String {
-        switch currentAlert {
+    static func message(_ alert: SystemAlert) -> String {
+        switch alert {
         case let .saveFailed(reason): reason
         case let .openFailed(reason, suggestion): [reason, suggestion].compactMap(\.self).joined(separator: "\n\n")
-        case .nothingToContinue, nil: ""
+        case .nothingToContinue: ""
         }
+    }
+}
+
+/// Text of the scoop dialog (ALR-070).
+enum ScoopText {
+    static func content(for item: TradeItemType) -> ConfirmationContent {
+        ConfirmationContent(title: String(localized: "A canister of \(String(localized: Names.item(item))) floats by."),
+                            message: String(localized: "Pick it up?"),
+                            confirmLabel: String(localized: "Pick It Up"), isDestructive: false)
     }
 }
 

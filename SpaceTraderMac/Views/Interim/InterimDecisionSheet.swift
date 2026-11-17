@@ -20,7 +20,7 @@ struct InterimDecisionSheet: View {
             case let .newspaper(paper):
                 NewspaperSheet(paper: paper)
             case .confirm:
-                PlaceholderSheet(route: .decision(decision))
+                PlaceholderSheet(route: nil)
             }
         }
         .padding(24)
@@ -45,15 +45,15 @@ private struct TradeInOrbitSheet: View {
             Stepper(value: $quantity, in: model.range) {
                 Text("Quantity: \(quantity) of at most \(offer.maxQuantity)")
             }
-            .accessibilityIdentifier(AXID.Interim.tradeQuantity)
+            .accessibilityIdentifier(AXID.Decision.tradeQuantity)
             HStack {
                 Spacer()
                 Button("Decline") { answer(model.declineCommand) }
-                    .accessibilityIdentifier(AXID.Interim.tradeDecline)
+                    .accessibilityIdentifier(AXID.Decision.tradeDecline)
                 Button("Trade") { answer(model.acceptCommand(quantity)) }
                     .keyboardShortcut(.defaultAction)
                     .disabled(!model.canAccept(quantity))
-                    .accessibilityIdentifier(AXID.Interim.tradeAccept)
+                    .accessibilityIdentifier(AXID.Decision.tradeAccept)
             }
         }
         .onAppear { quantity = model.initialQuantity }
@@ -86,7 +86,7 @@ private struct PlunderSheet: View {
                     Button("Take") {
                         session.send(InterimDecisionModel.Plunder.takeCommand(item, amount: amounts[item], available: available))
                     }
-                        .accessibilityIdentifier(AXID.Interim.plunderTake(item))
+                        .accessibilityIdentifier(AXID.Decision.plunderTake(item))
                 }
             }
             if session.lastRejection != nil, let reason = session.lastRejection {
@@ -99,7 +99,7 @@ private struct PlunderSheet: View {
                     session.send(InterimDecisionModel.Plunder.doneCommand)
                 }
                 .keyboardShortcut(.defaultAction)
-                .accessibilityIdentifier(AXID.Interim.plunderDone)
+                .accessibilityIdentifier(AXID.Decision.plunderDone)
             }
         }
     }
@@ -120,10 +120,10 @@ private struct ScoopSheet: View {
             HStack {
                 Spacer()
                 Button("Leave It") { answer(false) }
-                    .accessibilityIdentifier(AXID.Interim.scoopDecline)
+                    .accessibilityIdentifier(AXID.Decision.scoopDecline)
                 Button("Pick It Up") { answer(true) }
                     .keyboardShortcut(.defaultAction)
-                    .accessibilityIdentifier(AXID.Interim.scoopAccept)
+                    .accessibilityIdentifier(AXID.Decision.scoopAccept)
             }
         }
     }
@@ -151,7 +151,7 @@ private struct NewspaperSheet: View {
                 Spacer()
                 Button("Close") { session.dismissPresentation() }
                     .keyboardShortcut(.defaultAction)
-                    .accessibilityIdentifier(AXID.Interim.newspaperClose)
+                    .accessibilityIdentifier(AXID.Decision.newspaperClose)
             }
         }
     }

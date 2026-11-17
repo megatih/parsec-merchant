@@ -484,7 +484,7 @@ struct BridgeMarketTests {
         }
         #expect(pending.confirmation.warning == .buyNewspaper)
         session.confirm(pending)
-        guard case let .sheet(.decision(.newspaper(paper))) = session.presentation else {
+        guard case let .sheet(.newspaper(paper)) = session.presentation else {
             Issue.record("the paper opens the interim newspaper sheet")
             return
         }
@@ -503,7 +503,7 @@ struct BridgeMarketTests {
             guard let engine = s.engine, let preview = engine.encounterPreview,
                   preview.actions.contains(where: { $0.action == .trade && $0.enabled }) else { continue }
             s.send(.encounter(.trade))
-            guard case let .sheet(.decision(.tradeInOrbit(o))) = s.presentation else { continue }
+            guard case let .sheet(.tradeInOrbit(o)) = s.presentation else { continue }
             let model = InterimDecisionModel.Trade(offer: o)
             s.dismissPresentation()
             s.send(model.declineCommand)
@@ -511,7 +511,7 @@ struct BridgeMarketTests {
             traded = true
         }
         #expect(traded)
-        #expect(AXID.Interim.all.contains(AXID.Interim.tradeQuantity) && AXID.Interim.all.contains(AXID.Interim.newspaperClose))
-        #expect(TradeItemType.allCases.allSatisfy { AXID.Interim.all.contains(AXID.Interim.plunderTake($0)) })
+        #expect(AXID.Decision.all.contains(AXID.Decision.tradeQuantity) && AXID.Decision.all.contains(AXID.Decision.newspaperClose))
+        #expect(TradeItemType.allCases.allSatisfy { AXID.Decision.all.contains(AXID.Decision.plunderTake($0)) })
     }
 }

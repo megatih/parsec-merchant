@@ -51,6 +51,23 @@ final class GameSession {
     @ObservationIgnored var routeTask: Task<Void, Never>?
     @ObservationIgnored var routePlanner: RoutePlanning = RoutePlanning.standard
 
+    // MARK: Steps, transit and the Dock (UI-ENC §1–2; GameSession+Transit.swift)
+    /// UI-ENC-005: the last accepted step (cleared on load, new game and close).
+    private(set) var lastStep: StepRecord?
+    /// UI-ENC-007: the running transit playback, if any, and its current tick.
+    var transitPlayback: TransitPlayback?
+    var transitTick = 0
+    /// Set by the main window from `accessibilityReduceMotion` (the playback is then skipped, UI-ENC-007).
+    var reduceMotion = false
+    /// UI-ENC-011: whether the app is active (the Dock badge shows only while it is not).
+    var isAppActive = true
+    /// The clock that drives playback ticks; nil leaves ticking to the caller (tests call `advancePlayback()`).
+    @ObservationIgnored var playbackClock: (any Clock<Duration>)? = ContinuousClock()
+    @ObservationIgnored var playbackTask: Task<Void, Never>?
+    /// Presentations raised while a playback runs; shown when it ends (UI-ENC-009).
+    @ObservationIgnored var deferredPresentations: [Presentation] = []
+    @ObservationIgnored var attentionRequested = false
+
     // MARK: Services
     let slotStore: SlotStore
     let highScoreStore: HighScoreStore
@@ -58,6 +75,7 @@ final class GameSession {
     let haptics: any SessionHaptics
     let achievements: any SessionAchievements
     let flavor: any SessionFlavor
+    let dock: any SessionDock
     let launchOptions: LaunchOptions
     let defaults: UserDefaults
 
@@ -66,7 +84,8 @@ final class GameSession {
 
     init(stores: SessionStores, launchOptions: LaunchOptions = .none, defaults: UserDefaults = .standard,
          audio: any SessionAudio = SilentAudio(), haptics: any SessionHaptics = NoHaptics(),
-         achievements: any SessionAchievements = NoAchievements(), flavor: any SessionFlavor = TemplateFlavor()) {
+         achievements: any SessionAchievements = NoAchievements(), flavor: any SessionFlavor = TemplateFlavor(),
+         dock: any SessionDock = NoDock()) {
         slotStore = stores.slotStore
         highScoreStore = stores.highScoreStore
         self.launchOptions = launchOptions
@@ -75,6 +94,7 @@ final class GameSession {
         self.haptics = haptics
         self.achievements = achievements
         self.flavor = flavor
+        self.dock = dock
     }
 
     // MARK: Derived state
@@ -84,6 +104,8 @@ final class GameSession {
     var mode: SessionMode { SessionMode.derive(from: engine?.state) }
     /// True while anything is presented; menus disable game commands (MENU-006).
     var isModal: Bool { presentation != nil }
+    /// UI-ENC-006: no command is sent from the action bar, menus, keys, toolbar or sidebar while this is true.
+    var isInputLocked: Bool { isModal || transitPlayback != nil }
     var sectionContext: SectionContext { SectionContext.make(state: engine?.state) }
     var isDocked: Bool { engine?.state.phase == .docked }
 
@@ -97,15 +119,17 @@ final class GameSession {
     /// Performs a command with warnings already acknowledged (e.g. the ship purchase review sends `[.buyShip]`).
     func send(_ command: Command, acknowledging: Set<WarningID>) {
         guard var engine else { return }
-        let before = engine.state.phase
+        let before = engine.state
         let result = engine.perform(command, acknowledging: acknowledging)
         self.engine = engine
-        apply(result, command: command, acknowledged: acknowledging, phaseBefore: before)
+        apply(result, command: command, acknowledged: acknowledging, before: before)
     }
 
-    /// Handles a step result: rejection, confirmation, other decisions, feed, persistence and high scores.
-    func apply(_ result: StepResult, command: Command, acknowledged: Set<WarningID>, phaseBefore: GamePhase) {
+    /// Handles a step result: rejection, confirmation, the step consumers (UI-ENC-005), other decisions, feed,
+    /// persistence and high scores.
+    func apply(_ result: StepResult, command: Command, acknowledged: Set<WarningID>, before: GameState) {
         guard let state = engine?.state else { return }
+        let phaseBefore = before.phase
         if let rejection = result.rejection {
             lastRejection = rejection
             rejectionSerial += 1
@@ -113,10 +137,13 @@ final class GameSession {
         }
         lastRejection = nil
         stateGeneration += 1
-        if let decision = result.decision {
-            present(PresentationRouter.route(decision, state: state, command: command, acknowledged: acknowledged))
-        }
         let isConfirmationRequest = if case .confirm = result.decision, result.events.isEmpty { true } else { false }
+        if !isConfirmationRequest {
+            consume(StepRecord(command: command, acknowledged: acknowledged, before: before, result: result, after: state))
+        }
+        if let decision = result.decision {
+            presentAfterPlayback(PresentationRouter.route(decision, state: state, command: command, acknowledged: acknowledged))
+        }
         guard !isConfirmationRequest else { return }
         appendToFeed(result.events.map(FeedItem.Entry.event), state: state)
         audio.play(events: result.events)
@@ -137,6 +164,33 @@ final class GameSession {
     func cancel() {
         pendingReplace = nil
         dismissPresentation()
+    }
+
+    // MARK: Step consumers (UI-ENC-005)
+
+    /// Runs the step consumers in order, before the presentation queue: (combat log, trip accumulator and report
+    /// sheets are added here by their specs), then the transit playback and the Dock attention.
+    private func consume(_ step: StepRecord) {
+        // A step with events arriving while an older playback runs ends that playback first, so nothing stays deferred.
+        // Silent steps (the route follower's target selection after docking) leave it running.
+        if transitPlayback != nil, !step.events.isEmpty || step.result.decision != nil { finishPlayback() }
+        lastStep = step
+        if step.encounterStarted != nil { attentionRequested = false }
+        startPlayback(for: step)
+        updateDockAttention()
+    }
+
+    /// Clears the per-game step state (load, new game, close).
+    func resetStepState() {
+        lastStep = nil
+        playbackTask?.cancel()
+        playbackTask = nil
+        transitPlayback = nil
+        transitTick = 0
+        deferredPresentations = []
+        attentionRequested = false
+        dock.setProgress(nil)
+        updateDockAttention()
     }
 
     // MARK: Presentation queue (UI-SHELL-005)
@@ -225,6 +279,7 @@ final class GameSession {
         selectedSection = .bridge
         stateGeneration += 1
         resetMapForNewGame()
+        resetStepState()
         if case let .gameOver(end) = newEngine.state.phase { recordHighScore(end: end) }
     }
 
@@ -275,6 +330,7 @@ final class GameSession {
         selectedSection = .bridge
         stateGeneration += 1
         resetMapForNewGame()
+        resetStepState()
     }
 
     // MARK: App confirmations

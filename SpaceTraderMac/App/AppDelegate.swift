@@ -29,6 +29,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// UI-ENC-011: the Dock badge shows only while the app is inactive.
+    func applicationDidBecomeActive(_ notification: Notification) { session.setAppActive(true) }
+    func applicationDidResignActive(_ notification: Notification) { session.setAppActive(false) }
+
     /// ⌘W closes the window; the app keeps running (UI-SHELL-015).
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
@@ -53,7 +57,7 @@ enum AppBootstrap {
         if options.resetState {
             AppPaths.resetState(root: root, defaults: defaults, domain: Bundle.main.bundleIdentifier)
         }
-        return GameSession(stores: SessionStores(root: root), launchOptions: options, defaults: defaults)
+        return GameSession(stores: SessionStores(root: root), launchOptions: options, defaults: defaults, dock: AppDock())
     }
 }
 

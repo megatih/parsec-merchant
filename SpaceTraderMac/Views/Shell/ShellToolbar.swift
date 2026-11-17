@@ -12,7 +12,7 @@ struct ShellToolbar: ToolbarContent {
             TargetPicker()
         }
         ToolbarItem(placement: .primaryAction) {
-            let model = WarpButtonModel.make(state: session.state, isModal: session.isModal)
+            let model = WarpButtonModel.make(state: session.state, isModal: session.isInputLocked)
             Button {
                 session.send(.warp)
             } label: {
@@ -87,7 +87,7 @@ struct TargetPicker: View {
                     Text("\(Names.system(state.warpSystem, in: state)) · \(state.warpTargetPreview(state.warpSystem).distance) parsecs")
                 }
             }
-            .disabled(state.phase != .docked || session.isModal)
+            .disabled(state.phase != .docked || session.isInputLocked)
             .help(Text("Choose the system to warp to."))
             .accessibilityIdentifier(AXID.Toolbar.target)
         }
