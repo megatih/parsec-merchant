@@ -29,10 +29,12 @@ struct SheetRouteView: View {
         case let .plunder(context):
             InterimDecisionSheet(decision: .plunder(context.victimCargo))
         case let .newspaper(paper):
-            InterimDecisionSheet(decision: .newspaper(paper))
+            NewspaperSheet(paper: paper)
         case let .narrative(page):
-            InterimNarrativeSheet(page: page)
-        case .report, .developerTester:
+            NarrativeSheet(page: page)
+        case let .report(sheet):
+            ReportSheetView(sheet: sheet)
+        case .developerTester:
             PlaceholderSheet(route: route)
         }
     }

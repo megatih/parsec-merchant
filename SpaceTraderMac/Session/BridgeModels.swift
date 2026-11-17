@@ -138,14 +138,27 @@ struct MercenaryCardModel: Equatable, Sendable {
     }
 }
 
-/// The newspaper card: price, or already paid this visit; Read sends `.readNewspaper` (NEWS, ALR buyNewspaper).
+/// UI-ENC-072: the newspaper card: the masthead once paid this visit, else "Local newspaper" and the price; Read sends
+/// `.readNewspaper` and is disabled with the reason when the paper is unaffordable (ALR-009).
 struct NewspaperCardModel: Equatable, Sendable {
     var cost: Int
     var paid: Bool
     var system: Int
+    /// The paid paper's masthead (UI-ENC-068).
+    var masthead: String?
+    /// `insufficientFunds` when the unpaid paper costs more than the funds the engine checks (NEWS-004/005).
+    var blocker: CommandError?
 
     static func make(state: GameState) -> NewspaperCardModel {
-        NewspaperCardModel(cost: state.newspaperCost, paid: state.paidForNewspaper, system: state.commander.currentSystem)
+        NewspaperCardModel(cost: state.newspaperCost, paid: state.paidForNewspaper, system: state.commander.currentSystem,
+                           masthead: state.newspaperPreview.map { NewspaperText.masthead($0, state: state) },
+                           blocker: blocker(state: state))
+    }
+
+    nonisolated static func blocker(state: GameState) -> CommandError? {
+        guard !state.paidForNewspaper else { return nil }
+        let funds = state.ruleset.flags.travel.newspaperUsesCashToSpend ? state.cashToSpend : state.commander.cash
+        return funds < state.newspaperCost ? .insufficientFunds : nil
     }
 
     var command: Command { .readNewspaper }

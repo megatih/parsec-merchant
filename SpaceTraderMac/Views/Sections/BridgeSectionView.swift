@@ -11,6 +11,11 @@ struct BridgeSectionView: View {
     var body: some View {
         if let state = session.state {
             ScrollView {
+                if let report = session.arrivalCard {
+                    // UI-ENC-055: the arrival card sits at the top of Bridge.
+                    ArrivalCardView(report: report)
+                        .padding([.horizontal, .top], 20)
+                }
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .top, spacing: 16) {
                         leftColumn(state).frame(minWidth: 320, maxWidth: .infinity)
@@ -47,14 +52,14 @@ struct BridgeSectionView: View {
             }
             TargetCard(model: TargetCardModel.make(state: state, isModal: session.isModal))
             if let special = SpecialEventCardModel.visible(state: state, gameID: session.gameID, declinedToken: declinedSpecial) {
-                SpecialEventCard(model: special) {
+                SpecialEventCardView(model: special) {
                     declinedSpecial = SpecialEventCardModel.visitToken(gameID: session.gameID, state: state)
                 }
             }
             if let mercs = MercenaryCardModel.make(state: state) {
                 MercenaryCard(model: mercs)
             }
-            NewspaperCard(model: .make(state: state))
+            NewspaperCardView(model: .make(state: state))
         }
     }
 }
@@ -263,45 +268,7 @@ private struct DockServiceCard: View {
     }
 }
 
-// MARK: - Offers (UI-SHELL-057, -058, newspaper)
-
-private struct SpecialEventCard: View {
-    @Environment(GameSession.self) private var session
-    let model: SpecialEventCardModel
-    let decline: () -> Void
-
-    var body: some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(SpecialEventText.title(model.type)).font(.headline)
-                Text(SpecialEventText.story(model.type))
-                    .fixedSize(horizontal: false, vertical: true)
-                if model.price > 0 {
-                    Text("Price: \(model.price.formatted()) cr.").monospacedDigit()
-                } else if model.price < 0 {
-                    Text("Reward: \((-model.price).formatted()) cr.").monospacedDigit()
-                }
-                HStack {
-                    Spacer()
-                    if model.messageOnly {
-                        Button("Continue") { session.send(model.command) }
-                            .accessibilityIdentifier(AXID.Bridge.specialAccept)
-                    } else {
-                        Button("Decline", action: decline)
-                            .help(Text("Hide this offer until your next arrival."))
-                            .accessibilityIdentifier(AXID.Bridge.specialDecline)
-                        Button("Accept") { session.send(model.command) }
-                            .accessibilityIdentifier(AXID.Bridge.specialAccept)
-                    }
-                }
-            }
-        } label: {
-            Label("Special", systemImage: "sparkles")
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(AXID.Bridge.special)
-    }
-}
+// MARK: - Offers (UI-SHELL-058; the special-event and newspaper cards are UI-ENC-072/073 views)
 
 private struct MercenaryCard: View {
     @Environment(GameSession.self) private var session
@@ -318,29 +285,6 @@ private struct MercenaryCard: View {
             }
         } label: {
             Label("Mercenaries", systemImage: "person.badge.plus")
-        }
-    }
-}
-
-private struct NewspaperCard: View {
-    @Environment(GameSession.self) private var session
-    let model: NewspaperCardModel
-
-    var body: some View {
-        GroupBox {
-            HStack {
-                if model.paid {
-                    Text("Already bought during this visit.").foregroundStyle(.secondary)
-                } else {
-                    Text("Price: \(model.cost.formatted()) cr.").monospacedDigit()
-                }
-                Spacer()
-                Button("Read") { session.send(model.command) }
-                    .help(Text("Read the local newspaper."))
-                    .accessibilityIdentifier(AXID.Bridge.newspaperRead)
-            }
-        } label: {
-            Label("Newspaper", systemImage: "newspaper")
         }
     }
 }

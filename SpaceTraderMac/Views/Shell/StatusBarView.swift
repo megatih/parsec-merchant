@@ -27,12 +27,31 @@ struct StatusBarView: View {
                         .foregroundStyle(.orange)
                         .accessibilityIdentifier(AXID.Status.reason)
                 }
+                if session.arrivalCard != nil, session.selectedSection != .bridge, !session.isInputLocked {
+                    // UI-ENC-055: arrival never changes the section; this chip leads to the card on Bridge.
+                    Button {
+                        session.selectedSection = .bridge
+                    } label: {
+                        Label("Arrival report", systemImage: "flag.checkered")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .help(Text("Show the arrival report on Bridge."))
+                    .accessibilityIdentifier(AXID.Arrival.statusChip)
+                }
                 Button {
                     showFeed.toggle()
                 } label: {
-                    Text(model.latestFeed.map { EventText.text(for: $0.entry, state: state) } ?? "No events yet.")
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+                    if let latest = model.latestFeed {
+                        HStack(spacing: 4) {
+                            Image(systemName: FeedStyle.classify(latest.entry).symbol)
+                            Text(verbatim: FeedText.text(for: latest.entry, state: state))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                    } else {
+                        Text("No events yet.")
+                    }
                 }
                 .buttonStyle(.plain)
                 .help(Text("Show recent events."))
@@ -45,7 +64,7 @@ struct StatusBarView: View {
             .padding(.vertical, 6)
             .overlay(alignment: .bottomLeading) {
                 if showFeed {
-                    FeedOverlay(items: StatusBarModel.overlayItems(session.feed), state: state) { showFeed = false }
+                    FeedOverlay(groups: FeedGroup.make(session.feed), state: state) { showFeed = false }
                         .offset(y: -34)
                 }
             }
@@ -57,42 +76,5 @@ struct StatusBarView: View {
             }
             .onChange(of: session.lastRejection) { _, new in if new == nil { visibleRejection = nil } }
         }
-    }
-}
-
-/// The newest feed items (dismissed by Esc or the close button). "Show Logbook" arrives with LOG in M10.
-private struct FeedOverlay: View {
-    let items: [FeedItem]
-    let state: GameState
-    let dismiss: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("Recent Events").font(.headline)
-                Spacer()
-                Button("Close", action: dismiss)
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier(AXID.Status.feedClose)
-            }
-            .padding(10)
-            Divider()
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 6) {
-                    ForEach(items) { item in
-                        HStack(alignment: .firstTextBaseline) {
-                            Text("Day \(item.day)").foregroundStyle(.secondary).monospacedDigit()
-                            Text(EventText.text(for: item.entry, state: state))
-                        }
-                    }
-                }
-                .padding(10)
-            }
-        }
-        .frame(width: 460, height: 300)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
-        .shadow(radius: 8)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(AXID.Status.feedList)
     }
 }

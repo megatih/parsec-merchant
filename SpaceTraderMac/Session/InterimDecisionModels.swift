@@ -33,9 +33,4 @@ enum InterimDecisionModel {
 
     /// Scoop: Pick It Up / Leave It (ALR-070/071).
     static func scoopCommand(accept: Bool) -> Command { .resolveScoop(accept: accept) }
-
-    /// Newspaper: one plain line per headline after the masthead.
-    static func newspaperLines(_ paper: Newspaper, state: GameState) -> [LocalizedStringResource] {
-        paper.headlines.map { NewspaperText.interimLine($0, state: state) }
-    }
 }

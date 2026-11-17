@@ -62,28 +62,5 @@ enum ReportSheet: Equatable, Sendable {
     }
 }
 
-/// A titled list of report lines (shared by the report models until their own sections are specified in code).
-struct ReportSection: Equatable, Sendable {
-    var title: String
-    var lines: [String]
-}
-
-/// UI-ENC-054: the arrival report (sections in UX order). Built by `ArrivalReport.make(trip:after:)`.
-struct ArrivalReport: Equatable, Sendable {
-    var sections: [ReportSection] = []
-}
-
-/// UI-ENC-059: the arrest report.
-struct ArrestReport: Equatable, Sendable {
-    var sections: [ReportSection] = []
-}
-
-/// UI-ENC-060: the escape-pod report.
-struct EscapePodReport: Equatable, Sendable {
-    var sections: [ReportSection] = []
-}
-
-/// UI-ENC-060: the reactor-meltdown report.
-struct ReactorReport: Equatable, Sendable {
-    var sections: [ReportSection] = []
-}
+// The report models (`ReportSection`, `ArrivalReport`, `ArrestReport`, `EscapePodReport`, `ReactorReport`) live in
+// ArrivalReports.swift (UI-ENC-053…060).

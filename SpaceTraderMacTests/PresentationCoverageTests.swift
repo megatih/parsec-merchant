@@ -142,6 +142,50 @@ struct PresentationCoverageTests {
         }
     }
 
+    @Test("UI-ENC-004 item 5 UI-ENC-064 every GameEvent and feed note has a feed classification; critical rows are critical")
+    func feedClassification() throws {
+        for kind in GameEventKind.allCases {
+            let style = FeedStyle.classify(.event(kind.fixture))
+            #expect(FeedCategory.allCases.contains(style.category) && !style.symbol.isEmpty, "\(kind)")
+            #expect(!FeedText.text(for: .event(kind.fixture), state: state).isEmpty, "\(kind)")
+        }
+        for note in [FeedNote.gameSaved, .recoveredFromBackup] {
+            #expect(FeedSeverity.allCases.contains(FeedStyle.classify(.note(note)).severity))
+        }
+        // The critical rows' events are critical; no other event kind is (reactorWarning only at the temperature status).
+        var criticalKinds: Set<GameEventKind> = []
+        for row in ALRCatalog.rows where row.alertClass == .critical {
+            let sample = try #require(ALRCatalog.sampleEvent(for: row))
+            #expect(FeedStyle.classify(sample).severity == .critical, "row \(row.number)")
+            criticalKinds.insert(GameEventKind(sample))
+        }
+        for kind in GameEventKind.allCases where FeedStyle.classify(kind.fixture).severity == .critical {
+            #expect(criticalKinds.contains(kind), "\(kind)")
+        }
+        for row in ALRCatalog.rows where row.alertClass != .critical && row.presentation.eventKind == .reactorWarning {
+            #expect(FeedStyle.classify(try #require(ALRCatalog.sampleEvent(for: row))).severity != .critical, "row \(row.number)")
+        }
+    }
+
+    @Test("UI-ENC-004 item 6 UI-ENC-078 every narrative row has a NarrativeText result page or a Ship's comm line")
+    func narrativeRows() {
+        for row in ALRCatalog.rows {
+            switch row.presentation.narrativeKey {
+            case let .specialEventResult(types)?:
+                for t in types {
+                    let page = NarrativeText.result(for: [.specialEventCompleted(t)], before: state, after: state)
+                    #expect(page.map { !$0.title.isEmpty && !$0.message.isEmpty } == true, "row \(row.number) \(t)")
+                }
+            case .sealedCanisters?:
+                #expect(NarrativeText.result(for: [.sealedCanisters(.robots)], before: state, after: state) != nil)
+            case let .passengerComm(id, impatient)?:
+                #expect(PassengerComm.line(crewID: id, impatient: impatient, state: state).hasPrefix("Ship's comm — "), "row \(row.number)")
+            case nil:
+                break
+            }
+        }
+    }
+
     @Test("""
         UI-ENC-004 item 7 ALR-001 ALR-005 ALR-018 ALR-022 ALR-023 ALR-024 ALR-046 ALR-068 ALR-095 ALR-109 ALR-122 \
         ALR-123 ALR-124 ALR-134 ALR-142 ALR-147 ALR-155 ALR-167 ALR-178 removed rows name an existing replacement

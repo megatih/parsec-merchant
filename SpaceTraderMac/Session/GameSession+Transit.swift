@@ -76,6 +76,8 @@ extension GameSession {
         let deferred = deferredPresentations
         deferredPresentations = []
         for p in deferred { present(p) }
+        showPendingArrival()
+        if sendDepth == 0 { runNewsAutoShowIfPending() }
         updateDockAttention()
     }
 

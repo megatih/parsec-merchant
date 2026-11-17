@@ -259,6 +259,11 @@ struct GameMenuItems: View {
             if let state = session.state { session.send(.repairHull(credits: state.fullRepairCost)) }
         }
         Divider()
+        if MenuRules.isShown(.newspaper, in: ctx) {
+            // UI-ENC-072 / MENU-024: Game › Newspaper ⇧⌘N, like the Bridge card's Read.
+            MenuItemButton(id: .newspaper, availability: a(.newspaper)) { session.readNewspaper() }
+            Divider()
+        }
         MenuItemButton(id: .options, availability: a(.options)) { session.present(.sheet(.gameOptions)) }
         Divider()
         MenuItemButton(id: .retire, availability: a(.retire)) { session.send(.retire) }
