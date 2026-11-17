@@ -32,6 +32,7 @@ struct CheatConsoleSheet: View {
                     fields(state)
                 }
                 .formStyle(.grouped)
+                .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
             }
             readout
             HStack {

@@ -100,9 +100,9 @@ struct AboutView: View {
                     }
                 }
                 Divider()
-                Text(AboutContent.gplNotice)
+                Text(AboutContent.gplNotice).lineSpacing(3)
                 Text(AboutContent.artworkNote).scaledFont(.callout).foregroundStyle(.readableSecondary)
-                Text(AboutContent.trademarkNote).scaledFont(.callout).foregroundStyle(.readableSecondary)
+                Text(AboutContent.trademarkNote).scaledFont(.callout).foregroundStyle(.readableSecondary).lineSpacing(3)
                 HStack {
                     Button("View License") { showsLicense = true }
                         .accessibilityIdentifier(AXID.About.license)
@@ -114,6 +114,8 @@ struct AboutView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(width: 520, height: 600)
+        // A11Y-029: an opaque window background (the hidden title bar would otherwise let the desktop tint the text).
+        .containerBackground(Color(nsColor: .windowBackgroundColor), for: .window)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.About.window)
         .sheet(isPresented: $showsLicense) {

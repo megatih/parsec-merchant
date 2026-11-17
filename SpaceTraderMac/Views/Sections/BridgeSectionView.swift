@@ -93,7 +93,7 @@ private struct SystemCard: View {
                 Divider()
                 HStack {
                     LabeledContent("Galaxy code") {
-                        Text(verbatim: galaxyCode).scaledFont(.body, design: .monospaced).textSelection(.enabled)
+                        Text(verbatim: galaxyCode).scaledFont(.body)
                     }
                     .accessibilityIdentifier(AXID.Bridge.galaxyCode)
                     Spacer()

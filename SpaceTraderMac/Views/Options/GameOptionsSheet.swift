@@ -61,6 +61,7 @@ struct GameOptionsSheet: View {
                     }
                 }
                 .formStyle(.grouped)
+                .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
                 .frame(minHeight: 420)
             }
             HStack {

@@ -174,8 +174,11 @@ private struct AmountRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack {
+            HStack(spacing: 12) {
+                // A11Y-029: the title stands apart from the slider's knob, in one column for both rows.
+                Text(title).frame(minWidth: 56, alignment: .leading).accessibilityHidden(true)
                 Slider(value: sliderValue, in: 0...Double(max(1, limit)), step: 1) { Text(title) }
+                    .labelsHidden()
                     .disabled(blocker != nil || limit == 0)
                     .accessibilityLabel(Text(title))  // A11Y-003
                     .accessibilityIdentifier(sliderID)

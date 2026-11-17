@@ -43,8 +43,18 @@ struct AuditScope {
         // The innermost sheet (a confirmation over a sheet is a sheet of its own).
         let sheet = app.sheets.allElementsBoundByIndex.filter { $0.exists && $0.frame.contains(center) }
             .min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+        // A root scrolled out of its window still belongs to that window (the main one when no window holds it).
         let window = app.windows.allElementsBoundByIndex.first { $0.exists && $0.frame.contains(center) }
-        guard let container = sheet ?? window, let snapshot = try? container.snapshot() else { return nil }
+            ?? app.windows.matching(identifier: "main").firstMatch
+        let container = sheet ?? window
+        guard container.exists else { return nil }
+        // A snapshot can fail while the app is busy; without a scope every issue of the app would count as this surface's.
+        var snapshot: XCUIElementSnapshot?
+        for attempt in 0..<3 where snapshot == nil {
+            if attempt > 0 { RunLoop.current.run(until: Date().addingTimeInterval(0.5)) }
+            snapshot = try? container.snapshot()
+        }
+        guard let snapshot else { return nil }
         var scope = AuditScope(visible: container.frame, keys: [], tableContainers: [])
         scope.collect(snapshot, parent: nil, grandparent: nil, clip: container.frame.intersection(screenVisibleFrame))
         return scope

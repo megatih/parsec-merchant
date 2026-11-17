@@ -69,6 +69,7 @@ struct DesignerView: View {
             }
         }
         .formStyle(.grouped)
+        .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
     }
 
     private func templatePicker(state: GameState) -> some View {

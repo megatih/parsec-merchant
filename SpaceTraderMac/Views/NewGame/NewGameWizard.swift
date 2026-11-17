@@ -51,8 +51,9 @@ struct NewGameWizard: View {
         HStack(spacing: 6) {
             ForEach(NewGameDraft.Step.allCases, id: \.self) { s in
                 Text(s.title)
-                    .scaledFont(.caption, weight: s == step ? .bold : .regular)
-                    .foregroundStyle(s == step ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                    .scaledFont(.callout, weight: s == step ? .bold : .medium)
+                    // A11Y-029: the other steps in the readable secondary colour (the system one is too light).
+                    .foregroundStyle(s == step ? AnyShapeStyle(.tint) : AnyShapeStyle(.readableSecondary))
                 if s != .summary {
                     Image(systemName: "chevron.right").scaledFont(.caption2).foregroundStyle(.readableSecondary).accessibilityHidden(true)
                 }
@@ -178,6 +179,7 @@ struct NewGameWizard: View {
                         .accessibilityLabel(Text("Decrease \(String(localized: Names.skill(skill)))"))
                         .accessibilityIdentifier(AXID.NewGame.skillDecrement(skill))
                     Text(verbatim: "\(d.skills[skill.rawValue])")
+                        .fontWeight(.semibold)  // A11Y-029: a one-digit value
                         .monospacedDigit()
                         .frame(width: 28)
                         .accessibilityIdentifier(AXID.NewGame.skillValue(skill))
@@ -207,6 +209,7 @@ struct NewGameWizard: View {
                     if let s = draft?.seed { seedText = String(s) }
                 })
                 .textFieldStyle(.roundedBorder)
+                .accessibilityLabel(Text("Galaxy code"))  // A11Y-003
                 .accessibilityIdentifier(AXID.NewGame.galaxyCode)
             }
             if d.galaxyCodeInvalid {
@@ -220,6 +223,7 @@ struct NewGameWizard: View {
                     })
                     .textFieldStyle(.roundedBorder)
                     .monospacedDigit()
+                    .accessibilityLabel(Text("Seed"))
                     .accessibilityIdentifier(AXID.NewGame.seed)
                     Button("Randomize") {
                         var g = SystemRandomNumberGenerator()
@@ -242,6 +246,7 @@ struct NewGameWizard: View {
                     update { $0.shipName = String(v.prefix(NewGameDraft.maxShipNameLength)) }
                 })
                 .textFieldStyle(.roundedBorder)
+                .accessibilityLabel(Text("Ship name"))
                 .accessibilityIdentifier(AXID.NewGame.shipName)
             }
             LabeledContent("Options") {
@@ -260,7 +265,7 @@ struct NewGameWizard: View {
                 Text(verbatim: SkillType.allCases.map { "\(String(localized: Names.skill($0))) \(d.skills[$0.rawValue])" }
                     .joined(separator: ", "))
             }
-            LabeledContent("Galaxy code") { Text(verbatim: d.galaxyCode).monospaced() }
+            LabeledContent("Galaxy code") { Text(verbatim: d.galaxyCode).fontWeight(.medium) }  // A11Y-029
             LabeledContent("Ironman") { Text(d.ironman ? "On" : "Off") }
             LabeledContent("Ship name") { Text(verbatim: d.trimmedShipName ?? "—") }
             LabeledContent("Options") { Text(d.options == nil ? "Standard options" : "Your saved defaults") }

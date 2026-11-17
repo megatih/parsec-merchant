@@ -126,6 +126,8 @@ struct TradeInOrbitSheet: View {
                 }
             }
         }
+        .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
+        .fontWeight(.medium)
         .padding(24)
         .frame(minWidth: 420)
         .interactiveDismissDisabled()

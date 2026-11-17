@@ -18,6 +18,9 @@ enum ScenarioRunner {
         case EncounterFixtureScenario.specialEventName:
             session.install(EncounterFixtureScenario.makeSpecialEvent(), gameID: SlotStore.newSlotID(), slotID: nil)
             return nil
+        case EncounterFixtureScenario.transitName:
+            session.install(EncounterFixtureScenario.makeTransit(), gameID: SlotStore.newSlotID(), slotID: nil)
+            return nil
         case let name where EncounterFixtureScenario.type(named: name) != nil:
             if let type = EncounterFixtureScenario.type(named: name) {
                 session.install(EncounterFixtureScenario.make(type), gameID: SlotStore.newSlotID(), slotID: nil)
@@ -116,5 +119,18 @@ enum EncounterFixtureScenario {
             if state.specialEventAvailable != nil { return GameEngine(state: state) }
         }
         return engine
+    }
+
+    /// `-PMScenario transit` (Debug only): the same game resting in `.inTransit` halfway to its warp target, so the
+    /// Transit view stays up (frozen, UI-ENC-013) for the surface walks; a played-back trip lasts only 1.2 s.
+    static let transitName = "transit"
+
+    static func makeTransit() -> GameEngine {
+        var engine = GameEngine(config: NewGameConfig(commanderName: "Fixture", difficulty: .normal, skills: [5, 5, 5, 5],
+                                                      ruleset: .modern, seed: seed))
+        engine.perform(.cheat(.enable))
+        var state = engine.state
+        state.phase = .inTransit(TransitState(destination: state.warpSystem, clicksRemaining: 10, viaWormhole: false))
+        return GameEngine(state: state)
     }
 }

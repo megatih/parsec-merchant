@@ -31,6 +31,8 @@ enum UITestFixtures {
     }
     /// `-PMScenario specialEvent`: docked at a system offering an available special event.
     static let specialEventArguments = ["-PMResetState", "-PMScenario", "specialEvent", "-PMFastTravel", "-PMAudio", "off", "-PMFlavor", "template"]
+    /// `-PMScenario transit`: a game resting in transit, so the Transit view stays up (frozen, UI-ENC-013).
+    static let transitArguments = ["-PMResetState", "-PMScenario", "transit", "-PMAudio", "off", "-PMFlavor", "template"]
     /// The flow seed with the transit playback shown (no `-PMFastTravel`), for the walk of the Transit view.
     static let playbackArguments = ["-PMResetState", "-PMSeed", String(flowSeed), "-PMAudio", "off", "-PMFlavor", "template"]
     /// ACH-022 (checked by the app test JournalSessionTests.achievementSeed): Quick Start with this seed, buy one unit of
