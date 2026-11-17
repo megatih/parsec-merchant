@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import Foundation
 import ParsecEngine
 import SwiftUI
@@ -67,12 +68,10 @@ struct AboutView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 12) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.tint)
-                        .accessibilityHidden(true)
                     VStack(alignment: .leading) {
-                        Text("Parsec Merchant").font(.title.bold())
+                        ArtAccessibilityReader { a11y in
+                            Wordmark(size: 26, increaseContrast: a11y.increaseContrast)
+                        }
                         Text("Version \(AboutContent.appVersion) (\(AboutContent.build)) · Engine \(AboutContent.engineVersion)")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()

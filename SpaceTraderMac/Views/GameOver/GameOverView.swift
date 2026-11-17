@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import ParsecPersistence
 import SwiftUI
@@ -30,11 +31,9 @@ struct GameOverView: View {
 
     private func content(_ m: GameOverCardModel) -> some View {
         VStack(spacing: 18) {
-            Image(systemName: m.vignette.symbol)
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
-                .frame(width: 140, height: 140)
-                .background(.quaternary, in: Circle())
+            GameOverArt(end: m.end, ship: session.state?.commander.ship.type ?? .gnat)
+                .frame(width: 280, height: 150)
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(Names.ending(m.end)))
                 .accessibilityIdentifier(AXID.GameOver.vignette)
             Text(Names.ending(m.end))

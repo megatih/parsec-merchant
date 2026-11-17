@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
@@ -120,8 +121,8 @@ struct OutfitterSectionView: View {
                 Form {
                     SwiftUI.Section {
                         HStack {
-                            Image(systemName: icon(selection.item.group)).font(.largeTitle).foregroundStyle(.tint)
-                                .accessibilityHidden(true)
+                            EquipmentIcon(item: selection.item)
+                                .frame(width: 40, height: 40)
                             VStack(alignment: .leading) {
                                 Text(EquipmentText.name(d.item)).font(.headline)
                                 Text(EquipmentText.kind(d.item)).foregroundStyle(.secondary)
@@ -165,11 +166,4 @@ struct OutfitterSectionView: View {
         }
     }
 
-    private func icon(_ g: OutfitterGroup) -> String {
-        switch g {
-        case .weapons: "scope"
-        case .shields: "shield.lefthalf.filled"
-        case .gadgets: "gearshape.2"
-        }
-    }
 }

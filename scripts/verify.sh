@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Parsec Merchant quality gate (PRD §8.1).
 #   scripts/verify.sh --quick   steps 1, 2 (no coverage), 6
-#   scripts/verify.sh           steps 1-7
+#   scripts/verify.sh           steps 1-7 (7b: app icon check, from M11, ART-056)
 #   scripts/verify.sh --ui      steps 1-8
 # Writes only under build/ and Packages/ParsecKit/.build.
 set -u
@@ -70,6 +70,9 @@ fi
 step 6-swiftlint swiftlint lint --strict --quiet
 if [ "$MODE" != "quick" ]; then
   step 7-license-check scripts/license-check.sh
+  if [ "${MILESTONE:-0}" -ge 11 ]; then
+    step 7b-icon-check scripts/make-icon.sh --check
+  fi
 fi
 if [ "$MODE" = "ui" ]; then
   step 8-ui-tests ui_tests

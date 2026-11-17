@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
+import ParsecArt
 import ParsecEngine
 import ParsecInsights
 
-/// UI-ENC-017: the badge word and stand-in symbol (vector glyphs are M11).
+/// UI-ENC-017: the badge word and its vector glyph (ART-033).
 struct EncounterBadgeModel: Equatable, Sendable {
     var badge: EncounterBadge
 
@@ -17,15 +18,8 @@ struct EncounterBadgeModel: Equatable, Sendable {
         }
     }
 
-    var symbol: String {
-        switch badge {
-        case .pirate: "flag.fill"
-        case .police: "shield.lefthalf.filled"
-        case .trader: "shippingbox.fill"
-        case .alien: "sparkles"
-        case .special: "star.fill"
-        }
-    }
+    /// ART-033: the drawn badge glyph.
+    var glyph: EncounterBadgeKind { ArtAdapters.badge(badge) }
 
     /// Special encounters get the gold capsule.
     var isSpecial: Bool { badge == .special }
@@ -65,8 +59,10 @@ struct ShipPaneModel: Equatable, Sendable {
     var shields: EncounterBarModel
     var isDisabled: Bool
     var accessibilityLabel: String
+    /// UI-ENC-098, ART-008: the portrait input (phase and accessibility are applied by the view).
+    var art: ShipArtInput
 
-    static func player(state: GameState, preview: EncounterPreview) -> ShipPaneModel {
+    static func player(state: GameState, preview: EncounterPreview, cloaked: Bool = false) -> ShipPaneModel {
         let ship = state.commander.ship
         let type = String(localized: Names.ship(ship.type))
         let name = state.commander.shipName.flatMap { $0.isEmpty ? nil : $0 }
@@ -75,7 +71,8 @@ struct ShipPaneModel: Equatable, Sendable {
         let shields = EncounterBarModel(kind: .shields, percent: ship.shields.isEmpty ? nil : preview.playerShieldPercent)
         let label = String(localized: "Your \(type), hull \(hull.value), shields \(shields.value)")
         return ShipPaneModel(title: title, shipType: ship.type, size: ship.spec(state.ruleset).size, facing: .right, hull: hull,
-                             shields: shields, isDisabled: false, accessibilityLabel: label)
+                             shields: shields, isDisabled: false, accessibilityLabel: label,
+                             art: ArtAdapters.shipInput(ship, ruleset: state.ruleset, facing: .right, cloaked: cloaked))
     }
 
     static func opponent(state: GameState, preview: EncounterPreview) -> ShipPaneModel? {
@@ -88,11 +85,12 @@ struct ShipPaneModel: Equatable, Sendable {
         if enc.opponentDisabled { label += String(localized: ", disabled") }
         return ShipPaneModel(title: String(localized: "Opponent: \(type)"), shipType: enc.opponent.type,
                              size: enc.opponent.spec(state.ruleset).size, facing: .left, hull: hull, shields: shields,
-                             isDisabled: enc.opponentDisabled, accessibilityLabel: label)
+                             isDisabled: enc.opponentDisabled, accessibilityLabel: label,
+                             art: ArtAdapters.shipInput(enc.opponent, ruleset: state.ruleset, facing: .left, disabled: enc.opponentDisabled))
     }
 }
 
-/// UI-ENC-026: tribble placeholders scattered over the ship area, positioned by an app-side hash (never the game RNG).
+/// UI-ENC-026: tribble sprites scattered over the ship area, positioned by an app-side hash (never the game RNG).
 enum TribbleLayout {
     /// The ENC-087 count: `min(36, ⌊√(tribbles / 74)⌋)`.
     static func count(tribbles: Int) -> Int {

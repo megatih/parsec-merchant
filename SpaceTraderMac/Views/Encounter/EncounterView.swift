@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
@@ -6,6 +7,9 @@ import SwiftUI
 /// the action bar. It replaces the M7 interim panel; no sheet is used for the encounter itself.
 struct EncounterView: View {
     @Environment(GameSession.self) private var session
+    /// ART-043/044: the effects of the last step; a new step's plan replaces (cancels) a running one.
+    @State private var effectPlan: [CombatEffect] = []
+    @State private var effectStart: Date?
 
     var body: some View {
         Group {
@@ -19,6 +23,10 @@ struct EncounterView: View {
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onExitCommand { session.stopEncounter() }
+        .onChange(of: session.stateGeneration) {
+            effectPlan = CombatEffectPlanner.plan(record: session.lastStep)
+            effectStart = effectPlan.isEmpty ? nil : .now
+        }
         .sheet(item: makeRoomBinding) { request in
             EncounterMakeRoomSheet(item: request.item)
                 .environment(session)
@@ -29,14 +37,11 @@ struct EncounterView: View {
 
     private func content(engine: GameEngine, preview: EncounterPreview, opponent: ShipPaneModel) -> some View {
         let state = engine.state
-        let player = ShipPaneModel.player(state: state, preview: preview)
+        let player = ShipPaneModel.player(state: state, preview: preview, cloaked: session.lastStep?.encounterStarted?.playerCloaked ?? false)
         return VStack(spacing: 16) {
             EncounterHeader(intro: session.encounterUI.intro, badge: EncounterBadgeModel(badge: preview.badge))
             ZStack {
-                HStack(alignment: .top, spacing: 24) {
-                    ShipPaneView(model: player, identifiers: .player)
-                    ShipPaneView(model: opponent, identifiers: .opponent)
-                }
+                EncounterStage(player: player, opponent: opponent, plan: effectPlan, planStart: effectStart)
                 TribbleOverlay(state: state)
             }
             if session.showsTacticalReadout, let readout = engine.tacticalReadout {
@@ -88,7 +93,8 @@ private struct EncounterHeader: View {
             Label {
                 Text(verbatim: badge.word)
             } icon: {
-                Image(systemName: badge.symbol)
+                EncounterBadgeGlyph(badge: badge.glyph)
+                    .frame(width: 16, height: 16)
             }
             .font(.callout.bold())
             .padding(.horizontal, 10)
@@ -138,7 +144,7 @@ private struct EncounterLogView: View {
     }
 }
 
-/// UI-ENC-026: tribble placeholders; clicking one wiggles it (the squeak and sprite are M11).
+/// UI-ENC-026, ART-035: drawn tribble sprites; clicking one wiggles it.
 private struct TribbleOverlay: View {
     let state: GameState
 
@@ -159,18 +165,25 @@ private struct TribbleOverlay: View {
 private struct TribbleButton: View {
     let index: Int
     @Environment(GameSession.self) private var session
-    @State private var wiggle = false
+    @State private var wiggleStart: Date?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button {
             session.tribbleClicked()  // AUD-030: the squeak; the wiggle is its visual twin
-            withAnimation(.easeInOut(duration: 0.1).repeatCount(2, autoreverses: true)) { wiggle.toggle() }
+            wiggleStart = .now
         } label: {
-            Image(systemName: "circle.hexagongrid.fill")
-                .foregroundStyle(.brown)
-                .rotationEffect(.degrees(wiggle ? 12 : 0))
+            TimelineView(.animation(minimumInterval: 1.0 / 60, paused: wiggleStart == nil)) { timeline in
+                TribbleSprite(index: index, phase: wiggleStart.map { timeline.date.timeIntervalSince($0) } ?? -1, reduceMotion: reduceMotion)
+            }
+            .frame(width: 22, height: 22)
         }
         .buttonStyle(.plain)
+        .task(id: wiggleStart) {
+            guard wiggleStart != nil else { return }
+            try? await Task.sleep(for: .milliseconds(250))
+            wiggleStart = nil
+        }
         .accessibilityLabel(Text("Tribble"))
         .accessibilityIdentifier(AXID.Encounter.tribble(index))
     }

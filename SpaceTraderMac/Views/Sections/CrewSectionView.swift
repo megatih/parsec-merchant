@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
@@ -62,15 +63,15 @@ private struct SeatCard: View {
         VStack(alignment: .leading, spacing: 8) {
             switch seat.occupant {
             case let .commander(name, skills):
-                header(name, badge: "Commander")
+                header(name, badge: "Commander", crewID: CrewID.commander)
                 SkillBars(skills: skills)
                 standingLines
-            case let .mercenary(_, name, skills, wage):
-                header(name, badge: nil)
+            case let .mercenary(id, name, skills, wage):
+                header(name, badge: nil, crewID: id)
                 SkillBars(skills: skills)
                 Text("\(wage.formatted()) cr. daily").monospacedDigit().foregroundStyle(.secondary)
-            case let .passenger(_, name):
-                header(name, badge: "Passenger")
+            case let .passenger(id, name):
+                header(name, badge: "Passenger", crewID: id)
             case .vacant:
                 Text("Vacant").font(.headline).foregroundStyle(.secondary)
             }
@@ -91,8 +92,9 @@ private struct SeatCard: View {
         .accessibilityIdentifier(AXID.Crew.seat(seat.index))
     }
 
-    private func header(_ name: String, badge: LocalizedStringResource?) -> some View {
+    private func header(_ name: String, badge: LocalizedStringResource?, crewID: Int) -> some View {
         HStack {
+            CrewAvatarView(crewID: crewID)
             Text(verbatim: name).font(.headline)
             Spacer()
             if let badge {
@@ -123,7 +125,10 @@ private struct HireCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(verbatim: card.name).font(.headline)
+            HStack {
+                CrewAvatarView(crewID: card.crewID)
+                Text(verbatim: card.name).font(.headline)
+            }
             SkillBars(skills: card.skills)
             HStack {
                 Text("\(card.dailyWage.formatted()) cr. daily").monospacedDigit()

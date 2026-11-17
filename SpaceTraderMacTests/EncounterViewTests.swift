@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import AppKit
 import Foundation
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 import Testing
@@ -114,7 +115,7 @@ struct EncounterViewTests {
                                                  (.special, "Special")]
         for (b, w) in words {
             let m = EncounterBadgeModel(badge: b)
-            #expect(m.word == w && !m.symbol.isEmpty && m.isSpecial == (b == .special))
+            #expect(m.word == w && m.glyph == ArtAdapters.badge(b) && m.isSpecial == (b == .special))
         }
         #expect(EncounterType.captainHuie.badge(opponent: .wasp) == .special)
         #expect(AXID.Encounter.all.contains(AXID.Encounter.badge))
@@ -144,7 +145,8 @@ struct EncounterViewTests {
         #expect(opponent.accessibilityLabel == "Pirate Gnat, hull \(preview.opponentHullPercent)%, shields 0%, disabled")
         #expect(EncounterBarModel(kind: .shields, percent: 40).text == "Shields 40%")
         #expect(EncounterBarModel(kind: .hull, percent: 26).isCritical == false)
-        #expect(ShipPlaceholder.scale(.tiny) < ShipPlaceholder.scale(.huge))
+        #expect(player.art.facing == .right && opponent.art.facing == .left && opponent.art.disabled)
+        #expect(opponent.art.sizeClass == opponent.size.rawValue && player.art.sizeClass == player.size.rawValue)
         try TestSessions.edit(s) { $0.commander.shipName = nil }
         let unnamed = ShipPaneModel.player(state: try #require(s.state), preview: preview)
         #expect(unnamed.title == "You: \(type)")

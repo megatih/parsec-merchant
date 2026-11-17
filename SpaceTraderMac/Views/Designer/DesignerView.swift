@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import ParsecPersistence
 import SwiftUI
@@ -133,10 +134,9 @@ struct DesignerView: View {
     private func summary(_ draft: DesignerDraft, quote: DesignQuote?) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack {
-                Image(systemName: "airplane")
-                    .font(.system(size: 72))
-                    .foregroundStyle(.tint)
-                    .accessibilityHidden(true)
+                ShipPortrait(input: ShipArtInput(kind: .custom, sizeClass: draft.size.rawValue,
+                                                 custom: ArtAdapters.customParams(design: draft.design, base: draft.silhouette)))
+                    .frame(width: 220, height: 120)
                 Text(Names.ship(draft.silhouette)).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, minHeight: 160)

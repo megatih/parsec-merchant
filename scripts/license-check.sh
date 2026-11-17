@@ -1,7 +1,8 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Fails if any tracked file is byte-identical to an original Space Trader image/resource,
-# or if bitmap/icon formats appear outside docs/reference/ (PRD §3).
+# or if bitmap/icon formats appear outside docs/reference/ (PRD §3), or if any tracked image is outside the
+# allowlist of generated icon outputs (ART-066).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -29,6 +30,15 @@ for f in filter(None, tracked):
         bad.append(f"{f}: forbidden bitmap/icon format")
     elif p.stat().st_size > 0 and h(p) in originals:
         bad.append(f"{f}: identical to original asset {originals[h(p)]}")
+# ART-066: no tracked raster or vector image outside the allowlist of generated outputs (all reproducible by make-icon.sh).
+import fnmatch
+IMAGE_EXT = (".png", ".jpg", ".jpeg", ".tif", ".tiff", ".heic", ".webp", ".pdf", ".svg", ".icns")
+ALLOWED = ["SpaceTraderMac/AppIcon.icon/Assets/*.png", "SpaceTraderMac/Assets.xcassets/AppIcon.appiconset/*.png"]
+for f in filter(None, tracked):
+    allowed = any(str(pathlib.PurePosixPath(f).parent) == str(pathlib.PurePosixPath(pat).parent)
+                  and fnmatch.fnmatchcase(pathlib.PurePosixPath(f).name, pathlib.PurePosixPath(pat).name) for pat in ALLOWED)
+    if pathlib.Path(f).suffix.lower() in IMAGE_EXT and not allowed:
+        bad.append(f"{f}: image outside the generated-art allowlist (ART-066)")
 print(f"license-check: {len(originals)} original assets hashed, {len([t for t in tracked if t])} tracked files scanned, {len(bad)} violations")
 for b in bad: print("  -", b)
 # SPDX header check for Swift sources

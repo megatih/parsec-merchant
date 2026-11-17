@@ -16,6 +16,7 @@ let package = Package(
         .library(name: "ParsecArt", targets: ["ParsecArt"]),
         .library(name: "ParsecAudio", targets: ["ParsecAudio"]),
         .executable(name: "pmsim", targets: ["pmsim"]),
+        .executable(name: "pmart", targets: ["pmart"]),
     ],
     targets: [
         .target(name: "ParsecEngine", swiftSettings: strict),
@@ -24,6 +25,7 @@ let package = Package(
         .target(name: "ParsecArt", swiftSettings: strict),
         .target(name: "ParsecAudio", swiftSettings: strict),
         .executableTarget(name: "pmsim", dependencies: ["ParsecEngine", "ParsecPersistence", "ParsecInsights"], swiftSettings: strict),
+        .executableTarget(name: "pmart", dependencies: ["ParsecArt"], swiftSettings: strict),
         .testTarget(name: "ParsecEngineTests", dependencies: ["ParsecEngine"], resources: [.copy("Fixtures")], swiftSettings: strict),
         .testTarget(name: "ParsecScenarioTests", dependencies: ["ParsecEngine"], swiftSettings: strict),
         .testTarget(name: "ParsecPersistenceTests", dependencies: ["ParsecPersistence", "ParsecEngine", "ParsecInsights"],
