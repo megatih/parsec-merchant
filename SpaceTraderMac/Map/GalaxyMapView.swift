@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import AppKit
+import ParsecArt
 import ParsecEngine
 import ParsecInsights
 import SwiftUI
@@ -9,6 +10,8 @@ struct GalaxyMapView: View {
     @Environment(GameSession.self) private var session
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.appearsActive) private var appearsActive
     @State private var ui: MapViewModel
     @FocusState private var canvasFocused: Bool
     @FocusState private var searchFocused: Bool
@@ -21,6 +24,13 @@ struct GalaxyMapView: View {
     }
 
     private var scope: MapScope { ui.scope }
+
+    /// MAP-095: the art options (galaxy-seeded starfield, nebula and mini-planets; vortices swirl in the overlay unless Reduce
+    /// Motion is on or the window is inactive).
+    private var mapArt: MapArt? {
+        guard let seed = session.state?.seed else { return nil }
+        return MapArt(galaxySeed: seed, reduceTransparency: reduceTransparency, vorticesInOverlay: !reduceMotion && appearsActive)
+    }
     private var ids: AXID.Map { AXID.Map(scope) }
 
     var body: some View {
@@ -68,6 +78,7 @@ struct GalaxyMapView: View {
                                        dimmed: SystemSearch.dimmed(filters: ui.filters, snapshot: snapshot, sells: session.sellsMatches(ui.sellsItem)),
                                        miniChart: scope == .miniChart)
         options.heatmap = scope.hasHUD ? session.heatmap(ui.heatmapChoice.mode(item: ui.heatmapItem)) : nil
+        options.art = mapArt
         return Canvas { ctx, _ in
             GalaxyMapRenderer.draw(in: &ctx, snapshot: snapshot, projected: projected, layers: MapLayer.m10, options: options)
         }
@@ -106,8 +117,18 @@ struct GalaxyMapView: View {
 
     /// The light overlay canvas: hover highlight and Show on Map pulse (MAP-089). Never takes hit testing.
     private func overlayCanvas(_ snapshot: MapSnapshot, projected: ProjectedMap) -> some View {
-        TimelineView(.animation(paused: ui.pulseSystem == nil || reduceMotion)) { timeline in
+        let swirl = mapArt?.vorticesInOverlay == true && !snapshot.wormholes.isEmpty
+        return TimelineView(.animation(minimumInterval: 1.0 / 30, paused: (ui.pulseSystem == nil && !swirl) || reduceMotion)) { timeline in
             Canvas { ctx, _ in
+                if swirl {
+                    // MAP-095 / ART-030: the wormhole vortices turn here so the main canvas stays static.
+                    let phase = timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: WormholeVortex.period * 100)
+                    for w in snapshot.wormholes where projected.visible.contains(w) {
+                        GalaxyMapRenderer.drawVortex(&ctx, center: MapGeometry.wormholeGlyphCenter(w, snapshot: snapshot, projection: projected.projection,
+                                                                                                    metrics: projected.metrics),
+                                                     radius: projected.metrics.wormholeRadius, phase: phase)
+                    }
+                }
                 if let hit = ui.hoverHit {
                     let (c, r) = glyph(hit, snapshot: snapshot, projected: projected)
                     let name: String? = if case let .system(i) = hit, !projected.labels.contains(where: { $0.system == i }) {

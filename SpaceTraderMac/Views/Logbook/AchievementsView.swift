@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import ParsecInsights
 import SwiftUI
@@ -58,11 +59,8 @@ private struct BadgeView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: badge.symbol)
-                .font(.title)
-                .foregroundStyle(badge.unlocked ? Color.accentColor : Color.secondary)
-                .frame(width: 36)
-                .accessibilityHidden(true)
+            AchievementBadgeView(id: badge.id, unlocked: badge.unlocked)
+                .frame(width: 40, height: 40)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 4) {
                     Text(verbatim: badge.name).font(.headline)

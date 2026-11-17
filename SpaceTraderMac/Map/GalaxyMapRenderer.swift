@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import ParsecInsights
 import SwiftUI
@@ -25,6 +26,8 @@ struct MapRenderOptions {
     var miniChart = false
     /// MAP-096: the heatmap to tint (nil: none).
     var heatmap: HeatmapResult?
+    /// MAP-095: procedural art (nil: the plain M8 drawing).
+    var art: MapArt?
 
     static let dimmedOpacity = 0.4
 }
@@ -47,6 +50,7 @@ enum GalaxyMapRenderer {
             ctx.fill(Path(CGRect(origin: .zero, size: size)),
                      with: .linearGradient(Gradient(colors: [MapStyle.spaceTop, MapStyle.spaceBottom]),
                                            startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
+            if let art = options.art { MapArtRenderer.drawSpace(&ctx, size: size, projection: pm.projection, art: art) }
         case .heatmap:
             if let heat = options.heatmap { drawHeatmap(&ctx, s, pm, heat) }
         case .searchDimming:
@@ -70,8 +74,11 @@ enum GalaxyMapRenderer {
             drawBearing(&ctx, s, pm, mini: options.miniChart)
         case .systems:
             let dim = layers.contains(.searchDimming) ? options.dimmed : []
-            for i in pm.visible { drawGlyph(&ctx, s, pm, i, dimmed: dim.contains(i), dwc: options.style.differentiateWithoutColor) }
+            for i in pm.visible {
+                drawGlyph(&ctx, s, pm, i, dimmed: dim.contains(i), dwc: options.style.differentiateWithoutColor, art: options.art)
+            }
         case .wormholeGlyphs:
+            if options.art?.vorticesInOverlay == true { break }
             for w in s.wormholes where pm.visible.contains(w) {
                 drawVortex(&ctx, center: MapGeometry.wormholeGlyphCenter(w, snapshot: s, projection: pm.projection, metrics: pm.metrics),
                            radius: pm.metrics.wormholeRadius)
@@ -154,11 +161,9 @@ enum GalaxyMapRenderer {
         ctx.fill(p, with: .color(color))
     }
 
-    static func drawVortex(_ ctx: inout GraphicsContext, center c: CGPoint, radius r: Double) {
-        for k in 0..<3 {
-            var p = Path()
-            let start = Angle.degrees(Double(k) * 120)
-            p.addArc(center: c, radius: r * (0.45 + 0.25 * Double(k)), startAngle: start, endAngle: start + .degrees(200), clockwise: false)
+    /// MAP-037 / ART-030: the three-arm vortex; at `phase` 0 it is the static M8 geometry, and it turns once per 6 s.
+    static func drawVortex(_ ctx: inout GraphicsContext, center c: CGPoint, radius r: Double, phase: Double = 0) {
+        for p in WormholeVortex.arms(center: c, radius: r, phase: phase) {
             ctx.stroke(p, with: .linearGradient(Gradient(colors: [MapStyle.wormholeA, MapStyle.wormholeB]),
                                                  startPoint: CGPoint(x: c.x - r, y: c.y), endPoint: CGPoint(x: c.x + r, y: c.y)),
                        lineWidth: 1.3)
@@ -196,14 +201,17 @@ enum GalaxyMapRenderer {
 
     // MARK: Glyphs
 
-    private static func drawGlyph(_ ctx: inout GraphicsContext, _ s: MapSnapshot, _ pm: ProjectedMap, _ i: Int, dimmed: Bool, dwc: Bool) {
+    private static func drawGlyph(_ ctx: inout GraphicsContext, _ s: MapSnapshot, _ pm: ProjectedMap, _ i: Int, dimmed: Bool, dwc: Bool,
+                                  art: MapArt?) {
         let sys = s.systems[i]
         let st = MapGlyphStyle.style(for: sys, in: s, differentiateWithoutColor: dwc, zoom: pm.metrics.zoom)
         let c = pm.centers[i], r = st.radius
         let rect = CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)
         var g = ctx
         g.opacity = st.opacity * (dimmed ? MapRenderOptions.dimmedOpacity : 1)
-        if st.filled {
+        if let art, MapArtRenderer.drawsPlanets(zoom: pm.metrics.zoom) {
+            MapArtRenderer.drawPlanet(&g, system: sys, center: c, radius: r, filled: st.filled, art: art)
+        } else if st.filled {
             g.fill(Path(ellipseIn: rect), with: .color(MapStyle.visited))
         } else {
             g.fill(Path(ellipseIn: rect), with: .color(MapStyle.glyphCenter))

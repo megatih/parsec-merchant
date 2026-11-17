@@ -42,8 +42,10 @@ struct NarrativeSheet: View {
     @ViewBuilder
     private func offer(_ model: NarrativeOffer) -> some View {
         HStack(alignment: .center, spacing: 14) {
-            NarrativeVignette(kind: model.vignette)
-                .accessibilityIdentifier(AXID.Narrative.vignette)
+            if let state = session.state {
+                NarrativeVignetteView(type: model.type, state: state)
+                    .accessibilityIdentifier(AXID.Narrative.vignette)
+            }
             Text(verbatim: model.title).font(.title2.bold())
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier(AXID.Narrative.title)
@@ -81,20 +83,6 @@ struct NarrativeSheet: View {
                     .accessibilityIdentifier(AXID.Narrative.accept)
             }
         }
-    }
-}
-
-/// The vignette placeholder (the procedural vignette is {M11}, UI-ENC-098).
-private struct NarrativeVignette: View {
-    let kind: NarrativeOffer.Vignette
-
-    var body: some View {
-        Image(systemName: kind == .ship ? "airplane" : "globe.europe.africa.fill")
-            .font(.system(size: 30))
-            .foregroundStyle(.tint)
-            .frame(width: 56, height: 56)
-            .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
-            .accessibilityLabel(kind == .ship ? Text("Ship") : Text("Planet"))
     }
 }
 

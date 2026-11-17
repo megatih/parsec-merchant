@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
-/// UI-ENC-018…020: one ship pane: title, placeholder portrait, hull and shield bars and the accessibility label.
+/// UI-ENC-018…020, UI-ENC-098: one ship pane: title, the ParsecArt portrait, hull and shield bars and the accessibility label.
 struct ShipPaneView: View {
     struct Identifiers {
         var pane: String
@@ -16,6 +17,11 @@ struct ShipPaneView: View {
 
     let model: ShipPaneModel
     let identifiers: Identifiers
+    /// Seconds of ambient animation (engine glow); 0 under Reduce Motion.
+    var phase: Double = 0
+    /// ART-046: the ship's offset in pane widths (escape, arrive) and whether it is still drawn (explosion).
+    var offset: Double = 0
+    var visible = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -28,10 +34,16 @@ struct ShipPaneView: View {
                         .accessibilityIdentifier(AXID.Encounter.opponentDisabled)
                 }
             }
-            ShipPlaceholder(type: model.shipType, size: model.size, facing: model.facing)
-                .frame(maxWidth: .infinity, minHeight: 90, maxHeight: 120)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text(verbatim: model.accessibilityLabel))
+            ArtAccessibilityReader { a11y in
+                GeometryReader { geo in
+                    ShipArt(Self.input(model.art, phase: phase, accessibility: a11y), scaleMode: .relative)
+                        .opacity(visible ? 1 : 0)
+                        .offset(x: offset * geo.size.width)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 90, maxHeight: 120)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: model.accessibilityLabel))
             EncounterBar(model: model.hull)
                 .accessibilityIdentifier(identifiers.hull)
             EncounterBar(model: model.shields)
@@ -43,30 +55,12 @@ struct ShipPaneView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifiers.pane)
     }
-}
 
-/// UI-ENC-018: the placeholder portrait (ParsecArt replaces it in M11, UI-ENC-101): an SF Symbol sized by the ship's
-/// size class, facing right for the player and left for the opponent.
-struct ShipPlaceholder: View {
-    let type: ShipType
-    let size: SystemSize
-    let facing: ShipPaneModel.Facing
-
-    /// 0.5…1.0 of the available height, by size class.
-    static func scale(_ size: SystemSize) -> CGFloat {
-        0.5 + CGFloat(size.rawValue) * 0.1
-    }
-
-    var body: some View {
-        GeometryReader { geo in
-            Image(systemName: type == .spaceMonster ? "tortoise.fill" : "airplane")
-                .resizable()
-                .scaledToFit()
-                .frame(height: geo.size.height * Self.scale(size))
-                .scaleEffect(x: facing == .right ? 1 : -1, y: 1)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .foregroundStyle(.secondary)
-        }
+    static func input(_ art: ShipArtInput, phase: Double, accessibility: ArtAccessibility) -> ShipArtInput {
+        var input = art
+        input.phase = accessibility.ambientPhase(phase)
+        input.accessibility = accessibility
+        return input
     }
 }
 

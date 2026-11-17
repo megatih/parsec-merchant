@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
-/// The Transit view (UI-ENC-008, -012, -013): "En route to …", a 20-segment progress track with a moving ship
-/// placeholder, and Skip. The animated silhouette and starfield are M11.
+/// The Transit view (UI-ENC-008, -012, -013): "En route to …", the drawn transit scene (ART-039: the player's ship over a
+/// starfield with speed streaks), a 20-segment progress track, and Skip.
 struct TransitView: View {
     @Environment(GameSession.self) private var session
     let playback: TransitPlayback
@@ -27,6 +28,9 @@ struct TransitView: View {
             if let state = session.state {
                 Text(TransitText.title(playback, state: state))
                     .font(.title2)
+                TransitArt(ship: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right),
+                           progress: Double(flown) / Double(TransitPlayback.totalClicks), wormhole: playback.viaWormhole, seed: state.seed)
+                    .frame(maxWidth: 520, minHeight: 110, maxHeight: 130)
             }
             TransitTrack(flown: flown)
                 .frame(maxWidth: 520)
@@ -52,19 +56,12 @@ struct TransitView: View {
     }
 }
 
-/// Twenty segments; the ship placeholder sits at the current click.
+/// Twenty segments.
 private struct TransitTrack: View {
     let flown: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            GeometryReader { geo in
-                let step = geo.size.width / CGFloat(TransitPlayback.totalClicks)
-                Image(systemName: "airplane")
-                    .font(.title3)
-                    .offset(x: min(geo.size.width - step, CGFloat(flown) * step))
-            }
-            .frame(height: 24)
             HStack(spacing: 3) {
                 ForEach(0..<TransitPlayback.totalClicks, id: \.self) { i in
                     RoundedRectangle(cornerRadius: 2)
@@ -81,5 +78,33 @@ enum TransitText {
     static func title(_ playback: TransitPlayback, state: GameState) -> LocalizedStringResource {
         let name = Names.system(playback.destination, in: state)
         return playback.viaWormhole ? "En route to \(name) via wormhole" : "En route to \(name)"
+    }
+}
+
+/// ART-039, ART-052: the transit scene with one `TimelineView`, paused when the window is inactive; Reduce Motion shows the
+/// final frame (UI-ENC-008).
+private struct TransitArt: View {
+    let ship: ShipArtInput
+    let progress: Double
+    let wormhole: Bool
+    let seed: UInt64
+    @Environment(\.appearsActive) private var appearsActive
+
+    var body: some View {
+        ArtAccessibilityReader { a11y in
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !appearsActive || a11y.reduceMotion)) { timeline in
+                TransitScene(input: Self.input(ship, a11y), progress: progress,
+                             phase: timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 600), wormhole: wormhole,
+                             seed: seed)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityHidden(true)
+    }
+
+    static func input(_ ship: ShipArtInput, _ a11y: ArtAccessibility) -> ShipArtInput {
+        var s = ship
+        s.accessibility = a11y
+        return s
     }
 }

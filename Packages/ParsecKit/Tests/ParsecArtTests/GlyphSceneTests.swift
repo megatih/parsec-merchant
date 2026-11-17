@@ -1,0 +1,204 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+import Foundation
+import SwiftUI
+import Testing
+@testable import ParsecArt
+
+@MainActor
+@Suite("Glyphs, scenes and accessibility")
+struct GlyphSceneTests {
+    static func glyphOK<V: View>(_ view: V, points: Double) -> Bool {
+        let (a, b) = ArtSnapshot.twice(view.foregroundStyle(.black), size: CGSize(width: points, height: points), scale: 2)
+        return a == b && a.coverage() > 0.05 && a.coverage() < 0.95
+    }
+
+    @Test("ART-031 ten commodity glyphs and the illegal octagon are legible at 16 pt @2x")
+    func commodities() {
+        #expect(CommodityGlyphKind.allCases.count == 10)
+        var prints = Set<String>()
+        for kind in CommodityGlyphKind.allCases {
+            #expect(Self.glyphOK(CommodityGlyph(kind: kind), points: 16), "\(kind)")
+            prints.insert(ArtSnapshot.render(CommodityGlyph(kind: kind), size: CGSize(width: 32, height: 32)).fingerprint)
+        }
+        #expect(prints.count == 10)
+        #expect(Self.glyphOK(IllegalBadge(), points: 16))
+    }
+
+    @Test("ART-032 sixteen equipment glyphs in enum order, all distinct")
+    func equipment() {
+        #expect(EquipmentGlyphKind.allCases.count == 16)
+        #expect(EquipmentGlyphKind.allCases.first == .weapon(0) && EquipmentGlyphKind.allCases.last == .gadget(6))
+        var prints = Set<String>()
+        for kind in EquipmentGlyphKind.allCases {
+            #expect(Self.glyphOK(EquipmentGlyph(kind: kind), points: 16), "\(kind)")
+            prints.insert(ArtSnapshot.render(EquipmentGlyph(kind: kind), size: CGSize(width: 32, height: 32)).fingerprint)
+        }
+        #expect(prints.count == 16)
+    }
+
+    @Test("ART-033 five encounter badges; special is brass")
+    func badges() {
+        #expect(EncounterBadgeKind.allCases.map(\.rawValue).sorted() == ["alien", "pirate", "police", "special", "trader"])
+        for badge in EncounterBadgeKind.allCases { #expect(Self.glyphOK(EncounterBadgeGlyph(badge: badge), points: 16), "\(badge)") }
+        let special = ArtSnapshot.render(EncounterBadgeGlyph(badge: .special).foregroundStyle(.black), size: CGSize(width: 32, height: 32))
+        let colored = stride(from: 0, to: special.bytes.count, by: 4).contains { special.bytes[$0] > special.bytes[$0 + 2] + 40 }
+        #expect(colored)
+    }
+
+    @Test("ART-034 crew avatars: 100 consecutive ids give at least 90 distinct busts; roles are fixed")
+    func avatars() {
+        let traits = (0..<100).map { CrewAvatar.Traits.make(seed: ArtSeed.crew(galaxySeed: 1234, crewID: $0)) }
+        #expect(Set(traits).count >= 90)
+        #expect(CrewAvatar.Traits.make(seed: 1, role: .wild) == CrewAvatar.Traits.make(seed: 99, role: .wild))
+        #expect(Set(CrewAvatarRole.allCases.map { CrewAvatar.Traits.make(seed: 0, role: $0).insignia }).count == 3)
+    }
+
+    @Test("ART-035 tribbles: 24 fur strokes, 4 warm colours; ±8° wiggle over 0.2 s or a scale pulse under Reduce Motion")
+    func tribbles() {
+        #expect(TribbleSprite.colors.count == 4)
+        let peak = (0...20).map { TribbleSprite.wiggle(phase: Double($0) / 100, reduceMotion: false).rotation }
+        #expect(abs((peak.max() ?? 0) - 8) < 0.1 && abs((peak.min() ?? 0) + 8) < 0.1)
+        #expect(TribbleSprite.wiggle(phase: 0.3, reduceMotion: false) == (0, 1))
+        let pulse = TribbleSprite.wiggle(phase: 0.1, reduceMotion: true)
+        #expect(pulse.rotation == 0 && pulse.scale > 1)
+    }
+
+    @Test("ART-036 ACH-023 achievement medals: tier rims, emblems, and a locked state that is not colour only")
+    func achievementBadges() {
+        let size = CGSize(width: 48, height: 48)
+        let tiers = AchievementTier.allCases.map { ArtSnapshot.render(AchievementBadgeArt(shape: .crown, tier: $0, locked: false), size: size).fingerprint }
+        #expect(Set(tiers).count == 3)
+        let unlocked = ArtSnapshot.render(AchievementBadgeArt(shape: .ship(.wasp), tier: .brass, locked: false), size: size)
+        let locked = ArtSnapshot.render(AchievementBadgeArt(shape: .ship(.wasp), tier: .brass, locked: true), size: size)
+        func grey(_ p: ArtPixels) -> [Int] {
+            stride(from: 0, to: p.bytes.count, by: 4).map { (Int(p.bytes[$0]) + Int(p.bytes[$0 + 1]) + Int(p.bytes[$0 + 2])) / 30 }
+        }
+        #expect(grey(unlocked) != grey(locked))
+        let emblems: [AchievementEmblem] = [.commodity(.ore), .equipment(.gadget(2)), .encounter(.police), .ship(.beetle), .planet, .crown, .wormhole,
+                                            .tribble, .star(points: 6)]
+        #expect(Set(emblems.map { ArtSnapshot.render(AchievementBadgeArt(shape: $0, tier: .silver, locked: false), size: size).fingerprint }).count
+            == emblems.count)
+    }
+
+    @Test("ART-037 the wordmark is the product name, brass gradient, solid under Increase Contrast")
+    func wordmark() {
+        #expect(Wordmark.title == "Parsec Merchant")
+        let size = CGSize(width: 420, height: 60)
+        let a = ArtSnapshot.render(Wordmark(size: 30), size: size)
+        #expect(a.coverage() > 0.05)
+        #expect(a != ArtSnapshot.render(Wordmark(size: 30, increaseContrast: true), size: size))
+    }
+
+    @Test("ART-038 the Welcome scene drifts on a 20 s cycle and is static under Reduce Motion")
+    func welcome() {
+        let size = CGSize(width: 200, height: 120)
+        let a = ArtSnapshot.render(WelcomeScene(phase: 0, showsWordmark: false), size: size)
+        #expect(a != ArtSnapshot.render(WelcomeScene(phase: 5, showsWordmark: false), size: size))
+        #expect(ArtSnapshot.render(WelcomeScene(phase: 5, accessibility: ArtAccessibility(reduceMotion: true), showsWordmark: false), size: size) == a)
+        #expect(WelcomeScene.cycle == 20)
+    }
+
+    @Test("ART-039 the transit scene moves the ship with progress; Reduce Motion shows the final frame")
+    func transit() {
+        let size = CGSize(width: 300, height: 90)
+        let ship = ShipArtInput(kind: .gnat, sizeClass: 1)
+        let early = ArtSnapshot.render(TransitScene(input: ship, progress: 0.1), size: size)
+        let late = ArtSnapshot.render(TransitScene(input: ship, progress: 0.9), size: size)
+        #expect(early != late)
+        var reduced = ship
+        reduced.accessibility = ArtAccessibility(reduceMotion: true)
+        #expect(ArtSnapshot.render(TransitScene(input: reduced, progress: 0.1), size: size)
+            == ArtSnapshot.render(TransitScene(input: reduced, progress: 1), size: size))
+        #expect(ArtSnapshot.render(TransitScene(input: ship, progress: 0.5, wormhole: true), size: size)
+            != ArtSnapshot.render(TransitScene(input: ship, progress: 0.5), size: size))
+    }
+
+    @Test("ART-040 vignettes: planet, ship and every object")
+    func vignettes() {
+        #expect(VignetteObject.allCases.count == 9)
+        let size = CGSize(width: 120, height: 80)
+        var prints = Set<String>()
+        for o in VignetteObject.allCases { prints.insert(ArtSnapshot.render(Vignette(kind: .object(o)), size: size).fingerprint) }
+        #expect(prints.count == 9)
+    }
+
+    @Test("ART-041 four endings that animate for at most 4 s, then hold; Reduce Motion shows the final frame")
+    func endings() {
+        #expect(GameEndArt.allCases.count == 4)
+        #expect(GameOverScene.time(phase: 9, reduceMotion: false) == 4)
+        #expect(GameOverScene.time(phase: 1, reduceMotion: true) == 4)
+        let size = CGSize(width: 160, height: 100)
+        for end in GameEndArt.allCases {
+            let held = ArtSnapshot.render(GameOverScene(end: end, phase: 4), size: size)
+            #expect(held == ArtSnapshot.render(GameOverScene(end: end, phase: 7), size: size), "\(end)")
+            #expect(held != ArtSnapshot.render(GameOverScene(end: end, phase: 1), size: size), "\(end)")
+            #expect(held == ArtSnapshot.render(GameOverScene(end: end, phase: 1, accessibility: ArtAccessibility(reduceMotion: true)), size: size))
+        }
+        #expect(ArtSnapshot.render(GameOverScene(end: .boughtMoon), size: size) != ArtSnapshot.render(GameOverScene(end: .boughtMoonGirl), size: size))
+    }
+
+    @Test("ART-049 art views are decorative (accessibility hidden) unless they carry their own label")
+    func decorative() {
+        for f in ArtCoreTests.sources where f.text.contains(": View {") && f.name != "ArtAccessibility.swift" {
+            #expect(f.text.contains(".accessibilityHidden(true)") || f.text.contains(".accessibilityLabel("), "\(f.name)")
+        }
+    }
+
+    @Test("ART-050 light and dark renders are both non-empty and differ where the palette has dark variants")
+    func darkLight() {
+        let size = CGSize(width: 120, height: 80)
+        #expect(ArtPalette.hasDarkVariant(.spaceTop) && ArtPalette.hasDarkVariant(.outline))
+        for kind in ShipArtKind.allCases {
+            let l = ArtSnapshot.render(ShipArt(ShipArtInput(kind: kind)), size: size, scheme: .light)
+            let d = ArtSnapshot.render(ShipArt(ShipArtInput(kind: kind)), size: size, scheme: .dark)
+            #expect(l.isNonEmpty() && d.isNonEmpty() && l != d, "\(kind)")
+        }
+        for tech in 0...7 {
+            let i = PlanetArtInput(seed: 4, tech: tech)
+            #expect(ArtSnapshot.render(PlanetArt(i), size: size, scheme: .dark).coverage() > 0.05)
+        }
+        let space = [ColorScheme.light, .dark].map { ArtSnapshot.render(SpaceBackground(seed: 2), size: size, scheme: $0) }
+        #expect(space[0] != space[1] && space.allSatisfy { $0.coverage() == 1 })
+        for kind in CommodityGlyphKind.allCases {
+            #expect(ArtSnapshot.render(CommodityGlyph(kind: kind), size: size, scheme: .dark).coverage() > 0.02)
+        }
+        let icon = [ColorScheme.light, .dark].map { ArtSnapshot.render(AppIconComposite(), size: CGSize(width: 64, height: 64), scheme: $0) }
+        #expect(icon[0] != icon[1] && icon.allSatisfy { $0.coverage() == 1 })
+    }
+
+    @Test("ART-062 glyphs, avatars, sprites, medals, wordmark, space, vignettes and endings: identical twice and non-empty")
+    func glyphDeterminism() {
+        var views: [(String, AnyView, CGSize)] = []
+        for k in CommodityGlyphKind.allCases {
+            for s in [16.0, 64.0] { views.append(("\(k)\(s)", AnyView(CommodityGlyph(kind: k).foregroundStyle(.black)), CGSize(width: s, height: s))) }
+        }
+        for k in EquipmentGlyphKind.allCases {
+            for s in [16.0, 64.0] { views.append(("\(k)\(s)", AnyView(EquipmentGlyph(kind: k).foregroundStyle(.black)), CGSize(width: s, height: s))) }
+        }
+        for b in EncounterBadgeKind.allCases {
+            for s in [16.0, 64.0] { views.append(("\(b)\(s)", AnyView(EncounterBadgeGlyph(badge: b).foregroundStyle(.black)), CGSize(width: s, height: s))) }
+        }
+        for i in 0..<20 { views.append(("avatar\(i)", AnyView(CrewAvatar(seed: UInt64(i))), CGSize(width: 48, height: 48))) }
+        views.append(("tribble", AnyView(TribbleSprite(index: 2)), CGSize(width: 32, height: 32)))
+        for t in AchievementTier.allCases {
+            for locked in [false, true] {
+                views.append(("medal\(t)\(locked)", AnyView(AchievementBadgeArt(shape: .star(points: 5), tier: t, locked: locked)), CGSize(width: 48, height: 48)))
+            }
+        }
+        views.append(("wordmark", AnyView(Wordmark(size: 24)), CGSize(width: 320, height: 40)))
+        for phase in [0.0, 1.5] {
+            views.append(("stars\(phase)", AnyView(StarfieldView(seed: 4, phase: phase, animated: true)), CGSize(width: 100, height: 100)))
+            views.append(("nebula\(phase)", AnyView(NebulaView(seed: 4)), CGSize(width: 100, height: 100)))
+            views.append(("vortex\(phase)", AnyView(WormholeVortexView(phase: phase)), CGSize(width: 40, height: 40)))
+        }
+        views.append(("vplanet", AnyView(Vignette(kind: .planet(PlanetArtInput(seed: 3)))), CGSize(width: 120, height: 80)))
+        views.append(("vship", AnyView(Vignette(kind: .ship(ShipArtInput(kind: .scarab)))), CGSize(width: 120, height: 80)))
+        for o in VignetteObject.allCases { views.append(("v\(o)", AnyView(Vignette(kind: .object(o))), CGSize(width: 120, height: 80))) }
+        for e in GameEndArt.allCases { views.append(("end\(e)", AnyView(GameOverScene(end: e)), CGSize(width: 160, height: 100))) }
+        for (name, view, size) in views {
+            let (a, b) = ArtSnapshot.twice(view, size: size)
+            #expect(a.fingerprint == b.fingerprint, "\(name)")
+            #expect(a.alphaSum > 0, "\(name)")
+        }
+    }
+}

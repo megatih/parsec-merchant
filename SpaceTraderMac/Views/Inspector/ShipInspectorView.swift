@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
@@ -10,7 +11,7 @@ struct ShipInspectorView: View {
         if let state = session.state {
             let m = InspectorModel.make(state: state)
             Form {
-                header(m)
+                header(m, state: state)
                 finances(m)
                 skills(m)
                 notoriety(m)
@@ -27,13 +28,11 @@ struct ShipInspectorView: View {
 
     // MARK: Sections
 
-    private func header(_ m: InspectorModel) -> some View {
+    private func header(_ m: InspectorModel, state: GameState) -> some View {
         SwiftUI.Section {
             HStack(spacing: 12) {
-                Image(systemName: "airplane")
-                    .font(.largeTitle)
-                    .foregroundStyle(.tint)
-                    .accessibilityHidden(true)
+                ShipPortrait(input: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right))
+                    .frame(width: 72, height: 48)
                 VStack(alignment: .leading) {
                     Text(verbatim: m.commanderName).font(.headline)
                     Text("\(String(localized: Names.difficulty(m.difficulty))) · Day \(m.days)")

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import ParsecPersistence
 import SwiftUI
@@ -13,6 +14,8 @@ struct WelcomeView: View {
         HStack(spacing: 0) {
             actions
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background { WelcomeBackdrop() }
+                .environment(\.colorScheme, .dark)
             Divider()
             recentList
                 .frame(width: 420)
@@ -25,12 +28,9 @@ struct WelcomeView: View {
 
     private var actions: some View {
         VStack(spacing: 14) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 56))
-                .foregroundStyle(.tint)
-                .accessibilityHidden(true)
-            Text("Parsec Merchant")
-                .font(.largeTitle.bold())
+            ArtAccessibilityReader { a11y in
+                Wordmark(size: 34, increaseContrast: a11y.increaseContrast)
+            }
             Text("Based on Space Trader by Pieter Spronck.")
                 .foregroundStyle(.secondary)
             VStack(spacing: 8) {

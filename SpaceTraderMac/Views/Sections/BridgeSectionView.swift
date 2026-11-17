@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
@@ -36,7 +37,8 @@ struct BridgeSectionView: View {
     @ViewBuilder
     private func leftColumn(_ state: GameState) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            SystemCard(model: .make(state: state, system: state.commander.currentSystem), galaxyCode: GalaxyCodeCard.code(state: state))
+            SystemCard(model: .make(state: state, system: state.commander.currentSystem), galaxyCode: GalaxyCodeCard.code(state: state),
+                       planet: ArtAdapters.planetInput(system: state.commander.currentSystem, state: state, showPressure: true))
             DockServiceCard(model: .fuel(state: state))
             DockServiceCard(model: .hull(state: state))
         }
@@ -69,12 +71,16 @@ struct BridgeSectionView: View {
 private struct SystemCard: View {
     let model: SystemCardModel
     let galaxyCode: String
+    let planet: PlanetArtInput
 
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .top, spacing: 14) {
-                    PlanetPlaceholder(model: model)
+                    PlanetPortrait(input: planet)
+                        .frame(width: 72, height: 72)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(Text(SystemText.planetLabel(model)))
                     VStack(alignment: .leading, spacing: 4) {
                         Text(verbatim: model.name).font(.title2.bold())
                         if let pressure = model.pressure, let tag = SystemText.pressure(pressure) {
@@ -164,19 +170,6 @@ private struct PressureTag: View {
             .background(Capsule().fill(Color.orange.opacity(0.2)))
             .help(Text(description))
             .accessibilityLabel(Text(description))
-    }
-}
-
-/// The planet portrait stand-in until ParsecArt (M11).
-private struct PlanetPlaceholder: View {
-    let model: SystemCardModel
-
-    var body: some View {
-        Image(systemName: "globe.americas.fill")
-            .font(.system(size: 44))
-            .foregroundStyle(.tint)
-            .frame(width: 64, height: 64)
-            .accessibilityHidden(true)
     }
 }
 

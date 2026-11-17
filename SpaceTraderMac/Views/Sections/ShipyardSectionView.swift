@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import AppKit
+import ParsecArt
 import ParsecEngine
 import SwiftUI
 
@@ -93,11 +94,8 @@ private struct ShipCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Image(systemName: "airplane")
-                    .font(.title)
-                    .foregroundStyle(.tint)
-                    .frame(width: 44, height: 44)
-                    .accessibilityHidden(true)
+                ShipPortrait(input: ArtAdapters.specInput(card.type, spec: card.spec))
+                    .frame(width: 66, height: 44)
                 VStack(alignment: .leading) {
                     Text(Names.ship(card.type)).font(.headline)
                     Text(Names.size(card.spec.size)).font(.caption).foregroundStyle(.secondary)
