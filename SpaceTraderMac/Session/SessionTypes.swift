@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import ParsecEngine
+import ParsecInsights
 
 /// What the main window shows. Derived from the session, never stored.
 enum SessionMode: Equatable, Sendable {

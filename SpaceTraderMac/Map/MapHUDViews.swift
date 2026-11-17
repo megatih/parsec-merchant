@@ -231,12 +231,12 @@ struct RoutePanelView: View {
                         Button {
                             session.setRouteObjective(objective)
                         } label: {
-                            Text(objective == .fewestJumps ? "Fewest Jumps" : "Cheapest")
+                            Text(RouteObjectiveText.title(objective))
                         }
                         .buttonStyle(.bordered)
                         .tint(pr.objective == objective ? .accentColor : nil)
                         .controlSize(.small)
-                        .help(Text(objective == .fewestJumps ? "Plan the route with the fewest jumps." : "Plan the cheapest route."))
+                        .help(Text(RouteObjectiveText.help(objective)))
                         .accessibilityAddTraits(pr.objective == objective ? .isSelected : [])
                         .accessibilityIdentifier(ids.routeObjective(objective))
                     }
@@ -420,6 +420,25 @@ struct MapSearchView: View {
         default:
             session.performFind(outcome)
             ui.clearSearch()
+        }
+    }
+}
+
+/// MAP-057 / MAP-069: the route objective buttons (Lowest Risk from M10, INT-027).
+enum RouteObjectiveText {
+    static func title(_ o: RouteObjective) -> LocalizedStringResource {
+        switch o {
+        case .fewestJumps: "Fewest Jumps"
+        case .cheapest: "Cheapest"
+        case .lowestRisk: "Lowest Risk"
+        }
+    }
+
+    static func help(_ o: RouteObjective) -> LocalizedStringResource {
+        switch o {
+        case .fewestJumps: "Plan the route with the fewest jumps."
+        case .cheapest: "Plan the cheapest route."
+        case .lowestRisk: "Plan the route with the fewest pirates (and police, if you are wanted) on the way."
         }
     }
 }

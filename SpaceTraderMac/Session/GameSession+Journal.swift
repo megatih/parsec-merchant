@@ -92,7 +92,7 @@ extension GameSession {
 
     /// LOG-026: the export envelope carries the journal with the state.
     func exportEnvelope(state: GameState, gameID: String) -> SaveEnvelope {
-        SaveEnvelope(state: state, appVersion: slotStore.appVersion, gameID: gameID)
+        SaveEnvelope(state: state, appVersion: slotStore.appVersion, gameID: gameID, journal: journal)
     }
 
     /// LOG-035 / STAT-020: shows the Logbook at a tab (the feed overlay, the game-over card and the inspector).

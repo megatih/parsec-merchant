@@ -163,6 +163,21 @@ struct LogbookTests {
         #expect(LogExport.header(state: state).metadata.contains(GalaxyCode(state).string))
     }
 
+    @Test("LLM-027 Show flavor text (default on) hides or shows flavor in the export; entries keep their flavor")
+    func showFlavor() throws {
+        let s = try TestSessions.playing()
+        let state = try #require(s.state)
+        var j = try #require(s.journal)
+        j.entries.append(LogEntry(id: j.nextEntryID, day: 0, system: state.commander.currentSystem, worth: 0,
+                                  kind: .achievementUnlocked(.firstProfit), flavor: .generated(text: "We celebrated quietly.")))
+        let on = LogExport.markdown(journal: j, state: state, filter: LogFilter(), showFlavor: true)
+        let off = LogExport.markdown(journal: j, state: state, filter: LogFilter(), showFlavor: false)
+        #expect(on.contains("*We celebrated quietly.*") && !off.contains("We celebrated quietly."))
+        #expect(j.entries.last?.flavor == .generated(text: "We celebrated quietly."))
+        let defaults = try #require(UserDefaults(suiteName: "pm-flavor-show-\(UUID().uuidString)"))
+        #expect(AppSettings(defaults: defaults).showFlavor && AppSettingsKey.showFlavor == "settings.flavor.show")
+    }
+
     @Test("LOG-031 LOG-010 rows show the category symbol; every category has a symbol and a title")
     func categoryStyle() {
         #expect(Set(LogCategory.allCases.map(LogCategoryStyle.symbol)).count == LogCategory.allCases.count)

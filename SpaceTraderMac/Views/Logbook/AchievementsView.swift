@@ -88,7 +88,8 @@ private struct BadgeView: View {
         }
         .padding(10)
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: badge.accessibilityText))
         .accessibilityIdentifier(AXID.Logbook.badge(badge.id))
     }
 }

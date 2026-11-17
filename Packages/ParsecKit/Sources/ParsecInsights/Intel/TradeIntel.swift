@@ -29,6 +29,19 @@ public struct PriceQuote: Sendable, Equatable {
     public var age: Int?
     public var staleness: Staleness
     public var pressureHint: PressureHint?
+
+    public init(item: TradeItemType, system: Int, sell: Int?, buy: Int?, stock: Int?, source: QuoteSource, age: Int?,
+                staleness: Staleness, pressureHint: PressureHint?) {
+        self.item = item
+        self.system = system
+        self.sell = sell
+        self.buy = buy
+        self.stock = stock
+        self.source = source
+        self.age = age
+        self.staleness = staleness
+        self.pressureHint = pressureHint
+    }
 }
 
 /// INT-019: a buy recommendation for a target.
@@ -39,6 +52,15 @@ public struct TradeRecommendation: Sendable, Equatable {
     public var projectedProfit: Int
     public var quoteSource: QuoteSource
     public var staleness: Staleness
+
+    public init(item: TradeItemType, profitPerBay: Int, units: Int, projectedProfit: Int, quoteSource: QuoteSource, staleness: Staleness) {
+        self.item = item
+        self.profitPerBay = profitPerBay
+        self.units = units
+        self.projectedProfit = projectedProfit
+        self.quoteSource = quoteSource
+        self.staleness = staleness
+    }
 }
 
 /// INT-020: the projected value of the hold at a system.
@@ -48,6 +70,14 @@ public struct HoldValue: Sendable, Equatable {
     public var profit: Int
     public var unsellable: [TradeItemType]
     public var usesEstimates: Bool
+
+    public init(revenue: Int, costBasis: Int, profit: Int, unsellable: [TradeItemType], usesEstimates: Bool) {
+        self.revenue = revenue
+        self.costBasis = costBasis
+        self.profit = profit
+        self.unsellable = unsellable
+        self.usesEstimates = usesEstimates
+    }
 }
 
 /// INT-021: a destination recommendation for the hold.
@@ -56,6 +86,13 @@ public struct DestinationRecommendation: Sendable, Equatable {
     public var profit: Int
     public var distance: Int
     public var usesEstimates: Bool
+
+    public init(system: Int, profit: Int, distance: Int, usesEstimates: Bool) {
+        self.system = system
+        self.profit = profit
+        self.distance = distance
+        self.usesEstimates = usesEstimates
+    }
 }
 
 /// INT-022: where to sell a held item.
@@ -69,6 +106,17 @@ public struct SellAdvice: Sendable, Equatable {
     public var bestPerUnit: Int?
     public var bestSource: QuoteSource?
     public var bestAge: Int?
+
+    public init(item: TradeItemType, herePerUnit: Int?, bestSystem: Int? = nil, bestSell: Int? = nil, bestPerUnit: Int? = nil,
+                bestSource: QuoteSource? = nil, bestAge: Int? = nil) {
+        self.item = item
+        self.herePerUnit = herePerUnit
+        self.bestSystem = bestSystem
+        self.bestSell = bestSell
+        self.bestPerUnit = bestPerUnit
+        self.bestSource = bestSource
+        self.bestAge = bestAge
+    }
 }
 
 /// INT-028: why a system matches the "sells <item>" search filter.

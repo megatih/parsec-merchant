@@ -2,6 +2,7 @@
 import Foundation
 import ParsecEngine
 import ParsecInsights
+import ParsecPersistence
 
 /// STAT-014: localized labels and values of the Statistics tiles.
 enum StatFigureText {
@@ -111,6 +112,13 @@ struct AchievementsModel: Equatable {
         var inGameText: String?
         /// "current / target" for threshold achievements (nil for flags and in a cheated game).
         var progress: (current: Int, target: Int)?
+
+        /// "<name>, Unlocked <date>" or "<name>, locked, <current> of <target>" (text, not colour).
+        var accessibilityText: String {
+            if let unlockedText { return "\(name), \(unlockedText)" }
+            if let p = progress { return String(localized: "\(name), locked, \(p.current) of \(p.target)") }
+            return String(localized: "\(name), locked")
+        }
 
         static func == (a: Badge, b: Badge) -> Bool {
             a.id == b.id && a.name == b.name && a.unlocked == b.unlocked && a.unlockedText == b.unlockedText

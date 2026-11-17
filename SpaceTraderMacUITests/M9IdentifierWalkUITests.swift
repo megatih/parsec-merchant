@@ -63,7 +63,8 @@ final class M9IdentifierWalkUITests: ParsecUITestCase {
         walk(card, surface: "game-over card")
         walk(mainWindow, surface: "main window with the game-over card")
 
-        click(AXID.GameOver.highScores)
+        // The career card's M10 statistics rows (STAT-022) can push the actions below the fold.
+        reveal(element(AXID.GameOver.highScores), in: card).click()
         waitFor(AXID.Scores.window)
         walk(element(AXID.Scores.window), surface: "High Scores window with the retired career")
     }

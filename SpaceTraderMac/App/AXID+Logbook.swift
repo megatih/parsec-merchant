@@ -12,6 +12,8 @@ nonisolated extension AXID {
         static let backToSummary = "logbook.backToSummary"
         static let list = "logbook.log.list"
         static func entry(_ id: Int) -> String { "logbook.entry.\(id)" }
+        /// A day/system group header (named by its oldest entry's id).
+        static func group(_ id: Int) -> String { "logbook.group.\(id)" }
         static let search = "logbook.search"
         static let filter = "logbook.filter"
         static func filter(_ c: LogCategory) -> String { "logbook.filter.\(c.rawValue)" }

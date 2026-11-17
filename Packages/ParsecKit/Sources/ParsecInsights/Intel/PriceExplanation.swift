@@ -101,6 +101,11 @@ public struct HeatmapScale: Sendable, Equatable {
 public struct HeatmapResult: Sendable, Equatable {
     public var values: [HeatmapValue]
     public var scale: HeatmapScale
+
+    public init(values: [HeatmapValue], scale: HeatmapScale) {
+        self.values = values
+        self.scale = scale
+    }
 }
 
 /// INT-024 / INT-025 / MAP-097: the pure heatmap model (known intel and public facts only).

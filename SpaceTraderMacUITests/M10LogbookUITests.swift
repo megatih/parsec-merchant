@@ -6,14 +6,6 @@ import XCTest
 final class M10LogbookUITests: ParsecUITestCase {
     override var launchSeed: UInt64 { UITestFixtures.achievementSeed }
 
-    /// Selects a Logbook tab by its title (segmented controls expose their segments by label).
-    func selectTab(_ title: String, file: StaticString = #filePath, line: UInt = #line) {
-        let control = waitFor(AXID.Logbook.tab, file: file, line: line)
-        let candidates = [control.radioButtons[title], control.buttons[title], control.descendants(matching: .any)[title]]
-        guard let segment = candidates.first(where: { $0.exists }) else { return XCTFail("tab \(title)", file: file, line: line) }
-        segment.click()
-    }
-
     @MainActor
     func testFirstProfitUnlocksAndTheLogbookTabsHaveIdentifiers() throws {
         // covers: ACH-022, LOG-036, LOG-029, LOG-030, LOG-031, LOG-032, LOG-033, STAT-017, ACH-019
@@ -31,6 +23,7 @@ final class M10LogbookUITests: ParsecUITestCase {
 
         type("9")
         waitFor(AXID.Logbook.root)
+        selectTab("Captain's Log")  // the window may restore another tab (LOG-030)
         waitFor(AXID.Logbook.list)
         waitFor(AXID.Logbook.search)
         waitFor(AXID.Logbook.filter)
@@ -45,6 +38,8 @@ final class M10LogbookUITests: ParsecUITestCase {
         let badge = waitFor(AXID.Logbook.badge("firstProfit"))
         expect("First Profit is marked unlocked (label: \(badge.label))") { badge.label.contains("Unlocked") }
         walk(element(AXID.Logbook.root), surface: "Achievements tab")
+        selectTab("Captain's Log")
+        type("1")  // leave the window's restored section and tab at their defaults for later tests
     }
 }
 
@@ -67,8 +62,8 @@ final class M10FlavorUITests: ParsecUITestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))
         }
         expect("the encounter ends") { !view.exists }
-        waitFor(AXID.Arrival.card)
         type("9")
+        selectTab("Captain's Log")
         waitFor(AXID.Logbook.list)
         let rows = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", AXID.Logbook.entryPrefix))
         expect("the log lists entries") { rows.count > 0 }
@@ -76,5 +71,16 @@ final class M10FlavorUITests: ParsecUITestCase {
         expect("an encounter row shows its template flavor") {
             rows.allElementsBoundByIndex.contains { row in phrases.contains { row.label.contains($0) } }
         }
+        type("1")
+    }
+}
+
+extension ParsecUITestCase {
+    /// Selects a Logbook tab by its title (segmented controls expose their segments by label).
+    func selectTab(_ title: String, file: StaticString = #filePath, line: UInt = #line) {
+        let control = waitFor(AXID.Logbook.tab, file: file, line: line)
+        let candidates = [control.radioButtons[title], control.buttons[title], control.descendants(matching: .any)[title]]
+        guard let segment = candidates.first(where: { $0.exists }) else { return XCTFail("tab \(title)", file: file, line: line) }
+        segment.click()
     }
 }

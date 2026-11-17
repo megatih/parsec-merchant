@@ -58,6 +58,10 @@ struct GameOverView: View {
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier(AXID.GameOver.career)
             actions(m)
+            // LOG-035: the Logbook of the ended game.
+            Button("Show Logbook") { session.showLogbook(tab: .log) }
+                .buttonStyle(.link)
+                .accessibilityIdentifier(AXID.LogbookLinks.gameOverShowLogbook)
         }
         .frame(maxWidth: 560)
     }
@@ -66,8 +70,6 @@ struct GameOverView: View {
         HStack(spacing: 12) {
             Button("Main Menu") { session.requestCloseGame() }
                 .accessibilityIdentifier(AXID.GameOver.mainMenu)
-            Button("Show Logbook") { session.showLogbook(tab: .log) }
-                .accessibilityIdentifier(AXID.LogbookLinks.gameOverShowLogbook)
             Button("High Scores") {
                 // The window opens at this game's ruleset (UI-ENC-087) and highlights the new rank (UI-ENC-089).
                 session.highScoresRevision += 1

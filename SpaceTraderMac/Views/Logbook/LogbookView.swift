@@ -182,6 +182,8 @@ struct CaptainsLogView: View {
                     }
                 } header: {
                     Text("Day \(group.day) · \(Names.system(group.system, in: state))")
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityIdentifier(AXID.Logbook.group(group.id))
                 }
             }
         }
