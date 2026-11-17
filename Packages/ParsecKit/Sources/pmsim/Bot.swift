@@ -27,6 +27,9 @@ final class TraderBot {
     var violations: [String] = []
     var commands = 0
     var previousSystem: Int?
+    /// Scenario switches (`pmsim scenario` death game): never buy an escape pod or insurance, never repair the hull.
+    var buysProtection = true
+    var repairs = true
     let check: (GameState) -> String?
 
     init(ruleset: RulesetID, seed: UInt64, check: @escaping (GameState) -> String?) {
@@ -54,28 +57,10 @@ final class TraderBot {
         let bot = TraderBot(ruleset: ruleset, seed: seed, check: check)
         let startWorth = bot.state.worth
         var daysToMoon: Int?
-        var stalls = 0
         while bot.commands < maxCommands, bot.state.commander.days < maxDays {
             if case .gameOver = bot.state.phase { break }
             if daysToMoon == nil, bot.state.worth >= moonWorth { daysToMoon = bot.state.commander.days }
-            if case .encounter = bot.state.phase {
-                bot.encounterTurn()
-                continue
-            }
-            guard case .docked = bot.state.phase else {
-                bot.resolvePending()
-                bot.send(.warp)
-                continue
-            }
-            let day = bot.state.commander.days
-            bot.dockedTurn()
-            // Stranded: still docked on the same day after a full turn (no fuel, no cash, no loan).
-            if case .docked = bot.state.phase, bot.state.commander.days == day {
-                stalls += 1
-                if stalls >= 3 { break }
-            } else {
-                stalls = 0
-            }
+            if !bot.step() { break }
         }
         if ProcessInfo.processInfo.environment["PM_BOT_TRACE"] != nil {
             let c = bot.state.commander
@@ -86,6 +71,34 @@ final class TraderBot {
         let ended: Bool = if case .gameOver = bot.state.phase { true } else { false }
         return (BotResult(startWorth: startWorth, endWorth: bot.state.worth, days: bot.state.commander.days,
                           daysToMoonWorth: daysToMoon, ended: ended), bot.violations)
+    }
+
+    /// Consecutive docked turns that did not advance the day (see `step`).
+    var stalls = 0
+
+    /// One step of greedy play: an encounter decision, a continued journey or a docked turn. Returns false when the
+    /// game is over or the bot is stranded (still docked on the same day after three full turns: no fuel, no cash,
+    /// no loan).
+    func step() -> Bool {
+        if case .gameOver = state.phase { return false }
+        if case .encounter = state.phase {
+            encounterTurn()
+            return true
+        }
+        guard case .docked = state.phase else {
+            resolvePending()
+            send(.warp)
+            return true
+        }
+        let day = state.commander.days
+        dockedTurn()
+        if case .docked = state.phase, state.commander.days == day {
+            stalls += 1
+            if stalls >= 3 { return false }
+        } else {
+            stalls = 0
+        }
+        return true
     }
 
     /// Declines or closes any decision the engine raised (trade in orbit, plunder, scoop).
@@ -168,7 +181,7 @@ final class TraderBot {
     func refuelAndRepair() {
         if state.fullTankCost > 0 { send(.buyFuel(credits: state.commander.cash)) }
         let repair = state.fullRepairCost
-        if repair > 0 {
+        if repair > 0, repairs {
             // Repair fully when it leaves trading capital; otherwise patch up to what a quarter of the cash buys.
             let budget = repair * 3 <= state.commander.cash ? repair : state.commander.cash / 4
             if budget > 0 { send(.repairHull(credits: budget)) }
@@ -216,6 +229,7 @@ final class TraderBot {
 
     /// Escape pod first (a destroyed ship without one ends the game), then insurance on the ship.
     func protectShip() {
+        guard buysProtection else { return }
         if !state.commander.ship.escapePod, state.escapePodOffered, state.commander.cash > 8_000 + 2 * operatingReserve {
             send(.buyEscapePod)
         }
@@ -278,7 +292,7 @@ final class TraderBot {
         if let type = upgradeCandidates.first(where: { r.tables.ship($0).price * 3 < cash }) {
             return max(.earlyIndustrial, r.tables.ship(type).minTechLevel)
         }
-        if !state.commander.ship.escapePod, cash > 8_000 + 2 * operatingReserve { return .earlyIndustrial }
+        if buysProtection, !state.commander.ship.escapePod, cash > 8_000 + 2 * operatingReserve { return .earlyIndustrial }
         return nil
     }
 
