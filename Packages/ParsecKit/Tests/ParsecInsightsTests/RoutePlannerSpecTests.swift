@@ -37,22 +37,24 @@ private struct RefEdge: Equatable {
     var distance: Int
     var parsecs: Int
     var credits: Int
+    var risk = 0
 }
 
 private func refEdge(_ s: RouteSnapshot, _ a: Int, _ b: Int) -> RefEdge? {
     guard a != b else { return nil }
     let d = GalaxyGenerator.distance(s.points[a].x, s.points[a].y, s.points[b].x, s.points[b].y, rule: s.distanceRule)
     if let k = s.wormholes.firstIndex(of: a), s.wormholes[(k + 1) % s.wormholes.count] == b {
-        return RefEdge(via: true, distance: d, parsecs: 0, credits: s.wormholeTax + s.perWarpCosts)
+        return RefEdge(via: true, distance: d, parsecs: 0, credits: s.wormholeTax + s.perWarpCosts, risk: s.risk(b))
     }
     guard d <= s.fuelCapacity else { return nil }
-    return RefEdge(via: false, distance: d, parsecs: d, credits: d * s.fuelCostPerParsec + s.perWarpCosts)
+    return RefEdge(via: false, distance: d, parsecs: d, credits: d * s.fuelCostPerParsec + s.perWarpCosts, risk: s.risk(b))
 }
 
 private func key(_ e: RefEdge, _ o: RouteObjective) -> [Int] {
     switch o {
     case .fewestJumps: [1, e.parsecs, e.credits]
     case .cheapest: [e.credits, 1, e.parsecs]
+    case .lowestRisk: [e.risk, 1, e.credits]
     }
 }
 

@@ -162,7 +162,7 @@
 ## 17. Engine and Insights additions (pure; package tests)
 
 - **MAP-093** {M8} [M][W][P] New public engine API with no behaviour change: `DistanceRule.maxSquaredDistance(withinRange:)` (MAP-033); `GameState.fuelCostPerParsec` (`commander.ship.spec(ruleset).fuelCost`, after the MOD-017 column swap); `GameState.wormholeTaxPerJump` (25 × `fuelCostPerParsec`), which `wormholeCosts` is refactored to use. The package test of UI-SHELL-115 is extended to call each on a fresh game per ruleset and check the state is unchanged. (source: ShipMath.swift `wormholeCosts` "25 × fuel cost", `spec(_:)`; PRD MOD-017)
-- **MAP-094** {M8} [M][W][P] `RouteSnapshot.init(_:)` reads only `galaxy.systems` coordinates, `galaxy.wormholes`, `ruleset.flags.distance`, `fuelCapacity`, `commander.ship.fuel`, `fuelCostPerParsec`, `wormholeTaxPerJump` and `dailyCosts`. It has no access to prices or hidden fields; a package test checks that two states differing only in hidden fields give equal snapshots. (source: PRD §6.6 "Fairness")
+- **MAP-094** {M8} [M][W][P] `RouteSnapshot.init(_:)` reads only `galaxy.systems` coordinates, `galaxy.wormholes`, `ruleset.flags.distance`, `fuelCapacity`, `commander.ship.fuel`, `fuelCostPerParsec`, `wormholeTaxPerJump` and `dailyCosts`, plus (M10, INT-026) each system's government activity levels from the politics table and `commander.policeRecordScore`, folded into `hopRisk: [Int]`. It has no access to prices or hidden fields; a package test checks that two states differing only in hidden fields give equal snapshots. (source: PRD §6.6 "Fairness")
 
 ## 18. Later milestones
 

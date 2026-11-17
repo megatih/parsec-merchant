@@ -2,6 +2,7 @@
 // Shared helpers for the persistence tests: temporary store roots, fixed game states and fuzz-played states.
 import Foundation
 @testable import ParsecEngine
+import ParsecInsights
 @testable import ParsecPersistence
 
 /// A fresh, empty directory under the temporary directory; remove it with `cleanUp`.
@@ -98,34 +99,46 @@ enum FuzzPlayer {
     /// bucketed by category and drawn round-robin, so rare phases (scoop, plunder, orbit trade, game over) are always
     /// represented; some games are ended by retiring, and the persistence-only flags (cheats, reloads, Ironman) vary.
     static func sampleStates(_ ruleset: RulesetID, count: Int, seed: UInt64, games: Int = 40) -> [GameState] {
+        sampleGames(ruleset, count: count, seed: seed, games: games).map(\.state)
+    }
+
+    /// LOG-003: like `sampleStates`, with the journal recorded alongside each game (as `pmsim` records it).
+    static func sampleGames(_ ruleset: RulesetID, count: Int, seed: UInt64,
+                            games: Int = 40) -> [(state: GameState, journal: GameJournal)] {
         let order = ["docked", "encounter", "scoop", "plunder", "orbitTrade", "transit", "gameOver"]
-        var buckets: [String: [GameState]] = [:]
+        var buckets: [String: [(state: GameState, journal: GameJournal)]] = [:]
         for game in 0..<UInt64(games) {
             let gameSeed = seed &+ game
             var engine = GameEngine(config: NewGameConfig(commanderName: game % 3 == 0 ? "Zoë 🚀 \"/\\" : "Fuzz",
                                                           difficulty: Difficulty(rawValue: Int(game % 5)) ?? .normal,
                                                           ruleset: ruleset, seed: gameSeed, ironman: game % 4 == 1))
             var r = Xoshiro256StarStar(seed: gameSeed &* 0x9E37_79B9 &+ 17)
+            var journal = GameJournal.start(state: engine.state)
             for step in 0..<300 {
                 if case .gameOver = engine.state.phase { break }
-                engine.perform(pickCommand(engine.state, &r), acknowledging: ackAll)
+                let command = pickCommand(engine.state, &r)
+                let before = engine.state
+                let result = engine.perform(command, acknowledging: ackAll)
+                JournalRecorder.record(JournalStep(command: command, before: before, result: result, after: engine.state), into: &journal)
                 let cat = category(engine.state)
                 let common = cat == "docked" || cat == "encounter"
                 guard buckets[cat, default: []].count < count, !common || step % 13 == 0 else { continue }
                 var s = engine.state
                 s.cheatsUsed = step % 3 == 0
                 s.reloadCount = step % 5
-                buckets[cat, default: []].append(s)
+                buckets[cat, default: []].append((s, journal))
                 if cat == "encounter", buckets["scoop", default: []].count < count / 10, let scoop = forcedScoop(engine) {
-                    buckets["scoop", default: []].append(scoop)
+                    buckets["scoop", default: []].append((scoop, journal))
                 }
             }
             if game % 3 == 2, case .docked = engine.state.phase {
-                engine.perform(.retire, acknowledging: ackAll)
-                buckets["gameOver", default: []].append(engine.state)
+                let before = engine.state
+                let result = engine.perform(.retire, acknowledging: ackAll)
+                JournalRecorder.record(JournalStep(command: .retire, before: before, result: result, after: engine.state), into: &journal)
+                buckets["gameOver", default: []].append((engine.state, journal))
             }
         }
-        var out: [GameState] = []
+        var out: [(state: GameState, journal: GameJournal)] = []
         var index = 0
         while out.count < count {
             var added = false

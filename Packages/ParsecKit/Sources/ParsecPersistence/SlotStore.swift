@@ -3,6 +3,7 @@
 // autosave, import/export, game generations, reload accounting and quarantine in Corrupt/ (never deleted).
 import Foundation
 import ParsecEngine
+import ParsecInsights
 
 /// SAV-022: one listed save.
 public struct SlotInfo: Sendable, Equatable {
@@ -22,6 +23,8 @@ public struct SlotInfo: Sendable, Equatable {
 public struct LoadedGame: Sendable, Equatable {
     /// The state after `resumedAfterLoad(countsAsReload:)`.
     public var state: GameState
+    /// LOG-007: the journal saved with that state (Revert to Autosave rewinds the log with the game).
+    public var journal: GameJournal
     public var gameID: String
     public var slotID: String
     public var countedAsReload: Bool
@@ -72,10 +75,12 @@ public struct SlotStore: Sendable {
     /// SAV-018/020/021/032: writes `state` of game `gameID` to a slot atomically, stamped with the next generation of
     /// that game. A non-Ironman manual slot rotates `.bak1…bak3` first; an Ironman state deletes its backups; the
     /// autosave keeps none.
+    /// LOG-007: `journal` is written beside the state (nil writes `GameJournal.bootstrap(from:)`).
     @discardableResult
-    public func save(_ state: GameState, slot id: String, gameID: String) throws -> URL {
+    public func save(_ state: GameState, journal: GameJournal?, slot id: String, gameID: String) throws -> URL {
         let generation = 1 + (readableMainFiles().filter { $0.envelope.gameID == gameID }.map(\.envelope.generation).max() ?? 0)
-        let envelope = SaveEnvelope(state: state, appVersion: appVersion, gameID: gameID, generation: generation)
+        let envelope = SaveEnvelope(state: state, appVersion: appVersion, gameID: gameID, generation: generation,
+                                    journal: journal)
         let data = try SaveCodec.encode(envelope)
         let target = url(forSlot: id)
         let fm = FileManager.default
@@ -96,10 +101,22 @@ public struct SlotStore: Sendable {
         return target
     }
 
-    /// Writes the autosave (SAV-019).
+    /// Writes a slot with a bootstrapped journal (pre-M10 callers).
+    @discardableResult
+    public func save(_ state: GameState, slot id: String, gameID: String) throws -> URL {
+        try save(state, journal: nil, slot: id, gameID: gameID)
+    }
+
+    /// Writes the autosave (SAV-019) with its journal (LOG-007).
+    @discardableResult
+    public func autosave(_ state: GameState, journal: GameJournal?, gameID: String) throws -> URL {
+        try save(state, journal: journal, slot: Self.autosaveID, gameID: gameID)
+    }
+
+    /// Writes the autosave with a bootstrapped journal (pre-M10 callers).
     @discardableResult
     public func autosave(_ state: GameState, gameID: String) throws -> URL {
-        try save(state, slot: Self.autosaveID, gameID: gameID)
+        try autosave(state, journal: nil, gameID: gameID)
     }
 
     // MARK: Reading
@@ -191,11 +208,12 @@ public struct SlotStore: Sendable {
     /// SAV-027/028: validates and migrates `data`, then writes it to a new slot under a fresh `gameID`, with Ironman
     /// cleared and the import counted as a reload. Nothing is written when decoding fails.
     public func importSave(_ data: Data) throws -> String {
-        var state = try SaveCodec.decode(data).state
+        let envelope = try SaveCodec.decode(data)
+        var state = envelope.state
         state.ironman = false
         state.reloadCount += 1
         let id = Self.newSlotID()
-        try save(state, slot: id, gameID: Self.newSlotID())
+        try save(state, journal: envelope.journal, slot: id, gameID: Self.newSlotID())
         return id
     }
 
@@ -218,7 +236,8 @@ public struct SlotStore: Sendable {
     public func loadForPlay(slot id: String, revert: Bool, currentGameID: String?) throws -> LoadedGame {
         let (envelope, recovered) = try read(slot: id)
         let reload = countsAsReload(envelope, revert: revert, currentGameID: currentGameID)
-        return LoadedGame(state: envelope.state.resumedAfterLoad(countsAsReload: reload), gameID: envelope.gameID, slotID: id,
+        return LoadedGame(state: envelope.state.resumedAfterLoad(countsAsReload: reload), journal: envelope.journal,
+                          gameID: envelope.gameID, slotID: id,
                           countedAsReload: reload, recoveredFromBackup: recovered)
     }
 }

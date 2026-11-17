@@ -3,6 +3,895 @@
   "format" : "parsec-merchant-save",
   "gameID" : "00000000-0000-4000-8000-000000000003",
   "generation" : 1,
+  "journal" : {
+    "entries" : [
+      {
+        "day" : 0,
+        "id" : 1,
+        "kind" : {
+          "journalStarted" : {
+            "_0" : {
+              "difficulty" : 2,
+              "ironman" : false,
+              "kills" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "origin" : "newGame",
+              "rulesetID" : "palm122",
+              "startSystem" : 100,
+              "systemCount" : 120,
+              "visitedSystems" : [
+                100
+              ]
+            }
+          }
+        },
+        "system" : 100,
+        "worth" : 10000
+      },
+      {
+        "day" : 1,
+        "id" : 2,
+        "kind" : {
+          "departed" : {
+            "from" : 100,
+            "parsecs" : 8,
+            "to" : 1,
+            "viaWormhole" : false
+          }
+        },
+        "system" : 100,
+        "worth" : 9984
+      },
+      {
+        "day" : 1,
+        "id" : 3,
+        "kind" : {
+          "status" : {
+            "_0" : {
+              "policeRecord" : {
+                "from" : 5,
+                "to" : 4
+              }
+            }
+          }
+        },
+        "system" : 100,
+        "worth" : 9984
+      },
+      {
+        "day" : 1,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 3
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.lost.1"
+            }
+          }
+        },
+        "id" : 4,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 0,
+              "opponent" : 3,
+              "outcome" : {
+                "killed" : {
+
+                }
+              },
+              "rounds" : 5,
+              "surrendered" : false,
+              "type" : 29
+            }
+          }
+        },
+        "system" : 100,
+        "worth" : 9884
+      },
+      {
+        "day" : 1,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+
+              ],
+              "key" : "flavor.gameEnded.killed.3"
+            }
+          }
+        },
+        "id" : 5,
+        "kind" : {
+          "gameEnded" : {
+            "_0" : 0,
+            "score" : 51
+          }
+        },
+        "system" : 100,
+        "worth" : 9884
+      }
+    ],
+    "intel" : {
+      "systems" : [
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+            {
+              "buy" : [
+                38,
+                251,
+                108,
+                385,
+                187,
+                834,
+                519,
+                702,
+                0,
+                0
+              ],
+              "day" : 0,
+              "pressure" : 0,
+              "sell" : [
+                36,
+                233,
+                100,
+                357,
+                174,
+                773,
+                481,
+                650,
+                2500,
+                4888
+              ],
+              "stock" : [
+                15,
+                21,
+                20,
+                13,
+                32,
+                10,
+                42,
+                3,
+                0,
+                0
+              ]
+            }
+          ],
+          "lastVisitDay" : 0,
+          "visitCount" : 1
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        }
+      ]
+    },
+    "nextEntryID" : 6
+  },
   "rulesetID" : "palm122",
   "schemaVersion" : 1,
   "state" : {
