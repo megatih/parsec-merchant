@@ -13,22 +13,22 @@ struct PlunderSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             if let state = session.state {
                 let model = PlunderSheetModel.make(context: context, state: state)
-                Text(verbatim: model.title).font(.title2.bold())
+                Text(verbatim: model.title).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
                 if model.isEmpty {
-                    Text("The hold is empty.").foregroundStyle(.secondary)
+                    Text("The hold is empty.").foregroundStyle(.readableSecondary)
                 } else {
                     ForEach(model.rows, id: \.item) { row in
                         rowView(row, blocker: model.takeBlocker)
                     }
                     if let blocker = model.takeBlocker {
-                        Text(ReasonText.text(for: blocker)).foregroundStyle(.secondary)
+                        Text(ReasonText.text(for: blocker)).foregroundStyle(.readableSecondary)
                     }
                 }
                 Text("Free bays \(model.freeBays)")
                     .monospacedDigit()
                     .accessibilityIdentifier(AXID.Decision.plunderFreeBays)
                 if let reason = session.lastRejection {
-                    Text(ReasonText.text(for: reason)).foregroundStyle(.secondary)
+                    Text(ReasonText.text(for: reason)).foregroundStyle(.readableSecondary)
                 }
             }
             HStack {
@@ -53,12 +53,14 @@ struct PlunderSheet: View {
         let value = Binding { row.clamp(amounts[item] ?? row.maxTake) } set: { amounts[item] = row.clamp($0) }
         return HStack {
             Text(Names.item(item)).frame(minWidth: 90, alignment: .leading)
-            Text(verbatim: "\(row.available)").monospacedDigit().foregroundStyle(.secondary)
+            Text(verbatim: "\(row.available)").monospacedDigit().foregroundStyle(.readableSecondary)
             Spacer()
             Stepper(value: value, in: 1...max(1, row.maxTake)) {
                 Text(verbatim: "\(value.wrappedValue)").monospacedDigit()
             }
             .disabled(!row.canTake)
+            .accessibilityLabel(Text("Quantity of \(Names.item(item))"))  // A11Y-003
+            .accessibilityValue(Text(verbatim: AccessibilityText.units(value.wrappedValue)))  // A11Y-004
             .accessibilityIdentifier(AXID.Decision.plunderQuantity(item))
             Button("Take") { session.send(row.takeCommand(value.wrappedValue)) }
                 .disabled(!row.canTake)
@@ -84,7 +86,7 @@ struct TradeInOrbitSheet: View {
             if let state = session.state {
                 let model = TradeOfferModel.make(offer: offer, state: state)
                 let q = model.clamp(quantity ?? model.initialQuantity)
-                Text(verbatim: model.title).font(.title2.bold())
+                Text(verbatim: model.title).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
                 LabeledContent("Price per unit") { Text(verbatim: "\(offer.unitPrice.formatted()) cr.").monospacedDigit() }
                 LabeledContent(model.traderBuys ? "You hold" : "Available") {
                     Text(verbatim: offer.unitsAvailable.formatted()).monospacedDigit()
@@ -93,6 +95,8 @@ struct TradeInOrbitSheet: View {
                     Stepper(value: Binding { q } set: { quantity = model.clamp($0) }, in: model.range) {
                         Text("Quantity: \(q) of at most \(offer.maxQuantity)").monospacedDigit()
                     }
+                    .accessibilityLabel(Text("Quantity"))
+                    .accessibilityValue(Text(verbatim: AccessibilityText.units(q)))
                     .accessibilityIdentifier(AXID.Decision.tradeQuantity)
                     Button("Max") { quantity = model.range.upperBound }
                         .accessibilityIdentifier(AXID.Decision.tradeMax)
@@ -140,9 +144,9 @@ struct EncounterMakeRoomSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Make Room for \(Names.item(item))").font(.title2.bold())
+            Text("Make Room for \(Names.item(item))").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             Text("Dumping cargo in space is littering. The police may fine you and your record suffers.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
             if let state = session.state {
                 let model = MakeRoomModel.make(state: state)
                 let current = selected ?? model.rows.first?.item
@@ -155,6 +159,8 @@ struct EncounterMakeRoomSheet: View {
                     Stepper(value: $quantity, in: 1...max(1, held)) {
                         Text("Quantity: \(min(quantity, held)) of at most \(held)").monospacedDigit()
                     }
+                    .accessibilityLabel(Text("Quantity"))
+                    .accessibilityValue(Text(verbatim: AccessibilityText.units(min(quantity, held))))
                     .accessibilityIdentifier(AXID.Market.disposalQuantity)
                     HStack {
                         Spacer()

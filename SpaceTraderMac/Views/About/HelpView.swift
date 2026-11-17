@@ -113,7 +113,7 @@ struct MarkdownBlocks: View {
             ForEach(Array(MarkdownBlock.parse(text).enumerated()), id: \.offset) { _, block in
                 switch block {
                 case let .heading(level, s):
-                    Text(MarkdownBlock.inline(s)).font(level == 1 ? .title.bold() : .title3.bold())
+                    Text(MarkdownBlock.inline(s)).scaledFont(level == 1 ? .title : .title3, weight: .bold)
                 case let .item(s):
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(verbatim: "•")

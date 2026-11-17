@@ -61,7 +61,10 @@ extension GameSession {
                 achievementsRevision += 1
                 audio.play(app: .achievement)
             }
-            for id in added { appendNote(.achievementUnlocked(id)) }
+            for id in added {
+                appendNote(.achievementUnlocked(id))
+                stepAnnouncementExtras.append(AnnouncementText.achievement(id))  // A11Y-012
+            }
             let state = step.after
             flavor.enqueue(output.newEntries, gameID: gameID) { FlavorNames.make(state: state) }
         }

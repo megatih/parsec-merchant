@@ -19,7 +19,7 @@ struct SoundSettingsView: View {
     var body: some View {
         Form {
             SwiftUI.Section {
-                Toggle(isOn: $muted) { Text("Mute") }
+                Toggle(isOn: $muted) { Text("Mute") }.accessibilityLabel(Text("Mute"))
                     .accessibilityIdentifier(AXID.Sound.mute)
                 volume(Text("Master volume"), value: $overall, id: AXID.Sound.overall)
                     .disabled(muted)
@@ -27,20 +27,20 @@ struct SoundSettingsView: View {
                     .disabled(muted)
             }
             SwiftUI.Section {
-                Toggle(isOn: $musicEnabled) { Text("Ambient music") }
+                Toggle(isOn: $musicEnabled) { Text("Ambient music") }.accessibilityLabel(Text("Ambient music"))
                     .accessibilityIdentifier(AXID.Sound.musicEnabled)
                 volume(Text("Music volume"), value: $music, id: AXID.Sound.music)
                     .disabled(muted || !musicEnabled)
             } footer: {
-                Text("Off by default").foregroundStyle(.secondary)
+                Text("Off by default").foregroundStyle(.readableSecondary)
             }
             SwiftUI.Section {
-                Toggle(isOn: $muteWhenInactive) { Text("Mute when inactive") }
+                Toggle(isOn: $muteWhenInactive) { Text("Mute when inactive") }.accessibilityLabel(Text("Mute when inactive"))
                     .accessibilityIdentifier(AXID.Sound.muteWhenInactive)
-                Toggle(isOn: $haptics) { Text("Haptics") }
+                Toggle(isOn: $haptics) { Text("Haptics") }.accessibilityLabel(Text("Haptics"))
                     .accessibilityIdentifier(AXID.Sound.haptics)
             } footer: {
-                Text("Haptics work only on Force Touch trackpads.").foregroundStyle(.secondary)
+                Text("Haptics work only on Force Touch trackpads.").foregroundStyle(.readableSecondary)
             }
             SwiftUI.Section {
                 LabeledContent {

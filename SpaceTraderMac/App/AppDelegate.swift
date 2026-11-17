@@ -17,6 +17,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let options = LaunchOptions.current
         launchOptions = options
         session = AppBootstrap.makeSession(options: options, defaults: .standard)
+        // A11Y-045: TipKit is configured once, after the launch options and any pending reset.
+        let tips = TipKitCenter()
+        TipTriggers.launch(options: options, defaults: .standard, center: tips)
+        session.tipCenter = tips
         super.init()
         // App Intents reach the session through this bridge (UI-SHELL-112…114).
         IntentSessionBridge.session = session

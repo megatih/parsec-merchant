@@ -47,9 +47,13 @@ enum EncFx {
 
 /// Records announcements (UI-ENC-025).
 @MainActor
-final class RecordingAnnouncer: EncounterAnnouncer {
+final class RecordingAnnouncer: Announcer {
     var texts: [String] = []
-    func announce(_ text: String) { texts.append(text) }
+    var priorities: [AnnouncementPriority] = []
+    func announce(_ text: String, priority: AnnouncementPriority) {
+        texts.append(text)
+        priorities.append(priority)
+    }
 }
 
 @MainActor
@@ -142,7 +146,7 @@ struct EncounterViewTests {
         #expect(opponent.shields.text == "No shields" && opponent.shields.percent == nil)
         #expect(player.hull.value == "\(preview.playerHullPercent)%")
         #expect(player.accessibilityLabel.hasPrefix("Your \(type), hull "))
-        #expect(opponent.accessibilityLabel == "Pirate Gnat, hull \(preview.opponentHullPercent)%, shields 0%, disabled")
+        #expect(opponent.accessibilityLabel == "Pirate Gnat, hull \(preview.opponentHullPercent)%, no shields, disabled")
         #expect(EncounterBarModel(kind: .shields, percent: 40).text == "Shields 40%")
         #expect(EncounterBarModel(kind: .hull, percent: 26).isCritical == false)
         #expect(player.art.facing == .right && opponent.art.facing == .left && opponent.art.disabled)

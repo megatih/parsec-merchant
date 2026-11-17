@@ -34,9 +34,13 @@ struct MapRenderOptions {
 
 /// The only drawing code of the map, shared by all three scopes (MAP-023).
 enum GalaxyMapRenderer {
+    /// A11Y-018: the stroke multiplier of the render in progress (set from `MapStyle.strokeScale` by `draw`).
+    private static var strokeScale = 1.0
+
     /// Draws the enabled layers in `MapLayer.allCases` order.
     static func draw(in context: inout GraphicsContext, snapshot s: MapSnapshot, projected pm: ProjectedMap,
                      layers: Set<MapLayer>, options: MapRenderOptions = MapRenderOptions()) {
+        strokeScale = options.style.strokeScale
         for layer in MapLayer.allCases where layers.contains(layer) {
             draw(layer, in: &context, snapshot: s, projected: pm, layers: layers, options: options)
         }
@@ -104,7 +108,7 @@ enum GalaxyMapRenderer {
                                                                 center: c, startRadius: 0, endRadius: r))
             if heat.values[i].note == .estimate {
                 ctx.stroke(Path(ellipseIn: rect.insetBy(dx: r * 0.45, dy: r * 0.45)), with: .color(color.opacity(0.8)),
-                           style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
+                           style: StrokeStyle(lineWidth: 1 * strokeScale, dash: [2, 2]))
             }
         }
     }
@@ -117,10 +121,10 @@ enum GalaxyMapRenderer {
         let r = radius * pm.projection.scale
         let path = Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r))
         if dashed {
-            ctx.stroke(path, with: .color(MapStyle.range.opacity(0.7)), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+            ctx.stroke(path, with: .color(MapStyle.range.opacity(0.7)), style: StrokeStyle(lineWidth: 1 * strokeScale, dash: [5, 4]))
         } else {
             ctx.fill(path, with: .color(MapStyle.range.opacity(0.10)))
-            ctx.stroke(path, with: .color(MapStyle.range.opacity(0.85)), lineWidth: 1.5)
+            ctx.stroke(path, with: .color(MapStyle.range.opacity(0.85)), lineWidth: 1.5 * strokeScale)
         }
         if let label {
             ctx.draw(Text(verbatim: label).font(.caption2).foregroundStyle(MapStyle.range), at: CGPoint(x: c.x, y: c.y - r - 2),
@@ -137,7 +141,7 @@ enum GalaxyMapRenderer {
             var path = Path()
             path.move(to: a.start)
             path.addQuadCurve(to: a.end, control: a.control)
-            let style = targeted ? StrokeStyle(lineWidth: 2) : StrokeStyle(lineWidth: 1, dash: [4, 4])
+            let style = targeted ? StrokeStyle(lineWidth: 2 * strokeScale) : StrokeStyle(lineWidth: 1 * strokeScale, dash: [4, 4])
             var g = ctx
             g.opacity = targeted ? 1 : 0.6
             g.stroke(path, with: .linearGradient(Gradient(colors: [MapStyle.wormholeA, MapStyle.wormholeB]),
@@ -166,7 +170,7 @@ enum GalaxyMapRenderer {
         for p in WormholeVortex.arms(center: c, radius: r, phase: phase) {
             ctx.stroke(p, with: .linearGradient(Gradient(colors: [MapStyle.wormholeA, MapStyle.wormholeB]),
                                                  startPoint: CGPoint(x: c.x - r, y: c.y), endPoint: CGPoint(x: c.x + r, y: c.y)),
-                       lineWidth: 1.3)
+                       lineWidth: 1.3 * strokeScale)
         }
     }
 
@@ -179,7 +183,7 @@ enum GalaxyMapRenderer {
             p.move(to: seg.start)
             if let c = seg.control { p.addQuadCurve(to: seg.end, control: c) } else { p.addLine(to: seg.end) }
             ctx.stroke(p, with: .color(MapStyle.route.opacity(seg.isNext ? 1 : 0.75)),
-                       style: StrokeStyle(lineWidth: seg.isNext ? 4 : 2.5, lineCap: .round))
+                       style: StrokeStyle(lineWidth: (seg.isNext ? 4 : 2.5) * strokeScale, lineCap: .round))
         }
     }
 
@@ -195,7 +199,7 @@ enum GalaxyMapRenderer {
             var p = Path()
             p.move(to: a)
             p.addLine(to: b)
-            ctx.stroke(p, with: .color(MapStyle.tracked.opacity(0.8)), style: StrokeStyle(lineWidth: 1.2, dash: [1.5, 4]))
+            ctx.stroke(p, with: .color(MapStyle.tracked.opacity(0.8)), style: StrokeStyle(lineWidth: 1.2 * strokeScale, dash: [1.5, 4]))
         }
     }
 
@@ -215,11 +219,11 @@ enum GalaxyMapRenderer {
             g.fill(Path(ellipseIn: rect), with: .color(MapStyle.visited))
         } else {
             g.fill(Path(ellipseIn: rect), with: .color(MapStyle.glyphCenter))
-            g.stroke(Path(ellipseIn: rect.insetBy(dx: 0.6, dy: 0.6)), with: .color(MapStyle.unvisited), lineWidth: 1.4)
+            g.stroke(Path(ellipseIn: rect.insetBy(dx: 0.6, dy: 0.6)), with: .color(MapStyle.unvisited), lineWidth: 1.4 * strokeScale)
         }
         if st.halo {
             g.stroke(Path(ellipseIn: rect.insetBy(dx: -2, dy: -2)), with: .color(.white.opacity(0.7)),
-                     style: StrokeStyle(lineWidth: 0.8, dash: [1, 2]))
+                     style: StrokeStyle(lineWidth: 0.8 * strokeScale, dash: [1, 2]))
         }
     }
 
@@ -230,7 +234,7 @@ enum GalaxyMapRenderer {
             let c = pm.centers[i], r = st.radius
             if st.markers.contains(.current) {
                 ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r - 4, y: c.y - r - 4, width: 2 * r + 8, height: 2 * r + 8)),
-                           with: .color(MapStyle.brass), lineWidth: 1.5)
+                           with: .color(MapStyle.brass), lineWidth: 1.5 * strokeScale)
             }
             if st.markers.contains(.target) { crosshair(&ctx, at: c, radius: r) }
             if st.markers.contains(.tracked) { pennant(&ctx, at: CGPoint(x: c.x + r * 0.7, y: c.y - r * 0.7)) }
@@ -251,14 +255,14 @@ enum GalaxyMapRenderer {
             p.move(to: CGPoint(x: c.x + dx * (r + 3), y: c.y + dy * (r + 3)))
             p.addLine(to: CGPoint(x: c.x + dx * (r + 8), y: c.y + dy * (r + 8)))
         }
-        ctx.stroke(p, with: .color(MapStyle.target), lineWidth: 1.5)
+        ctx.stroke(p, with: .color(MapStyle.target), lineWidth: 1.5 * strokeScale)
     }
 
     private static func pennant(_ ctx: inout GraphicsContext, at base: CGPoint) {
         var pole = Path()
         pole.move(to: base)
         pole.addLine(to: CGPoint(x: base.x, y: base.y - 10))
-        ctx.stroke(pole, with: .color(MapStyle.tracked), lineWidth: 1.2)
+        ctx.stroke(pole, with: .color(MapStyle.tracked), lineWidth: 1.2 * strokeScale)
         var flag = Path()
         flag.move(to: CGPoint(x: base.x, y: base.y - 10))
         flag.addLine(to: CGPoint(x: base.x + 7, y: base.y - 7.5))
@@ -286,7 +290,7 @@ enum GalaxyMapRenderer {
         let r = emphasised ? 7.0 : 6.0
         let rect = CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)
         ctx.fill(Path(ellipseIn: rect), with: .color(MapStyle.route))
-        if emphasised { ctx.stroke(Path(ellipseIn: rect.insetBy(dx: -1.5, dy: -1.5)), with: .color(.white), lineWidth: 1) }
+        if emphasised { ctx.stroke(Path(ellipseIn: rect.insetBy(dx: -1.5, dy: -1.5)), with: .color(.white), lineWidth: 1 * strokeScale) }
         ctx.draw(Text(verbatim: "\(number)").font(.system(size: 8, weight: .bold)).foregroundStyle(.black), at: c)
     }
 
@@ -306,7 +310,7 @@ enum GalaxyMapRenderer {
     static func drawHighlight(_ ctx: inout GraphicsContext, center c: CGPoint, radius r: Double, pulse: Double, name: String?) {
         let rr = r + 6 + 6 * pulse
         ctx.stroke(Path(ellipseIn: CGRect(x: c.x - rr, y: c.y - rr, width: 2 * rr, height: 2 * rr)),
-                   with: .color(MapStyle.highlight.opacity(0.9 - 0.4 * pulse)), lineWidth: 2)
+                   with: .color(MapStyle.highlight.opacity(0.9 - 0.4 * pulse)), lineWidth: 2 * strokeScale)
         if let name {
             ctx.draw(Text(verbatim: name).font(.system(size: 10, weight: .semibold)).foregroundStyle(MapStyle.label),
                      at: CGPoint(x: c.x + r + 4, y: c.y - MapLabelPolicy.nameHeight / 2), anchor: .topLeading)

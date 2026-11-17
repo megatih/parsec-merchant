@@ -79,6 +79,7 @@ extension GameSession {
             currentSlotID = slot
             lastManualSaveDays = state.commander.days
             appendNote(.gameSaved)
+            announce(AnnouncementText.saved)  // A11Y-012
         } catch {
             present(.systemAlert(.saveFailed(reason: SlotText.saveFailure(error))))
         }

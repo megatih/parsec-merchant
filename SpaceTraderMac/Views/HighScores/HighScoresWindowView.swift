@@ -83,31 +83,31 @@ struct HighScoreRowView: View {
             Text(verbatim: "\(row.rank).")
                 .monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
             if let e = row.entry {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack {
                         Text(verbatim: e.name).bold()
                         if e.ironman {
                             Label("Ironman", systemImage: "shield.lefthalf.filled")
-                                .font(.caption.bold())
+                                .scaledFont(.caption, weight: .bold)
                                 .accessibilityIdentifier(AXID.Scores.rowIronman(row.rank))
                         }
                         if e.reloaded {
                             Label("↺ reloaded", systemImage: "arrow.counterclockwise")
                                 .labelStyle(.titleOnly)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .scaledFont(.caption)
+                                .foregroundStyle(.readableSecondary)
                         }
                         Spacer()
                         Text(verbatim: e.scoreText).monospacedDigit().bold()
                     }
                     Text(verbatim: e.line)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .scaledFont(.callout)
+                        .foregroundStyle(.readableSecondary)
                 }
             } else {
-                Text("Empty").foregroundStyle(.tertiary)
+                Text("Empty").foregroundStyle(.readableSecondary)
                 Spacer()
             }
         }

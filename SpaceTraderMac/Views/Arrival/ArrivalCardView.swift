@@ -7,16 +7,17 @@ struct ArrivalCardView: View {
     @Environment(GameSession.self) private var session
     let report: ArrivalReport
     @State private var expanded = false
+    @Environment(\.accessibilityPreferences) private var a11yPrefs
 
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .firstTextBaseline) {
                     Button {
-                        withAnimation(.snappy) { expanded.toggle() }
+                        withAnimation(MotionPolicy.animation(for: .cardTransition, prefs: a11yPrefs)) { expanded.toggle() }
                     } label: {
                         Label {
-                            Text(verbatim: report.summary).font(.headline)
+                            Text(verbatim: report.summary).scaledFont(.headline)
                         } icon: {
                             Image(systemName: expanded ? "chevron.down" : "chevron.right")
                         }
@@ -55,11 +56,11 @@ struct ArrivalSectionsView: View {
                 } icon: {
                     Image(systemName: "exclamationmark.triangle")
                 }
-                .font(.callout.bold())
+                .scaledFont(.callout, weight: .bold)
             }
             ForEach(report.sections, id: \.title) { section in
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: section.title).font(.subheadline.bold()).foregroundStyle(.secondary)
+                    Text(verbatim: section.title).scaledFont(.subheadline, weight: .bold).foregroundStyle(.readableSecondary)
                     switch section.kind {
                     case .encounters? where !report.encounters.isEmpty:
                         ForEach(Array(report.encounters.enumerated()), id: \.offset) { index, encounter in
@@ -85,15 +86,16 @@ private struct EncounterSummaryRow: View {
     let encounter: EncounterSummary
     let index: Int
     @State private var expanded = false
+    @Environment(\.accessibilityPreferences) private var a11yPrefs
 
     var body: some View {
         DisclosureGroup(isExpanded: $expanded) {
             if encounter.log.isEmpty {
-                Text("No combat.").foregroundStyle(.secondary)
+                Text("No combat.").foregroundStyle(.readableSecondary)
             } else {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(Array(encounter.log.enumerated()), id: \.offset) { _, line in
-                        Text(verbatim: line).font(.callout.monospaced())
+                        Text(verbatim: line).scaledFont(.callout, design: .monospaced)
                     }
                 }
                 .textSelection(.enabled)
@@ -115,7 +117,7 @@ private struct NewsTeaserRow: View {
             let blocker = NewspaperCardModel.blocker(state: state)
             HStack(alignment: .firstTextBaseline) {
                 Text(verbatim: teaser.text)
-                    .font(teaser.headline == nil ? .body : .system(.body, design: .serif))
+                    .scaledFont(.body, design: teaser.headline == nil ? .default : .serif)
                 Spacer()
                 Button("Read") { session.readNewspaper() }
                     .disabled(blocker != nil || session.isInputLocked)

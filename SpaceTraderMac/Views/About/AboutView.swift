@@ -71,13 +71,14 @@ struct AboutView: View {
                     VStack(alignment: .leading) {
                         ArtAccessibilityReader { a11y in
                             Wordmark(size: 26, increaseContrast: a11y.increaseContrast)
+                                .artAccessibility(.wordmark)
                         }
                         Text("Version \(AboutContent.appVersion) (\(AboutContent.build)) · Engine \(AboutContent.engineVersion)")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.readableSecondary)
                             .monospacedDigit()
                     }
                 }
-                Text(AboutContent.basedOn).font(.headline)
+                Text(AboutContent.basedOn).scaledFont(.headline)
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(AboutContent.credits) { credit in
                         VStack(alignment: .leading, spacing: 2) {
@@ -89,14 +90,14 @@ struct AboutView: View {
                                 Text(verbatim: credit.names).bold()
                                     .accessibilityIdentifier(AXID.About.link(credit.id))
                             }
-                            Text(credit.role).font(.callout).foregroundStyle(.secondary)
+                            Text(credit.role).scaledFont(.callout).foregroundStyle(.readableSecondary)
                         }
                     }
                 }
                 Divider()
                 Text(AboutContent.gplNotice)
-                Text(AboutContent.artworkNote).font(.callout).foregroundStyle(.secondary)
-                Text(AboutContent.trademarkNote).font(.callout).foregroundStyle(.secondary)
+                Text(AboutContent.artworkNote).scaledFont(.callout).foregroundStyle(.readableSecondary)
+                Text(AboutContent.trademarkNote).scaledFont(.callout).foregroundStyle(.readableSecondary)
                 HStack {
                     Button("View License") { showsLicense = true }
                         .accessibilityIdentifier(AXID.About.license)
@@ -125,7 +126,7 @@ struct LicenseSheet: View {
         VStack(alignment: .trailing, spacing: 12) {
             ScrollView {
                 Text(verbatim: AboutContent.licenseText)
-                    .font(.system(.body, design: .monospaced))
+                    .scaledFont(.body, design: .monospaced)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

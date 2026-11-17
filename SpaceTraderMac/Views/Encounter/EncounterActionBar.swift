@@ -9,7 +9,8 @@ struct EncounterActionBar: View {
     let model: EncounterActionBarModel
 
     var body: some View {
-        HStack(spacing: 10) {
+        // A11Y-025: the bar wraps at large Text Sizes instead of clipping.
+        WrappingHStack(spacing: 10, lineSpacing: 8) {
             ForEach(model.buttons, id: \.action) { button in
                 ActionButton(button: button) { session.performEncounterAction(button.action) }
             }
@@ -24,6 +25,8 @@ struct EncounterActionBar: View {
             .toggleStyle(.checkbox)
             .disabled(!model.autoRepeatAvailable)
             .help(Text(verbatim: model.autoRepeatHelp))
+            .accessibilityLabel(Text("Auto-repeat"))  // A11Y-003: no key cap in the label
+            .accessibilityHint(Text(verbatim: model.autoRepeatHelp))  // A11Y-005
             .accessibilityIdentifier(AXID.Encounter.autoRepeat)
         }
         .controlSize(.large)
@@ -53,14 +56,15 @@ private struct ActionButton: View {
                 Text(verbatim: button.label)
                 if let cap = button.keyCap {
                     Text(verbatim: cap)
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
+                        .scaledFont(.caption, design: .monospaced)
+                        .foregroundStyle(.readableSecondary)
                 }
             }
         }
         .disabled(!button.isEnabled)
         .help(Text(verbatim: button.help))
         .accessibilityLabel(Text(verbatim: button.label))
+        .accessibilityHint(button.action == .resolve ? Text(AccessibilityHints.resolve) : Text(verbatim: ""))  // A11Y-005
         .accessibilityIdentifier(AXID.Encounter.action(button.action))
     }
 }

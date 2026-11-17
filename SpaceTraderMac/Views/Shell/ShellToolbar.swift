@@ -20,6 +20,7 @@ struct ShellToolbar: ToolbarContent {
             }
             .disabled(!model.isEnabled)
             .help(model.help)
+            .accessibilityHint(Text(AccessibilityHints.warp(to: session.state.map { Names.system($0.warpSystem, in: $0) } ?? "")))
             .accessibilityIdentifier(AXID.Toolbar.warp)
         }
         .visibilityPriority(.high)
@@ -61,35 +62,30 @@ struct TargetPicker: View {
 
     var body: some View {
         if let state = session.state {
-            let cur = state.commander.currentSystem
-            Menu {
-                ForEach(TargetPickerModel.entries(state: state), id: \.index) { d in
-                    Button {
-                        session.send(.selectTarget(d.index))
-                    } label: {
-                        Text("\(d.name) · \(d.distance) parsecs")
-                    }
-                }
-                if let w = TargetPickerModel.wormhole(state: state) {
-                    Divider()
-                    Button {
-                        session.send(w.command)
-                    } label: {
-                        Text("Wormhole to \(Names.system(w.destination, in: state))")
-                    }
-                }
-                Divider()
-                Button("Find System…") { session.present(.sheet(.findSystem)) }
-            } label: {
-                if state.warpSystem == cur {
-                    Text("Choose Target")
-                } else {
-                    Text("\(Names.system(state.warpSystem, in: state)) · \(state.warpTargetPreview(state.warpSystem).distance) parsecs")
-                }
-            }
-            .disabled(state.phase != .docked || session.isInputLocked)
-            .help(Text("Choose the system to warp to."))
-            .accessibilityIdentifier(AXID.Toolbar.target)
+            // A11Y-029: an AppKit pull-down (SwiftUI's Menu has no press action for VoiceOver on macOS 27).
+            PopUpMenuButton(title: title(state), items: items(state), accessibilityLabel: String(localized: "Target"),
+                            identifier: AXID.Toolbar.target, help: String(localized: "Choose the system to warp to."),
+                            isEnabled: state.phase == .docked && !session.isInputLocked)
         }
+    }
+
+    private func title(_ state: GameState) -> String {
+        if state.warpSystem == state.commander.currentSystem { return String(localized: "Choose Target") }
+        return String(localized: "\(Names.system(state.warpSystem, in: state)) · \(state.warpTargetPreview(state.warpSystem).distance) parsecs")
+    }
+
+    private func items(_ state: GameState) -> [PopUpMenuButton.Item] {
+        var items = TargetPickerModel.entries(state: state).map { d in
+            PopUpMenuButton.Item(title: String(localized: "\(d.name) · \(d.distance) parsecs")) { session.send(.selectTarget(d.index)) }
+        }
+        if let w = TargetPickerModel.wormhole(state: state) {
+            items.append(.separator)
+            items.append(PopUpMenuButton.Item(title: String(localized: "Wormhole to \(Names.system(w.destination, in: state))")) {
+                session.send(w.command)
+            })
+        }
+        items.append(.separator)
+        items.append(PopUpMenuButton.Item(title: String(localized: "Find System…")) { session.present(.sheet(.findSystem)) })
+        return items
     }
 }

@@ -39,12 +39,12 @@ struct ShipPurchaseSheet: View {
         VStack(alignment: .leading, spacing: 4) {
             switch request {
             case let .ship(t):
-                Text("Buy a \(String(localized: Names.ship(t)))?").font(.title2.bold())
+                Text("Buy a \(String(localized: Names.ship(t)))?").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             case let .design(d):
-                Text("Build “\(d.name)”?").font(.title2.bold())
+                Text("Build “\(d.name)”?").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             }
             Text("\(String(localized: Names.size(model.newSpec.size))) · \(model.newSpec.cargoBays) bays · \(model.newSpec.hullStrength) hull")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
         }
     }
 
@@ -71,7 +71,7 @@ struct ShipPurchaseSheet: View {
                             if row.affordable {
                                 credits(row.price)
                             } else {
-                                Text("Can't afford").foregroundStyle(.secondary)
+                                Text("Can't afford").foregroundStyle(.readableSecondary)
                             }
                         }
                     }
@@ -81,7 +81,7 @@ struct ShipPurchaseSheet: View {
                 }
                 ForEach(model.lost, id: \.self) { item in
                     LabeledContent {
-                        Text("No slot: lost").foregroundStyle(.orange)
+                        Text("No slot: lost").foregroundStyle(.signalOrange)
                     } label: {
                         Text(Names.transfer(item))
                     }
@@ -94,15 +94,15 @@ struct ShipPurchaseSheet: View {
         SwiftUI.Section("What changes") {
             if !model.crewWithoutSeat.isEmpty {
                 let names = model.crewWithoutSeat.map { Names.crew($0, in: state) }.formatted(.list(type: .and))
-                Text("No quarters for: \(names)").foregroundStyle(.orange)
+                Text("No quarters for: \(names)").foregroundStyle(.signalOrange)
             }
             if model.cargoUnits > 0 {
                 Text("Your \(model.cargoUnits) units of cargo stay behind; their cost is part of the trade-in.")
             }
             switch model.insurance {
-            case .notInsured: Text("You have no insurance.").foregroundStyle(.secondary)
+            case .notInsured: Text("You have no insurance.").foregroundStyle(.readableSecondary)
             case .kept: Text("Your insurance stays active.")
-            case .ends: Text("Without an escape pod your insurance ends and the no-claim discount is lost.").foregroundStyle(.orange)
+            case .ends: Text("Without an escape pod your insurance ends and the no-claim discount is lost.").foregroundStyle(.signalOrange)
             }
         }
     }
@@ -110,7 +110,7 @@ struct ShipPurchaseSheet: View {
     private func footer(_ model: ShipPurchaseModel?) -> some View {
         HStack {
             if let blocker = model?.blocker {
-                Text(ReasonText.text(for: blocker)).foregroundStyle(.orange)
+                Text(ReasonText.text(for: blocker)).foregroundStyle(.signalOrange)
             }
             Spacer()
             Button("Cancel", role: .cancel) { session.cancel() }

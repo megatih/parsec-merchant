@@ -11,13 +11,13 @@ struct CheatConsoleSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Cheat Console").font(.title2.bold())
+            Text("Cheat Console").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             Label {
                 Text("Cheats are on. This game is flagged and stays off the high-score table.")
             } icon: {
                 Image(systemName: "exclamationmark.triangle")
             }
-            .foregroundStyle(.orange)
+            .foregroundStyle(.signalOrange)
             .accessibilityIdentifier(AXID.CheatConsole.flaggedNotice)
             if let state = session.state, form != nil {
                 Form {
@@ -133,12 +133,12 @@ struct CheatConsoleSheet: View {
                 if let state = session.state {
                     ForEach(items) { item in
                         if let event = item.event, event != .cheatUsed {
-                            Text(EventText.text(for: event, state: state)).font(.callout)
+                            Text(EventText.text(for: event, state: state)).scaledFont(.callout)
                         }
                     }
                 }
                 if let reason = session.lastRejection {
-                    Text(verbatim: ReasonText.string(for: reason)).font(.callout).foregroundStyle(.red)
+                    Text(verbatim: ReasonText.string(for: reason)).scaledFont(.callout).foregroundStyle(.signalRed)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

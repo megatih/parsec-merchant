@@ -28,18 +28,18 @@ struct StatisticsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Text(verbatim: m.sinceText).font(.headline)
+                    Text(verbatim: m.sinceText).scaledFont(.headline)
                     Spacer()
                     if let notice = m.cheatNotice {
                         Label { Text(verbatim: notice) } icon: { Image(systemName: "exclamationmark.triangle") }
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(.signalOrange)
                     }
                 }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 10)], spacing: 10) {
+                AccessibleLazyVGrid(label: "Figures", columns: [GridItem(.adaptive(minimum: 170), spacing: 10)], spacing: 10) {
                     ForEach(m.tiles) { tile in
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(verbatim: tile.label).font(.caption).foregroundStyle(.secondary)
-                            Text(verbatim: tile.value).font(.title3.weight(.semibold)).monospacedDigit()
+                            Text(verbatim: tile.label).scaledFont(.caption).foregroundStyle(.readableSecondary)
+                            Text(verbatim: tile.value).scaledFont(.title3, weight: .semibold).monospacedDigit()
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(10)
@@ -56,9 +56,9 @@ struct StatisticsView: View {
                 chartBox("Profit by commodity", id: AXID.Logbook.profitChart, empty: m.profitBars.isEmpty) {
                     Chart(m.profitBars) { bar in
                         BarMark(x: .value("Profit", bar.value), y: .value("Commodity", bar.label))
-                            .foregroundStyle(bar.value >= 0 ? Color.green : Color.red)
+                            .foregroundStyle(bar.value >= 0 ? Color.signalGreen : Color.signalRed)
                             .annotation(position: bar.value >= 0 ? .trailing : .leading) {
-                                Text(verbatim: "\(bar.signText)\(abs(bar.value).formatted())").font(.caption2)
+                                Text(verbatim: "\(bar.signText)\(abs(bar.value).formatted())").scaledFont(.caption2)
                             }
                     }
                 }
@@ -75,9 +75,9 @@ struct StatisticsView: View {
     private func chartBox(_ title: LocalizedStringResource, id: String, empty: Bool,
                           @ViewBuilder chart: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.headline)
+            Text(title).scaledFont(.headline)
             if empty {
-                Text("No data yet").foregroundStyle(.secondary).frame(maxWidth: .infinity, minHeight: 80)
+                Text("No data yet").foregroundStyle(.readableSecondary).frame(maxWidth: .infinity, minHeight: 80)
             } else {
                 chart().frame(height: 180)
             }

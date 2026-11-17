@@ -32,7 +32,7 @@ struct BankSectionView: View {
         Label {
             Text("Your debt is very high. At \(BankModel.debtLimit.formatted()) cr. you can no longer trade or travel.")
         } icon: {
-            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.signalRed)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -49,7 +49,7 @@ struct BankSectionView: View {
                 LabeledContent("Debt") { Text("\(m.preview.debt.formatted()) cr.").monospacedDigit() }
                 LabeledContent("Maximum loan") { Text(m.loanReason.text) }
                 Text("Each warp costs 10% interest: \(m.interestPerWarp.formatted()) cr.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
                 Divider()
                 AmountRow(title: "Borrow", amount: $borrowAmount, limit: m.preview.availableToBorrow, blocker: m.borrowBlocker,
                           fieldID: AXID.Bank.borrowAmount, sliderID: AXID.Bank.borrowSlider, submitID: AXID.Bank.borrowSubmit) {
@@ -71,7 +71,7 @@ struct BankSectionView: View {
             }
             .padding(4)
         } label: {
-            Text("Loan").font(.headline)
+            Text("Loan").scaledFont(.headline)
         }
     }
 
@@ -93,6 +93,10 @@ struct BankSectionView: View {
                     HStack {
                         Gauge(value: m.noClaimFraction) { EmptyView() }
                             .gaugeStyle(.accessoryLinearCapacity)
+                            .accessibilityRepresentation {
+                                ProgressView(value: m.noClaimFraction) { Text("No-claim discount") }
+                                    .accessibilityValue(Text(verbatim: AccessibilityText.percent(m.preview.noClaim)))
+                            }
                             .frame(width: 140)
                         if m.preview.noClaimAtMaximum {
                             Text("\(m.preview.noClaim)% (max)").monospacedDigit()
@@ -116,7 +120,7 @@ struct BankSectionView: View {
                             .accessibilityIdentifier(AXID.Bank.insuranceStop)
                     } else {
                         if let blocker = m.buyInsuranceBlocker {
-                            Text(ReasonText.text(for: blocker)).foregroundStyle(.secondary)
+                            Text(ReasonText.text(for: blocker)).foregroundStyle(.readableSecondary)
                         }
                         if !m.hasEscapePod {
                             Button("Buy an escape pod at the Shipyard") { session.selectedSection = .shipyard }
@@ -134,7 +138,7 @@ struct BankSectionView: View {
             }
             .padding(4)
         } label: {
-            Text("Insurance").font(.headline)
+            Text("Insurance").scaledFont(.headline)
         }
     }
 
@@ -151,7 +155,7 @@ struct BankSectionView: View {
             }
             .padding(4)
         } label: {
-            Text("Costs of the Next Warp").font(.headline)
+            Text("Costs of the Next Warp").scaledFont(.headline)
         }
         .help(Text("What the next warp to your target will cost."))
     }
@@ -173,6 +177,7 @@ private struct AmountRow: View {
             HStack {
                 Slider(value: sliderValue, in: 0...Double(max(1, limit)), step: 1) { Text(title) }
                     .disabled(blocker != nil || limit == 0)
+                    .accessibilityLabel(Text(title))  // A11Y-003
                     .accessibilityIdentifier(sliderID)
                 TextField(value: fieldValue, format: .number) { Text(title) }
                     .labelsHidden()
@@ -180,6 +185,7 @@ private struct AmountRow: View {
                     .multilineTextAlignment(.trailing)
                     .monospacedDigit()
                     .disabled(blocker != nil || limit == 0)
+                    .accessibilityLabel(Text("\(String(localized: title)) amount in credits"))  // A11Y-003
                     .accessibilityIdentifier(fieldID)
                     .onSubmit(submit)
                 Button { submit() } label: { Text(title) }
@@ -188,7 +194,7 @@ private struct AmountRow: View {
             }
             .help(blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Up to \(limit.formatted()) cr."))
             if let blocker {
-                Text(ReasonText.text(for: blocker)).font(.caption).foregroundStyle(.secondary)
+                Text(ReasonText.text(for: blocker)).scaledFont(.caption).foregroundStyle(.readableSecondary)
             }
         }
         .onChange(of: limit) { _, new in amount = BankModel.clamp(amount, to: new) }

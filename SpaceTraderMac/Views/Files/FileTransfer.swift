@@ -56,8 +56,11 @@ struct FileTransferHost: ViewModifier {
                 Color.clear
                     .fileExporter(isPresented: exportBinding, document: pendingExport?.document, contentType: .parsecSave,
                                   defaultFilename: pendingExport?.defaultName) { result in
-                        if case let .failure(error) = result {
+                        switch result {
+                        case let .failure(error):
                             session.present(.systemAlert(.saveFailed(reason: SlotText.saveFailure(error))))
+                        case .success:
+                            session.announce(AnnouncementText.exported)  // A11Y-012
                         }
                         pendingExport = nil
                     }

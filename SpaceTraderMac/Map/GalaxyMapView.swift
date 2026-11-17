@@ -8,9 +8,12 @@ import SwiftUI
 /// The one galaxy map component (MAP Conventions): the Galaxy section, the Galaxy Chart window and the Bridge mini chart.
 struct GalaxyMapView: View {
     @Environment(GameSession.self) private var session
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.accessibilityPreferences) private var a11yPrefs
+    private var reduceMotion: Bool { a11yPrefs.reduceMotion }
+    /// A11Y-016: viewport changes are instant when MotionPolicy gives the map viewport no animation.
+    private var viewportJumps: Bool { MotionPolicy.spec(for: .mapViewport, prefs: a11yPrefs) == .none }
+    private var differentiateWithoutColor: Bool { a11yPrefs.differentiateWithoutColor }
+    private var reduceTransparency: Bool { a11yPrefs.reduceTransparency }
     @Environment(\.appearsActive) private var appearsActive
     @State private var ui: MapViewModel
     @FocusState private var canvasFocused: Bool
@@ -74,7 +77,8 @@ struct GalaxyMapView: View {
     // MARK: Canvas
 
     private func mapCanvas(_ snapshot: MapSnapshot, projected: ProjectedMap) -> some View {
-        var options = MapRenderOptions(style: MapStyle(differentiateWithoutColor: differentiateWithoutColor),
+        var options = MapRenderOptions(style: MapStyle(strokeScale: ContrastStyle.make(prefs: a11yPrefs).mapStrokeScale,
+                                                                 differentiateWithoutColor: differentiateWithoutColor),
                                        dimmed: SystemSearch.dimmed(filters: ui.filters, snapshot: snapshot, sells: session.sellsMatches(ui.sellsItem)),
                                        miniChart: scope == .miniChart)
         options.heatmap = scope.hasHUD ? session.heatmap(ui.heatmapChoice.mode(item: ui.heatmapItem)) : nil
@@ -110,7 +114,7 @@ struct GalaxyMapView: View {
             let c = projected.centers[focus]
             if !CGRect(origin: .zero, size: ui.viewSize).contains(c) {
                 ui.animateViewport(to: ui.viewport(session: session, snapshot: snapshot).centered(on: focus, snapshot: snapshot),
-                                   session: session, snapshot: snapshot, reduceMotion: reduceMotion)
+                                   session: session, snapshot: snapshot, reduceMotion: viewportJumps)
             }
         }
     }
@@ -289,18 +293,18 @@ struct GalaxyMapView: View {
         }
         let v = ui.viewport(session: session, snapshot: snapshot)
         ui.animateViewport(to: v.pannedByArrow(dx: dx, dy: dy, viewSize: ui.viewSize, bounds: MapBounds(snapshot)), session: session,
-                           snapshot: snapshot, reduceMotion: reduceMotion)
+                           snapshot: snapshot, reduceMotion: viewportJumps)
         return .handled
     }
 
     func zoom(_ factor: Double, snapshot: MapSnapshot) {
         let v = ui.viewport(session: session, snapshot: snapshot)
         ui.animateViewport(to: v.zoomed(by: factor, viewSize: ui.viewSize, bounds: MapBounds(snapshot)), session: session,
-                           snapshot: snapshot, reduceMotion: reduceMotion)
+                           snapshot: snapshot, reduceMotion: viewportJumps)
     }
 
     func fitGalaxy(_ snapshot: MapSnapshot) {
-        ui.animateViewport(to: .fitGalaxy(MapBounds(snapshot)), session: session, snapshot: snapshot, reduceMotion: reduceMotion)
+        ui.animateViewport(to: .fitGalaxy(MapBounds(snapshot)), session: session, snapshot: snapshot, reduceMotion: viewportJumps)
     }
 
     private func mapControl(_ snapshot: MapSnapshot) -> MapControl {
@@ -355,7 +359,7 @@ struct GalaxyMapView: View {
         guard let request, request.scope == scope, scope.hasHUD else { return }
         let v = ui.viewport(session: session, snapshot: snapshot)
         ui.animateViewport(to: v.centered(on: request.system, snapshot: snapshot), session: session, snapshot: snapshot,
-                           reduceMotion: reduceMotion)
+                           reduceMotion: viewportJumps)
         if request.pulse { ui.pulse(request.system) }
     }
 
@@ -426,7 +430,7 @@ struct GalaxyMapView: View {
                 MapSearchView(ui: ui, snapshot: snapshot, ids: ids, searchFocused: $searchFocused, center: { i in
                     let v = ui.viewport(session: session, snapshot: snapshot)
                     ui.animateViewport(to: v.centered(on: i, snapshot: snapshot), session: session, snapshot: snapshot,
-                                       reduceMotion: reduceMotion)
+                                       reduceMotion: viewportJumps)
                 }, send: sendFromMap)
                 Spacer()
                 HStack(alignment: .bottom) {
@@ -445,7 +449,7 @@ struct GalaxyMapView: View {
                                zoomOut: { zoom(1 / MapViewport.zoomStep, snapshot: snapshot) },
                                fitRange: {
                                    ui.animateViewport(to: .fitRange(snapshot: snapshot, viewSize: ui.viewSize), session: session,
-                                                      snapshot: snapshot, reduceMotion: reduceMotion)
+                                                      snapshot: snapshot, reduceMotion: viewportJumps)
                                },
                                fitGalaxy: { fitGalaxy(snapshot) })
                 }

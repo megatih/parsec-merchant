@@ -51,10 +51,10 @@ struct NewGameWizard: View {
         HStack(spacing: 6) {
             ForEach(NewGameDraft.Step.allCases, id: \.self) { s in
                 Text(s.title)
-                    .font(.caption.weight(s == step ? .bold : .regular))
+                    .scaledFont(.caption, weight: s == step ? .bold : .regular)
                     .foregroundStyle(s == step ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                 if s != .summary {
-                    Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary).accessibilityHidden(true)
+                    Image(systemName: "chevron.right").scaledFont(.caption2).foregroundStyle(.readableSecondary).accessibilityHidden(true)
                 }
             }
         }
@@ -71,10 +71,10 @@ struct NewGameWizard: View {
                 .accessibilityIdentifier(AXID.NewGame.cancel)
             Spacer()
             if let reason = availability.reason {
-                Text(reason).font(.callout).foregroundStyle(.secondary)
+                Text(reason).scaledFont(.callout).foregroundStyle(.readableSecondary)
             }
             if let startError {
-                Text(ReasonText.text(for: startError)).font(.callout).foregroundStyle(.red)
+                Text(ReasonText.text(for: startError)).scaledFont(.callout).foregroundStyle(.signalRed)
             }
             Button("Back") { if let prev = NewGameDraft.Step(rawValue: step.rawValue - 1) { step = prev } }
                 .disabled(step == .commander)
@@ -120,7 +120,7 @@ struct NewGameWizard: View {
 
     private func commanderPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("What's your name, Commander?").font(.title2.bold())
+            Text("What's your name, Commander?").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             TextField("Commander name", text: Binding { d.commanderName } set: { v in update { $0.commanderName = v } })
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 320)
@@ -130,7 +130,7 @@ struct NewGameWizard: View {
 
     private func difficultyPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Choose a difficulty").font(.title2.bold())
+            Text("Choose a difficulty").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             ForEach(Difficulty.allCases, id: \.self) { level in
                 choiceRow(selected: d.difficulty == level, title: Names.difficulty(level),
                           detail: WizardText.difficultyDescription(level)) {
@@ -143,7 +143,7 @@ struct NewGameWizard: View {
 
     private func rulesetPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Choose the rules").font(.title2.bold())
+            Text("Choose the rules").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             ForEach(RulesetID.allCases, id: \.self) { r in
                 VStack(alignment: .leading, spacing: 4) {
                     choiceRow(selected: d.ruleset == r, title: Names.ruleset(r), detail: WizardText.rulesetTagline(r)) {
@@ -152,24 +152,24 @@ struct NewGameWizard: View {
                     .accessibilityIdentifier(AXID.NewGame.ruleset(r))
                     ForEach(WizardText.rulesetBullets(r).indices, id: \.self) { i in
                         Label { Text(WizardText.rulesetBullets(r)[i]) } icon: { Image(systemName: "circle.fill").font(.system(size: 4)) }
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
+                            .scaledFont(.callout)
+                            .foregroundStyle(.readableSecondary)
                             .padding(.leading, 28)
                     }
                 }
             }
-            Text("The rules can't be changed once the game has started.").font(.callout).foregroundStyle(.secondary)
+            Text("The rules can't be changed once the game has started.").scaledFont(.callout).foregroundStyle(.readableSecondary)
         }
     }
 
     private func skillsPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Distribute your skill points").font(.title2.bold())
+            Text("Distribute your skill points").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             ForEach(SkillType.allCases, id: \.self) { skill in
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(Names.skill(skill)).font(.headline)
-                        Text(WizardText.skillDescription(skill)).font(.callout).foregroundStyle(.secondary)
+                        Text(Names.skill(skill)).scaledFont(.headline)
+                        Text(WizardText.skillDescription(skill)).scaledFont(.callout).foregroundStyle(.readableSecondary)
                     }
                     Spacer()
                     Button { update { $0.decrement(skill) } } label: { Image(systemName: "minus") }
@@ -199,7 +199,7 @@ struct NewGameWizard: View {
 
     private func galaxyPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Galaxy and extras").font(.title2.bold())
+            Text("Galaxy and extras").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             LabeledContent("Galaxy code") {
                 TextField("Galaxy code", text: Binding { d.galaxyCodeText } set: { v in
                     update { $0.setGalaxyCodeText(v) }
@@ -209,7 +209,7 @@ struct NewGameWizard: View {
                 .accessibilityIdentifier(AXID.NewGame.galaxyCode)
             }
             if d.galaxyCodeInvalid {
-                Text("Not a valid galaxy code.").font(.callout).foregroundStyle(.red)
+                Text("Not a valid galaxy code.").scaledFont(.callout).foregroundStyle(.signalRed)
             }
             LabeledContent("Seed") {
                 HStack {
@@ -232,7 +232,7 @@ struct NewGameWizard: View {
             Toggle(isOn: Binding { d.ironman } set: { v in update { $0.ironman = v } }) {
                 VStack(alignment: .leading) {
                     Text("Ironman")
-                    Text("One save, no reloading; your score gets an Ironman badge.").font(.callout).foregroundStyle(.secondary)
+                    Text("One save, no reloading; your score gets an Ironman badge.").scaledFont(.callout).foregroundStyle(.readableSecondary)
                 }
             }
             .accessibilityIdentifier(AXID.NewGame.ironman)
@@ -251,7 +251,7 @@ struct NewGameWizard: View {
 
     private func summaryPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Ready to launch").font(.title2.bold())
+            Text("Ready to launch").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             LabeledContent("Commander") { Text(verbatim: d.commanderName) }
             LabeledContent("Difficulty") { Text(Names.difficulty(d.difficulty)) }
             LabeledContent("Rules") { Text(Names.ruleset(d.ruleset)) }
@@ -264,7 +264,7 @@ struct NewGameWizard: View {
             LabeledContent("Ship name") { Text(verbatim: d.trimmedShipName ?? "—") }
             LabeledContent("Options") { Text(d.options == nil ? "Standard options" : "Your saved defaults") }
             if let failing = d.firstFailingStep {
-                Text("Check the \(String(localized: failing.title)) step.").foregroundStyle(.red)
+                Text("Check the \(String(localized: failing.title)) step.").foregroundStyle(.signalRed)
             }
         }
     }
@@ -276,8 +276,8 @@ struct NewGameWizard: View {
                 Image(systemName: selected ? "largecircle.fill.circle" : "circle")
                     .foregroundStyle(selected ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.headline)
-                    Text(detail).font(.callout).foregroundStyle(.secondary)
+                    Text(title).scaledFont(.headline)
+                    Text(detail).scaledFont(.callout).foregroundStyle(.readableSecondary)
                 }
             }
             .contentShape(Rectangle())

@@ -15,7 +15,7 @@ struct FeedOverlay: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Recent Events").font(.headline)
+                Text("Recent Events").scaledFont(.headline)
                 Spacer()
                 Button("Show Logbook") {
                     dismiss()
@@ -30,11 +30,11 @@ struct FeedOverlay: View {
             .padding(10)
             Divider()
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 6) {
+                AccessibleLazyVStack(label: "Recent Events") {
                     ForEach(groups) { group in
                         Text("Day \(group.day) · \(Names.system(group.systemIndex, in: state))")
-                            .font(.caption.bold())
-                            .foregroundStyle(.secondary)
+                            .scaledFont(.caption, weight: .bold)
+                            .foregroundStyle(.readableSecondary)
                             .padding(.top, 4)
                             .accessibilityAddTraits(.isHeader)
                             .accessibilityIdentifier(AXID.Feed.group(day: group.day, systemIndex: group.systemIndex))
@@ -52,7 +52,7 @@ struct FeedOverlay: View {
             }
         }
         .frame(width: 480, height: 320)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .overlayBackground(cornerRadius: 10)  // A11Y-019
         .shadow(radius: 8)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Status.feedList)
@@ -68,12 +68,12 @@ struct FeedRow: View {
         let style = FeedStyle.classify(entry)
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             Image(systemName: style.symbol)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
                 .frame(width: 16)
                 .accessibilityHidden(true)
             if let badge = style.severity.badgeSymbol {
                 Image(systemName: badge)
-                    .foregroundStyle(style.severity == .critical ? .red : .orange)
+                    .foregroundStyle(style.severity == .critical ? .signalRed : .signalOrange)
                     .accessibilityLabel(style.severity == .critical ? Text("Critical") : Text("Warning"))
             }
             Text(verbatim: FeedText.text(for: entry, state: state))
@@ -97,7 +97,7 @@ private struct RoundsRow: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(.secondary).frame(width: 16)
+                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(.readableSecondary).frame(width: 16)
                 if let opponent {
                     Text("\(items.count) rounds against the \(String(localized: Names.ship(opponent)))")
                 } else {

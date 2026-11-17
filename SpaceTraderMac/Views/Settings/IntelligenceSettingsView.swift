@@ -14,7 +14,7 @@ struct IntelligenceSettingsView: View {
         let model = FlavorSettingsModel.make(launch: session.launchOptions, availability: availability)
         Form {
             SwiftUI.Section {
-                Toggle(isOn: $showRecommendations) { Text("Show trade recommendations") }
+                Toggle(isOn: $showRecommendations) { Text("Show trade recommendations") }.accessibilityLabel(Text("Show trade recommendations"))
                     .help(Text("Show the best buys and destinations above the Market table."))
                     .accessibilityIdentifier(AXID.IntelSettings.recommendations)
             } header: {
@@ -22,19 +22,20 @@ struct IntelligenceSettingsView: View {
             }
             SwiftUI.Section {
                 Toggle(isOn: $useFoundationModels) { Text("Write log entries with Apple Intelligence") }
+                    .accessibilityLabel(Text("Write log entries with Apple Intelligence"))
                     .disabled(!model.toggleEnabled)
                     .accessibilityIdentifier(AXID.IntelSettings.foundationModels)
                 Text(verbatim: model.status)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .scaledFont(.caption)
+                    .foregroundStyle(.readableSecondary)
                     .accessibilityIdentifier(AXID.IntelSettings.flavorStatus)
-                Toggle(isOn: $showFlavor) { Text("Show flavor text in the Captain's Log") }
+                Toggle(isOn: $showFlavor) { Text("Show flavor text in the Captain's Log") }.accessibilityLabel(Text("Show flavor text in the Captain's Log"))
                     .accessibilityIdentifier(AXID.IntelSettings.showFlavor)
             } header: {
                 Text("Captain's Log")
             } footer: {
                 Text("Apple Intelligence runs on this Mac only. Flavor text never changes the game.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
             }
         }
         .formStyle(.grouped)

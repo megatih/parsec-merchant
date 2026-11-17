@@ -69,7 +69,8 @@ struct ShipPaneModel: Equatable, Sendable {
         let title = name.map { String(localized: "You: \(type) “\($0)”") } ?? String(localized: "You: \(type)")
         let hull = EncounterBarModel(kind: .hull, percent: preview.playerHullPercent)
         let shields = EncounterBarModel(kind: .shields, percent: ship.shields.isEmpty ? nil : preview.playerShieldPercent)
-        let label = String(localized: "Your \(type), hull \(hull.value), shields \(shields.value)")
+        // A11Y-009: the portrait label comes from its ArtSurface.
+        let label = ArtSurface.playerPortrait(ship: type, hull: hull.percent ?? 0, shields: shields.percent).label ?? ""
         return ShipPaneModel(title: title, shipType: ship.type, size: ship.spec(state.ruleset).size, facing: .right, hull: hull,
                              shields: shields, isDisabled: false, accessibilityLabel: label,
                              art: ArtAdapters.shipInput(ship, ruleset: state.ruleset, facing: .right, cloaked: cloaked))
@@ -81,7 +82,7 @@ struct ShipPaneModel: Equatable, Sendable {
         let hull = EncounterBarModel(kind: .hull, percent: preview.opponentHullPercent)
         let shields = EncounterBarModel(kind: .shields, percent: enc.opponent.shields.isEmpty ? nil : preview.opponentShieldPercent)
         let word = EncounterBadgeModel(badge: preview.badge).word
-        var label = String(localized: "\(word) \(type), hull \(hull.value), shields \(shields.value)")
+        var label = ArtSurface.opponentPortrait(kind: word, ship: type, hull: hull.percent ?? 0, shields: shields.percent).label ?? ""
         if enc.opponentDisabled { label += String(localized: ", disabled") }
         return ShipPaneModel(title: String(localized: "Opponent: \(type)"), shipType: enc.opponent.type,
                              size: enc.opponent.spec(state.ruleset).size, facing: .left, hull: hull, shields: shields,

@@ -9,16 +9,16 @@ struct HoverCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(verbatim: model.title).font(.headline)
+            Text(verbatim: model.title).scaledFont(.headline)
             ForEach(Array(model.rows.enumerated()), id: \.offset) { _, row in
-                Text(verbatim: row).font(.caption).foregroundStyle(.secondary)
+                Text(verbatim: row).scaledFont(.caption).foregroundStyle(.readableSecondary)
             }
             if !model.tags.isEmpty {
-                Text(verbatim: model.tags.joined(separator: " · ")).font(.caption.bold()).foregroundStyle(.orange)
+                Text(verbatim: model.tags.joined(separator: " · ")).scaledFont(.caption, weight: .bold).foregroundStyle(.signalOrange)
             }
         }
         .padding(10)
-        .background(.regularMaterial, in: .rect(cornerRadius: 10))
+        .overlayBackground(cornerRadius: 10)  // A11Y-019
         .shadow(radius: 4)
     }
 }
@@ -73,17 +73,21 @@ struct MapLegendView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             ForEach(Array(Symbol.allCases.enumerated()), id: \.offset) { _, symbol in
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {  // room between a swatch and its text (A11Y-029 contrast sampling)
                     Canvas { ctx, size in draw(symbol, in: &ctx, center: CGPoint(x: size.width / 2, y: size.height / 2)) }
                         .frame(width: 26, height: 18)
                         .background(MapStyle.spaceBottom, in: .rect(cornerRadius: 3))
-                    Text(title(symbol)).font(.caption)
+                        .accessibilityHidden(true)
+                    Text(title(symbol)).scaledFont(.caption)
                 }
             }
         }
         .padding(10)
-        .background(.regularMaterial, in: .rect(cornerRadius: 10))
-        .accessibilityElement(children: .combine)
+        .overlayBackground(cornerRadius: 10)  // A11Y-019
+        // A11Y-029: a labelled container; each meaning is its own text (a combined element would be measured over the
+        // dark symbol swatches).
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("Legend"))
         .accessibilityIdentifier(ids.legend)
     }
 
@@ -179,16 +183,16 @@ struct TargetStripView: View {
                         Text("No target selected")
                     }
                 }
-                .font(.callout.bold())
+                .scaledFont(.callout, weight: .bold)
                 .accessibilityIdentifier(ids.target)
                 if let state = session.state, snapshot.hasTarget, state.warpTargetPreview(snapshot.warpSystem).viaWormhole {
                     Text("Wormhole to \(snapshot.systems[snapshot.warpSystem].name)")
-                        .font(.caption)
+                        .scaledFont(.caption)
                         .accessibilityIdentifier(ids.wormholeLabel)
                 }
                 if snapshot.showTrackedRange, let t = snapshot.trackedSystem, t != snapshot.currentSystem {
                     Text("\(MapText.parsecs(snapshot.systems[t].distance)) to \(snapshot.systems[t].name).")
-                        .font(.caption)
+                        .scaledFont(.caption)
                         .accessibilityIdentifier(ids.trackedRange)
                 }
             }
@@ -225,7 +229,7 @@ struct RoutePanelView: View {
     var body: some View {
         if let pr = session.plannedRoute {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Route to \(snapshot.systems[pr.destination].name)").font(.headline)
+                Text("Route to \(snapshot.systems[pr.destination].name)").scaledFont(.headline)
                 HStack(spacing: 4) {
                     ForEach(RouteObjective.allCases, id: \.self) { objective in
                         Button {
@@ -249,13 +253,13 @@ struct RoutePanelView: View {
                     }
                     Divider()
                     Text("\(route.totalJumps) jumps · \(route.totalParsecs) parsecs · \(route.estimatedCredits) cr. (Estimate)")
-                        .font(.caption)
+                        .scaledFont(.caption)
                 } else if pr.isPlanning {
                     ProgressView().controlSize(.small)
                 } else {
                     Text("\(snapshot.systems[pr.destination].name) can't be reached with a full tank (\(snapshot.fuelCapacity) parsecs per jump).")
-                        .font(.caption)
-                        .foregroundStyle(.red)
+                        .scaledFont(.caption)
+                        .foregroundStyle(.signalRed)
                         .accessibilityIdentifier(ids.routeUnreachable)
                 }
                 Button("Clear") { session.clearRoute() }
@@ -264,7 +268,7 @@ struct RoutePanelView: View {
             }
             .padding(10)
             .frame(width: 300, alignment: .leading)
-            .background(.regularMaterial, in: .rect(cornerRadius: 10))
+            .overlayBackground(cornerRadius: 10)  // A11Y-019
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(ids.routePanel)
         }
@@ -272,15 +276,15 @@ struct RoutePanelView: View {
 
     private func hopRow(_ n: Int, _ hop: RouteHop) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(verbatim: "\(n). \(snapshot.systems[hop.from].name) → \(snapshot.systems[hop.to].name)").font(.caption.bold())
+            Text(verbatim: "\(n). \(snapshot.systems[hop.from].name) → \(snapshot.systems[hop.to].name)").scaledFont(.caption, weight: .bold)
             HStack {
                 Text(hop.viaWormhole ? String(localized: "Wormhole") : MapText.parsecs(hop.distance))
                 if hop.refuelUnits > 0 { Text("Buy \(hop.refuelUnits) fuel (\(hop.refuelCost) cr.)") }
                 Spacer()
                 Text("\(hop.cost) cr.")
             }
-            .font(.caption2)
-            .foregroundStyle(.secondary)
+            .scaledFont(.caption2)
+            .foregroundStyle(.readableSecondary)
         }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(ids.routeHop(n))
@@ -324,6 +328,7 @@ struct MapSearchView: View {
                 }
                 .onSubmit { submit(suggestions) }
                 .help(Text("Type a system name; Return selects it."))
+                .accessibilityLabel(Text("Search systems"))  // A11Y-003
                 .accessibilityIdentifier(ids.searchField)
             HStack(spacing: 4) {
                 ForEach(SystemSearchFilter.offered(snapshot), id: \.self) { f in
@@ -339,20 +344,22 @@ struct MapSearchView: View {
                     .accessibilityIdentifier(ids.searchFilter(f))
                 }
                 // INT-028: "sells <item>" from intel only (estimates marked in the rows).
-                Menu {
-                    Button("Any commodity") { ui.sellsItem = nil }
-                    ForEach(TradeItemType.allCases, id: \.self) { item in
-                        Button { ui.sellsItem = item; ui.suggestionsShown = true } label: { Text(Names.item(item)) }
-                    }
-                } label: {
-                    if let item = ui.sellsItem { Text("Sells \(Text(Names.item(item)))") } else { Text("Sells…") }
-                }
-                .controlSize(.small)
-                .fixedSize()
-                .accessibilityIdentifier(ids.searchFilterSells)
+                // A11Y-029: an AppKit pull-down (SwiftUI's Menu has no press action for VoiceOver on macOS 27).
+                PopUpMenuButton(title: ui.sellsItem.map { String(localized: "Sells \(String(localized: Names.item($0)))") }
+                                    ?? String(localized: "Sells…"),
+                                items: [PopUpMenuButton.Item(title: String(localized: "Any commodity"), isOn: ui.sellsItem == nil) {
+                                    ui.sellsItem = nil
+                                }] + TradeItemType.allCases.map { item in
+                                    PopUpMenuButton.Item(title: String(localized: Names.item(item)), isOn: ui.sellsItem == item) {
+                                        ui.sellsItem = item
+                                        ui.suggestionsShown = true
+                                    }
+                                },
+                                accessibilityLabel: String(localized: "Sells commodity"), identifier: ids.searchFilterSells,
+                                controlSize: .small)
             }
             if let message = ui.searchMessage {
-                Text(verbatim: message).font(.caption).foregroundStyle(.red)
+                Text(verbatim: message).scaledFont(.caption).foregroundStyle(.signalRed)
             }
             if ui.suggestionsShown, !suggestions.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
@@ -363,11 +370,11 @@ struct MapSearchView: View {
                             HStack {
                                 Text(verbatim: snapshot.systems[i].name)
                                 if let sells, sells.indices.contains(i), sells[i] == .estimate {
-                                    Text("estimate").font(.caption2).foregroundStyle(.secondary)
+                                    Text("estimate").scaledFont(.caption2).foregroundStyle(.readableSecondary)
                                 }
                                 Spacer()
                                 Text(i == snapshot.currentSystem ? String(localized: "Here") : MapText.parsecs(snapshot.systems[i].distance))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.readableSecondary)
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
@@ -382,11 +389,11 @@ struct MapSearchView: View {
                     }
                 }
                 .padding(.vertical, 4)
-                .background(.regularMaterial, in: .rect(cornerRadius: 8))
+                .overlayBackground(cornerRadius: 8)  // A11Y-019
             }
         }
         .padding(8)
-        .background(.ultraThinMaterial, in: .rect(cornerRadius: 10))
+        .overlayBackground(cornerRadius: 10)  // A11Y-019
     }
 
     private func title(_ f: SystemSearchFilter) -> LocalizedStringResource {

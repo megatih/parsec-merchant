@@ -13,6 +13,7 @@ struct MarketSectionView: View {
     @State private var quantities: [TradeItemType: String] = [:]
     @State private var disposal: CargoDisposal?
     @FocusState private var focusedField: Field?
+    @Namespace private var rotorNamespace
 
     enum Field: Hashable {
         case filter
@@ -24,13 +25,17 @@ struct MarketSectionView: View {
         if let state = session.state {
             let rows = MarketFilter.filtered(MarketRowModel.rows(state: state), filter: filter)
             VStack(spacing: 0) {
+                InlineTipView(tip: MarketTip(), id: .market, margin: 12)  // A11Y-043, INT-044
                 filterBar
                 if showRecommendations, let intel {
                     RecommendationStripView(intel: intel, state: state) { self.session.marketSelection = $0 }
                     Divider()
                 }
                 Table(rows, selection: $session.marketSelection) {
-                    TableColumn("Item") { (r: MarketRowModel) in ItemCell(row: r) }
+                    TableColumn("Item") { (r: MarketRowModel) in
+                        ItemCell(row: r) { kind in performRowAction(kind, r) }
+                            .accessibilityRotorEntry(id: r.item, in: rotorNamespace)
+                    }
                         .width(min: 130, ideal: 160)
                     TableColumn("Buy") { (r: MarketRowModel) in
                         PriceCell(price: r.buyPrice).accessibilityIdentifier(AXID.Market.buyPrice(r.item))
@@ -59,6 +64,8 @@ struct MarketSectionView: View {
                         .width(min: 280, ideal: 300)
                 }
                 .onKeyPress(phases: .down) { press in handleKey(press, rows: rows) }
+                .accessibilityLabel(Text("Market"))
+                .modifier(MarketRotorsModifier(rows: rows, intel: intel, namespace: rotorNamespace))
                 .accessibilityIdentifier(AXID.Market.table)
                 Divider()
                 PriceExplanationPanel(item: session.marketSelection,
@@ -88,13 +95,14 @@ struct MarketSectionView: View {
 
     private var filterBar: some View {
         HStack {
-            Image(systemName: "line.3.horizontal.decrease.circle").foregroundStyle(.secondary).accessibilityHidden(true)
+            Image(systemName: "line.3.horizontal.decrease.circle").foregroundStyle(.readableSecondary).accessibilityHidden(true)
             TextField(text: $filter) { Text("Filter items") }
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 240)
                 .focused($focusedField, equals: .filter)
                 .onExitCommand { filter = "" }
                 .help(Text("Show only items whose name contains this text. Esc clears it."))
+                .accessibilityLabel(Text("Filter items"))  // A11Y-003
                 .accessibilityIdentifier(AXID.Market.filter)
             Spacer()
         }
@@ -121,7 +129,7 @@ struct MarketSectionView: View {
             Text(verbatim: r.row.held.formatted()).monospacedDigit()
                 .accessibilityIdentifier(AXID.Market.held(r.item))
             if r.row.held > 0 {
-                Text("avg \(r.row.costBasisPerUnit.formatted()) cr.").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                Text("avg \(r.row.costBasisPerUnit.formatted()) cr.").scaledFont(.caption).foregroundStyle(.readableSecondary).monospacedDigit()
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -157,6 +165,7 @@ struct MarketSectionView: View {
             .help(sellReason ?? String(localized: r.isDumpMode
                 ? "Dump 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)" : "Sell 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)"))
             .accessibilityLabel(Text(r.isDumpMode ? "Dump" : "Sell"))
+            .accessibilityHint(Text(AccessibilityHints.tradeModifiers))  // A11Y-005
             .accessibilityIdentifier(AXID.Market.sell(r.item))
             TextField(text: quantityBinding(r.item)) { Text("Qty") }
                 .frame(width: 48)
@@ -169,6 +178,7 @@ struct MarketSectionView: View {
                     return .handled
                 }
                 .help(Text("Return buys this many, ⇧Return sells them."))
+                .accessibilityLabel(Text("Quantity of \(Names.item(r.item))"))  // A11Y-003
                 .accessibilityIdentifier(AXID.Market.quantity(r.item))
             Button {
                 let modifiers = TradeQuantity.current
@@ -180,6 +190,7 @@ struct MarketSectionView: View {
             .disabled(r.buyBlocker != nil)
             .help(buyReason ?? String(localized: "Buy 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ max)"))
             .accessibilityLabel(Text("Buy"))
+            .accessibilityHint(Text(AccessibilityHints.tradeModifiers))  // A11Y-005
             .accessibilityIdentifier(AXID.Market.buy(r.item))
             Button("Max") {
                 if let c = r.buyMaxCommand { session.send(c) }
@@ -198,6 +209,15 @@ struct MarketSectionView: View {
         }
         .buttonStyle(.bordered)
         .controlSize(.small)
+    }
+
+    /// A11Y-007: a row's custom action. Trades from assistive actions announce their result (A11Y-012).
+    private func performRowAction(_ kind: RowAction.Kind, _ r: MarketRowModel) {
+        if kind == .whyThisPrice {
+            session.marketSelection = r.item
+        } else if let c = MarketRowAccessibility.command(kind, row: r) {
+            session.sendFromKeyboard(c)
+        }
     }
 
     private func quantityBinding(_ item: TradeItemType) -> Binding<String> {
@@ -224,7 +244,7 @@ struct MarketSectionView: View {
             }
             Spacer()
         }
-        .font(.callout)
+        .scaledFont(.callout)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .accessibilityElement(children: .contain)
@@ -236,22 +256,37 @@ struct MarketSectionView: View {
 
 private struct ItemCell: View {
     let row: MarketRowModel
+    /// A11Y-007: the row's custom actions.
+    var perform: (RowAction.Kind) -> Void = { _ in }
 
     var body: some View {
+        let a11y = MarketRowAccessibility.make(row)
+        content
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: a11y.label))
+            .accessibilityAddTraits(.isStaticText)
+            .accessibilityValue(Text(verbatim: row.isIllegal ? String(localized: "Illegal. \(a11y.value)") : a11y.value))
+            .accessibilityActions {
+                ForEach(a11y.actions) { action in
+                    Button(action.name) { perform(action.kind) }
+                }
+            }
+            .accessibilityIdentifier(AXID.Market.row(row.item))
+    }
+
+    private var content: some View {
         HStack(spacing: 6) {
-            Image(systemName: "shippingbox").foregroundStyle(.secondary).accessibilityHidden(true)
+            Image(systemName: "shippingbox").foregroundStyle(.readableSecondary).accessibilityHidden(true)
             Text(Names.item(row.item))
             if row.isIllegal {
                 Text("Illegal")
-                    .font(.caption2.bold())
+                    .scaledFont(.caption2, weight: .bold)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
                     .background(Capsule().fill(Color.red.opacity(0.2)))
                     .help(Text("Trading this is illegal; police may confiscate it."))
             }
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier(AXID.Market.row(row.item))
     }
 }
 
@@ -262,7 +297,7 @@ private struct PriceCell: View {
         if let price {
             Text(verbatim: price.formatted()).monospacedDigit()
         } else {
-            Text(verbatim: "—").foregroundStyle(.secondary).accessibilityLabel(Text("Not available"))
+            Image(systemName: "minus").accessibilityLabel(Text("Not available"))  // A11Y-029: a dash glyph is too thin to measure
         }
     }
 }
@@ -274,7 +309,7 @@ private struct SellCell: View {
         VStack(alignment: .leading, spacing: 0) {
             PriceCell(price: row.sellPrice)
             if let dump = row.dumpCostShown {
-                Text("Dump \(dump.formatted()) cr.").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                Text("Dump \(dump.formatted()) cr.").scaledFont(.caption).foregroundStyle(.readableSecondary).monospacedDigit()
             }
         }
     }
@@ -289,10 +324,10 @@ private struct ProfitCell: View {
             let text = (value > 0 ? "▲ +" : value < 0 ? "▼ " : "") + value.formatted()
             Text(verbatim: text)
                 .monospacedDigit()
-                .foregroundStyle(value > 0 ? Color.green : value < 0 ? Color.red : Color.primary)
+                .foregroundStyle(value > 0 ? Color.signalGreen : value < 0 ? Color.signalRed : Color.primary)
                 .accessibilityLabel(value >= 0 ? Text("Profit \(value) credits per unit") : Text("Loss \(-value) credits per unit"))
         } else {
-            Text(verbatim: "—").foregroundStyle(.secondary).accessibilityLabel(Text("Not available"))
+            Image(systemName: "minus").accessibilityLabel(Text("Not available"))  // A11Y-029: a dash glyph is too thin to measure
         }
     }
 }
@@ -313,10 +348,12 @@ private struct DisposalSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(disposal.kind == .jettison ? "Jettison \(Names.item(disposal.item))" : "Dump \(Names.item(disposal.item))")
-                .font(.title3.bold())
+                .scaledFont(.title3, weight: .bold)
             Stepper(value: $quantity, in: 1...max(1, disposal.maximum)) {
                 Text("Quantity: \(quantity) of at most \(disposal.maximum)").monospacedDigit()
             }
+            .accessibilityLabel(Text("Quantity"))
+            .accessibilityValue(Text(verbatim: AccessibilityText.units(quantity)))
             .accessibilityIdentifier(AXID.Market.disposalQuantity)
             HStack {
                 Spacer()
@@ -333,5 +370,28 @@ private struct DisposalSheet: View {
         .onAppear { quantity = max(1, disposal.maximum) }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Market.disposalSheet)
+    }
+}
+
+/// A11Y-014: the Market's "In Hold" and "Profitable at Target" rotors over the item cells.
+private struct MarketRotorsModifier: ViewModifier {
+    let rows: [MarketRowModel]
+    let intel: MarketIntelModel?
+    let namespace: Namespace.ID
+
+    func body(content: Content) -> some View {
+        let inHold = MarketRotors.inHold(rows)
+        let profitable = MarketRotors.profitableAtTarget(rows) { item in intel?.row(item)?.targetQuote?.sell }
+        content
+            .accessibilityRotor(Text("In Hold")) {
+                ForEach(inHold, id: \.self) { item in
+                    AccessibilityRotorEntry(Text(Names.item(item)), id: item, in: namespace)
+                }
+            }
+            .accessibilityRotor(Text("Profitable at Target")) {
+                ForEach(profitable, id: \.self) { item in
+                    AccessibilityRotorEntry(Text(Names.item(item)), id: item, in: namespace)
+                }
+            }
     }
 }

@@ -13,28 +13,18 @@ struct HeatmapHUDView: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 6) {
             HStack(spacing: 6) {
-                Picker(selection: $choice) {
-                    ForEach(MapHeatmapChoice.allCases, id: \.self) { c in
-                        Text(c.title).tag(c)
-                    }
-                } label: {
-                    Text("Heatmap")
-                }
-                .pickerStyle(.menu)
-                .fixedSize()
-                .help(Text("Tint the map by known prices, profit, police, pirates, tech level or last visit."))
-                .accessibilityIdentifier(ids.heatmap)
+                Text("Heatmap").accessibilityHidden(true)
+                // A11Y-029: AppKit pop-ups (a SwiftUI menu-style Picker here has no press action for VoiceOver).
+                PopUpMenuButton(title: "", items: MapHeatmapChoice.allCases.map { c in
+                    PopUpMenuButton.Item(title: String(localized: c.title)) { choice = c }
+                }, pullsDown: false, selectedIndex: MapHeatmapChoice.allCases.firstIndex(of: choice),
+                accessibilityLabel: String(localized: "Heatmap"), identifier: ids.heatmap,
+                help: String(localized: "Tint the map by known prices, profit, police, pirates, tech level or last visit."))
                 if choice == .price {
-                    Picker(selection: $item) {
-                        ForEach(TradeItemType.allCases, id: \.self) { i in
-                            Text(Names.item(i)).tag(i)
-                        }
-                    } label: {
-                        Text("Commodity")
-                    }
-                    .labelsHidden()
-                    .fixedSize()
-                    .accessibilityIdentifier(ids.heatmapCommodity)
+                    PopUpMenuButton(title: "", items: TradeItemType.allCases.map { i in
+                        PopUpMenuButton.Item(title: String(localized: Names.item(i))) { item = i }
+                    }, pullsDown: false, selectedIndex: TradeItemType.allCases.firstIndex(of: item),
+                    accessibilityLabel: String(localized: "Heatmap commodity"), identifier: ids.heatmapCommodity)
                 }
             }
             if let result, choice != .none {
@@ -45,7 +35,7 @@ struct HeatmapHUDView: View {
                         .clipShape(.capsule)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 0) {
-                        ForEach(HeatmapTint.legend(result), id: \.self) { Text(verbatim: $0).font(.caption2) }
+                        ForEach(HeatmapTint.legend(result), id: \.self) { Text(verbatim: $0).scaledFont(.caption2) }
                     }
                 }
                 .accessibilityElement(children: .combine)

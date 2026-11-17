@@ -6,6 +6,7 @@ import SwiftUI
 struct QuestsSectionView: View {
     @Environment(GameSession.self) private var session
     @State private var showCompleted = false
+    @Namespace private var rotorNamespace
 
     var body: some View {
         ScrollView {
@@ -13,17 +14,18 @@ struct QuestsSectionView: View {
                 let model = QuestsModel.make(state: state)
                 VStack(alignment: .leading, spacing: 16) {
                     if model.cards.isEmpty {
-                        Text(QuestText.none).foregroundStyle(.secondary)
+                        Text(QuestText.none).foregroundStyle(.readableSecondary)
                     }
                     ForEach(model.cards) { card in
                         QuestCardView(card: card, state: state) { system in session.selectQuestSystem(system) }
+                            .accessibilityRotorEntry(id: card.index, in: rotorNamespace)
                     }
                     if !model.finished.isEmpty {
                         DisclosureGroup(isExpanded: $showCompleted) {
                             VStack(alignment: .leading, spacing: 6) {
                                 ForEach(model.finished) { f in
                                     LabeledContent {
-                                        Text(f.outcome).foregroundStyle(f.failed ? .red : .green)
+                                        Text(f.outcome).foregroundStyle(f.failed ? .signalRed : .signalGreen)
                                     } label: {
                                         Text(f.chain.title)
                                     }
@@ -31,7 +33,7 @@ struct QuestsSectionView: View {
                             }
                             .padding(.top, 6)
                         } label: {
-                            Text("Completed (\(model.finished.count))").font(.headline)
+                            Text("Completed (\(model.finished.count))").scaledFont(.headline)
                         }
                         .accessibilityElement(children: .contain)
                         .accessibilityIdentifier(AXID.Quests.completed)
@@ -39,6 +41,13 @@ struct QuestsSectionView: View {
                 }
                 .padding(20)
                 .frame(maxWidth: 720, alignment: .leading)
+                // A11Y-014: the "Deadlines" rotor, soonest first.
+                .accessibilityRotor(Text("Deadlines")) {
+                    ForEach(QuestRotors.deadlineCards(model.cards)) { card in
+                        AccessibilityRotorEntry(Text(QuestText.title(for: card.entry.kind, state: state)), id: card.index,
+                                                in: rotorNamespace)
+                    }
+                }
             }
         }
         .accessibilityElement(children: .contain)
@@ -57,7 +66,7 @@ private struct QuestCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(QuestText.title(for: card.entry.kind, state: state))
-                .font(.headline)
+                .scaledFont(.headline)
                 .fixedSize(horizontal: false, vertical: true)
             if let steps = card.steps { stepsView(steps) }
             if let days = card.entry.daysLeft, let span = card.deadlineSpan {
@@ -69,6 +78,10 @@ private struct QuestCardView: View {
                 .gaugeStyle(.accessoryLinearCapacity)
                 .tint(days <= 2 ? .red : .orange)
                 .frame(maxWidth: 260)
+                .accessibilityRepresentation {
+                    ProgressView(value: Double(days), total: Double(span)) { Text("Deadline") }
+                        .accessibilityValue(Text(verbatim: AccessibilityText.deadline(daysLeft: days)))  // A11Y-004
+                }
             }
             if !card.entry.systems.isEmpty {
                 HStack(spacing: 12) {
@@ -98,23 +111,24 @@ private struct QuestCardView: View {
         .padding(12)
         .background(.background.secondary, in: .rect(cornerRadius: 10))
         .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(QuestText.title(for: card.entry.kind, state: state)))
         .accessibilityIdentifier(AXID.Quests.entry(card.index))
     }
 
     private func stepsView(_ steps: [QuestsModel.Step]) -> some View {
         HStack(spacing: 6) {
             ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
-                if i > 0 { Image(systemName: "arrow.right").foregroundStyle(.tertiary).accessibilityHidden(true) }
+                if i > 0 { Image(systemName: "arrow.right").foregroundStyle(.readableSecondary).accessibilityHidden(true) }
                 Label {
                     Text(verbatim: Names.system(step.system, in: state))
                 } icon: {
                     Image(systemName: step.done ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(step.done ? AnyShapeStyle(.green) : AnyShapeStyle(.secondary))
+                        .foregroundStyle(step.done ? AnyShapeStyle(.signalGreen) : AnyShapeStyle(.secondary))
                 }
                 .accessibilityLabel(step.done ? Text("\(Names.system(step.system, in: state)), done")
                                               : Text(verbatim: Names.system(step.system, in: state)))
             }
         }
-        .font(.callout)
+        .scaledFont(.callout)
     }
 }

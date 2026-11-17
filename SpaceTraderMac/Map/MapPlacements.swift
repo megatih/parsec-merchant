@@ -5,9 +5,12 @@ import SwiftUI
 /// Galaxy (⌘7, MAP-075): the map filling the detail area.
 struct GalaxySectionView: View {
     var body: some View {
-        GalaxyMapView(scope: .galaxy)
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier(AXID.SectionRoot.root(.galaxy))
+        VStack(spacing: 0) {
+            InlineTipView(tip: GalaxyTip(), id: .galaxy, margin: 12)  // A11Y-043, MAP-098
+            GalaxyMapView(scope: .galaxy)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(AXID.SectionRoot.root(.galaxy))
     }
 }
 
@@ -26,8 +29,8 @@ struct GalaxyChartWindowView: View {
                 GalaxyMapView(scope: .galaxyWindow)
             } else {
                 Text("No game loaded")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .scaledFont(.title3)
+                    .foregroundStyle(.readableSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .accessibilityIdentifier(AXID.Galaxy.windowPlaceholder)
             }

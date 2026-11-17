@@ -47,7 +47,7 @@ struct GameOptionsSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Options")
-                .font(.title2.bold())
+                .scaledFont(.title2, weight: .bold)
             if let draft {
                 Form {
                     ForEach(OptionsDraft.Group.allCases, id: \.self) { group in
@@ -98,10 +98,11 @@ struct GameOptionsSheet: View {
                     Text(verbatim: draft.leaveEmpty.formatted()).monospacedDigit()
                 }
             }
+            .accessibilityLabel(Text(field.label))  // A11Y-003
             .accessibilityValue(Text(verbatim: draft.leaveEmpty.formatted()))
             .accessibilityIdentifier(AXID.Options.field(field))
         } else {
-            Toggle(isOn: binding(field)) { Text(field.label) }
+            Toggle(isOn: binding(field)) { Text(field.label) }.accessibilityLabel(Text(field.label))
                 .disabled(!draft.isEnabled(field))
                 .accessibilityIdentifier(AXID.Options.field(field))
         }

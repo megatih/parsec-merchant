@@ -17,8 +17,8 @@ struct OutfitterSectionView: View {
                         VStack(alignment: .leading, spacing: 16) {
                             if !model.hasEquipmentForSale {
                                 Text("No equipment for sale here.")
-                                    .font(.headline)
-                                    .foregroundStyle(.secondary)
+                                    .scaledFont(.headline)
+                                    .foregroundStyle(.readableSecondary)
                             }
                             ForEach(model.groups) { group($0) }
                         }
@@ -38,18 +38,18 @@ struct OutfitterSectionView: View {
 
     private func group(_ g: OutfitterGroupModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(g.group.title).font(.title3.bold())
-            Text("Your slots").font(.subheadline).foregroundStyle(.secondary)
+            Text(g.group.title).scaledFont(.title3, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Your slots").scaledFont(.subheadline).foregroundStyle(.readableSecondary)
             if g.tiles.isEmpty {
-                Text("No slots").foregroundStyle(.secondary)
+                Text("No slots").foregroundStyle(.readableSecondary)
             } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], alignment: .leading, spacing: 8) {
+                AccessibleLazyVGrid(label: "Slots", columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], alignment: .leading, spacing: 8) {
                     ForEach(g.tiles) { tile($0, group: g.group) }
                 }
             }
-            Text("For sale").font(.subheadline).foregroundStyle(.secondary).padding(.top, 4)
+            Text("For sale").scaledFont(.subheadline).foregroundStyle(.readableSecondary).padding(.top, 4)
             if g.offers.isEmpty {
-                Text("None for sale here.").foregroundStyle(.secondary)
+                Text("None for sale here.").foregroundStyle(.readableSecondary)
             } else {
                 ForEach(g.offers, id: \.item) { offer($0) }
             }
@@ -57,6 +57,7 @@ struct OutfitterSectionView: View {
         .padding(12)
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
         .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(g.group.title))
         .accessibilityIdentifier(AXID.Outfitter.group(g.group))
     }
 
@@ -64,9 +65,9 @@ struct OutfitterSectionView: View {
         let isSelected = t.installed.map { selection == .installed($0.item, slot: t.slot) } ?? false
         return VStack(alignment: .leading, spacing: 4) {
             if let item = t.installed {
-                Text(EquipmentText.name(item.item)).font(.callout.bold())
+                Text(EquipmentText.name(item.item)).scaledFont(.callout, weight: .bold)
                 if let charge = t.charge {
-                    Text("Charge \(charge)").font(.caption).monospacedDigit().foregroundStyle(.secondary)
+                    Text("Charge \(charge)").scaledFont(.caption).monospacedDigit().foregroundStyle(.readableSecondary)
                 }
                 Button("Sell for \(item.sellPrice.formatted()) cr.") {
                     selection = nil
@@ -77,7 +78,7 @@ struct OutfitterSectionView: View {
                 .help(item.sellBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Sell this item."))
                 .accessibilityIdentifier(AXID.Outfitter.sell(group, slot: t.slot))
             } else {
-                Text("Free slot").foregroundStyle(.secondary)
+                Text("Free slot").foregroundStyle(.readableSecondary)
             }
         }
         .padding(8)
@@ -89,6 +90,7 @@ struct OutfitterSectionView: View {
         .contentShape(Rectangle())
         .onTapGesture { if let item = t.installed { selection = .installed(item.item, slot: t.slot) } }
         .accessibilityElement(children: .contain)
+        .accessibilityLabel(t.installed.map { Text(EquipmentText.name($0.item)) } ?? Text("Free slot"))  // A11Y-003
         .accessibilityIdentifier(AXID.Outfitter.slot(group, slot: t.slot))
     }
 
@@ -124,8 +126,8 @@ struct OutfitterSectionView: View {
                             EquipmentIcon(item: selection.item)
                                 .frame(width: 40, height: 40)
                             VStack(alignment: .leading) {
-                                Text(EquipmentText.name(d.item)).font(.headline)
-                                Text(EquipmentText.kind(d.item)).foregroundStyle(.secondary)
+                                Text(EquipmentText.name(d.item)).scaledFont(.headline)
+                                Text(EquipmentText.kind(d.item)).foregroundStyle(.readableSecondary)
                             }
                         }
                         Text(EquipmentText.description(d.item))
@@ -141,13 +143,21 @@ struct OutfitterSectionView: View {
                         LabeledContent("vs. current") { comparison(d.comparison) }
                     }
                     if let blocker {
-                        Text(ReasonText.text(for: blocker)).foregroundStyle(.secondary)
+                        Text(ReasonText.text(for: blocker)).foregroundStyle(.readableSecondary)
                     }
                 }
                 .formStyle(.grouped)
             } else {
-                ContentUnavailableView("Select an item", systemImage: "wrench.and.screwdriver",
-                                       description: Text("Choose an item for sale or one of your slots."))
+                // A11Y-029: an own placeholder (ContentUnavailableView draws its title below 4.5:1 contrast).
+                VStack(spacing: 8) {
+                    Image(systemName: "wrench.and.screwdriver").scaledFont(.largeTitle).foregroundStyle(.readableSecondary)
+                        .accessibilityHidden(true)
+                    Text("Select an item").scaledFont(.title3, weight: .bold).accessibilityAddTraits(.isHeader)
+                    Text("Choose an item for sale or one of your slots.").foregroundStyle(.readableSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .accessibilityElement(children: .contain)
@@ -160,7 +170,7 @@ struct OutfitterSectionView: View {
             Text("None installed")
         case let .power(best, delta):
             Text("\(ShipCompare.deltaText(delta)) vs. \(String(localized: EquipmentText.name(best)))")
-                .foregroundStyle(delta > 0 ? .green : (delta < 0 ? .red : .secondary))
+                .foregroundStyle(delta > 0 ? .signalGreen : (delta < 0 ? .signalRed : .secondary))
         case let .owned(count):
             if count == 0 { Text("Not installed") } else { Text("\(count) installed") }
         }

@@ -30,9 +30,13 @@ struct WelcomeView: View {
         VStack(spacing: 14) {
             ArtAccessibilityReader { a11y in
                 Wordmark(size: 34, increaseContrast: a11y.increaseContrast)
+                    .artAccessibility(.wordmark)  // A11Y-006, A11Y-009
             }
             Text("Based on Space Trader by Pieter Spronck.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.9))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(.black.opacity(0.45), in: Capsule())  // A11Y-029: legible over the starfield
             VStack(spacing: 8) {
                 Button("Quick Start") { session.requestQuickStart() }
                     .keyboardShortcut(.defaultAction)
@@ -59,11 +63,11 @@ struct WelcomeView: View {
     private var recentList: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Recent Games")
-                .font(.headline)
+                .scaledFont(.headline)
                 .padding([.top, .horizontal])
             if slots.isEmpty {
                 Text("No saved games yet.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(slots, id: \.id, selection: $selection) { slot in
@@ -94,15 +98,15 @@ struct RecentSlotRow: View {
         let systemName = system.indices.contains(s.system) ? system[s.system] : ""
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
-                Text(verbatim: s.commander).font(.body.bold())
-                if s.ironman { Text("Ironman").font(.caption).foregroundStyle(.orange) }
-                if s.cheatsUsed { Text("Cheats").font(.caption).foregroundStyle(.secondary) }
-                if s.ended { Text("Ended").font(.caption).foregroundStyle(.secondary) }
-                if slot.isAutosave { Text("Autosave").font(.caption).foregroundStyle(.secondary) }
+                Text(verbatim: s.commander).scaledFont(.body, weight: .bold)
+                if s.ironman { Text("Ironman").scaledFont(.caption).foregroundStyle(.signalOrange) }
+                if s.cheatsUsed { Text("Cheats").scaledFont(.caption).foregroundStyle(.readableSecondary) }
+                if s.ended { Text("Ended").scaledFont(.caption).foregroundStyle(.readableSecondary) }
+                if slot.isAutosave { Text("Autosave").scaledFont(.caption).foregroundStyle(.readableSecondary) }
             }
             Text("Day \(s.day) · \(systemName) · Worth \(s.worth.formatted()) cr. · \(String(localized: Names.ruleset(slot.rulesetID)))")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .scaledFont(.caption)
+                .foregroundStyle(.readableSecondary)
                 .monospacedDigit()
         }
         .padding(.vertical, 2)

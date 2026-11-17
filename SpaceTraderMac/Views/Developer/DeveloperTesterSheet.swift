@@ -19,8 +19,8 @@ struct DeveloperTesterSheet: View {
             Divider()
             HStack {
                 Text("Previews only: the game is not changed.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .scaledFont(.caption)
+                    .foregroundStyle(.readableSecondary)
                 Spacer()
                 Button("Close") { session.dismissPresentation() }
                     .keyboardShortcut(.defaultAction)
@@ -38,7 +38,7 @@ struct DeveloperTesterSheet: View {
             SwiftUI.Section("Alerts (ALR)") {
                 ForEach(ALRCatalog.rows, id: \.number) { row in
                     HStack {
-                        Text(verbatim: "\(row.number)").monospacedDigit().foregroundStyle(.secondary)
+                        Text(verbatim: "\(row.number)").monospacedDigit().foregroundStyle(.readableSecondary)
                         Text(verbatim: row.alertType)
                     }
                     .tag(DeveloperTester.Item.alr(row.number))
@@ -61,9 +61,9 @@ struct DeveloperTesterSheet: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(verbatim: sample.surface)
                     .font(.caption.smallCaps())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
                 Text(verbatim: sample.title)
-                    .font(.title3.bold())
+                    .scaledFont(.title3, weight: .bold)
                 ScrollView {
                     Text(verbatim: sample.message)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,7 +76,7 @@ struct DeveloperTesterSheet: View {
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 4)
                                 .background(.quaternary, in: Capsule())
-                                .foregroundStyle(index == 0 && sample.isDestructive ? Color.red : Color.primary)
+                                .foregroundStyle(index == 0 && sample.isDestructive ? Color.signalRed : Color.primary)
                         }
                     }
                     .accessibilityElement(children: .combine)

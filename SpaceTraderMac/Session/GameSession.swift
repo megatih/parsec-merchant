@@ -121,6 +121,16 @@ final class GameSession {
     let launchOptions: LaunchOptions
     let defaults: UserDefaults
 
+    // MARK: Accessibility and tips (A11Y-011, A11Y-044; GameSession+Announcements.swift)
+    /// A11Y-012: the command being sent came from the keyboard or a menu.
+    @ObservationIgnored var keyboardOrigin = false
+    /// A11Y-012: texts raised during the step (achievement unlocks), joined into its announcement.
+    @ObservationIgnored var stepAnnouncementExtras: [String] = []
+    /// A11Y-011: the announcement collected while nested steps run; posted once the outermost step ends.
+    @ObservationIgnored var pendingAnnouncement: Announcement?
+    /// A11Y-044: receives the tip triggers (TipKit in the app, a recorder in tests).
+    @ObservationIgnored var tipCenter: any TipCenter = NoTipCenter()
+
     @ObservationIgnored private var nextFeedID = 0
     @ObservationIgnored let log = Logger(subsystem: "io.github.megatih.ParsecMerchant", category: "session")
 
@@ -185,6 +195,7 @@ final class GameSession {
             rejectionSerial += 1
             encounterStepRejected(command)
             audio.play(app: .rejected)
+            announceRejection(rejection)
             return
         }
         lastRejection = nil
@@ -207,6 +218,8 @@ final class GameSession {
         runPersistenceTriggers(phaseBefore: phaseBefore, state: state, arrived: arrived)
         if state.phase == .docked, phaseBefore != .docked || arrived { followPlannedRouteAfterDocking() }
         updateMusicMood()
+        announceStep(step)
+        tipsAfterStep(step)
     }
 
     /// The player confirmed: resend the same command with every warning acknowledged so far plus this one.
