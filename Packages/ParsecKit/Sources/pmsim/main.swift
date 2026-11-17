@@ -74,6 +74,9 @@ case "write-save-fixtures":
         FileHandle.standardError.write(Data("write failed: \(error)\n".utf8))
         exit(1)
     }
+case "bot":
+    // PRD §8.2 economy sanity: greedy trader, 20 seeds per ruleset on Normal.
+    exit(runBot(games: args.int("games", 20), seed: UInt64(args.int("seed", 1)), rulesets: args.rulesets()))
 case "bench":
     // PRD §8.1: engine perform and arrival medians against their budgets; --check fails when over budget.
     exit(runBench(check: args.options["check"] != nil))
