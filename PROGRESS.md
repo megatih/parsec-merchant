@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M11 (starting)
-- **Next step:** M11: ParsecArt (ships, planets, glyphs, effects) + app icon via make-icon.sh (.icon bundle + appiconset fallback, actool no warnings) + ParsecAudio (synth, SFX, music, haptics) + Sound settings per ART.md/AUD.md (specs committed); verify default at exit; bench.
+- **Next step:** (running: art+icon agent, audio+haptics agent; UI-KEYS/A11Y specs ahead for M12) M11: ParsecArt (ships, planets, glyphs, effects) + app icon via make-icon.sh (.icon bundle + appiconset fallback, actool no warnings) + ParsecAudio (synth, SFX, music, haptics) + Sound settings per ART.md/AUD.md (specs committed); verify default at exit; bench.
 - **Last gate result:** verify.sh --ui ALL GATES PASSED @ M10 exit (8/8; insights coverage 99%); pmsim bench --check OK
 - **Blockers:** none
 
