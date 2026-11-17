@@ -32,8 +32,10 @@ struct SheetRouteView: View {
             InterimDecisionSheet(decision: .newspaper(paper))
         case let .narrative(page):
             InterimNarrativeSheet(page: page)
-        case .report, .developerTester:
+        case .report:
             PlaceholderSheet(route: route)
+        case .developerTester:
+            DeveloperTesterSheet()
         }
     }
 }

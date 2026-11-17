@@ -33,6 +33,8 @@ final class GameSession {
     private(set) var rejectionSerial = 0
     /// The high-score result of the current ended game (UI-SHELL-097).
     private(set) var recordedScore: RecordedScore?
+    /// UI-ENC-089: bumped when a high-score table changes or the High Scores window is asked to show the game's table.
+    var highScoresRevision = 0
     /// What to do after the player agrees to discard the unsaved game (SAV-043).
     private(set) var pendingReplace: ReplaceIntent?
     /// File panels requested by menus or Welcome; the view that owns `fileImporter`/`fileExporter` binds to these.
@@ -178,6 +180,7 @@ final class GameSession {
         if step.encounterStarted != nil { attentionRequested = false }
         startPlayback(for: step)
         updateDockAttention()
+        if DeveloperTester.opens(after: step.command) { present(.sheet(.developerTester)) }
     }
 
     /// Clears the per-game step state (load, new game, close).
@@ -409,6 +412,7 @@ final class GameSession {
 
     private func recordHighScore(end: GameEndType) {
         guard let state, let gameID else { return }
+        defer { highScoresRevision += 1 }
         do {
             if let outcome = try highScoreStore.record(state, end: end, gameID: gameID) {
                 recordedScore = .outcome(outcome)

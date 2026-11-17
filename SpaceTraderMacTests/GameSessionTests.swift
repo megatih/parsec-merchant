@@ -166,7 +166,7 @@ struct GameSessionTests {
                 #expect(InterimEncounterModel.make(engine: engine) != nil)
                 #expect(s.mode == .playing)
             case .gameOver:
-                #expect(GameOverModel.make(state: state, recorded: s.recordedScore) != nil)
+                #expect(GameOverCardModel.make(state: state, recorded: s.recordedScore, lastStep: s.lastStep, table: nil) != nil)
             case .inTransit:
                 Issue.record("a warp step never rests in transit")
             }
@@ -368,6 +368,6 @@ struct GameSessionTests {
         s.closeGame()
         s.openSlot(SlotStore.autosaveID)
         #expect(s.gameID == id && s.recordedScore == .alreadyRecorded)
-        #expect(GameOverModel.make(state: try #require(s.state), recorded: s.recordedScore)?.outcomeText != nil)
+        #expect(GameOverCardModel.make(state: try #require(s.state), recorded: s.recordedScore, lastStep: nil, table: nil)?.highScoreText != nil)
     }
 }

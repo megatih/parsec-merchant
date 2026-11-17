@@ -60,30 +60,3 @@ enum AppBootstrap {
         return GameSession(stores: SessionStores(root: root), launchOptions: options, defaults: defaults, dock: AppDock())
     }
 }
-
-/// `-PMScenario` fixtures (CHEAT-049). Returns an exit status when the scenario ends the process.
-enum ScenarioRunner {
-    static let smokeSeed: UInt64 = 20_261_117
-
-    static func run(_ name: String, session: GameSession) -> Int32? {
-        switch name {
-        case "smoke": smoke(session: session) ? 0 : 1
-        default: 2
-        }
-    }
-
-    /// Creates a game, saves it to a slot, loads it back and checks the loaded state equals the saved one.
-    static func smoke(session: GameSession) -> Bool {
-        var state = GameState(config: NewGameConfig(commanderName: "Smoke", seed: smokeSeed))
-        state.cheatsUsed = true
-        let gameID = SlotStore.newSlotID()
-        do {
-            _ = try session.slotStore.save(state, slot: gameID, gameID: gameID)
-            let loaded = try session.slotStore.load(slot: gameID)
-            try? session.slotStore.delete(slot: gameID)
-            return loaded.state == state
-        } catch {
-            return false
-        }
-    }
-}

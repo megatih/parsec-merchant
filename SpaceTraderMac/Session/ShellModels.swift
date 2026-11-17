@@ -250,30 +250,3 @@ struct InterimEncounterModel: Equatable, Sendable {
         return .encounter(a)
     }
 }
-
-/// The interim game-over card's content (UI-SHELL-097).
-struct GameOverModel: Equatable, Sendable {
-    var end: GameEndType
-    var scoreTenths: Int
-    var recorded: RecordedScore?
-
-    static func make(state: GameState, recorded: RecordedScore?) -> GameOverModel? {
-        guard case let .gameOver(end) = state.phase else { return nil }
-        return GameOverModel(end: end, scoreTenths: state.scoreTenths(for: end), recorded: recorded)
-    }
-
-    /// "X.Y" for the score in tenths of a percent.
-    var scoreText: String { "\(scoreTenths / 10).\(abs(scoreTenths % 10))" }
-
-    var outcomeText: LocalizedStringResource? {
-        switch recorded {
-        case let .outcome(.entered(rank)): "You entered the high-score table at rank \(rank)."
-        case .outcome(.missed): "Your score didn't make the high-score table."
-        case .outcome(.excludedForCheats): "Cheats were used, so this game is not on the high-score table."
-        case .outcome(.excludedForReload): "This game was reloaded, so it is not on the high-score table."
-        case .alreadyRecorded: "This game's score was already recorded."
-        case .failed: "The high-score table couldn't be updated."
-        case nil: nil
-        }
-    }
-}

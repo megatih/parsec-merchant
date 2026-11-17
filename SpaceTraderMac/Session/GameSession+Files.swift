@@ -165,6 +165,7 @@ extension GameSession {
 
     /// SCORE-038.
     func clearHighScores(_ ruleset: RulesetID) {
+        defer { highScoresRevision += 1 }
         do {
             try highScoreStore.clear(ruleset)
         } catch {

@@ -45,7 +45,7 @@ struct MainShellView: View {
             case .encounter:
                 InterimEncounterPanel()
             case .gameOver:
-                GameOverCard()
+                GameOverView()
             case let .section(section):
                 SectionDetailView(section: section)
             }

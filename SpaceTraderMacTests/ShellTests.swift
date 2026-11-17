@@ -342,12 +342,13 @@ struct ShellTests {
     func gameOverCard() {
         var st = fresh()
         st.phase = .gameOver(.retired)
-        let m = GameOverModel.make(state: st, recorded: .outcome(.entered(rank: 3)))
-        #expect(m?.end == .retired && m?.scoreTenths == st.scoreTenths(for: .retired))
-        #expect(m.map { String(localized: $0.outcomeText ?? "") } == "You entered the high-score table at rank 3.")
-        #expect(GameOverModel(end: .killed, scoreTenths: 123, recorded: nil).scoreText == "12.3")
-        #expect(GameOverModel.make(state: fresh(), recorded: nil) == nil)
-        #expect(AXID.GameOver.all == ["gameOver.card", "gameOver.newGame", "gameOver.mainMenu"])
+        let m = GameOverCardModel.make(state: st, recorded: .outcome(.entered(rank: 3)), lastStep: nil, table: nil)
+        #expect(m?.end == .retired && m?.career.scoreTenths == st.scoreTenths(for: .retired))
+        #expect(m?.highScoreText == "You entered the high-score table at rank 3.")
+        #expect(m?.scoreText == ScoreText.tenths(st.scoreTenths(for: .retired), ruleset: st.ruleset))
+        #expect(GameOverCardModel.make(state: fresh(), recorded: nil, lastStep: nil, table: nil) == nil)
+        #expect(AXID.GameOver.card == "gameOver.card" && AXID.GameOver.newGame == "gameOver.newGame"
+            && AXID.GameOver.mainMenu == "gameOver.mainMenu")
     }
 
     @Test("UI-SHELL-096 Retire… sends .retire; its confirmation is the retire sheet with the score and a destructive Retire")
@@ -360,7 +361,7 @@ struct ShellTests {
         }
         let content = ConfirmationText.content(for: pending.confirmation, state: st)
         #expect(content.isDestructive)
-        #expect(content.message == "Retiring now scores \(GameOverModel(end: .retired, scoreTenths: st.scoreTenths(for: .retired), recorded: nil).scoreText)%.")
+        #expect(content.message == "Retiring now scores \(ScoreText.score(st.score(for: .retired), ruleset: st.ruleset)).")
         #expect(AXID.Dialog.all.contains("retire.confirm") && AXID.Dialog.all.contains("retire.cancel"))
         s.cancel()
         #expect(s.mode == .playing)

@@ -102,17 +102,10 @@ nonisolated enum AXID {
                           systemAlertOK, retireSheet, retireConfirm, retireCancel, placeholderClose]
     }
 
-    enum GameOver {
-        static let card = "gameOver.card"
-        static let newGame = "gameOver.newGame"
-        static let mainMenu = "gameOver.mainMenu"
-        static let all = [card, newGame, mainMenu]
-    }
-
     /// Every fixed identifier plus the parameterised ones expanded over their engine enums (UI-SHELL-128).
     static var all: [String] {
         Welcome.all + NewGame.all + Sidebar.all + Toolbar.all + Status.all + Inspector.all + SectionRoot.all
-            + Dialog.all + GameOver.all + encounterAreaAll + shipyardArea + crewBankQuestsAll
+            + Dialog.all + gameOverArea + encounterAreaAll + shipyardArea + crewBankQuestsAll
             + Bridge.all + Market.all + menusFilesSettingsAll + mapAll
     }
 

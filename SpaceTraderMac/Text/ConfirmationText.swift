@@ -72,7 +72,7 @@ enum ConfirmationText {
         case .useSingularity:
             return ("Use the Singularity?", "Jump to \(Names.system(a0, in: state)). The singularity is used up.", "Jump to \(Names.system(a0, in: state))")
         case .retire:
-            return ("Retire?", "Retiring now scores \(tenths(a0, state: state))%.", "Retire")
+            return ("Retire?", "Retiring now scores \(ScoreText.score(a0, ruleset: state.ruleset)).", "Retire")
         case .jettisonAll:
             return ("Jettison Everything?", "You paid \(credits(a0)) credits for these goods.", "Jettison")
         case .drinkTonic:
@@ -94,11 +94,5 @@ enum ConfirmationText {
         case .buyNewspaper:
             return ("Buy a Newspaper?", "The local paper costs \(credits(a0)) credits.", "Buy for \(credits(a0)) cr.")
         }
-    }
-
-    /// SCORE-024/025: the score in tenths of a percent, formatted "X.Y" (Palm scores are already scaled by the engine).
-    static func tenths(_ score: Int, state: GameState) -> String {
-        let t = state.ruleset.flags.travel.scoreFormula == .palm ? score / 5 : score
-        return "\(t / 10).\(abs(t % 10))"
     }
 }

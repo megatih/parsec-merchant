@@ -116,7 +116,7 @@ struct PresentationCoverageTests {
         }
     }
 
-    @Test("UI-ENC-004 item 6: narrative rows, high-score outcomes, system alerts and app confirmations have text")
+    @Test("UI-ENC-004 item 6 UI-ENC-084: narrative rows, high-score outcomes, system alerts and app confirmations have text")
     func otherTexts() throws {
         for row in ALRCatalog.rows {
             guard let key = row.presentation.narrativeKey else { continue }
@@ -125,12 +125,14 @@ struct PresentationCoverageTests {
                 for t in types { #expect(!String(localized: SpecialEventText.title(t)).isEmpty) }
             }
         }
+        // UI-ENC-084: every HighScoreOutcome and RecordedScore case has outcome text.
+        let entry = state.highScoreEntry(for: .retired)
         for kind in HighScoreOutcomeKind.allCases {
-            #expect(GameOverModel(end: .retired, scoreTenths: 1, recorded: .outcome(kind.sample)).outcomeText != nil)
+            #expect(!(HighScoreOutcomeText.text(for: .outcome(kind.sample), entry: entry) ?? "").isEmpty, "\(kind)")
             #expect(HighScoreOutcomeKind(kind.sample) == kind)
         }
         for recorded in [RecordedScore.alreadyRecorded, .failed] {
-            #expect(GameOverModel(end: .retired, scoreTenths: 1, recorded: recorded).outcomeText != nil)
+            #expect(!(HighScoreOutcomeText.text(for: recorded, entry: entry) ?? "").isEmpty, "\(recorded)")
         }
         for kind in SystemAlertKind.allCases {
             #expect(!SystemAlertText.title(kind.sample).isEmpty && SystemAlertKind(kind.sample) == kind)

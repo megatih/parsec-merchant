@@ -37,6 +37,12 @@ struct ParsecMerchantApp: App {
         }
         .defaultSize(GalaxyWindowMetrics.defaultSize)
         .windowResizability(.contentMinSize)
+        Window("High Scores", id: HighScoresWindowView.windowID) {
+            HighScoresWindowView()
+                .modifier(AppTextSize())
+                .environment(appDelegate.session)
+        }
+        .defaultSize(HighScoresWindowView.defaultSize)
         Settings {
             SettingsView()
                 .environment(appDelegate.session)

@@ -273,6 +273,9 @@ struct WindowMenuItems: View {
     var body: some View {
         MenuItemButton(id: .mainWindow, availability: .enabled) { openWindow(id: SceneMetrics.mainWindowID) }
         MenuItemButton(id: .galaxyChartWindow, availability: .enabled) { openWindow(id: GalaxyWindowMetrics.id) }
+        if MenuCatalog.entry(for: .highScores).milestone <= MenuCatalog.currentMilestone {
+            MenuItemButton(id: .highScores, availability: .enabled) { openWindow(id: HighScoresWindowView.windowID) }
+        }
         Divider()
     }
 }

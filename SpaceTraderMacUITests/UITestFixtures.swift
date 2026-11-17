@@ -12,6 +12,15 @@ enum UITestFixtures {
     static let mapFlowSeed: UInt64 = 13
     static let mapFlowTarget = 113
     static let mapRouteDestination = 124
+    /// Flow 2 (UI-ENC-090/091, checked by the app test PirateAmbushScenarioTests against `PirateAmbushScenario`):
+    /// `-PMScenario pirateAmbush` warps from seed 292 to system 46 into a pirate attack that Attack alone destroys in
+    /// exactly `ambushExpectedAttacks` commands, then docks at the target.
+    static let ambushSeed: UInt64 = 292
+    static let ambushTarget = 46
+    static let ambushExpectedAttacks = 6
+    static let ambushMaxAttacks = 12
+    /// UI-ENC-094 step 1.
+    static let ambushLaunchArguments = ["-PMResetState", "-PMScenario", "pirateAmbush", "-PMFastTravel", "-PMAudio", "off"]
     /// The commander name typed in the wizard.
     static let commanderName = "Flow"
 
