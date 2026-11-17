@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M12 (starting)
-- **Next step:** M12: polish per UI-KEYS.md + A11Y.md (specs committed): KeyBindingTable + conflict audit, Esc router, behaviour fixes (Market ⌘S, Bridge Return, ⌘=), keyboard navigation, accessibility (labels, rotors, Reduce Motion/Contrast/Transparency/Differentiate Without Color), Text Size, flows 6 and 7, localization (scripts/l10n-check.sh, populate Localizable.xcstrings, no new/stale), pseudo-localization, TipKit, README screenshots; unify audio/art combat timing (CombatEffectPlanner); release-build audio render budget; verify --ui at exit.
-- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M11 exit (9/9 incl. 7b-icon-check); pmsim bench --check OK
+- **Current milestone:** M12 (exit pending the UI gate)
+- **Next step:** M12 exit: the UI-suite fixes (flow 6 contrast, flow 7 status bar at the largest Text Size, M12Keys quantity focus, M10 Logbook) are with the accessibility agent; then run verify --ui green, tag m12-done and push. Then M13: release.sh (written), screenshots (export-screenshots.sh), the remaining QA rows (accessibility audit, Text Size, pseudo-localization, light/dark, smallest window, credits, release smoke, clean clone), gh release v1.0.0, final-check.sh.
+- **Last gate result:** verify.sh --ui @ 54d19a3: steps 1–7b PASS (incl. L10N CHECK PASS, spec-trace 0 untraced), 8-ui-tests FAIL (flows 6/7, 2 tests) → EXIT=1
 - **Blockers:** none
 
 ## Milestones
@@ -21,7 +21,7 @@
 - [x] M9 Encounter, transit, event UX (2026-11-17, tag m9-done; encounter view + combat log + auto-repeat + tactical readout, transit + Dock progress, arrival report, feed, styled newspaper, special-event narratives, game over + career card, high scores window, every PendingDecision/ALR presentation covered by a test; flow 2 green)
 - [x] M10 Trade intelligence, log, stats, achievements, flavor (2026-11-17, tag m10-done; journal beside state (ADR-0003), trade intel (fair), Logbook ⌘9, 36 achievements, career stats, template + Foundation Models flavor with -PMFlavor template)
 - [x] M11 Art, icon, audio, haptics (2026-11-17, tag m11-done; ParsecArt (17 ships, planets, glyphs, effects, scenes) + Liquid Glass .icon via make-icon.sh (actool clean, step 7b); ParsecAudio synth (allocation-free render), 30 cues with visual twins, music off by default, haptics, Sound settings)
-- [ ] M12 Polish, accessibility, localization, screenshots
+- [ ] M12 Polish, accessibility, localization, screenshots (merged: UI-KEYS + Esc router + timing unification, A11Y + TipKit + flows 6/7, localization + l10n-check + pseudo-localization; pmsim scenario 9/9 and QA coverage rows done early for M13)
 - [ ] M13 Final QA and GitHub release v1.0.0
 
 ## M0 checklist
