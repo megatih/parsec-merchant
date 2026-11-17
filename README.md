@@ -50,7 +50,7 @@ xcodebuild -project SpaceTraderMac.xcodeproj -scheme SpaceTraderMac -destination
 open "build/DD/Build/Products/Debug/Parsec Merchant.app"
 ```
 
-You can also open `SpaceTraderMac.xcodeproj` in Xcode and run the `SpaceTraderMac` scheme. To sign with your own team, put `DEVELOPMENT_TEAM = <your team>` in `Config/Local.xcconfig` (gitignored).
+You can also open `SpaceTraderMac.xcodeproj` in Xcode and run the `SpaceTraderMac` scheme. The project sets no development team, so Xcode signs it to run locally and no Apple account is needed. To use your own team, choose it under Signing & Capabilities and don't commit that change.
 
 Development:
 - `scripts/verify.sh` runs every quality gate: package and app tests, coverage, a 6,000-game fuzz, spec traceability, SwiftLint, the license check and, with `--ui`, the UI tests.
