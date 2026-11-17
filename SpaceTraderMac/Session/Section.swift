@@ -22,20 +22,23 @@ struct SectionContext: Equatable, Sendable {
     var designerAvailable: Bool { hasGame && !ended && hasShipyards && currentSystemHasShipyard }
 }
 
-/// The sidebar sections of the playing window, in display order. Logbook (⌘9, M10) slots in later.
+/// The sidebar sections of the playing window, in display order (UI-SHELL-035; Logbook ⌘9 from M10, LOG-029).
 nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
-    case bridge, market, shipyard, outfitter, crew, bank, galaxy, quests
+    case bridge, market, shipyard, outfitter, crew, bank, galaxy, quests, logbook
 
     var id: String { rawValue }
 
-    /// Every section needs a loaded game that has not ended.
+    /// Every section needs a loaded game that has not ended; the Logbook is also available in an ended game and is the
+    /// only one then (LOG-029, MENU-023).
     func isAvailable(in context: SectionContext) -> Bool {
-        context.hasGame && !context.ended
+        guard context.hasGame else { return false }
+        return self == .logbook || !context.ended
     }
 
     /// The restored section for a stored raw value; unknown or unavailable values fall back to Bridge (UI-SHELL-016).
+    /// An ended game always reopens on its game-over card.
     static func restored(rawValue: String?, context: SectionContext) -> Section {
-        guard let rawValue, let s = Section(rawValue: rawValue), s.isAvailable(in: context) else { return .bridge }
+        guard !context.ended, let rawValue, let s = Section(rawValue: rawValue), s.isAvailable(in: context) else { return .bridge }
         return s
     }
 
@@ -50,6 +53,7 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         case .bank: "6"
         case .galaxy: "7"
         case .quests: "8"
+        case .logbook: "9"
         }
     }
 
@@ -63,6 +67,7 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         case .bank: "Bank"
         case .galaxy: "Galaxy"
         case .quests: "Quests"
+        case .logbook: "Logbook"
         }
     }
 
@@ -76,6 +81,7 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         case .bank: "building.columns"
         case .galaxy: "map"
         case .quests: "list.star"
+        case .logbook: "book.closed"
         }
     }
 

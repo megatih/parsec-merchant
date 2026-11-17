@@ -179,10 +179,10 @@ extension FocusedValues {
 }
 
 enum ContextSearch {
-    /// Market with a published filter focuses it; Galaxy (section or key window) focuses the map search (MAP-070);
-    /// everywhere else ⌘F opens Find System (UI-SHELL-085).
+    /// Market with a published filter focuses it; Galaxy (section or key window) focuses the map search (MAP-070); the
+    /// Logbook focuses its search field (LOG-032); everywhere else ⌘F opens Find System (UI-SHELL-085).
     static func perform(_ context: SearchContext, focused: ContextSearchAction?, session: GameSession) {
-        if context == .market || context == .galaxy, let focused {
+        if context != .other, let focused {
             focused.run()
         } else {
             session.present(.sheet(.findSystem))

@@ -27,17 +27,25 @@ extension AXID {
         var contextTrack: String { "\(p).context.track" }
         var contextPlotRoute: String { "\(p).context.plotRoute" }
         var contextUseWormhole: String { "\(p).context.useWormhole" }
+        /// INT-037 / MAP-053 (M10).
+        var contextFindPrices: String { "\(p).context.findPrices" }
+        /// MAP-096 (M10).
+        var heatmap: String { "\(p).heatmap" }
+        var heatmapCommodity: String { "\(p).heatmap.commodity" }
         func context(_ kind: MapContextItem.Kind) -> String {
             switch kind {
             case .setTarget: contextSetTarget
             case .track: contextTrack
             case .plotRoute: contextPlotRoute
             case .useWormhole: contextUseWormhole
+            case .findPrices: contextFindPrices
             }
         }
         var searchField: String { "\(p).search.field" }
         func searchResult(_ i: Int) -> String { "\(p).search.result.\(i)" }
         func searchFilter(_ f: SystemSearchFilter) -> String { "\(p).search.filter.\(f.rawValue)" }
+        /// INT-028 (M10): the "sells <item>" filter menu.
+        var searchFilterSells: String { "\(p).search.filter.sells" }
         var routePanel: String { "\(p).route.panel" }
         var routeObjective: String { "\(p).route.objective" }
         func routeObjective(_ o: RouteObjective) -> String { "\(p).route.objective.\(o.rawValue)" }
@@ -49,7 +57,8 @@ extension AXID {
         func all(systemCount: Int) -> [String] {
             var ids = [map, hoverCard, legend, legendToggle, zoomIn, zoomOut, fitRange, fitGalaxy, target, warp, jump, trackedRange,
                        wormholeLabel, contextSetTarget, contextTrack, contextPlotRoute, contextUseWormhole, searchField, routePanel,
-                       routeObjective, routeClear, routeUnreachable]
+                       routeObjective, routeClear, routeUnreachable, contextFindPrices, heatmap, heatmapCommodity,
+                       searchFilterSells]
             ids += (0..<systemCount).flatMap { [system($0), searchResult($0)] }
             ids += SystemSearchFilter.allCases.map(searchFilter)
             ids += RouteObjective.allCases.map(routeObjective)

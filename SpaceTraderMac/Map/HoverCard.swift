@@ -19,7 +19,7 @@ struct HoverCardModel: Equatable {
 
     /// MAP-045/046: a system glyph.
     static func make(system sys: MapSystem, snapshot s: MapSnapshot, preview: WarpTargetPreview, jumps: HoverJumps,
-                     questTitles: [String] = []) -> HoverCardModel {
+                     questTitles: [String] = [], intelRows: [String] = []) -> HoverCardModel {
         var rows: [String] = []
         rows.append(sys.visited ? String(localized: "Visited") : String(localized: "Not visited"))
         rows.append(String(localized: "\(String(localized: Names.size(sys.size))) · \(String(localized: SystemText.techLevel(sys.techLevel))) · \(String(localized: SystemText.government(sys.politics)))"))
@@ -46,6 +46,7 @@ struct HoverCardModel: Equatable {
             case let .count(n): rows.append(n == 1 ? String(localized: "1 jump") : String(localized: "\(n) jumps"))
             }
         }
+        rows += intelRows
         var tags: [String] = []
         if s.hasTarget, sys.index == s.warpSystem { tags.append(String(localized: "Target")) }
         if s.trackedSystem == sys.index { tags.append(String(localized: "Tracked")) }

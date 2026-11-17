@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecEngine
+import ParsecInsights
+import SwiftUI
+
+/// ACH-010 / ACH-019 / ACH-020: the grid of badges for the current ruleset.
+struct AchievementsView: View {
+    @Environment(GameSession.self) private var session
+    @State private var showUnavailable = false
+
+    var body: some View {
+        if let state = session.state {
+            let _ = session.achievementsRevision
+            let m = AchievementsModel.make(stats: session.careerStats, ruleset: state.ruleset, records: session.achievements.records,
+                                           journal: session.journal, cheatsUsed: state.cheatsUsed)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(verbatim: m.headerText).font(.headline)
+                    if let banner = m.disabledBanner {
+                        Label { Text(verbatim: banner) } icon: { Image(systemName: "nosign") }
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(.orange.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                            .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier(AXID.Logbook.achievementsDisabled)
+                    }
+                    grid(m.badges)
+                    if !m.unavailable.isEmpty {
+                        DisclosureGroup(isExpanded: $showUnavailable) {
+                            grid(m.unavailable).opacity(0.6)
+                        } label: {
+                            Text("Not available in this ruleset")
+                        }
+                        .accessibilityIdentifier(AXID.Logbook.achievementsUnavailable)
+                    }
+                }
+                .padding(16)
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier(AXID.Logbook.achievements)
+        }
+    }
+
+    private func grid(_ badges: [AchievementsModel.Badge]) -> some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
+            ForEach(badges) { BadgeView(badge: $0) }
+        }
+    }
+}
+
+private struct BadgeView: View {
+    let badge: AchievementsModel.Badge
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: badge.symbol)
+                .font(.title)
+                .foregroundStyle(badge.unlocked ? Color.accentColor : Color.secondary)
+                .frame(width: 36)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 4) {
+                    Text(verbatim: badge.name).font(.headline)
+                    if badge.unlocked {
+                        Image(systemName: "checkmark.seal.fill").foregroundStyle(.green).accessibilityLabel(Text("Unlocked"))
+                    }
+                }
+                Text(verbatim: badge.description).font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let p = badge.progress, !badge.unlocked {
+                    ProgressView(value: Double(p.current), total: Double(max(1, p.target)))
+                    Text(verbatim: "\(p.current.formatted()) / \(p.target.formatted())").font(.caption2).monospacedDigit()
+                }
+                if let text = badge.unlockedText {
+                    Text(verbatim: [text, badge.inGameText].compactMap(\.self).joined(separator: ", "))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else if !badge.unlocked {
+                    Text("Locked").font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(AXID.Logbook.badge(badge.id))
+    }
+}

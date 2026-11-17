@@ -15,7 +15,7 @@ struct GameOverView: View {
         ScrollView {
             if let state = session.state,
                let model = GameOverCardModel.make(state: state, recorded: session.recordedScore, lastStep: session.lastStep,
-                                                  table: table) {
+                                                  table: table, stats: session.careerStats) {
                 content(model)
                     .frame(maxWidth: .infinity)
                     .padding(32)
@@ -66,6 +66,8 @@ struct GameOverView: View {
         HStack(spacing: 12) {
             Button("Main Menu") { session.requestCloseGame() }
                 .accessibilityIdentifier(AXID.GameOver.mainMenu)
+            Button("Show Logbook") { session.showLogbook(tab: .log) }
+                .accessibilityIdentifier(AXID.LogbookLinks.gameOverShowLogbook)
             Button("High Scores") {
                 // The window opens at this game's ruleset (UI-ENC-087) and highlights the new rank (UI-ENC-089).
                 session.highScoresRevision += 1

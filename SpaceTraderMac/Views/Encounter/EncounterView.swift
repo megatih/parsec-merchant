@@ -40,7 +40,8 @@ struct EncounterView: View {
                 TribbleOverlay(state: state)
             }
             if session.showsTacticalReadout, let readout = engine.tacticalReadout {
-                TacticalReadoutPanel(readout: readout, ruleset: state.ruleset)
+                TacticalReadoutPanel(readout: readout, ruleset: state.ruleset,
+                                     metBefore: TacticalText.metBefore(MetBefore.make(opponent: readout.opponentType, journal: session.journal)))
             }
             EncounterLogView(lines: session.encounterUI.log)
             if let resume = session.encounterResumePresentation {
@@ -177,6 +178,8 @@ private struct TribbleButton: View {
 private struct TacticalReadoutPanel: View {
     let readout: TacticalReadout
     let ruleset: Ruleset
+    /// INT-039: the one intel line.
+    var metBefore: String?
 
     var body: some View {
         Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
@@ -199,6 +202,13 @@ private struct TacticalReadoutPanel: View {
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier(AXID.Encounter.tacticalFleeOdds)
+            }
+            if let metBefore {
+                GridRow {
+                    Text("History").foregroundStyle(.secondary)
+                    Text(verbatim: metBefore)
+                }
+                .accessibilityElement(children: .combine)
             }
         }
         .font(.callout)

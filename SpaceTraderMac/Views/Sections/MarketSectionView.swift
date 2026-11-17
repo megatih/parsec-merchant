@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import ParsecEngine
+import ParsecInsights
 import SwiftUI
 
-/// Market (⌘2, UI-SHELL §8): one merged trade table (buy and sell), the item filter and the footer.
+/// Market (⌘2, UI-SHELL §8): one merged trade table (buy and sell), the item filter and the footer, with the M10 trade
+/// intelligence (INT §7): Target and History columns, the recommendations strip, "Why this price?" and the projection.
 struct MarketSectionView: View {
     @Environment(GameSession.self) private var session
+    @AppStorage(AppSettingsKey.showRecommendations) private var showRecommendations = true
+    @State private var intel: MarketIntelModel?
     @State private var filter = ""
     @State private var quantities: [TradeItemType: String] = [:]
     @State private var disposal: CargoDisposal?
@@ -21,6 +25,10 @@ struct MarketSectionView: View {
             let rows = MarketFilter.filtered(MarketRowModel.rows(state: state), filter: filter)
             VStack(spacing: 0) {
                 filterBar
+                if showRecommendations, let intel {
+                    RecommendationStripView(intel: intel, state: state) { self.session.marketSelection = $0 }
+                    Divider()
+                }
                 Table(rows, selection: $session.marketSelection) {
                     TableColumn("Item") { (r: MarketRowModel) in ItemCell(row: r) }
                         .width(min: 130, ideal: 160)
@@ -38,15 +46,31 @@ struct MarketSectionView: View {
                         .width(min: 80, ideal: 100)
                     TableColumn("P/L") { (r: MarketRowModel) in ProfitCell(value: r.profitPerUnit) }
                         .width(min: 60, ideal: 70)
-                    TableColumn("Target") { (r: MarketRowModel) in TargetCell(quote: r.target) }
-                        .width(min: 110, ideal: 140)
+                    TableColumn("Target") { (r: MarketRowModel) in
+                        let i = intel?.row(r.item)
+                        IntelTargetCell(item: r.item, quote: i?.targetQuote, buyHere: r.buyPrice, profitPerBay: i?.profitPerBay)
+                    }
+                    .width(min: 130, ideal: 170)
+                    TableColumn("History") { (r: MarketRowModel) in
+                        PriceSparkline(item: r.item, series: intel?.row(r.item)?.history ?? [])
+                    }
+                    .width(min: 70, ideal: 80)
                     TableColumn("Actions") { (r: MarketRowModel) in actionsCell(r) }
                         .width(min: 280, ideal: 300)
                 }
                 .onKeyPress(phases: .down) { press in handleKey(press, rows: rows) }
                 .accessibilityIdentifier(AXID.Market.table)
                 Divider()
-                footer(MarketFooterModel.make(state: state))
+                PriceExplanationPanel(item: session.marketSelection,
+                                      explanation: session.marketSelection.flatMap { intel?.row($0)?.explanation })
+                Divider()
+                footer(MarketFooterModel.make(state: state), state: state)
+            }
+            .task(id: IntelBuildKey(generation: session.stateGeneration, journal: session.journalRevision)) {
+                // INT-029: rebuilt once per state generation or journal change, off the main actor.
+                let inputs = MarketIntelModel.Inputs.make(state: state, journal: session.journal)
+                let built = await MarketIntelModel.build(inputs)
+                if !Task.isCancelled { intel = built }
             }
             .focusedSceneValue(\.marketFilterFocus, MarketFilterFocusAction { focusedField = .filter })
             .sheet(item: $disposal) { d in
@@ -92,7 +116,8 @@ struct MarketSectionView: View {
     // MARK: Cells
 
     private func heldCell(_ r: MarketRowModel) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let advice = intel?.row(r.item)?.sellAdvice
+        return VStack(alignment: .leading, spacing: 0) {
             Text(verbatim: r.row.held.formatted()).monospacedDigit()
                 .accessibilityIdentifier(AXID.Market.held(r.item))
             if r.row.held > 0 {
@@ -101,6 +126,10 @@ struct MarketSectionView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
+        // INT-035: the sell advice.
+        .help(advice.flatMap { a in
+            session.state.map { st in IntelText.sellAdvice(a, systemName: { Names.system($0, in: st) }, today: st.commander.days) }
+        } ?? "")
         .contextMenu {
             if let j = CargoDisposal.jettison(r) {
                 Button("Jettison…") { disposal = j }
@@ -179,16 +208,22 @@ struct MarketSectionView: View {
 
     // MARK: Footer (UI-SHELL-066)
 
-    private func footer(_ f: MarketFooterModel) -> some View {
+    private func footer(_ f: MarketFooterModel, state: GameState) -> some View {
         HStack(spacing: 24) {
             Text("Bays: \(f.usedBays)/\(f.totalBays), \(f.freeForBuying) free for buying").monospacedDigit()
             Text("Cash available: \(f.cashAvailable.formatted()) cr.").monospacedDigit()
+            if let hold = intel?.holdAtTarget, let target = intel?.target {
+                // INT-034: the projected profit of the hold at the target.
+                Text(verbatim: IntelText.holdProjection(hold, target: Names.system(target, in: state)))
+                    .monospacedDigit()
+                    .accessibilityIdentifier(AXID.MarketIntel.footerProjected)
+            }
             Spacer()
         }
         .font(.callout)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Market.footer)
     }
 }
@@ -258,28 +293,10 @@ private struct ProfitCell: View {
     }
 }
 
-/// The target's price and the difference per bay (C# target columns).
-private struct TargetCell: View {
-    let quote: TargetQuote?
-
-    var body: some View {
-        if let quote {
-            HStack(spacing: 6) {
-                Text(verbatim: quote.price.formatted()).monospacedDigit()
-                if let diff = quote.difference, let pct = quote.percent {
-                    let sign = diff > 0 ? "+" : ""
-                    Text(verbatim: "\(diff > 0 ? "▲" : diff < 0 ? "▼" : "") \(sign)\(diff.formatted()) (\(sign)\(pct)%)")
-                        .font(.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(diff > 0 ? Color.green : diff < 0 ? Color.red : Color.secondary)
-                        .help(Text("Profit per bay if bought here and sold at the target."))
-                }
-            }
-            .accessibilityElement(children: .combine)
-        } else {
-            Text(verbatim: "—").foregroundStyle(.secondary).accessibilityLabel(Text("No target price"))
-        }
-    }
+/// INT-029: the Market's intel is rebuilt when either key changes.
+private struct IntelBuildKey: Equatable {
+    var generation: Int
+    var journal: Int
 }
 
 // MARK: - Jettison / Dump sheet (UI-SHELL-065)

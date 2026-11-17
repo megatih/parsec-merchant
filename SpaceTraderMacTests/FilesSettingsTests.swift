@@ -337,7 +337,7 @@ struct FilesSettingsTests {
         #expect(TextSizeSetting.standard.dynamicTypeSize == .large)
         let empty = AppSettings(defaults: UserDefaults(suiteName: "pm-\(UUID().uuidString)") ?? .standard)
         #expect(empty.textSize == .large && !empty.fastTravel && empty.arrivalReportStyle == .card && empty.tacticalReadout)
-        #expect(SettingsTab.sound.arrivesIn == 11 && SettingsTab.intelligence.arrivesIn == 10 && SettingsTab.general.arrivesIn == nil)
+        #expect(SettingsTab.sound.arrivesIn == 11 && SettingsTab.intelligence.arrivesIn == nil && SettingsTab.general.arrivesIn == nil)
         #expect([AppSettingsKey.textSize, AppSettingsKey.fastTravel, AppSettingsKey.arrivalReportStyle, AppSettingsKey.tacticalReadout]
             == ["settings.textSize", "settings.fastTravel", "settings.arrivalReportStyle", "settings.tacticalReadout"])
     }

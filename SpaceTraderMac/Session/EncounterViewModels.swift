@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import ParsecEngine
+import ParsecInsights
 
 /// UI-ENC-017: the badge word and stand-in symbol (vector glyphs are M11).
 struct EncounterBadgeModel: Equatable, Sendable {
@@ -124,6 +125,23 @@ struct UnitPoint2D: Equatable, Sendable {
     var y: Double
 }
 
+/// INT-039: how often this ship type was met before and how many of those encounters were won (journal only; it
+/// reveals nothing hidden).
+struct MetBefore: Equatable, Sendable {
+    var met: Int
+    var won: Int
+
+    static func make(opponent: ShipType, journal: GameJournal?) -> MetBefore {
+        var m = MetBefore(met: 0, won: 0)
+        for e in journal?.entries ?? [] {
+            guard case let .encounter(record) = e.kind, record.opponent == opponent else { continue }
+            m.met += 1
+            if record.result == .won { m.won += 1 }
+        }
+        return m
+    }
+}
+
 /// UI-ENC-042: the tactical readout's text over `GameEngine.tacticalReadout`.
 enum TacticalText {
     /// "Gnat (Small)".
@@ -149,6 +167,13 @@ enum TacticalText {
             case .poor: String(localized: "Poor")
             }
         }
+    }
+
+    /// INT-039: "Met before: N times, won M" for the opponent's ship type, from the journal's encounter records (nil
+    /// when never met).
+    static func metBefore(_ record: MetBefore?) -> String? {
+        guard let record, record.met > 0 else { return nil }
+        return String(localized: "Met before: \(record.met) times, won \(record.won)")
     }
 
     private static func counted(_ name: String, _ n: Int) -> String { n > 1 ? "\(n) × \(name)" : name }

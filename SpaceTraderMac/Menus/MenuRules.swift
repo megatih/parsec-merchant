@@ -18,9 +18,10 @@ nonisolated enum MenuPhase: String, Sendable, Equatable {
     }
 }
 
-/// What ⌘F does in the shown section (MENU-018): Market's filter, the galaxy map search (MAP-070), or Find System.
+/// What ⌘F does in the shown section (MENU-018): Market's filter, the galaxy map search (MAP-070), the Logbook's search
+/// (LOG-032), or Find System.
 nonisolated enum SearchContext: String, Sendable, Equatable {
-    case market, galaxy, other
+    case market, galaxy, logbook, other
 }
 
 /// One Open Recent row (MENU-016).
@@ -77,7 +78,8 @@ nonisolated struct MenuContext: Sendable, Equatable {
         c.selectedSection = selectedSection
         c.focusedMap = focusedMap
         c.galaxyIsKey = galaxyIsKey
-        c.searchContext = galaxyIsKey || selectedSection == .galaxy ? .galaxy : selectedSection == .market ? .market : .other
+        c.searchContext = galaxyIsKey || selectedSection == .galaxy ? .galaxy
+            : selectedSection == .market ? .market : selectedSection == .logbook ? .logbook : .other
         c.currentSlotID = currentSlotID
         c.canRevertToAutosave = canRevertToAutosave
         c.recentSlots = recentSlots

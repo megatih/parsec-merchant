@@ -30,6 +30,15 @@ struct CareerCardView: View {
                     .monospacedDigit())
                 row("Cash", Text("\(card.cash.formatted()) cr.").monospacedDigit())
                 row("Debt", Text("\(card.debt.formatted()) cr.").monospacedDigit())
+                if let s = card.stats {
+                    // STAT-021: the log-based totals.
+                    row("Encounters", Text("won \(s.encountersWon), fled \(s.encountersFled), surrendered \(s.encountersSurrendered)")
+                        .monospacedDigit())
+                    row("Best trade", Text(verbatim: CareerText.bestTrade(s.bestTrade)))
+                    row("Systems visited", Text("\(s.systemsVisited) of \(s.systemCount)").monospacedDigit())
+                    row("Parsecs travelled", Text(s.parsecsTravelled, format: .number).monospacedDigit())
+                    row("Achievements", Text(s.achievementsUnlocked, format: .number).monospacedDigit())
+                }
             }
             let badges = CareerText.badges(card)
             if !badges.isEmpty {

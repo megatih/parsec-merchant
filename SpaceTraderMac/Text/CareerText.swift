@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import ParsecEngine
+import ParsecInsights
 
 /// Text of the game-over card and the career card (UI-ENC-082/083).
 enum CareerText {
@@ -27,6 +28,12 @@ enum CareerText {
     }
 
     /// The share preview title (UI-ENC-085).
+    /// STAT-021: "Robots +4,120 cr." or "None".
+    static func bestTrade(_ sale: BestSale?) -> String {
+        guard let sale else { return String(localized: "None") }
+        return String(localized: "\(String(localized: Names.item(sale.item))) +\(sale.profit.formatted()) cr.")
+    }
+
     static func shareTitle(commander: String) -> String {
         String(localized: "Parsec Merchant — \(commander)")
     }

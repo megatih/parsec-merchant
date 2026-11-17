@@ -20,6 +20,8 @@ enum SessionMode: Equatable, Sendable {
 enum FeedNote: Equatable, Sendable {
     case gameSaved
     case recoveredFromBackup
+    /// ACH-016: an achievement newly added to the app-wide store.
+    case achievementUnlocked(AchievementID)
 }
 
 /// One entry of the in-memory event feed (newest 500 kept; not persisted).
@@ -61,6 +63,8 @@ enum AppConfirmation: Equatable, Sendable {
     case clearHighScores(RulesetID)
     case timewarpLoad(reloaded: Bool)
     case closeGame
+    /// ACH-021: Settings › Advanced › Reset Achievements.
+    case resetAchievements
 
     var key: String {
         switch self {
@@ -71,6 +75,7 @@ enum AppConfirmation: Equatable, Sendable {
         case let .clearHighScores(r): "clearHighScores.\(r.rawValue)"
         case let .timewarpLoad(reloaded): "timewarpLoad.\(reloaded)"
         case .closeGame: "closeGame"
+        case .resetAchievements: "resetAchievements"
         }
     }
 }

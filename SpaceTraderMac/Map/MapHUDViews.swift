@@ -298,7 +298,8 @@ struct MapSearchView: View {
     let send: (Command) -> Void
 
     var body: some View {
-        let suggestions = ui.suggestions(snapshot)
+        let sells = session.sellsMatches(ui.sellsItem)
+        let suggestions = ui.suggestions(snapshot, sells: sells)
         VStack(alignment: .leading, spacing: 6) {
             TextField("Find a system", text: $ui.searchText)
                 .textFieldStyle(.roundedBorder)
@@ -337,6 +338,18 @@ struct MapSearchView: View {
                     .help(Text(title(f)))
                     .accessibilityIdentifier(ids.searchFilter(f))
                 }
+                // INT-028: "sells <item>" from intel only (estimates marked in the rows).
+                Menu {
+                    Button("Any commodity") { ui.sellsItem = nil }
+                    ForEach(TradeItemType.allCases, id: \.self) { item in
+                        Button { ui.sellsItem = item; ui.suggestionsShown = true } label: { Text(Names.item(item)) }
+                    }
+                } label: {
+                    if let item = ui.sellsItem { Text("Sells \(Text(Names.item(item)))") } else { Text("Sells…") }
+                }
+                .controlSize(.small)
+                .fixedSize()
+                .accessibilityIdentifier(ids.searchFilterSells)
             }
             if let message = ui.searchMessage {
                 Text(verbatim: message).font(.caption).foregroundStyle(.red)
@@ -349,6 +362,9 @@ struct MapSearchView: View {
                         } label: {
                             HStack {
                                 Text(verbatim: snapshot.systems[i].name)
+                                if let sells, sells.indices.contains(i), sells[i] == .estimate {
+                                    Text("estimate").font(.caption2).foregroundStyle(.secondary)
+                                }
                                 Spacer()
                                 Text(i == snapshot.currentSystem ? String(localized: "Here") : MapText.parsecs(snapshot.systems[i].distance))
                                     .foregroundStyle(.secondary)

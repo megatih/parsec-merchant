@@ -16,7 +16,8 @@ enum DetailMode: Equatable, Sendable {
         guard let state else { return .section(selected) }
         switch state.phase {
         case .encounter: return .encounter
-        case let .gameOver(end): return .gameOver(end)
+        // LOG-035: an ended game shows its card, or the Logbook when the player chose "Show Logbook".
+        case let .gameOver(end): return selected == .logbook ? .section(.logbook) : .gameOver(end)
         case let .inTransit(t): return .transit(.frozen(t))
         case .docked: return .section(selected)
         }

@@ -3,10 +3,13 @@ import ParsecEngine
 import SwiftUI
 
 /// UI-SHELL-044 / UI-ENC-065: the feed overlay (an overlay, never a popover): "Day N · <system>" groups, collapsed
-/// combat rounds and category symbols. "Show Logbook" arrives with LOG in M10.
+/// combat rounds and category symbols, and "Show Logbook" (LOG-035).
 struct FeedOverlay: View {
     let groups: [FeedGroup]
     let state: GameState
+    /// LOG-035: disabled while the encounter lock applies.
+    var showLogbookEnabled = true
+    var showLogbook: () -> Void = {}
     let dismiss: () -> Void
 
     var body: some View {
@@ -14,6 +17,12 @@ struct FeedOverlay: View {
             HStack {
                 Text("Recent Events").font(.headline)
                 Spacer()
+                Button("Show Logbook") {
+                    dismiss()
+                    showLogbook()
+                }
+                .disabled(!showLogbookEnabled)
+                .accessibilityIdentifier(AXID.LogbookLinks.feedShowLogbook)
                 Button("Close", action: dismiss)
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier(AXID.Status.feedClose)

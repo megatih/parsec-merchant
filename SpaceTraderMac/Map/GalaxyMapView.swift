@@ -54,16 +54,22 @@ struct GalaxyMapView: View {
         .onAppear { installScrollMonitor() }
         .onDisappear { removeScrollMonitor() }
         .onChange(of: session.map.focusRequest) { _, request in handleFocusRequest(request, snapshot: snapshot) }
+        .sheet(item: $ui.intelSheet) { request in
+            SystemIntelSheet(system: request.id) { ui.intelSheet = nil }
+                .environment(session)
+        }
         .focusedSceneValue(\.contextSearch, scope.hasHUD ? ContextSearchAction { searchFocused = true } : nil)
     }
 
     // MARK: Canvas
 
     private func mapCanvas(_ snapshot: MapSnapshot, projected: ProjectedMap) -> some View {
-        let options = MapRenderOptions(style: MapStyle(differentiateWithoutColor: differentiateWithoutColor),
-                                       dimmed: SystemSearch.dimmed(filters: ui.filters, snapshot: snapshot), miniChart: scope == .miniChart)
+        var options = MapRenderOptions(style: MapStyle(differentiateWithoutColor: differentiateWithoutColor),
+                                       dimmed: SystemSearch.dimmed(filters: ui.filters, snapshot: snapshot, sells: session.sellsMatches(ui.sellsItem)),
+                                       miniChart: scope == .miniChart)
+        options.heatmap = scope.hasHUD ? session.heatmap(ui.heatmapChoice.mode(item: ui.heatmapItem)) : nil
         return Canvas { ctx, _ in
-            GalaxyMapRenderer.draw(in: &ctx, snapshot: snapshot, projected: projected, layers: MapLayer.m8, options: options)
+            GalaxyMapRenderer.draw(in: &ctx, snapshot: snapshot, projected: projected, layers: MapLayer.m10, options: options)
         }
         .focusable(scope.hasHUD)
         .focused($canvasFocused)
@@ -234,6 +240,7 @@ struct GalaxyMapView: View {
             Button {
                 if let command = item.command { sendFromMap(command) }
                 if item.kind == .plotRoute, let d = item.destination { session.planRoute(to: d) }
+                if item.kind == .findPrices, let d = item.destination { ui.intelSheet = SystemIntelRequest(id: d) }
             } label: {
                 Text(verbatim: item.title)
             }
@@ -368,8 +375,12 @@ struct GalaxyMapView: View {
             } else { .computing }
             let titles = session.state.map { st in snapshot.systems[i].questKinds.map { QuestText.string(for: $0, state: st) } } ?? []
             let preview = session.state?.warpTargetPreview(i)
+            // INT-036 / MAP-047: known prices and the best profit for the hold, from intel only.
+            let intelRows = session.intelInputs().map { inputs in
+                HoverIntel.rows(system: i, book: inputs.book, snapshot: inputs.snapshot) { String(localized: Names.item($0)) }
+            } ?? []
             model = preview.map { HoverCardModel.make(system: snapshot.systems[i], snapshot: snapshot, preview: $0, jumps: jumps,
-                                                      questTitles: titles) }
+                                                      questTitles: titles, intelRows: intelRows) }
                 ?? HoverCardModel(title: snapshot.systems[i].name, rows: [], tags: [])
         case let .wormhole(w):
             model = HoverCardModel.make(wormhole: w, snapshot: snapshot, tax: session.state.map { $0.wormholeTaxPerJump } ?? 0)
@@ -416,6 +427,11 @@ struct GalaxyMapView: View {
                                                       snapshot: snapshot, reduceMotion: reduceMotion)
                                },
                                fitGalaxy: { fitGalaxy(snapshot) })
+                }
+                HStack {
+                    Spacer()
+                    HeatmapHUDView(ids: ids, choice: $ui.heatmapChoice, item: $ui.heatmapItem,
+                                   result: session.heatmap(ui.heatmapChoice.mode(item: ui.heatmapItem)))
                 }
                 if ui.legendShown {
                     HStack {

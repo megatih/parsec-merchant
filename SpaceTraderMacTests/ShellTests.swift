@@ -87,7 +87,8 @@ struct ShellTests {
     func restoredSection() {
         let playing = SectionContext(hasGame: true, ended: false, hasShipyards: true, currentSystemHasShipyard: false)
         #expect(Section.restored(rawValue: "bank", context: playing) == .bank)
-        #expect(Section.restored(rawValue: "logbook", context: playing) == .bridge)
+        #expect(Section.restored(rawValue: "logbook", context: playing) == .logbook)
+        #expect(Section.restored(rawValue: "nonsense", context: playing) == .bridge)
         #expect(Section.restored(rawValue: nil, context: playing) == .bridge)
         #expect(Section.restored(rawValue: "bank", context: .noGame) == .bridge)
     }
@@ -129,12 +130,13 @@ struct ShellTests {
         #expect(s.mode == .playing && s.isDocked)
     }
 
-    @Test("UI-SHELL-035 sidebar rows in order with ⌘1…⌘8 (Galaxy ⌘7 from M8) and identifiers sidebar.<section>")
+    @Test("UI-SHELL-035 LOG-029 sidebar rows in order with ⌘1…⌘9 (Galaxy ⌘7 from M8, Logbook ⌘9 from M10) and identifiers")
     func sidebarRows() {
-        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests])
-        #expect(Section.allCases.map(\.shortcutDigit) == ["1", "2", "3", "4", "5", "6", "7", "8"])
+        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .logbook])
+        #expect(Section.allCases.map(\.shortcutDigit) == ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
         #expect(Section.allCases.map(\.axID) == ["sidebar.bridge", "sidebar.market", "sidebar.shipyard", "sidebar.outfitter",
-                                                  "sidebar.crew", "sidebar.bank", "sidebar.galaxy", "sidebar.quests"])
+                                                  "sidebar.crew", "sidebar.bank", "sidebar.galaxy", "sidebar.quests", "sidebar.logbook"])
+        #expect(AXID.SectionRoot.root(.logbook) == "logbook.root")
     }
 
     @Test("UI-SHELL-036 badges: special event, mercenaries for hire, debt warning at 75,000")
@@ -169,7 +171,8 @@ struct ShellTests {
             #expect(Section.allCases.allSatisfy { $0.isAvailable(in: ctx) })
             #expect(!ctx.designerAvailable || r != .palm122)
             st.phase = .gameOver(.killed)
-            #expect(Section.allCases.allSatisfy { !$0.isAvailable(in: .make(state: st)) })
+            // LOG-029: the Logbook is the only section of an ended game.
+            #expect(Section.allCases.filter { $0.isAvailable(in: .make(state: st)) } == [.logbook])
         }
         #expect(Section.allCases.allSatisfy { !$0.isAvailable(in: .noGame) })
         let yard = SectionContext(hasGame: true, ended: false, hasShipyards: true, currentSystemHasShipyard: true)

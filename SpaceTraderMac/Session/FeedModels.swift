@@ -63,6 +63,7 @@ struct FeedStyle: Equatable, Sendable {
         switch note {
         case .gameSaved: FeedStyle(.system)
         case .recoveredFromBackup: FeedStyle(.system, .warning)
+        case .achievementUnlocked: FeedStyle(.system, .notice)
         }
     }
 

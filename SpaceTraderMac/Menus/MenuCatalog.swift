@@ -39,6 +39,7 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
         case .bank: .bank
         case .galaxy: .galaxy
         case .quests: .quests
+        case .logbook: .logbook
         default: nil
         }
     }
@@ -54,6 +55,7 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
         case .bank: .bank
         case .galaxy: .galaxy
         case .quests: .quests
+        case .logbook: .logbook
         }
     }
 }
@@ -91,7 +93,7 @@ nonisolated struct MenuEntry: Sendable {
 
 nonisolated enum MenuCatalog {
     /// Entries tagged above this milestone are absent from the menu bar (MENU-040).
-    static let currentMilestone = 9
+    static let currentMilestone = 10
     static let githubURL = URL(string: "https://github.com/megatih/parsec-merchant") ?? URL(fileURLWithPath: "/")
     static let openRecentRows = 10
 

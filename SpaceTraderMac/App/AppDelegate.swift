@@ -57,6 +57,11 @@ enum AppBootstrap {
         if options.resetState {
             AppPaths.resetState(root: root, defaults: defaults, domain: Bundle.main.bundleIdentifier)
         }
-        return GameSession(stores: SessionStores(root: root), launchOptions: options, defaults: defaults, dock: AppDock())
+        let stores = SessionStores(root: root)
+        // LLM-024 / LLM-025: `-PMFlavor template` forces templates; otherwise the Settings toggle (default off) decides.
+        let useModel = defaults.object(forKey: AppSettingsKey.useFoundationModels) as? Bool ?? false
+        let flavor = FlavorService(mode: FlavorMode.derive(launch: options, useFoundationModels: useModel))
+        return GameSession(stores: stores, launchOptions: options, defaults: defaults,
+                           achievements: AchievementService(store: stores.achievementStore), flavor: flavor, dock: AppDock())
     }
 }

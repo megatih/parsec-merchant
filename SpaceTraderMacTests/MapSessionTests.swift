@@ -262,7 +262,7 @@ struct MapSessionTests {
 
     @Test("MAP-075 the Galaxy section sits between Bank and Quests with ⌘7")
     func section() {
-        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests])
+        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .logbook])
         #expect(Section.galaxy.shortcutDigit == "7" && Section.galaxy.systemImage == "map" && Section.galaxy.axID == "sidebar.galaxy")
         #expect(AXID.SectionRoot.root(.galaxy) == "galaxy.root")
         #expect(Section.galaxy.isAvailable(in: SectionContext.make(state: MapFx.state())))

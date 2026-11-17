@@ -75,6 +75,11 @@ struct ShipInspectorView: View {
             LabeledContent("Net worth") { Text("\(m.worth.formatted()) cr.").monospacedDigit() }
                 .help(Text("Your ship, cargo and cash, minus your debt."))
                 .accessibilityIdentifier(AXID.Inspector.worth)
+            // STAT-020: career totals live in Logbook › Statistics.
+            Button("Show Statistics") { session.showLogbook(tab: .statistics) }
+                .disabled(!LogbookLinks.showStatisticsEnabled(sectionContext: session.sectionContext,
+                                                              inputLocked: session.isInputLocked))
+                .accessibilityIdentifier(AXID.LogbookLinks.inspectorShowStatistics)
         }
     }
 

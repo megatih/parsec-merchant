@@ -12,6 +12,8 @@ nonisolated enum MapLayer: Int, CaseIterable, Comparable, Sendable, Hashable {
 
     /// Every layer drawn in M8 (heatmap arrives in M10).
     static let m8: Set<MapLayer> = Set(allCases).subtracting([.heatmap])
+    /// MAP-023 / MAP-096: every layer, including the heatmap.
+    static let m10: Set<MapLayer> = Set(allCases)
 }
 
 /// Per-render options.
@@ -21,6 +23,8 @@ struct MapRenderOptions {
     var dimmed: Set<Int> = []
     /// The mini chart draws a bearing triangle instead of the bearing line (MAP-041).
     var miniChart = false
+    /// MAP-096: the heatmap to tint (nil: none).
+    var heatmap: HeatmapResult?
 
     static let dimmedOpacity = 0.4
 }
@@ -43,8 +47,10 @@ enum GalaxyMapRenderer {
             ctx.fill(Path(CGRect(origin: .zero, size: size)),
                      with: .linearGradient(Gradient(colors: [MapStyle.spaceTop, MapStyle.spaceBottom]),
                                            startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
-        case .heatmap, .searchDimming:
-            break // heatmap is M10; dimming is applied while drawing the systems.
+        case .heatmap:
+            if let heat = options.heatmap { drawHeatmap(&ctx, s, pm, heat) }
+        case .searchDimming:
+            break // applied while drawing the systems.
         case .fullTankRing:
             if let r = MapRange.fullTankRadius(s) {
                 ring(&ctx, s, pm, radius: r, dashed: true, label: options.style.differentiateWithoutColor
@@ -74,6 +80,25 @@ enum GalaxyMapRenderer {
             drawMarkers(&ctx, s, pm, dwc: options.style.differentiateWithoutColor)
         case .labels:
             for label in pm.labels { drawLabel(&ctx, label) }
+        }
+    }
+
+    // MARK: Heatmap (MAP-096)
+
+    private static func drawHeatmap(_ ctx: inout GraphicsContext, _ s: MapSnapshot, _ pm: ProjectedMap, _ heat: HeatmapResult) {
+        let strengths = HeatmapTint.strengths(heat)
+        for i in pm.visible where strengths.indices.contains(i) {
+            guard let t = strengths[i] else { continue }
+            let c = pm.centers[i]
+            let r = pm.metrics.radius(s.systems[i].size) * 3.2
+            let rect = CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)
+            let color = HeatmapTint.color(t)
+            ctx.fill(Path(ellipseIn: rect), with: .radialGradient(Gradient(colors: [color.opacity(0.55), color.opacity(0)]),
+                                                                center: c, startRadius: 0, endRadius: r))
+            if heat.values[i].note == .estimate {
+                ctx.stroke(Path(ellipseIn: rect.insetBy(dx: r * 0.45, dy: r * 0.45)), with: .color(color.opacity(0.8)),
+                           style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
+            }
         }
     }
 

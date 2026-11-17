@@ -26,7 +26,8 @@ struct SettingsView: View {
         switch tab {
         case .general: GeneralSettingsView()
         case .advanced: AdvancedSettingsView()
-        case .sound, .intelligence: LaterSettingsView(tab: tab)
+        case .intelligence: IntelligenceSettingsView()
+        case .sound: LaterSettingsView(tab: tab)
         }
     }
 }
@@ -95,10 +96,11 @@ enum SettingsGalaxyCode {
     }
 }
 
-/// Advanced: Clear High Scores per ruleset (UI-SHELL-101). Reset Tips (M12) and Reset Achievements (M10) come later.
+/// Advanced: Clear High Scores per ruleset (UI-SHELL-101) and Reset Achievements (ACH-021). Reset Tips is M12.
 struct AdvancedSettingsView: View {
     @Environment(GameSession.self) private var session
     @State private var pendingClear: RulesetID?
+    @State private var pendingReset = false
 
     var body: some View {
         Form {
@@ -113,12 +115,31 @@ struct AdvancedSettingsView: View {
                 }
             } header: {
                 Text("High Scores")
+            }
+            SwiftUI.Section {
+                LabeledContent {
+                    Button("Reset Achievements…", role: .destructive) { pendingReset = true }
+                        .accessibilityIdentifier(AXID.IntelSettings.resetAchievements)
+                } label: {
+                    Text("Achievements")
+                }
+            } header: {
+                Text("Achievements")
             } footer: {
-                Text("Reset Tips arrives in a later update, and Reset Achievements with achievements.")
+                Text("Reset Tips arrives in a later update.")
                     .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
+        .confirmationDialog(Text(verbatim: resetContent.title), isPresented: $pendingReset, titleVisibility: .visible) {
+            Button(resetContent.confirmLabel, role: .destructive) { session.confirm(.resetAchievements) }
+                .accessibilityIdentifier(AXID.Dialog.appConfirmationConfirm)
+            Button("Cancel", role: .cancel) { pendingReset = false }
+                .keyboardShortcut(.defaultAction)
+                .accessibilityIdentifier(AXID.Dialog.appConfirmationCancel)
+        } message: {
+            Text(verbatim: resetContent.message)
+        }
         .confirmationDialog(Text(verbatim: content?.title ?? ""), isPresented: clearBinding, titleVisibility: .visible) {
             Button(content?.confirmLabel ?? "", role: .destructive) {
                 if let r = pendingClear { session.clearHighScores(r) }
@@ -133,6 +154,10 @@ struct AdvancedSettingsView: View {
         }
     }
 
+    private var resetContent: ConfirmationContent {
+        AppConfirmationText.content(for: .resetAchievements, session: session)
+    }
+
     private var content: ConfirmationContent? {
         pendingClear.map { AppConfirmationText.content(for: .clearHighScores($0), session: session) }
     }
@@ -142,7 +167,7 @@ struct AdvancedSettingsView: View {
     }
 }
 
-/// Sound (M11) and Intelligence (M10): say which milestone brings them.
+/// Sound (M11): says which milestone brings it.
 struct LaterSettingsView: View {
     let tab: SettingsTab
 
@@ -152,8 +177,7 @@ struct LaterSettingsView: View {
                 .accessibilityHidden(true)
             switch tab {
             case .sound: Text("Sound settings arrive with the sound update (milestone 11).")
-            case .intelligence: Text("Intelligence settings arrive with the trade intelligence update (milestone 10).")
-            case .general, .advanced: EmptyView()
+            case .general, .advanced, .intelligence: EmptyView()
             }
         }
         .foregroundStyle(.secondary)

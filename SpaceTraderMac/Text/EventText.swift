@@ -122,6 +122,7 @@ enum EventText {
         switch note {
         case .gameSaved: "Game saved."
         case .recoveredFromBackup: "This save was damaged; an earlier backup was restored."
+        case let .achievementUnlocked(id): "Achievement unlocked: \(AchievementText.name(id))"
         }
     }
 }

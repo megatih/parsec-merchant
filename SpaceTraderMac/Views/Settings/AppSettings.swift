@@ -23,12 +23,11 @@ nonisolated enum SettingsTab: String, CaseIterable, Sendable {
         }
     }
 
-    /// The milestone that brings the tab's controls, for tabs still empty in M7.
+    /// The milestone that brings the tab's controls, for tabs still empty.
     var arrivesIn: Int? {
         switch self {
-        case .general, .advanced: nil
+        case .general, .advanced, .intelligence: nil
         case .sound: 11
-        case .intelligence: 10
         }
     }
 }
@@ -86,7 +85,12 @@ nonisolated enum AppSettingsKey {
     static let fastTravel = "settings.fastTravel"
     static let arrivalReportStyle = "settings.arrivalReportStyle"
     static let tacticalReadout = "settings.tacticalReadout"
-
+    /// INT-038 (default on).
+    static let showRecommendations = "settings.intel.showRecommendations"
+    /// LLM-025 (default off).
+    static let useFoundationModels = "settings.flavor.useFoundationModels"
+    /// LLM-027 (default on).
+    static let showFlavor = "settings.flavor.show"
 }
 
 /// Reads of the app settings (pure over a `UserDefaults`).
@@ -104,6 +108,10 @@ struct AppSettings {
     }
 
     var tacticalReadout: Bool { defaults.object(forKey: AppSettingsKey.tacticalReadout) as? Bool ?? true }
+
+    var showRecommendations: Bool { defaults.object(forKey: AppSettingsKey.showRecommendations) as? Bool ?? true }
+    var useFoundationModels: Bool { defaults.object(forKey: AppSettingsKey.useFoundationModels) as? Bool ?? false }
+    var showFlavor: Bool { defaults.object(forKey: AppSettingsKey.showFlavor) as? Bool ?? true }
 
     /// CHEAT-050: transit is instant with the setting or `-PMFastTravel`.
     func isFastTravel(launch: LaunchOptions) -> Bool { fastTravel || launch.fastTravel }

@@ -67,6 +67,7 @@ struct SectionDetailView: View {
         case .bank: BankSectionView()
         case .galaxy: GalaxySectionView()
         case .quests: QuestsSectionView()
+        case .logbook: LogbookView()
         }
     }
 }

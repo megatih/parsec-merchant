@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import AppKit
 import Observation
+import ParsecEngine
 import ParsecInsights
 import SwiftUI
+
+/// INT-037: the System Intel sheet's subject.
+struct SystemIntelRequest: Identifiable, Equatable {
+    var id: Int
+}
 
 /// What the View menu's zoom items and ⌘F talk to: the focused map (MAP-015, MENU-022).
 struct MapControl {
@@ -29,8 +35,15 @@ final class MapViewModel {
     /// The hit whose card is shown (after the 0.2 s rest).
     var cardHit: MapHit?
     var legendShown = false
+    /// MAP-096: the heatmap mode and its commodity.
+    var heatmapChoice = MapHeatmapChoice.none
+    var heatmapItem = TradeItemType.water
+    /// INT-037: the system whose System Intel sheet is open (Find Prices).
+    var intelSheet: SystemIntelRequest?
     var searchText = ""
     var filters: Set<SystemSearchFilter> = []
+    /// INT-028: the "sells <item>" filter (nil: off).
+    var sellsItem: TradeItemType?
     var highlightedSuggestion: Int?
     var searchMessage: String?
     var suggestionsShown = false
@@ -89,8 +102,9 @@ final class MapViewModel {
 
     // MARK: Search (MAP-071…073)
 
-    func suggestions(_ snapshot: MapSnapshot) -> [Int] {
-        Array(SystemSearch.results(query: searchText, filters: filters, snapshot: snapshot).prefix(SystemSearch.suggestionLimit))
+    func suggestions(_ snapshot: MapSnapshot, sells: [SellsMatch?]? = nil) -> [Int] {
+        Array(SystemSearch.results(query: searchText, filters: filters, snapshot: snapshot, sells: sells)
+            .prefix(SystemSearch.suggestionLimit))
     }
 
     func moveHighlight(by delta: Int, in list: [Int]) {

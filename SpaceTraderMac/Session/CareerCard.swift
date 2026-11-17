@@ -1,9 +1,33 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import ParsecEngine
+import ParsecInsights
+
+/// STAT-021: the log-based totals of the career card (from `CareerStats`).
+struct CareerStatTotals: Equatable, Sendable {
+    var encountersWon: Int
+    var encountersFled: Int
+    var encountersSurrendered: Int
+    var bestTrade: BestSale?
+    var systemsVisited: Int
+    var systemCount: Int
+    var parsecsTravelled: Int
+    var achievementsUnlocked: Int
+
+    init(_ s: CareerStats) {
+        encountersWon = s.won
+        encountersFled = s.fled
+        encountersSurrendered = s.surrendered
+        bestTrade = s.bestSale
+        systemsVisited = s.visitedCount
+        systemCount = s.systemCount
+        parsecsTravelled = s.parsecsTravelled
+        achievementsUnlocked = s.achievementsUnlocked
+    }
+}
 
 /// UI-ENC-083: the career summary of an ended game, built from the state only, so a reopened ended save shows the
-/// same card. Feed- or log-based totals are M10 (UI-ENC-099).
+/// same card. The log-based totals (STAT-021) are added when the session has the game's statistics.
 struct CareerCard: Equatable, Sendable {
     var commanderName: String
     var shipType: ShipType
@@ -30,10 +54,13 @@ struct CareerCard: Equatable, Sendable {
     var cheatsUsed: Bool
     /// The rank this game entered at, when the session recorded one (SCORE-036).
     var enteredRank: Int?
+    /// STAT-021: nil when no statistics are available (kills stay state-derived either way).
+    var stats: CareerStatTotals?
 
     var totalKills: Int { piratesKilled + policeKilled + tradersKilled }
 
-    static func make(state: GameState, end: GameEndType, recorded: RecordedScore?, locale: Locale = .current) -> CareerCard {
+    static func make(state: GameState, end: GameEndType, recorded: RecordedScore?, stats: CareerStats? = nil,
+                     locale: Locale = .current) -> CareerCard {
         let c = state.commander
         let tenths = state.scoreTenths(for: end)
         let rank: Int? = if case let .outcome(.entered(r))? = recorded { r } else { nil }
@@ -44,7 +71,7 @@ struct CareerCard: Equatable, Sendable {
                           policeRecord: state.policeRecord, reputation: state.reputation, piratesKilled: c.kills.pirates,
                           policeKilled: c.kills.police, tradersKilled: c.kills.traders, cash: c.cash, debt: c.debt,
                           ironman: state.ironman, reloaded: state.reloadCount > 0, cheatsUsed: state.cheatsUsed,
-                          enteredRank: rank)
+                          enteredRank: rank, stats: stats.map(CareerStatTotals.init))
     }
 }
 
@@ -101,9 +128,9 @@ struct GameOverCardModel: Equatable, Sendable {
     var career: CareerCard
 
     static func make(state: GameState, recorded: RecordedScore?, lastStep: StepRecord?, table: HighScoreTable?,
-                     locale: Locale = .current) -> GameOverCardModel? {
+                     stats: CareerStats? = nil, locale: Locale = .current) -> GameOverCardModel? {
         guard case let .gameOver(end) = state.phase else { return nil }
-        let career = CareerCard.make(state: state, end: end, recorded: recorded, locale: locale)
+        let career = CareerCard.make(state: state, end: end, recorded: recorded, stats: stats, locale: locale)
         return GameOverCardModel(end: end, vignette: GameOverVignette(end), cause: GameOverCause.make(step: lastStep),
                                  scoreText: career.scoreText,
                                  highScoreText: HighScoreOutcomeText.text(for: recorded, entry: state.highScoreEntry(for: end),

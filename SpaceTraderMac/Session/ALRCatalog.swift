@@ -48,6 +48,7 @@ enum PendingDecisionKind: String, CaseIterable, Sendable {
 /// `AppConfirmation` cases without payloads, with a sample value each.
 enum AppConfirmationKind: String, CaseIterable, Sendable {
     case discardUnsavedGame, revertToAutosave, deleteSlot, loadImportedSave, clearHighScores, timewarpLoad, closeGame
+    case resetAchievements
 
     init(_ c: AppConfirmation) {
         switch c {
@@ -58,6 +59,7 @@ enum AppConfirmationKind: String, CaseIterable, Sendable {
         case .clearHighScores: self = .clearHighScores
         case .timewarpLoad: self = .timewarpLoad
         case .closeGame: self = .closeGame
+        case .resetAchievements: self = .resetAchievements
         }
     }
 
@@ -70,6 +72,7 @@ enum AppConfirmationKind: String, CaseIterable, Sendable {
         case .clearHighScores: .clearHighScores(.modern)
         case .timewarpLoad: .timewarpLoad(reloaded: false)
         case .closeGame: .closeGame
+        case .resetAchievements: .resetAchievements
         }
     }
 }

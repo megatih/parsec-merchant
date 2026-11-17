@@ -23,7 +23,7 @@ struct SidebarBadges: Equatable, Sendable {
         case .bridge: bridgeSpecial ? .special : nil
         case .crew: crewForHire > 0 ? .count(crewForHire) : nil
         case .bank: bankDebtWarning ? .debtWarning : nil
-        case .market, .shipyard, .outfitter, .galaxy, .quests: nil
+        case .market, .shipyard, .outfitter, .galaxy, .quests, .logbook: nil
         }
     }
 

@@ -2,6 +2,7 @@
 import AppKit
 import Foundation
 import ParsecEngine
+import ParsecInsights
 import SwiftUI
 
 /// The quantity a modifier-click or B/S key trades (UI-SHELL-062, -063): plain 1, ⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all.
@@ -45,12 +46,11 @@ struct TargetQuote: Equatable, Sendable {
     /// `100 × difference / buyPrice` (integer, as C#); nil when the item is not sold here.
     var percent: Int?
 
-    static func make(state: GameState, item: TradeItemType, buyPrice: Int) -> TargetQuote? {
+    static func make(state: GameState, item: TradeItemType, buyPrice: Int, snapshot: IntelSnapshot? = nil) -> TargetQuote? {
         let target = state.warpSystem
         guard target != state.commander.currentSystem, state.destinationOK(target) else { return nil }
-        var system = state.galaxy.systems[target]
-        system.specialResource = system.knownResource
-        let price = Pricing.standardPrice(state.ruleset.tables.item(item), in: system, ruleset: state.ruleset)
+        // INT-040: the one standard-price estimate (the resource only once visited, INT-013).
+        let price = TradeIntel.estimate(item: item, system: target, snapshot: snapshot ?? IntelSnapshot(state))
         guard price > 0 else { return nil }
         guard buyPrice > 0 else { return TargetQuote(price: price, difference: nil, percent: nil) }
         let diff = price - buyPrice
@@ -87,6 +87,7 @@ struct MarketRowModel: Identifiable, Equatable, Sendable {
 
     static func rows(state: GameState) -> [MarketRowModel] {
         let docked = state.phase == .docked
+        let snapshot = IntelSnapshot(state)
         return state.marketRows.map { row in
             let buy: CommandError? = if case let .failure(e) = state.marketBuyCheck(row.item) { e } else { nil }
             let sellCheck = state.marketSellCheck(row.item, dump: row.dumpCostPerUnit != nil)
@@ -96,7 +97,7 @@ struct MarketRowModel: Identifiable, Equatable, Sendable {
             }
             return MarketRowModel(row: row, buyBlocker: docked ? buy : .notAllowedInPhase,
                                   sellBlocker: docked ? sell : .notAllowedInPhase,
-                                  target: TargetQuote.make(state: state, item: row.item, buyPrice: row.buyPrice),
+                                  target: TargetQuote.make(state: state, item: row.item, buyPrice: row.buyPrice, snapshot: snapshot),
                                   canJettison: !docked && row.held > 0)
         }
     }

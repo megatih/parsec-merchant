@@ -185,6 +185,10 @@ enum AppConfirmationText {
             ConfirmationContent(title: String(localized: "Close the Game?"),
                                 message: String(localized: "You'll return to the Welcome window."),
                                 confirmLabel: String(localized: "Close Game"), isDestructive: false)
+        case .resetAchievements:
+            ConfirmationContent(title: String(localized: "Reset all achievements?"),
+                                message: String(localized: "This can't be undone."),
+                                confirmLabel: String(localized: "Reset"), isDestructive: true)
         }
     }
 }

@@ -84,6 +84,22 @@ final class GameSession {
     /// Nesting depth of `send` (the auto-show runs after the outermost step).
     @ObservationIgnored var sendDepth = 0
 
+    // MARK: Journal, statistics and achievements (LOG-025, STAT-002, ACH-016; GameSession+Journal.swift)
+    /// LOG-025: the current game's journal (log, intel, open encounter ledger); saved beside the state (ADR-0003).
+    var journal: GameJournal?
+    /// STAT-002: the incremental statistics of the current journal (nil while the STAT-003 rebuild runs).
+    var careerStats: CareerStats?
+    /// Bumped on every journal change, including generated flavor (LOG-027), so log views refresh.
+    var journalRevision = 0
+    /// Bumped when the app-wide achievement store changes (unlock or reset).
+    var achievementsRevision = 0
+    /// LOG-030 / STAT-020: the Logbook tab chosen in this session (nil: restore the window's stored tab).
+    var logbookTab: LogbookTab?
+    @ObservationIgnored var statsTask: Task<Void, Never>?
+    @ObservationIgnored var statsEpoch = 0
+    /// INT-001: the intel snapshot of the current state generation (MapIntel.swift).
+    @ObservationIgnored var intelSnapshotCache: (generation: Int, snapshot: IntelSnapshot)?
+
     // MARK: Services
     let slotStore: SlotStore
     let highScoreStore: HighScoreStore
@@ -100,7 +116,7 @@ final class GameSession {
 
     init(stores: SessionStores, launchOptions: LaunchOptions = .none, defaults: UserDefaults = .standard,
          audio: any SessionAudio = SilentAudio(), haptics: any SessionHaptics = NoHaptics(),
-         achievements: any SessionAchievements = NoAchievements(), flavor: any SessionFlavor = TemplateFlavor(),
+         achievements: any SessionAchievements = NoAchievements(), flavor: (any SessionFlavor)? = nil,
          dock: any SessionDock = NoDock()) {
         slotStore = stores.slotStore
         highScoreStore = stores.highScoreStore
@@ -109,8 +125,10 @@ final class GameSession {
         self.audio = audio
         self.haptics = haptics
         self.achievements = achievements
-        self.flavor = flavor
+        // LLM-024: sessions built without a flavor service (unit tests) use templates only.
+        self.flavor = flavor ?? FlavorService(mode: .templateForced)
         self.dock = dock
+        self.flavor.setResultHandler { [weak self] result in self?.applyGeneratedFlavor(result) }
     }
 
     // MARK: Derived state
@@ -161,8 +179,9 @@ final class GameSession {
         lastRejection = nil
         stateGeneration += 1
         let isConfirmationRequest = if case .confirm = result.decision, result.events.isEmpty { true } else { false }
+        let step = StepRecord(command: command, acknowledged: acknowledged, before: before, result: result, after: state)
         if !isConfirmationRequest {
-            consume(StepRecord(command: command, acknowledged: acknowledged, before: before, result: result, after: state))
+            consume(step)
         }
         if let decision = result.decision {
             presentAfterPlayback(PresentationRouter.route(decision, state: state, command: command, acknowledged: acknowledged))
@@ -171,7 +190,8 @@ final class GameSession {
         appendToFeed(result.events.map(FeedItem.Entry.event), state: state)
         audio.play(events: result.events)
         haptics.perform(events: result.events)
-        achievements.observe(events: result.events, state: state)
+        // LOG-025: the journal records the step before the persistence triggers, so saves include the new entries.
+        recordJournal(step)
         let arrived = result.events.contains { if case .arrived = $0 { true } else { false } }
         runPersistenceTriggers(phaseBefore: phaseBefore, state: state, arrived: arrived)
         if state.phase == .docked, phaseBefore != .docked || arrived { followPlannedRouteAfterDocking() }
@@ -299,8 +319,9 @@ final class GameSession {
         }
     }
 
-    /// Makes `engine` the current game and resets the per-game presentation state.
-    func install(_ newEngine: GameEngine, gameID id: String, slotID: String?) {
+    /// Makes `engine` the current game and resets the per-game presentation state. A nil `journal` starts a new one
+    /// (new games and scenarios, LOG-005).
+    func install(_ newEngine: GameEngine, gameID id: String, slotID: String?, journal newJournal: GameJournal? = nil) {
         engine = newEngine
         gameID = id
         currentSlotID = slotID
@@ -313,6 +334,7 @@ final class GameSession {
         stateGeneration += 1
         resetMapForNewGame()
         resetStepState()
+        installJournal(newJournal ?? GameJournal.start(state: newEngine.state))
         if case let .gameOver(end) = newEngine.state.phase { recordHighScore(end: end) }
     }
 
@@ -364,6 +386,7 @@ final class GameSession {
         stateGeneration += 1
         resetMapForNewGame()
         resetStepState()
+        installJournal(nil)
     }
 
     // MARK: App confirmations
@@ -388,6 +411,8 @@ final class GameSession {
             present(.sheet(.openSavedGame))
         case .closeGame:
             requestCloseGame()
+        case .resetAchievements:
+            resetAchievements()
         }
     }
 
@@ -418,7 +443,7 @@ final class GameSession {
     func writeAutosave() {
         guard let state, let gameID, !state.ironman else { return }
         do {
-            _ = try slotStore.autosave(state, gameID: gameID)
+            _ = try slotStore.autosave(state, journal: journal, gameID: gameID)
         } catch {
             log.error("autosave failed: \(String(describing: error), privacy: .public)")
         }
@@ -428,7 +453,7 @@ final class GameSession {
     func writeIronmanSlot() {
         guard let state, let gameID, state.ironman else { return }
         do {
-            _ = try slotStore.save(state, slot: gameID, gameID: gameID)
+            _ = try slotStore.save(state, journal: journal, slot: gameID, gameID: gameID)
         } catch {
             log.error("ironman save failed: \(String(describing: error), privacy: .public)")
         }

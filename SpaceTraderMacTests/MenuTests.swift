@@ -304,11 +304,12 @@ struct MenuTests {
         #expect(!on(.find, Fx.ctx(nil)) && on(.find, Fx.ctx(Fx.fresh())))
     }
 
-    @Test("MENU-019 the View menu's section items in order with ⌘1–⌘8 (Galaxy ⌘7 from M8)")
+    @Test("MENU-019 MENU-023 the View menu's section items in order with ⌘1–⌘9 (Galaxy ⌘7 from M8, Logbook ⌘9 from M10)")
     func viewOrder() {
         let sections = MenuCatalog.items(in: .view).filter { $0.section != nil }
-        #expect(sections == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests])
-        #expect(sections.compactMap { MenuCatalog.entry(for: $0).shortcut?.key } == ["1", "2", "3", "4", "5", "6", "7", "8"])
+        #expect(sections == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .logbook])
+        #expect(sections.compactMap { MenuCatalog.entry(for: $0).shortcut?.key } == ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
+        #expect(MenuCatalog.entry(for: .logbook).identifier == "menu.view.logbook")
         #expect(sections.compactMap(\.section) == Section.allCases)
     }
 
@@ -319,7 +320,15 @@ struct MenuTests {
             #expect(id.section == s && MenuCatalog.entry(for: id).shortcut?.key == String(s.shortcutDigit))
         }
         let enc = Fx.ctx(try encounter())
-        #expect(Section.allCases.allSatisfy { !on(MenuItemID.item(for: $0), enc) })
+        #expect(Section.allCases.filter { $0 != .logbook }.allSatisfy { !on(MenuItemID.item(for: $0), enc) })
+    }
+
+    @Test("MENU-023 LOG-029 Logbook ⌘9 is enabled whenever a game is loaded, including an ended game, unless modal")
+    func logbookItem() throws {
+        let enc = Fx.ctx(try encounter())
+        #expect(on(.logbook, Fx.ctx(Fx.fresh())) && on(.logbook, Fx.ctx(Fx.ended)) && on(.logbook, enc))
+        #expect(!on(.logbook, Fx.ctx(nil)) && !on(.logbook, Fx.ctx(Fx.fresh(), modal: true)))
+        #expect(MenuContext.make(state: Fx.fresh(), isModal: false, selectedSection: .logbook).searchContext == .logbook)
     }
 
     @Test("MENU-021 section items are enabled iff game command")
@@ -328,7 +337,7 @@ struct MenuTests {
         var transit = Fx.ctx(Fx.fresh())
         transit.phase = .inTransit
         for c in [Fx.ctx(nil), transit, enc, Fx.ctx(Fx.ended), Fx.ctx(Fx.fresh(), modal: true)] {
-            #expect(Section.allCases.allSatisfy { !on(MenuItemID.item(for: $0), c) })
+            #expect(Section.allCases.filter { $0 != .logbook }.allSatisfy { !on(MenuItemID.item(for: $0), c) })
         }
         #expect(Section.allCases.allSatisfy { on(MenuItemID.item(for: $0), Fx.ctx(Fx.fresh())) })
     }
@@ -513,16 +522,13 @@ struct MenuTests {
 
     // MARK: Cross-checks
 
-    @Test("MENU-040 later-milestone entries are absent at M9")
+    @Test("MENU-040 later-milestone entries are absent at M10")
     func milestoneFilter() {
-        #expect(MenuCatalog.currentMilestone == 9)
+        #expect(MenuCatalog.currentMilestone == 10)
         let present = MenuName.allCases.flatMap { MenuCatalog.items(in: $0) }
-        #expect(!present.contains { MenuCatalog.entry(for: $0).milestone > 9 })
+        #expect(!present.contains { MenuCatalog.entry(for: $0).milestone > 10 })
         #expect(MenuItemID.encounterItems.allSatisfy { present.contains($0) && MenuCatalog.entry(for: $0).milestone == 9 })
-        for id: MenuItemID in [.logbook] {
-            #expect(!present.contains(id) && !MenuRules.isShown(id, in: Fx.ctx(Fx.fresh())))
-        }
-        for id: MenuItemID in [.galaxy, .galaxyChart, .zoomIn, .zoomOut, .zoomFit, .plotRoute, .galaxyChartWindow] {
+        for id: MenuItemID in [.galaxy, .galaxyChart, .zoomIn, .zoomOut, .zoomFit, .plotRoute, .galaxyChartWindow, .logbook] {
             #expect(present.contains(id))
         }
     }
@@ -607,8 +613,8 @@ struct MenuTests {
         #expect(s.mode == .gameOver(.retired))
         let c = MenuContext.make(session: s)
         for id: MenuItemID in [.save, .options, .retire, .warp] { #expect(!on(id, c)) }
-        #expect(MenuCatalog.items(in: .view).filter { $0.section != nil }.allSatisfy { !on($0, c) })
-        #expect(on(.export, c) && on(.closeGame, c))
+        #expect(MenuCatalog.items(in: .view).filter { $0.section != nil && $0 != .logbook }.allSatisfy { !on($0, c) })
+        #expect(on(.export, c) && on(.closeGame, c) && on(.logbook, c))
     }
 
     @Test("MENU-044 Help › Keyboard Shortcuts lists ⌘J Warp and ⌥⌘O Options… from the catalog; Credits opens About")

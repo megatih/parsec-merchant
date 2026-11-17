@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import ParsecEngine
+import ParsecInsights
 import ParsecPersistence
 
 /// Where the app keeps its files: `Application Support/Parsec Merchant/` inside the sandbox container.
@@ -45,25 +46,49 @@ enum OptionsTemplate {
     }
 }
 
-/// No-op stand-ins for services that arrive later (audio M11, haptics M11, achievements M10, flavor M10).
-/// The session calls them at the right moments so the later milestones only replace the implementations.
+/// Session services (PRD §6.5). Audio and haptics are no-op stand-ins until M11; achievements (ACH-016) and flavor
+/// (LLM-018) are real from M10. The session calls them at the right moments.
 @MainActor protocol SessionAudio { func play(events: [GameEvent]) }
 @MainActor protocol SessionHaptics { func perform(events: [GameEvent]) }
-@MainActor protocol SessionAchievements { func observe(events: [GameEvent], state: GameState) }
-@MainActor protocol SessionFlavor { var isTemplateOnly: Bool { get } }
+
+/// ACH-016 / ACH-017: receives each recorded step's unlocks; returns the ids newly added to the app-wide store.
+@MainActor protocol SessionAchievements {
+    func observe(_ output: JournalStepOutput, gameID: String, state: GameState) -> [AchievementID]
+    /// The app-wide unlocks (ACH-015).
+    var records: [AchievementRecord] { get }
+    /// ACH-021: Settings › Advanced › Reset Achievements.
+    func reset() throws
+}
+
+/// LLM-018: the flavor service (`FlavorService`).
+@MainActor protocol SessionFlavor: AnyObject {
+    var mode: FlavorMode { get }
+    var isTemplateOnly: Bool { get }
+    func setMode(_ mode: FlavorMode)
+    func enqueue(_ entries: [LogEntry], gameID: String, names: () -> FlavorNames)
+    func cancelAll()
+    func setResultHandler(_ handler: @escaping (FlavorResult) -> Void)
+}
 
 struct SilentAudio: SessionAudio { func play(events: [GameEvent]) {} }
 struct NoHaptics: SessionHaptics { func perform(events: [GameEvent]) {} }
-struct NoAchievements: SessionAchievements { func observe(events: [GameEvent], state: GameState) {} }
-struct TemplateFlavor: SessionFlavor { var isTemplateOnly: Bool { true } }
+
+/// ACH-018: the service that unlocks nothing (the reference run of the determinism test).
+struct NoAchievements: SessionAchievements {
+    func observe(_ output: JournalStepOutput, gameID: String, state: GameState) -> [AchievementID] { [] }
+    var records: [AchievementRecord] { [] }
+    func reset() throws {}
+}
 
 /// The persistence services the session owns.
 struct SessionStores: Sendable {
     var slotStore: SlotStore
     var highScoreStore: HighScoreStore
+    var achievementStore: AchievementStore
 
     init(root: URL, appVersion: String = AppPaths.appVersion) {
         slotStore = SlotStore(root: root, appVersion: appVersion)
         highScoreStore = HighScoreStore(root: root)
+        achievementStore = AchievementStore(root: root)
     }
 }

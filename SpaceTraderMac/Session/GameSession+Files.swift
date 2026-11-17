@@ -53,7 +53,7 @@ extension GameSession {
     /// Makes a loaded save the current game (UI-SHELL-021/088).
     func install(_ loaded: LoadedGame) {
         let slot = loaded.slotID == SlotStore.autosaveID ? nil : loaded.slotID
-        install(GameEngine(state: loaded.state), gameID: loaded.gameID, slotID: slot)
+        install(GameEngine(state: loaded.state), gameID: loaded.gameID, slotID: slot, journal: loaded.journal)
         if loaded.recoveredFromBackup { appendNote(.recoveredFromBackup) }
     }
 
@@ -75,7 +75,7 @@ extension GameSession {
 
     private func write(to slot: String, state: GameState, gameID: String) {
         do {
-            _ = try slotStore.save(state, slot: slot, gameID: gameID)
+            _ = try slotStore.save(state, journal: journal, slot: slot, gameID: gameID)
             currentSlotID = slot
             lastManualSaveDays = state.commander.days
             appendNote(.gameSaved)
@@ -160,7 +160,7 @@ extension GameSession {
     /// SAV-029: the current game's export data, stamped with its game id.
     func exportCurrentGame() throws -> Data? {
         guard let state, let gameID else { return nil }
-        return try SaveCodec.encode(SaveEnvelope(state: state, appVersion: slotStore.appVersion, gameID: gameID))
+        return try SaveCodec.encode(exportEnvelope(state: state, gameID: gameID))
     }
 
     /// SCORE-038.
