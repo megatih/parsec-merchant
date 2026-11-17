@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M11 (starting)
-- **Next step:** (running: art+icon agent, audio+haptics agent; UI-KEYS/A11Y specs ahead for M12) M11: ParsecArt (ships, planets, glyphs, effects) + app icon via make-icon.sh (.icon bundle + appiconset fallback, actool no warnings) + ParsecAudio (synth, SFX, music, haptics) + Sound settings per ART.md/AUD.md (specs committed); verify default at exit; bench.
-- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M10 exit (8/8; insights coverage 99%); pmsim bench --check OK
+- **Current milestone:** M12 (starting)
+- **Next step:** M12: polish per UI-KEYS.md + A11Y.md (specs committed): KeyBindingTable + conflict audit, Esc router, behaviour fixes (Market ⌘S, Bridge Return, ⌘=), keyboard navigation, accessibility (labels, rotors, Reduce Motion/Contrast/Transparency/Differentiate Without Color), Text Size, flows 6 and 7, localization (scripts/l10n-check.sh, populate Localizable.xcstrings, no new/stale), pseudo-localization, TipKit, README screenshots; unify audio/art combat timing (CombatEffectPlanner); release-build audio render budget; verify --ui at exit.
+- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M11 exit (9/9 incl. 7b-icon-check); pmsim bench --check OK
 - **Blockers:** none
 
 ## Milestones
@@ -20,7 +20,7 @@
 - [x] M8 Galaxy chart (2026-11-17, tag m8-done; Canvas map, hover cards, range ring, wormholes, route planner (ParsecInsights) + follower, search, detachable window, mini chart, VoiceOver children + rotors; flow 5 green; pmsim bench real)
 - [x] M9 Encounter, transit, event UX (2026-11-17, tag m9-done; encounter view + combat log + auto-repeat + tactical readout, transit + Dock progress, arrival report, feed, styled newspaper, special-event narratives, game over + career card, high scores window, every PendingDecision/ALR presentation covered by a test; flow 2 green)
 - [x] M10 Trade intelligence, log, stats, achievements, flavor (2026-11-17, tag m10-done; journal beside state (ADR-0003), trade intel (fair), Logbook ⌘9, 36 achievements, career stats, template + Foundation Models flavor with -PMFlavor template)
-- [ ] M11 Art, icon, audio, haptics
+- [x] M11 Art, icon, audio, haptics (2026-11-17, tag m11-done; ParsecArt (17 ships, planets, glyphs, effects, scenes) + Liquid Glass .icon via make-icon.sh (actool clean, step 7b); ParsecAudio synth (allocation-free render), 30 cues with visual twins, music off by default, haptics, Sound settings)
 - [ ] M12 Polish, accessibility, localization, screenshots
 - [ ] M13 Final QA and GitHub release v1.0.0
 
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M11 exit. Notes: ImageRenderer.cgImage is not byte-deterministic — art tests/pmart render into a fixed RGBA sRGB CGContext; pmart icon works from the command line (no PM_ICON_OUT fallback needed). Open QA rows needing the owner at M13: AUD-052 (2-min listening + device switch), ART screenshot rows. Audio CombatTracker duplicates CombatEffectPlanner timing (unify in M12).
 - 2026-11-17: M10 exit: INT/LOG/STAT/ACH/LLM (197 IDs). ADR-0003 journal saved beside state. ART/AUD specs for M11 written ahead. Insights coverage 99%. UI suite now launches with -PMFlavor template.
 - 2026-11-17: M9 exit: UI-ENC (106 IDs) built by 5 worktree agents; pirateAmbush scenario seed 292 → target 46, 6 attacks; flows found 2 bugs (no report after loading mid-encounter; unidentified Bridge sliders). Duplicate auto Window-menu items removed with .commandsRemoved().
 - 2026-11-17: M8 exit: MAP.md (104 IDs), route planner (lexicographic Dijkstra, verified vs brute force), app galaxy chart + flow 5. pmsim bench implemented (perform 0.0005 ms, arrival 0.04 ms, route 0.03 ms medians). Map render baseline 0.41 ms/frame (budget 8 ms). Deviation: flow 5 uses seed 13 (seed 11 meets police on the nearest warp).
