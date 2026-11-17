@@ -37,7 +37,8 @@ struct SaveEnvelopeSpecTests {
         #expect(e.format == "parsec-merchant-save" && e.schemaVersion == SaveMigrator.currentSchemaVersion)
         #expect(e.rulesetID == .palm122 && e.appVersion == "9.9" && e.gameID == "game-1" && e.generation == 4)
         let raw = try SaveCodec.rawObject(SaveCodec.encode(e))
-        #expect(Set(raw.keys) == ["format", "schemaVersion", "appVersion", "rulesetID", "gameID", "generation", "summary", "state"])
+        #expect(Set(raw.keys) == ["format", "schemaVersion", "appVersion", "rulesetID", "gameID", "generation", "summary", "state",
+                                  "journal"])
         #expect(raw["rulesetID"] as? String == "palm122" && raw["format"] as? String == "parsec-merchant-save")
         // appVersion is informational: a different value decodes the same state.
         let other = try SaveCodec.decode(editedSave(state) { $0["appVersion"] = "0.0.1-ancient" })

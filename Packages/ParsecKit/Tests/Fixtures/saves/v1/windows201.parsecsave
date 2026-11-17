@@ -3,6 +3,1782 @@
   "format" : "parsec-merchant-save",
   "gameID" : "00000000-0000-4000-8000-000000000002",
   "generation" : 1,
+  "journal" : {
+    "entries" : [
+      {
+        "day" : 0,
+        "id" : 1,
+        "kind" : {
+          "journalStarted" : {
+            "_0" : {
+              "difficulty" : 2,
+              "ironman" : false,
+              "kills" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "origin" : "newGame",
+              "rulesetID" : "windows201",
+              "startSystem" : 49,
+              "systemCount" : 128,
+              "visitedSystems" : [
+                49
+              ]
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 11000
+      },
+      {
+        "day" : 0,
+        "id" : 2,
+        "kind" : {
+          "news" : {
+            "_0" : {
+              "cost" : 3,
+              "headlines" : [
+                {
+                  "tribbleBuyer" : {
+                    "system" : 78
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 1
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 3
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 0
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 2
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10997
+      },
+      {
+        "day" : 0,
+        "id" : 3,
+        "kind" : {
+          "trade" : {
+            "_0" : {
+              "action" : "buy",
+              "item" : 1,
+              "quantity" : 3,
+              "total" : 633
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10364
+      },
+      {
+        "day" : 0,
+        "id" : 4,
+        "kind" : {
+          "news" : {
+            "_0" : {
+              "cost" : 0,
+              "headlines" : [
+                {
+                  "tribbleBuyer" : {
+                    "system" : 78
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 1
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 3
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 0
+                  }
+                },
+                {
+                  "canned" : {
+                    "government" : 14,
+                    "index" : 2
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10364
+      },
+      {
+        "day" : 1,
+        "id" : 5,
+        "kind" : {
+          "departed" : {
+            "from" : 49,
+            "parsecs" : 7,
+            "to" : 37,
+            "viaWormhole" : false
+          }
+        },
+        "system" : 49,
+        "worth" : 10364
+      },
+      {
+        "day" : 1,
+        "id" : 6,
+        "kind" : {
+          "status" : {
+            "_0" : {
+              "policeRecord" : {
+                "from" : 5,
+                "to" : 4
+              }
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10364
+      },
+      {
+        "day" : 1,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 1
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.fled.3"
+            }
+          }
+        },
+        "id" : 7,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 67,
+              "opponent" : 1,
+              "outcome" : {
+                "escaped" : {
+
+                }
+              },
+              "rounds" : 5,
+              "surrendered" : false,
+              "type" : 34
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10364
+      },
+      {
+        "day" : 1,
+        "id" : 8,
+        "kind" : {
+          "trade" : {
+            "_0" : {
+              "action" : "orbitBuy",
+              "item" : 0,
+              "quantity" : 2,
+              "total" : 76
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10288
+      },
+      {
+        "day" : 1,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 3
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.other.2"
+            }
+          }
+        },
+        "id" : 9,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 74,
+              "opponent" : 3,
+              "outcome" : {
+                "traded" : {
+
+                }
+              },
+              "rounds" : 0,
+              "surrendered" : false,
+              "type" : 34
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10288
+      },
+      {
+        "day" : 1,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 4
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.other.3"
+            }
+          }
+        },
+        "id" : 10,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 100,
+              "opponent" : 4,
+              "outcome" : {
+                "inspectedClean" : {
+
+                }
+              },
+              "rounds" : 0,
+              "surrendered" : false,
+              "type" : 21
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10288
+      },
+      {
+        "day" : 1,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "system" : {
+                    "_0" : 37
+                  }
+                }
+              ],
+              "key" : "flavor.arrival.firstVisit.3"
+            }
+          }
+        },
+        "id" : 11,
+        "kind" : {
+          "arrived" : {
+            "_0" : {
+              "encounterCount" : 3,
+              "firstVisit" : true,
+              "from" : 49,
+              "system" : 37,
+              "uneventful" : false,
+              "viaWormhole" : false
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10288
+      },
+      {
+        "day" : 1,
+        "id" : 12,
+        "kind" : {
+          "trade" : {
+            "_0" : {
+              "action" : "buy",
+              "item" : 0,
+              "quantity" : 5,
+              "total" : 170
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10118
+      },
+      {
+        "day" : 2,
+        "id" : 13,
+        "kind" : {
+          "departed" : {
+            "from" : 37,
+            "parsecs" : 7,
+            "to" : 49,
+            "viaWormhole" : false
+          }
+        },
+        "system" : 49,
+        "worth" : 10118
+      },
+      {
+        "day" : 2,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "system" : {
+                    "_0" : 49
+                  }
+                }
+              ],
+              "key" : "flavor.arrival.quiet.2"
+            }
+          }
+        },
+        "id" : 14,
+        "kind" : {
+          "arrived" : {
+            "_0" : {
+              "encounterCount" : 0,
+              "firstVisit" : false,
+              "from" : 37,
+              "system" : 49,
+              "uneventful" : true,
+              "viaWormhole" : false
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10118
+      },
+      {
+        "day" : 2,
+        "id" : 15,
+        "kind" : {
+          "ship" : {
+            "_0" : {
+              "fuel" : {
+                "cost" : 14,
+                "units" : 14
+              }
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10104
+      },
+      {
+        "day" : 2,
+        "id" : 16,
+        "kind" : {
+          "news" : {
+            "_0" : {
+              "cost" : 3,
+              "headlines" : [
+                {
+                  "externalPressure" : {
+                    "pressure" : 1,
+                    "system" : 37,
+                    "template" : 2
+                  }
+                },
+                {
+                  "tribbleBuyer" : {
+                    "system" : 78
+                  }
+                },
+                {
+                  "externalPressure" : {
+                    "pressure" : 1,
+                    "system" : 90,
+                    "template" : 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10101
+      },
+      {
+        "day" : 3,
+        "id" : 17,
+        "kind" : {
+          "departed" : {
+            "from" : 49,
+            "parsecs" : 7,
+            "to" : 37,
+            "viaWormhole" : false
+          }
+        },
+        "system" : 49,
+        "worth" : 10101
+      },
+      {
+        "day" : 3,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 1
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.fled.2"
+            }
+          }
+        },
+        "id" : 18,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 100,
+              "opponent" : 1,
+              "outcome" : {
+                "escaped" : {
+
+                }
+              },
+              "rounds" : 7,
+              "surrendered" : false,
+              "type" : 11
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10101
+      },
+      {
+        "day" : 3,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 1
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.surrendered.2"
+            }
+          }
+        },
+        "id" : 19,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 88,
+              "opponent" : 1,
+              "outcome" : {
+                "raided" : {
+                  "units" : 10
+                }
+              },
+              "rounds" : 1,
+              "surrendered" : true,
+              "type" : 11
+            }
+          }
+        },
+        "system" : 49,
+        "worth" : 10101
+      },
+      {
+        "day" : 3,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 4
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.other.2"
+            }
+          }
+        },
+        "id" : 20,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 88,
+              "opponent" : 4,
+              "outcome" : {
+                "inspectedClean" : {
+
+                }
+              },
+              "rounds" : 0,
+              "surrendered" : false,
+              "type" : 21
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10101
+      },
+      {
+        "day" : 3,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "system" : {
+                    "_0" : 37
+                  }
+                },
+                {
+                  "count" : {
+                    "_0" : 3
+                  }
+                }
+              ],
+              "key" : "flavor.arrival.eventful.3"
+            }
+          }
+        },
+        "id" : 21,
+        "kind" : {
+          "arrived" : {
+            "_0" : {
+              "encounterCount" : 3,
+              "firstVisit" : false,
+              "from" : 49,
+              "system" : 37,
+              "uneventful" : false,
+              "viaWormhole" : false
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10101
+      },
+      {
+        "day" : 3,
+        "id" : 22,
+        "kind" : {
+          "ship" : {
+            "_0" : {
+              "fuel" : {
+                "cost" : 7,
+                "units" : 7
+              }
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10094
+      },
+      {
+        "day" : 3,
+        "id" : 23,
+        "kind" : {
+          "finance" : {
+            "_0" : {
+              "borrowed" : {
+                "amount" : 223
+              }
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10094
+      },
+      {
+        "day" : 4,
+        "id" : 24,
+        "kind" : {
+          "departed" : {
+            "from" : 37,
+            "parsecs" : 11,
+            "to" : 106,
+            "viaWormhole" : false
+          }
+        },
+        "system" : 37,
+        "worth" : 10072
+      },
+      {
+        "day" : 4,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 1
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.fled.2"
+            }
+          }
+        },
+        "id" : 25,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 91,
+              "opponent" : 1,
+              "outcome" : {
+                "escaped" : {
+
+                }
+              },
+              "rounds" : 3,
+              "surrendered" : false,
+              "type" : 11
+            }
+          }
+        },
+        "system" : 37,
+        "worth" : 10072
+      },
+      {
+        "day" : 4,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "ship" : {
+                    "_0" : 6
+                  }
+                }
+              ],
+              "key" : "flavor.encounter.surrendered.2"
+            }
+          }
+        },
+        "id" : 26,
+        "kind" : {
+          "encounter" : {
+            "_0" : {
+              "bounty" : 0,
+              "killsAfter" : {
+                "pirates" : 0,
+                "police" : 0,
+                "traders" : 0
+              },
+              "minHullPercent" : 91,
+              "opponent" : 6,
+              "outcome" : {
+                "raided" : {
+                  "units" : 0
+                }
+              },
+              "rounds" : 1,
+              "surrendered" : true,
+              "type" : 11
+            }
+          }
+        },
+        "system" : 106,
+        "worth" : 9569
+      },
+      {
+        "day" : 4,
+        "flavor" : {
+          "template" : {
+            "_0" : {
+              "args" : [
+                {
+                  "system" : {
+                    "_0" : 106
+                  }
+                }
+              ],
+              "key" : "flavor.arrival.firstVisit.2"
+            }
+          }
+        },
+        "id" : 27,
+        "kind" : {
+          "arrived" : {
+            "_0" : {
+              "encounterCount" : 2,
+              "firstVisit" : true,
+              "from" : 37,
+              "system" : 106,
+              "uneventful" : false,
+              "viaWormhole" : false
+            }
+          }
+        },
+        "system" : 106,
+        "worth" : 9569
+      }
+    ],
+    "intel" : {
+      "systems" : [
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+            {
+              "buy" : [
+                34,
+                262,
+                115,
+                597,
+                285,
+                1454,
+                0,
+                0,
+                0,
+                0
+              ],
+              "day" : 1,
+              "pressure" : 1,
+              "sell" : [
+                32,
+                243,
+                107,
+                553,
+                264,
+                1347,
+                525,
+                729,
+                2715,
+                0
+              ],
+              "stock" : [
+                7,
+                5,
+                12,
+                17,
+                5,
+                11,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "buy" : [
+                35,
+                271,
+                108,
+                598,
+                282,
+                1473,
+                0,
+                0,
+                0,
+                0
+              ],
+              "day" : 3,
+              "pressure" : 1,
+              "sell" : [
+                33,
+                251,
+                100,
+                554,
+                262,
+                1364,
+                531,
+                726,
+                2830,
+                0
+              ],
+              "stock" : [
+                6,
+                5,
+                4,
+                21,
+                1,
+                12,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "lastVisitDay" : 3,
+          "pressureHint" : {
+            "day" : 3,
+            "pressure" : 1,
+            "source" : "observed"
+          },
+          "visitCount" : 2
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+            {
+              "buy" : [
+                31,
+                211,
+                104,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "day" : 0,
+              "pressure" : 0,
+              "sell" : [
+                29,
+                196,
+                97,
+                0,
+                232,
+                0,
+                609,
+                0,
+                0,
+                0
+              ],
+              "stock" : [
+                23,
+                7,
+                33,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "buy" : [
+                34,
+                199,
+                103,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "day" : 2,
+              "pressure" : 0,
+              "sell" : [
+                32,
+                185,
+                96,
+                0,
+                232,
+                0,
+                615,
+                0,
+                0,
+                0
+              ],
+              "stock" : [
+                21,
+                7,
+                27,
+                4,
+                3,
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "lastVisitDay" : 2,
+          "visitCount" : 2
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "pressureHint" : {
+            "day" : 2,
+            "pressure" : 1,
+            "source" : "news"
+          },
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+            {
+              "buy" : [
+                51,
+                284,
+                154,
+                401,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "day" : 4,
+              "pressure" : 3,
+              "sell" : [
+                48,
+                263,
+                143,
+                372,
+                223,
+                1026,
+                606,
+                0,
+                3333,
+                0
+              ],
+              "stock" : [
+                13,
+                9,
+                8,
+                16,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ],
+          "lastVisitDay" : 4,
+          "pressureHint" : {
+            "day" : 4,
+            "pressure" : 3,
+            "source" : "observed"
+          },
+          "visitCount" : 1
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        },
+        {
+          "history" : [
+
+          ],
+          "visitCount" : 0
+        }
+      ]
+    },
+    "nextEntryID" : 28
+  },
   "rulesetID" : "windows201",
   "schemaVersion" : 1,
   "state" : {

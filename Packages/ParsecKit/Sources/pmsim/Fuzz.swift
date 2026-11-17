@@ -2,6 +2,8 @@
 // pmsim fuzz: random legal-command games with invariants and determinism replays (PRD §8.1 step 3).
 import Foundation
 import ParsecEngine
+import ParsecInsights
+import ParsecPersistence
 
 struct Fuzzer {
     let ruleset: RulesetID
@@ -80,21 +82,58 @@ struct Fuzzer {
         if s.quests.reactor < 0 || s.quests.reactor > 22 || s.quests.princess > 16 || s.quests.dragonfly > 6 { fail("quest status out of range") }
     }
 
-    /// Plays one game; returns the command log and the final state's canonical JSON.
-    mutating func play(game: Int, seed: UInt64, maxCommands: Int) -> ([Command], Data) {
+    /// LOG-037: journal invariants after a step. `visited` tracks the systems the journal has seen visited.
+    mutating func checkJournal(_ journal: GameJournal, from first: Int, rejected: Bool, state s: GameState, visited: inout [Bool],
+                               game: Int, step: Int) {
+        func fail(_ msg: String) { violations.append("\(ruleset) game \(game) step \(step): journal \(msg)") }
+        if rejected, journal.entries.count != first { fail("entry appended for a rejected step") }
+        var previous = first > 0 ? journal.entries[first - 1] : nil
+        for entry in journal.entries[first...] {
+            if let p = previous, entry.id <= p.id || entry.day < p.day { fail("ids or days out of order at entry \(entry.id)") }
+            if !s.galaxy.systems.indices.contains(entry.system) { fail("entry \(entry.id) has system \(entry.system)") }
+            switch entry.kind {
+            case let .journalStarted(start): for i in start.visitedSystems where visited.indices.contains(i) { visited[i] = true }
+            case let .arrived(a) where visited.indices.contains(a.system): visited[a.system] = true
+            default: break
+            }
+            previous = entry
+        }
+        for (i, sys) in s.galaxy.systems.enumerated() where sys.visited != visited[i] {
+            fail("visited systems differ at \(i)")
+            break
+        }
+    }
+
+    /// Plays one game with a journal; returns the command log, the final state's canonical JSON and the journal.
+    mutating func play(game: Int, seed: UInt64, maxCommands: Int) -> ([Command], Data, GameJournal) {
         var engine = GameEngine(config: NewGameConfig(commanderName: "Fuzz", difficulty: Difficulty(rawValue: game % 5) ?? .normal,
                                                       ruleset: ruleset, seed: seed))
         var r = Xoshiro256StarStar(seed: seed &* 0x9E37_79B9 &+ 17)
         var log: [Command] = []
+        var journal = GameJournal.start(state: engine.state)
+        var visited = [Bool](repeating: false, count: engine.state.galaxy.systems.count)
+        checkJournal(journal, from: 0, rejected: false, state: engine.state, visited: &visited, game: game, step: -1)
         for step in 0..<maxCommands {
             if case .gameOver = engine.state.phase { break }
             let cmd = Self.pickCommand(engine.state, &r)
             log.append(cmd)
-            let cashBefore = engine.state.commander.cash
-            engine.perform(cmd, acknowledging: Self.ackAll)
-            check(engine.state, game: game, step: step, command: cmd, cashBefore: cashBefore)
+            let before = engine.state
+            let result = engine.perform(cmd, acknowledging: Self.ackAll)
+            check(engine.state, game: game, step: step, command: cmd, cashBefore: before.commander.cash)
+            let first = journal.entries.count
+            JournalRecorder.record(JournalStep(command: cmd, before: before, result: result, after: engine.state), into: &journal)
+            checkJournal(journal, from: first, rejected: result.rejection != nil, state: engine.state, visited: &visited,
+                         game: game, step: step)
         }
-        return (log, Self.canonical(engine.state))
+        return (log, Self.canonical(engine.state), journal)
+    }
+
+    /// LOG-037: the journal round-trips byte-identically through `SaveCodec` beside the final state.
+    static func journalRoundTrips(_ journal: GameJournal, state: GameState) -> Bool {
+        let envelope = SaveEnvelope(state: state, appVersion: "fuzz", gameID: "fuzz", generation: 1, journal: journal)
+        guard let bytes = try? SaveCodec.encode(envelope), let decoded = try? SaveCodec.decode(bytes),
+              let again = try? SaveCodec.encode(decoded) else { return false }
+        return decoded.journal == journal && again == bytes
     }
 
     static func canonical(_ s: GameState) -> Data {
@@ -103,11 +142,17 @@ struct Fuzzer {
         return (try? enc.encode(s)) ?? Data()
     }
 
-    static func replay(_ log: [Command], ruleset: RulesetID, game: Int, seed: UInt64) -> Data {
+    /// Replays a log; returns the final state's canonical JSON, the state and the journal recorded again (LOG-014).
+    static func replay(_ log: [Command], ruleset: RulesetID, game: Int, seed: UInt64) -> (Data, GameState, GameJournal) {
         var engine = GameEngine(config: NewGameConfig(commanderName: "Fuzz", difficulty: Difficulty(rawValue: game % 5) ?? .normal,
                                                       ruleset: ruleset, seed: seed))
-        for cmd in log { engine.perform(cmd, acknowledging: ackAll) }
-        return canonical(engine.state)
+        var journal = GameJournal.start(state: engine.state)
+        for cmd in log {
+            let before = engine.state
+            let result = engine.perform(cmd, acknowledging: ackAll)
+            JournalRecorder.record(JournalStep(command: cmd, before: before, result: result, after: engine.state), into: &journal)
+        }
+        return (canonical(engine.state), engine.state, journal)
     }
 }
 
@@ -120,11 +165,16 @@ func runFuzz(games: Int, seed: UInt64, rulesets: [RulesetID], maxCommands: Int) 
         var commands = 0
         for g in 0..<games {
             let gameSeed = seed &+ UInt64(g)
-            let (log, final) = fuzzer.play(game: g, seed: gameSeed, maxCommands: maxCommands)
+            let (log, final, journal) = fuzzer.play(game: g, seed: gameSeed, maxCommands: maxCommands)
             commands += log.count
             if (try? JSONSerialization.jsonObject(with: final)) == nil { fuzzer.violations.append("game \(g): encode failed") }
-            if g % 50 == 0, Fuzzer.replay(log, ruleset: ruleset, game: g, seed: gameSeed) != final {
-                fuzzer.violations.append("\(ruleset) game \(g): replay diverged (non-deterministic)")
+            if g % 50 == 0 {
+                let (again, state, replayed) = Fuzzer.replay(log, ruleset: ruleset, game: g, seed: gameSeed)
+                if again != final { fuzzer.violations.append("\(ruleset) game \(g): replay diverged (non-deterministic)") }
+                if replayed != journal { fuzzer.violations.append("\(ruleset) game \(g): journal replay diverged (LOG-014)") }
+                if !Fuzzer.journalRoundTrips(journal, state: state) {
+                    fuzzer.violations.append("\(ruleset) game \(g): journal round trip not byte-identical (LOG-037)")
+                }
             }
         }
         failures += fuzzer.violations.count

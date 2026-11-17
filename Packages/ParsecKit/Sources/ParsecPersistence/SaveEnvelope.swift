@@ -2,6 +2,7 @@
 // Save file format (docs/specs/SAV.md, PRD §6.4): versioned JSON envelope, deterministic codec, raw-JSON migrator.
 import Foundation
 import ParsecEngine
+import ParsecInsights
 
 /// SAV-002: the summary shown in the save list. Always derived from the state; display data only.
 public struct SaveSummary: Codable, Sendable, Equatable {
@@ -24,7 +25,7 @@ public struct SaveSummary: Codable, Sendable, Equatable {
     }
 }
 
-/// SAV-001: `{format, schemaVersion, appVersion, rulesetID, gameID, generation, summary, state}`.
+/// SAV-001: `{format, schemaVersion, appVersion, rulesetID, gameID, generation, summary, state, journal}`.
 public struct SaveEnvelope: Codable, Sendable, Equatable {
     public static let formatName = "parsec-merchant-save"
     public var format: String
@@ -37,9 +38,17 @@ public struct SaveEnvelope: Codable, Sendable, Equatable {
     public var generation: Int
     public var summary: SaveSummary
     public var state: GameState
+    /// LOG-001…004 / ADR-0003: the game journal (log, intel, open encounter), beside `state` and never inside it.
+    public var journal: GameJournal
 
-    /// SAV-003. `gameID` and `generation` are normally assigned by `SlotStore` on write.
-    public init(state: GameState, appVersion: String, gameID: String = "", generation: Int = 1) {
+    enum CodingKeys: String, CodingKey {
+        case format, schemaVersion, appVersion, rulesetID, gameID, generation, summary, state, journal
+    }
+
+    /// SAV-003. `gameID` and `generation` are normally assigned by `SlotStore` on write. Without a journal the
+    /// envelope gets `GameJournal.bootstrap(from: state)` (LOG-006).
+    public init(state: GameState, appVersion: String, gameID: String = "", generation: Int = 1, journal: GameJournal? = nil) {
+        self.journal = journal ?? GameJournal.bootstrap(from: state)
         self.format = Self.formatName
         self.schemaVersion = SaveMigrator.currentSchemaVersion
         self.appVersion = appVersion
@@ -48,6 +57,21 @@ public struct SaveEnvelope: Codable, Sendable, Equatable {
         self.generation = generation
         self.summary = SaveSummary(state)
         self.state = state
+    }
+
+    /// LOG-004: a save without `journal` (a pre-M10 development save) decodes with a bootstrapped journal; a present
+    /// but undecodable journal fails like any other field.
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        format = try c.decode(String.self, forKey: .format)
+        schemaVersion = try c.decode(Int.self, forKey: .schemaVersion)
+        appVersion = try c.decode(String.self, forKey: .appVersion)
+        rulesetID = try c.decode(RulesetID.self, forKey: .rulesetID)
+        gameID = try c.decode(String.self, forKey: .gameID)
+        generation = try c.decode(Int.self, forKey: .generation)
+        summary = try c.decode(SaveSummary.self, forKey: .summary)
+        state = try c.decode(GameState.self, forKey: .state)
+        journal = try c.decodeIfPresent(GameJournal.self, forKey: .journal) ?? GameJournal.bootstrap(from: state)
     }
 }
 
@@ -104,6 +128,8 @@ public enum SaveCodec {
             throw SaveError.corrupt("system index")
         }
         if let tracked = s.trackedSystem, !valid.contains(tracked) { throw SaveError.corrupt("tracked system") }
+        // LOG-004: the journal's intel has one entry per system.
+        guard e.journal.intel.systems.count == count else { throw SaveError.corrupt("journal intel") }
     }
 }
 

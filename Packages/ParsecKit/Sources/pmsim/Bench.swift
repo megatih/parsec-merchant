@@ -121,5 +121,6 @@ func runBench(check: Bool) -> Int32 {
     print("bench arrival: median \(Bench.ms(arrival)) over \(Bench.samples) docking warps (budget \(Bench.ms(Bench.arrivalBudget))) \(arrivalOK ? "OK" : "OVER")")
     print("bench route plan: median \(Bench.ms(plan)) over \(Bench.samples) pairs (budget \(Bench.ms(Bench.routeBudget))) \(planOK ? "OK" : "OVER")")
     print("bench route jumpCounts: median \(Bench.ms(jumps)) over \(Bench.samples) sources (budget \(Bench.ms(Bench.jumpCountsBudget))) \(jumpsOK ? "OK" : "OVER")")
-    return check && !(performOK && arrivalOK && planOK && jumpsOK) ? 1 : 0
+    let insightsOK = Bench.runInsights()
+    return check && !(performOK && arrivalOK && planOK && jumpsOK && insightsOK) ? 1 : 0
 }

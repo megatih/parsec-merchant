@@ -29,9 +29,13 @@ public struct RouteSnapshot: Sendable, Equatable {
     public var wormholeTax: Int
     /// Mercenaries + insurance + interest of `dailyCosts`, taken at their current values.
     public var perWarpCosts: Int
+    /// INT-026 / MAP-069: the risk weight of arriving at each system, from public data only (government pirate
+    /// activity, plus police activity when the commander is a criminal). Empty or short arrays count 0.
+    public var hopRisk: [Int]
 
     public init(points: [RoutePoint], wormholes: [Int], distanceRule: DistanceRule, fuelCapacity: Int, currentFuel: Int,
-                fuelCostPerParsec: Int, wormholeTax: Int, perWarpCosts: Int) {
+                fuelCostPerParsec: Int, wormholeTax: Int, perWarpCosts: Int, hopRisk: [Int] = []) {
+        self.hopRisk = hopRisk
         self.points = points
         self.wormholes = wormholes
         self.distanceRule = distanceRule
@@ -42,8 +46,8 @@ public struct RouteSnapshot: Sendable, Equatable {
         self.perWarpCosts = perWarpCosts
     }
 
-    /// MAP-094: reads only coordinates, the wormhole ring, the distance rule, fuel, fuel cost, wormhole tax and the
-    /// per-warp daily costs.
+    /// MAP-094: reads only coordinates, the wormhole ring, the distance rule, fuel, fuel cost, wormhole tax, the
+    /// per-warp daily costs and (INT-026) each system's government activity levels and the police record score.
     public init(_ state: GameState) {
         let daily = state.dailyCosts(to: state.commander.currentSystem)
         self.init(points: state.galaxy.systems.map { RoutePoint(x: $0.x, y: $0.y) },
@@ -53,8 +57,26 @@ public struct RouteSnapshot: Sendable, Equatable {
                   currentFuel: state.commander.ship.fuel,
                   fuelCostPerParsec: state.fuelCostPerParsec,
                   wormholeTax: state.wormholeTaxPerJump,
-                  perWarpCosts: daily.mercenaries + daily.insurance + daily.interest)
+                  perWarpCosts: daily.mercenaries + daily.insurance + daily.interest,
+                  hopRisk: Self.hopRisk(state))
     }
+
+    /// INT-026: pirate activity of the system's government, plus its police activity when the police record score is
+    /// below −5 (the engine's criminal threshold); `.na` counts 0.
+    public static func hopRisk(_ state: GameState) -> [Int] {
+        let tables = state.ruleset.tables
+        let criminal = state.commander.policeRecordScore < -5
+        return state.galaxy.systems.map { system in
+            let pol = tables.politics(system.politics)
+            return activityWeight(pol.activityPirates) + (criminal ? activityWeight(pol.activityPolice) : 0)
+        }
+    }
+
+    /// INT-025 / INT-026: an activity level as a number (`.na`, "never", counts 0).
+    public static func activityWeight(_ a: Activity) -> Int { a == .na ? 0 : a.rawValue }
+
+    /// The risk weight of arriving at `system`.
+    public func risk(_ system: Int) -> Int { hopRisk.indices.contains(system) ? hopRisk[system] : 0 }
 
     /// The destination of the wormhole at each system, if any.
     var wormholeDestinations: [Int?] {
@@ -77,12 +99,14 @@ public struct RouteSnapshot: Sendable, Equatable {
     }
 }
 
-/// MAP-054 / MAP-057: what a route minimises. `lowestRisk` is {M10} (MAP-069).
+/// MAP-054 / MAP-057 / MAP-069: what a route minimises.
 public enum RouteObjective: String, Sendable, Equatable, Hashable, CaseIterable, Codable {
     /// Lexicographic (jumps, parsecs, credits).
     case fewestJumps
     /// Lexicographic (credits, jumps, parsecs).
     case cheapest
+    /// INT-027: lexicographic (risk, jumps, credits), risk from `RouteSnapshot.hopRisk`.
+    case lowestRisk
 }
 
 /// MAP-059: one warp of a planned route.
@@ -99,9 +123,12 @@ public struct RouteHop: Sendable, Equatable {
     public var refuelCost: Int
     /// The edge cost of MAP-055: `distance × fuelCostPerParsec + perWarpCosts`, or `wormholeTax + perWarpCosts`.
     public var cost: Int
+    /// INT-026: the risk weight of `to`.
+    public var risk: Int
 
     public init(from: Int, to: Int, viaWormhole: Bool, distance: Int, fuelBefore: Int, refuelUnits: Int,
-                refuelCost: Int, cost: Int) {
+                refuelCost: Int, cost: Int, risk: Int = 0) {
+        self.risk = risk
         self.from = from
         self.to = to
         self.viaWormhole = viaWormhole
@@ -141,6 +168,9 @@ public struct Route: Sendable, Equatable {
         self.totalRefuelUnits = totalRefuelUnits
     }
 
+    /// INT-027: the sum of the hop risk weights.
+    public var totalRisk: Int { hops.reduce(0) { $0 + $1.risk } }
+
     /// The systems the route visits, `from` first and `to` last.
     public var stops: [Int] { [from] + hops.map(\.to) }
 }
@@ -153,6 +183,8 @@ public struct RouteEdge: Sendable, Equatable {
     /// Parsecs the edge adds to a route (0 for a wormhole).
     public var parsecs: Int
     public var credits: Int
+    /// INT-026: the risk weight of the destination system.
+    public var risk: Int = 0
 }
 
 /// MAP-054…058: the route planner.
@@ -169,11 +201,11 @@ public enum RoutePlanner {
         for b in s.points.indices where b != a {
             if b == wormholeTo {
                 out.append(RouteEdge(to: b, viaWormhole: true, distance: s.distance(a, b), parsecs: 0,
-                                     credits: s.wormholeTax + s.perWarpCosts))
+                                     credits: s.wormholeTax + s.perWarpCosts, risk: s.risk(b)))
             } else if s.squaredDistance(a, b) <= limit {
                 let d = s.distance(a, b)
                 out.append(RouteEdge(to: b, viaWormhole: false, distance: d, parsecs: d,
-                                     credits: d * s.fuelCostPerParsec + s.perWarpCosts))
+                                     credits: d * s.fuelCostPerParsec + s.perWarpCosts, risk: s.risk(b)))
             }
         }
         return out
@@ -214,6 +246,7 @@ public enum RoutePlanner {
         switch objective {
         case .fewestJumps: Key(a: 1, b: e.parsecs, c: e.credits)
         case .cheapest: Key(a: e.credits, b: 1, c: e.parsecs)
+        case .lowestRisk: Key(a: e.risk, b: 1, c: e.credits)
         }
     }
 
@@ -269,7 +302,8 @@ public enum RoutePlanner {
             let need = e.viaWormhole ? 0 : e.distance
             let refuel = max(0, need - fuel)
             hops.append(RouteHop(from: a, to: e.to, viaWormhole: e.viaWormhole, distance: e.distance, fuelBefore: fuel,
-                                 refuelUnits: refuel, refuelCost: refuel * s.fuelCostPerParsec, cost: e.credits))
+                                 refuelUnits: refuel, refuelCost: refuel * s.fuelCostPerParsec, cost: e.credits,
+                                 risk: e.risk))
             fuel += refuel - need
         }
         return Route(from: from, to: to, objective: objective, hops: hops, totalJumps: hops.count,

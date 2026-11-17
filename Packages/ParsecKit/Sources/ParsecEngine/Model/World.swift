@@ -124,6 +124,12 @@ public struct Kills: Codable, Sendable, Equatable {
     public var pirates = 0
     public var police = 0
     public var traders = 0
+
+    public init(pirates: Int = 0, police: Int = 0, traders: Int = 0) {
+        self.pirates = pirates
+        self.police = police
+        self.traders = traders
+    }
 }
 
 /// The player (C# `Commander`, which extends `CrewMember` id 0).

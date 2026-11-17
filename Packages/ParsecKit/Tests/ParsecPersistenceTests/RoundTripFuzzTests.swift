@@ -3,6 +3,7 @@
 import Foundation
 import Testing
 @testable import ParsecEngine
+import ParsecInsights
 @testable import ParsecPersistence
 
 /// Every JSON number token in `data` (outside strings), as written.
@@ -31,15 +32,18 @@ private func numberTokens(_ data: Data) -> [String] {
 
 @Suite("SAV round trips over fuzzed states")
 struct RoundTripFuzzTests {
-    @Test("SAV-005 500 fuzzed states across all rulesets and phases round-trip byte-identically")
+    @Test("SAV-005 LOG-003 500 fuzzed states with their journals across all rulesets and phases round-trip byte-identically")
     func fuzzedRoundTrips() throws {
         var categories: Set<String> = []
         var total = 0
+        var openLedgers = 0
         for (i, ruleset) in RulesetID.allCases.enumerated() {
-            let states = FuzzPlayer.sampleStates(ruleset, count: i == 0 ? 168 : 166, seed: 50_000 + UInt64(i) * 1_000)
-            for state in states {
+            let games = FuzzPlayer.sampleGames(ruleset, count: i == 0 ? 168 : 166, seed: 50_000 + UInt64(i) * 1_000)
+            for (state, journal) in games {
                 categories.insert(FuzzPlayer.category(state))
-                let envelope = SaveEnvelope(state: state, appVersion: "test", gameID: SlotStore.newSlotID(), generation: 1 + total % 7)
+                if journal.openEncounter != nil { openLedgers += 1 }
+                let envelope = SaveEnvelope(state: state, appVersion: "test", gameID: SlotStore.newSlotID(), generation: 1 + total % 7,
+                                            journal: journal)
                 let bytes = try SaveCodec.encode(envelope)
                 let decoded = try SaveCodec.decode(bytes)
                 #expect(decoded == envelope)
@@ -47,7 +51,7 @@ struct RoundTripFuzzTests {
                 total += 1
             }
         }
-        #expect(total == 500)
+        #expect(total == 500 && openLedgers > 0)
         // Docked, mid-encounter, pending scoop / plunder and game over all appear in the sample.
         for needed in ["docked", "encounter", "scoop", "plunder", "gameOver"] {
             #expect(categories.contains(needed), "missing \(needed) in \(categories)")
@@ -75,9 +79,10 @@ struct RoundTripFuzzTests {
         let resorted = try JSONSerialization.data(withJSONObject: raw, options: [.sortedKeys, .prettyPrinted, .withoutEscapingSlashes])
         #expect(try SaveCodec.encode(SaveCodec.decode(resorted)) == a)
         let top = try #require(raw as? [String: Any])
-        #expect(Set(top.keys) == ["format", "schemaVersion", "appVersion", "rulesetID", "gameID", "generation", "summary", "state"])
+        #expect(Set(top.keys) == ["format", "schemaVersion", "appVersion", "rulesetID", "gameID", "generation", "summary", "state",
+                                  "journal"])
         // Top-level keys appear in lexicographic order in the bytes.
-        let order = ["appVersion", "format", "gameID", "generation", "rulesetID", "schemaVersion", "state", "summary"]
+        let order = ["appVersion", "format", "gameID", "generation", "journal", "rulesetID", "schemaVersion", "state", "summary"]
         let positions = order.compactMap { text.range(of: "\n  \"\($0)\"")?.lowerBound }
         #expect(positions.count == order.count && positions == positions.sorted())
     }
