@@ -49,6 +49,27 @@ struct SourceAuditTests {
         }
     }
 
+    @Test("UI-KEYS-035 a disabled view control shows its reason in a help tag unless the reason is on screen")
+    func disabledControlsExplainThemselves() throws {
+        // Files whose disabled controls explain themselves in visible text, with the reason for the exemption.
+        let inlineReason: [String: String] = [
+            "Views/Settings/SoundSettingsView.swift": "the Status row says why sound is off for this launch",
+            "Views/Settings/IntelligenceSettingsView.swift": "the status line under the toggle gives the availability",
+            "Views/Shell/SidebarView.swift": "the sidebar shows the In transit / In encounter label",
+            "Views/NewGame/NewGameWizard.swift": "skill steppers stop at a visible bound; the step names the failing field",
+            "Views/Designer/DesignerView.swift": "steppers stop at a visible bound",
+        ]
+        let lines = try Self.lines()
+        var checked = 0
+        for (i, l) in lines.enumerated() where l.file.hasPrefix("Views/") && l.code.contains(".disabled(") {
+            guard inlineReason[l.file] == nil else { continue }
+            checked += 1
+            let window = lines[max(0, i - 8)...min(lines.count - 1, i + 8)].filter { $0.file == l.file }
+            #expect(window.contains { $0.code.contains(".help(") }, "\(l.file):\(l.number) is disabled without a help tag")
+        }
+        #expect(checked > 10, "the audit finds the disabled controls")
+    }
+
     @Test("UI-KEYS-034 UI-KEYS-020 a destructive button never carries .defaultAction")
     func destructiveNeverDefault() throws {
         let lines = try Self.lines()

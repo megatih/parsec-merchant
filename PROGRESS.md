@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M13 (starting)
-- **Next step:** M13: run scripts/release.sh (Release ad-hoc build + smoke + zip); export README/QA screenshots (scripts/export-screenshots.sh, then --qa); fill the remaining QA rows (Accessibility audit, Text Size, Pseudo-localization, Light and dark, Smallest window, Credits visible, Release smoke test, Clean-clone build) and resolve the 'partly/pending' manual rows; verify --ui; tag m13-done, push; gh release create v1.0.0 (release.sh --publish); final-check.sh.
-- **Last gate result:** verify.sh --ui ALL GATES PASSED @ 28d1404 (M12 exit, 9/9 incl. 41 UI tests); pmsim bench --check OK
+- **Current milestone:** M13 (in progress)
+- **Next step:** M13: (1) merge the a11y agent's light-mode contrast fixes (verify --ui must pass at the 1920×1080 1x display; run gates under `caffeinate -dimsu`); (2) run app tests for the UI-KEYS-035 help-tag audit + Settings tab memory (uncommitted) and commit; (3) manual QA pass (menus, Liquid Glass, window/full screen, keyboard-only, CPU, Dock, icon) with screenshots; owner-only items (VoiceOver passes, listening, keyboard layouts) → attempt automation, else BLOCKED; (4) remaining QA rows; (5) release.sh --publish; (6) verify --ui on HEAD, tag m13-done, push, final-check.sh. Done so far: release.sh, clean-clone build (QA row), LLM-031 test, MAP-044 race fix, no DEVELOPMENT_TEAM.
+- **Last gate result:** verify.sh --ui GATES FAILED @ f35091c (4: MAP-044 timing race, fixed in 51eb651; 8: 105 light-mode contrast issues, flow-7 transit-view recipe, wizard pages 5/6) — verify --quick PASS @ 51eb651
 - **Blockers:** none
 
 ## Milestones

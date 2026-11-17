@@ -42,6 +42,7 @@ struct CheatConsoleSheet: View {
                 Button("Run") { run() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(session.state?.phase != .docked)
+                    .help(session.state?.phase == .docked ? Text(verbatim: "") : Text("Cheats run only while docked."))  // UI-KEYS-035
                     .accessibilityIdentifier(AXID.CheatConsole.run)
             }
         }

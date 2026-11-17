@@ -53,6 +53,7 @@ struct FindSystemSheet: View {
                 Button("Select", action: select)
                     .keyboardShortcut(.defaultAction)
                     .disabled(text.isEmpty)
+                    .help(text.isEmpty ? Text("Type the name of a system.") : Text(verbatim: ""))  // UI-KEYS-035
                     .accessibilityIdentifier(AXID.FindSystem.select)
             }
         }

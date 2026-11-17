@@ -23,6 +23,7 @@ struct FeedOverlay: View {
                     showLogbook()
                 }
                 .disabled(!showLogbookEnabled)
+                .help(showLogbookEnabled ? Text(verbatim: "") : Text("The Logbook opens once you are docked."))  // UI-KEYS-035
                 .accessibilityIdentifier(AXID.LogbookLinks.feedShowLogbook)
                 // UI-KEYS-018: Esc reaches this through the main window's router (level 7).
                 Button("Close", action: dismiss)

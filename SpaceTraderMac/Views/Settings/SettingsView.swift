@@ -5,10 +5,13 @@ import SwiftUI
 
 /// Settings (⌘,): the tabs of OPT-028 (UI-SHELL-100, -101, -104).
 struct SettingsView: View {
+    /// UI-KEYS-035: Settings reopens on the tab it was closed on.
+    @AppStorage(AppSettingsKey.selectedTab) private var selectedTab = SettingsTab.general
+
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             ForEach(SettingsTab.allCases, id: \.self) { tab in
-                Tab {
+                Tab(value: tab) {
                     content(tab)
                         .frame(width: 520)
                         .frame(minHeight: 260)

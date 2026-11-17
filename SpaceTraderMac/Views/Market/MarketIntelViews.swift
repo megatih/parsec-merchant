@@ -102,6 +102,7 @@ struct RecommendationStripView: View {
                 }
                 .buttonStyle(.link)
                 .disabled(!canTarget)
+                .help(canTarget ? Text(verbatim: "") : Text("You can choose a target only while docked and within range."))  // UI-KEYS-035
                 .accessibilityIdentifier(AXID.MarketIntel.recommendationDestination(n + 1))
             }
         }

@@ -2399,6 +2399,9 @@
     "Cheats are on. This game is flagged and stays off the high-score table." : {
 
     },
+    "Cheats run only while docked." : {
+
+    },
     "Cheats used" : {
 
     },
@@ -2421,6 +2424,9 @@
 
     },
     "Choose a difficulty" : {
+
+    },
+    "Choose a quantity you can pay for and carry." : {
 
     },
     "Choose a target system first." : {
@@ -6022,6 +6028,9 @@
     "Select a commodity to see how its price is made" : {
 
     },
+    "Select a saved game." : {
+
+    },
     "Select an item" : {
 
     },
@@ -6959,6 +6968,9 @@
     "The King and Queen are extremely grateful to you for returning their daughter to them. The King says, \"Ziyal is priceless to us, but we feel we must offer you something as a reward. Visit my shipyard captain and he'll install one of our new Quantum Disruptors.\"" : {
 
     },
+    "The Logbook opens once you are docked." : {
+
+    },
     "The Loyal Subject" : {
 
     },
@@ -7533,7 +7545,13 @@
     "Turn on Continuous attack in Game › Options…, or use Resolve." : {
 
     },
+    "Turn on “%@” first." : {
+
+    },
     "Type a system name; Return selects it." : {
+
+    },
+    "Type the name of a system." : {
 
     },
     "Unanimity" : {
@@ -7935,6 +7953,9 @@
 
     },
     "You bought the sealed canisters and put them in your cargo bays." : {
+
+    },
+    "You can choose a target only while docked and within range." : {
 
     },
     "You can't afford it." : {

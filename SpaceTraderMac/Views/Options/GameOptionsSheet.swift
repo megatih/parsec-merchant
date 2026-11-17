@@ -104,8 +104,14 @@ struct GameOptionsSheet: View {
         } else {
             Toggle(isOn: binding(field)) { Text(field.label) }.accessibilityLabel(Text(field.label))
                 .disabled(!draft.isEnabled(field))
+                .help(optionHelp(field, draft: draft))  // UI-KEYS-035: a dependent option names its parent
                 .accessibilityIdentifier(AXID.Options.field(field))
         }
+    }
+
+    private func optionHelp(_ field: OptionsDraft.Field, draft: OptionsDraft) -> Text {
+        guard !draft.isEnabled(field), let parent = field.parent else { return Text(verbatim: "") }
+        return Text("Turn on “\(String(localized: parent.label))” first.")
     }
 
     private func binding(_ field: OptionsDraft.Field) -> Binding<Bool> {

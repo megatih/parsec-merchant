@@ -81,6 +81,7 @@ nonisolated enum ArrivalReportStyle: String, CaseIterable, Sendable {
 /// App-wide settings in `UserDefaults` (OPT-028). None of them reaches the engine or a save.
 nonisolated enum AppSettingsKey {
     static let textSize = "settings.textSize"
+    static let selectedTab = "settings.selectedTab"
     static let fastTravel = "settings.fastTravel"
     static let arrivalReportStyle = "settings.arrivalReportStyle"
     static let tacticalReadout = "settings.tacticalReadout"

@@ -31,6 +31,16 @@ struct OpenSavedGameSheet: View {
     @State private var pendingDelete: String?
     @State private var pendingExport: PendingExport?
 
+    /// UI-KEYS-035: why Export…, Delete… and Open are disabled.
+    private var selectionHelp: Text {
+        model.canExportOrDelete(selection) ? Text(verbatim: "") : Text("Select a saved game.")
+    }
+
+    private var openHelp: Text {
+        if !model.canExportOrDelete(selection) { return Text("Select a saved game.") }
+        return model.canOpen(selection) ? Text(verbatim: "") : Text("This Ironman game is already loaded.")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Open Saved Game")
@@ -60,9 +70,11 @@ struct OpenSavedGameSheet: View {
             HStack {
                 Button("Export…") { exportSelection() }
                     .disabled(!model.canExportOrDelete(selection))
+                    .help(selectionHelp)  // UI-KEYS-035: a disabled control shows its reason
                     .accessibilityIdentifier(AXID.Files.export)
                 Button("Delete…", role: .destructive) { pendingDelete = selection }
                     .disabled(!model.canExportOrDelete(selection))
+                    .help(selectionHelp)
                     .accessibilityIdentifier(AXID.Files.delete)
                 Spacer()
                 Button("Cancel", role: .cancel) { session.dismissPresentation() }
@@ -71,6 +83,7 @@ struct OpenSavedGameSheet: View {
                 Button("Open") { if let selection { open(selection) } }
                     .keyboardShortcut(.defaultAction)
                     .disabled(!model.canOpen(selection))
+                    .help(openHelp)
                     .accessibilityIdentifier(AXID.Files.open)
             }
         }

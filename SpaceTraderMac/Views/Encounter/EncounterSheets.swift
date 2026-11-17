@@ -122,6 +122,7 @@ struct TradeInOrbitSheet: View {
                     Button("Trade") { answer(model.acceptCommand(q)) }
                         .keyboardShortcut(.defaultAction)
                         .disabled(!model.canAccept(q))
+                        .help(model.canAccept(q) ? Text(verbatim: "") : Text("Choose a quantity you can pay for and carry."))  // UI-KEYS-035
                         .accessibilityIdentifier(AXID.Decision.tradeAccept)
                 }
             }
