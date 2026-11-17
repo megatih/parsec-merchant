@@ -23,6 +23,11 @@ enum TradeQuantity {
         return min(max(0, requested), maximum)
     }
 
+    /// AUD-040 / UI-SHELL-067: the request reaches the cap (most affordable, free bays or stock): the snap haptic.
+    static func snaps(modifiers: EventModifiers, maximum: Int) -> Bool {
+        HapticMap.quantitySnaps(requested: resolve(modifiers: modifiers, maximum: .max), maximum: maximum)
+    }
+
     /// The SwiftUI modifiers of an AppKit event's flags (button actions read `NSEvent.modifierFlags`).
     static func modifiers(from flags: NSEvent.ModifierFlags) -> EventModifiers {
         var m: EventModifiers = []

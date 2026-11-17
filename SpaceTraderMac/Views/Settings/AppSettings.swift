@@ -23,11 +23,10 @@ nonisolated enum SettingsTab: String, CaseIterable, Sendable {
         }
     }
 
-    /// The milestone that brings the tab's controls, for tabs still empty.
+    /// The milestone that brings the tab's controls, for tabs still empty (none since M11, AUD-042).
     var arrivesIn: Int? {
         switch self {
-        case .general, .advanced, .intelligence: nil
-        case .sound: 11
+        case .general, .advanced, .intelligence, .sound: nil
         }
     }
 }

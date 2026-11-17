@@ -21,7 +21,12 @@ final class GameSession {
 
     // MARK: Presentation
     private(set) var feed: [FeedItem] = []
-    private(set) var presentation: Presentation? { didSet { encounterPresentationChanged() } }
+    private(set) var presentation: Presentation? {
+        didSet {
+            encounterPresentationChanged()
+            presentationAudio(old: oldValue)
+        }
+    }
     private(set) var pendingPresentations: [Presentation] = []
     var selectedSection: Section = .bridge
     var marketSelection: TradeItemType?
@@ -57,7 +62,12 @@ final class GameSession {
     /// UI-ENC-005: the last accepted step (cleared on load, new game and close).
     private(set) var lastStep: StepRecord?
     /// UI-ENC-007: the running transit playback, if any, and its current tick.
-    var transitPlayback: TransitPlayback? { didSet { encounterPlaybackChanged() } }
+    var transitPlayback: TransitPlayback? {
+        didSet {
+            encounterPlaybackChanged()
+            updateMusicMood()
+        }
+    }
     var transitTick = 0
     /// Set by the main window from `accessibilityReduceMotion` (the playback is then skipped, UI-ENC-007).
     var reduceMotion = false
@@ -174,6 +184,7 @@ final class GameSession {
             lastRejection = rejection
             rejectionSerial += 1
             encounterStepRejected(command)
+            audio.play(app: .rejected)
             return
         }
         lastRejection = nil
@@ -188,13 +199,14 @@ final class GameSession {
         }
         guard !isConfirmationRequest else { return }
         appendToFeed(result.events.map(FeedItem.Entry.event), state: state)
-        audio.play(events: result.events)
-        haptics.perform(events: result.events)
+        audio.play(record: step)
+        haptics.perform(record: step)
         // LOG-025: the journal records the step before the persistence triggers, so saves include the new entries.
         recordJournal(step)
         let arrived = result.events.contains { if case .arrived = $0 { true } else { false } }
         runPersistenceTriggers(phaseBefore: phaseBefore, state: state, arrived: arrived)
         if state.phase == .docked, phaseBefore != .docked || arrived { followPlannedRouteAfterDocking() }
+        updateMusicMood()
     }
 
     /// The player confirmed: resend the same command with every warning acknowledged so far plus this one.
@@ -240,6 +252,8 @@ final class GameSession {
         dock.setProgress(nil)
         updateDockAttention()
         resetEncounterUI()
+        audio.transit(.cancelled)
+        updateMusicMood()
     }
 
     // MARK: Presentation queue (UI-SHELL-005)
