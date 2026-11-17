@@ -91,6 +91,7 @@ struct ParsecMerchantApp: App {
                 .modifier(SceneAccessibility())
         }
         .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)  // an About panel shows its name in the content, like the system's
         .commandsRemoved()  // the About item comes from MenuCommands
         Window("Parsec Merchant Help", id: AppWindowID.help) {
             HelpView()

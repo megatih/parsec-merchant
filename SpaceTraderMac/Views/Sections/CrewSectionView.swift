@@ -164,7 +164,7 @@ private struct SkillBars: View {
                 GridRow {
                     Text(Names.skill(skill)).scaledFont(.caption)
                     // A11Y-029: the number sits between the texts, not against the bar's fill.
-                    Text(verbatim: value.formatted()).scaledFont(.caption).monospacedDigit()
+                    Text(verbatim: "\(value.formatted())/10").scaledFont(.caption).monospacedDigit()
                     ProgressView(value: Double(min(max(value, 0), 10)), total: 10)
                         .frame(width: 90)
                         .accessibilityHidden(true)

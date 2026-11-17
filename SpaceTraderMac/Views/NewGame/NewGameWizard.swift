@@ -124,6 +124,7 @@ struct NewGameWizard: View {
             TextField("Commander name", text: Binding { d.commanderName } set: { v in update { $0.commanderName = v } })
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 320)
+                .accessibilityLabel(Text("Commander name"))  // A11Y-003
                 .accessibilityIdentifier(AXID.NewGame.name)
         }
     }

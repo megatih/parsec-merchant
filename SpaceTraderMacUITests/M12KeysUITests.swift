@@ -295,6 +295,8 @@ final class M12KeysUITests: ParsecUITestCase {
         let item = try XCTUnwrap(AXID.Market.items.first { element(AXID.Market.buy($0)).exists && element(AXID.Market.buy($0)).isEnabled })
         let field = waitFor("market.row.\(item).quantity")
         field.click()
+        // An AppKit table takes the first click in an unselected row to select the row; the second edits the field.
+        if (field.value(forKey: "hasKeyboardFocus") as? Bool) != true { field.click() }
         field.typeText("2")
         type(ret, [])
         expect("Held of \(item) is 2 (held: \(text(of: element(AXID.Market.held(item)))))") {

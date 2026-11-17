@@ -80,6 +80,8 @@ final class PseudoLocalizationUITests: ParsecUITestCase {
         for name in UITestFixtures.dataNames.sorted(by: { $0.count > $1.count }) {
             rest = rest.replacingOccurrences(of: name, with: " ")
         }
+        // A galaxy code (UI-SHELL-103) is data whatever seed the walk uses: ruleset+difficulty, then two base-36 parts.
+        rest = rest.replacingOccurrences(of: #"\b[A-Z]\d+-[A-Z0-9]+-[A-Z0-9]+\b"#, with: " ", options: .regularExpression)
         rest = rest.replacingOccurrences(of: #"\b(cr|pc|ly|d|x|M\d+|B|S)\b\.?"#, with: " ", options: .regularExpression)
         return !rest.contains { $0.isLetter }
     }

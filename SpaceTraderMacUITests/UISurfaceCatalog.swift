@@ -252,7 +252,7 @@ extension ParsecUITestCase {
         relaunch(UITestFixtures.ambushLaunchArguments + extra)
         waitFor(AXID.Encounter.tactical)
         at("encounter-before-attack", waitFor(AXID.Encounter.view))
-        click(AXID.Encounter.attack)
+        attackOnce(waitFor(AXID.Encounter.attack))
         waitFor(AXID.Encounter.logRow(1))
         RunLoop.current.run(until: Date().addingTimeInterval(1.5))  // let the combat effects and screen shake finish
         at("encounter-after-attack", waitFor(AXID.Encounter.view))
@@ -263,7 +263,7 @@ extension ParsecUITestCase {
         while element(AXID.Encounter.view).exists, presses < UITestFixtures.ambushMaxAttacks * 2, Date() < deadline {
             let attack = element(AXID.Encounter.attack)
             if attack.exists, attack.isEnabled {
-                attack.click()
+                attackOnce(attack)
                 presses += 1
             }
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))
@@ -347,6 +347,12 @@ extension ParsecUITestCase {
         }
         visit(snap)
         return element(found ?? g.system(UITestFixtures.mapFlowTarget))
+    }
+
+    /// Attack with its key (A, the Encounter menu): at a large Text Size the button can sit below the visible area.
+    func attackOnce(_ attack: XCUIElement) {
+        _ = attack
+        type("a", [])
     }
 
     /// ⌘<key> until the section root shows (a key press can be lost while another app is frontmost).

@@ -36,32 +36,32 @@ struct MarketSectionView: View {
                         ItemCell(row: r) { kind in performRowAction(kind, r) }
                             .accessibilityRotorEntry(id: r.item, in: rotorNamespace)
                     }
-                        .width(min: 130, ideal: 160)
+                        .width(min: 120, ideal: 130)
                     TableColumn("Buy") { (r: MarketRowModel) in
                         PriceCell(price: r.buyPrice).accessibilityIdentifier(AXID.Market.buyPrice(r.item))
                     }
-                        .width(min: 60, ideal: 70)
+                        .width(min: 56, ideal: 60)
                     TableColumn("Sell") { (r: MarketRowModel) in SellCell(row: r) }
-                        .width(min: 70, ideal: 90)
+                        .width(min: 66, ideal: 72)
                     TableColumn("Stock") { (r: MarketRowModel) in
                         Text(verbatim: r.row.stock.formatted()).monospacedDigit()
                     }
                     .width(min: 44, ideal: 50)
                     TableColumn("Held") { (r: MarketRowModel) in heldCell(r) }
-                        .width(min: 80, ideal: 100)
+                        .width(min: 70, ideal: 80)
                     TableColumn("P/L") { (r: MarketRowModel) in ProfitCell(value: r.profitPerUnit) }
-                        .width(min: 60, ideal: 70)
+                        .width(min: 56, ideal: 60)
                     TableColumn("Target") { (r: MarketRowModel) in
                         let i = intel?.row(r.item)
                         IntelTargetCell(item: r.item, quote: i?.targetQuote, buyHere: r.buyPrice, profitPerBay: i?.profitPerBay)
                     }
-                    .width(min: 130, ideal: 170)
+                    .width(min: 110, ideal: 130)
                     TableColumn("History") { (r: MarketRowModel) in
                         PriceSparkline(item: r.item, series: intel?.row(r.item)?.history ?? [])
                     }
-                    .width(min: 70, ideal: 80)
+                    .width(min: 64, ideal: 70)
                     TableColumn("Actions") { (r: MarketRowModel) in actionsCell(r) }
-                        .width(min: 280, ideal: 300)
+                        .width(min: 240, ideal: 250)
                 }
                 .onKeyPress(phases: .down) { press in handleKey(press, rows: rows) }
                 .accessibilityLabel(Text("Market"))
@@ -285,7 +285,8 @@ private struct ItemCell: View {
                     .scaledFont(.caption2, weight: .bold)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
-                    .background(Capsule().fill(Color.red.opacity(0.2)))
+                    .foregroundStyle(.signalRed)
+                    .overlay(Capsule().strokeBorder(Color.signalRed, lineWidth: 1))  // A11Y-029: outlined, not tinted
                     .help(Text("Trading this is illegal; police may confiscate it."))
             }
         }

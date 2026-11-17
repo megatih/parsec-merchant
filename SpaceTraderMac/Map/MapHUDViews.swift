@@ -215,7 +215,7 @@ struct TargetStripView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(.regularMaterial, in: .capsule)
+        .overlayBackground(cornerRadius: 18)  // A11Y-019/029: legible over the dark map in the light appearance
         .accessibilityElement(children: .contain)
     }
 }
@@ -274,6 +274,14 @@ struct RoutePanelView: View {
         }
     }
 
+    private func hopLabel(_ n: Int, _ hop: RouteHop) -> String {
+        var parts = ["\(n). \(snapshot.systems[hop.from].name) → \(snapshot.systems[hop.to].name)",
+                     hop.viaWormhole ? String(localized: "Wormhole") : MapText.parsecs(hop.distance)]
+        if hop.refuelUnits > 0 { parts.append(String(localized: "Buy \(hop.refuelUnits) fuel (\(hop.refuelCost) cr.)")) }
+        parts.append(String(localized: "\(hop.cost) cr."))
+        return parts.joined(separator: ", ")
+    }
+
     private func hopRow(_ n: Int, _ hop: RouteHop) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(verbatim: "\(n). \(snapshot.systems[hop.from].name) → \(snapshot.systems[hop.to].name)").scaledFont(.caption, weight: .bold)
@@ -286,7 +294,9 @@ struct RoutePanelView: View {
             .scaledFont(.caption2)
             .foregroundStyle(.readableSecondary)
         }
-        .accessibilityElement(children: .combine)
+        // A11Y-029: a labelled container, so each line is measured in its own colour.
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(verbatim: hopLabel(n, hop)))
         .accessibilityIdentifier(ids.routeHop(n))
     }
 }
