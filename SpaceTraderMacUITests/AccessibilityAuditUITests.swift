@@ -45,6 +45,15 @@ final class AccessibilityAuditUITests: ParsecUITestCase {
         waitFor(AXID.Encounter.view)
         attachScreenshot("qa-dark-encounter")
         auditSurface(recorder, "dark-encounter", types: .contrast, root: element(AXID.Encounter.view))
+        // Retire is docked-only: finish the encounter first (A attacks).
+        let view = element(AXID.Encounter.view)
+        for _ in 0..<(UITestFixtures.ambushMaxAttacks * 2) where view.exists {
+            type("a", [])
+            RunLoop.current.run(until: Date().addingTimeInterval(0.6))
+        }
+        for _ in 0..<3 where !element(AXID.Dialog.retireSheet).exists && !element("bridge.root").exists {
+            goToSection("1", root: "bridge.root")
+        }
         retireGame()
         waitFor(AXID.GameOver.card)
         attachScreenshot("qa-dark-game-over")

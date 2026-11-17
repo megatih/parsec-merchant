@@ -11,6 +11,7 @@ struct FeedOverlay: View {
     var showLogbookEnabled = true
     var showLogbook: () -> Void = {}
     let dismiss: () -> Void
+    @Environment(\.accessibilityPreferences) private var a11yPrefs
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -52,7 +53,9 @@ struct FeedOverlay: View {
             }
         }
         .frame(width: 480, height: 320)
-        .overlayBackground(cornerRadius: 10)  // A11Y-019
+        // A11Y-019/029: opaque, so the Bridge art behind the list never shows through its lines.
+        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+        .contrastCardBorder(ContrastStyle.make(prefs: a11yPrefs))
         .shadow(radius: 8)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Status.feedList)
@@ -66,7 +69,7 @@ struct FeedRow: View {
 
     var body: some View {
         let style = FeedStyle.classify(entry)
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: 14) {  // room between the symbol and the text (A11Y-029)
             Image(systemName: style.symbol)
                 .foregroundStyle(.readableSecondary)
                 .frame(width: 16)

@@ -15,7 +15,11 @@ struct EncounterView: View {
         Group {
             if let engine = session.engine, let preview = engine.encounterPreview,
                let opponent = ShipPaneModel.opponent(state: engine.state, preview: preview) {
-                content(engine: engine, preview: preview, opponent: opponent)
+                // A11Y-025: at large Text Sizes the view scrolls instead of growing past the window.
+                ViewThatFits(in: .vertical) {
+                    content(engine: engine, preview: preview, opponent: opponent)
+                    ScrollView { content(engine: engine, preview: preview, opponent: opponent).frame(minHeight: 0) }
+                }
             } else {
                 Text("Encounter").foregroundStyle(.readableSecondary)
             }
@@ -102,7 +106,7 @@ private struct EncounterHeader: View {
             .overlay(Capsule().strokeBorder(badge.isSpecial ? Color.yellow : Color.clear, lineWidth: 1))
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(verbatim: badge.word))
-            .accessibilityAddTraits(.isStaticText)
+            .accessibilityAddTraits(.isImage)  // a glyph with its word; the label stays the word
             .accessibilityIdentifier(AXID.Encounter.badge)
         }
     }

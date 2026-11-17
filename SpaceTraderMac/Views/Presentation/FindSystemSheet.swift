@@ -20,6 +20,7 @@ struct FindSystemSheet: View {
                     noMatch = false
                     ironmanRefusal = false
                 }
+                .accessibilityLabel(Text("System name"))  // A11Y-003
                 .accessibilityIdentifier(AXID.FindSystem.field)
             if let state = session.state {
                 let matches = FindSystemModel.matches(text, in: state)

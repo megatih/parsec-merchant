@@ -21,9 +21,13 @@ struct MainShellView: View {
         } detail: {
             VStack(spacing: 0) {
                 detail
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // A11Y-025: the detail takes the room that is left and never pushes the status bar out of the
+                    // window (each section scrolls its own overflow).
+                    .frame(maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    .clipped()
                 Divider()
                 StatusBarView()
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .focusSection()
         }

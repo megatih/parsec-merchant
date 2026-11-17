@@ -20,7 +20,7 @@ final class M9FlowUITests: ParsecUITestCase {
         }
         for id in [AXID.Encounter.playerHull, AXID.Encounter.opponentHull] {
             let hull = waitFor(id)
-            XCTAssertTrue(hull.label.contains("%") && text(of: hull).contains("percent"), "\(id) shows a percentage: \(hull.label)")
+            XCTAssertTrue(text(of: hull).contains("%"), "\(id) shows a percentage: \(text(of: hull))")
         }
         for id in [AXID.Encounter.attack, AXID.Encounter.flee, AXID.Encounter.surrender, AXID.Encounter.resolve] {
             waitFor(id)

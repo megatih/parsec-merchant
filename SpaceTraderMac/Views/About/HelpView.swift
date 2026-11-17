@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import AppKit
 import Foundation
 import Observation
 import SwiftUI
@@ -76,6 +77,9 @@ struct HelpView: View {
                     .accessibilityIdentifier(AXID.Help.topic(topic))
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
+            // A11Y-029: an opaque sidebar, so windows behind the Help window never show through the topic names.
+            .scrollContentBackground(.hidden)
+            .background(Color(nsColor: .windowBackgroundColor))
         } detail: {
             ScrollView {
                 MarkdownBlocks(text: HelpContent.text(router.topic))
@@ -85,6 +89,9 @@ struct HelpView: View {
             .accessibilityIdentifier(AXID.Help.content)
         }
         .frame(minWidth: 720, minHeight: 480)
+        // A11Y-029: the window name is not repeated in a large toolbar title over the content (the Window menu and
+        // VoiceOver keep the window title).
+        .toolbar(removing: .title)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Help.window)
         .modifier(AppTextSize())

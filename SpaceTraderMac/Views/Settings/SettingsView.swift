@@ -19,6 +19,7 @@ struct SettingsView: View {
             }
         }
         .modifier(SceneAccessibility())
+        .toolbar(removing: .title)  // A11Y-029: the selected tab is shown by its toolbar item
     }
 
     @ViewBuilder

@@ -35,10 +35,14 @@ struct AuditScope {
     /// The scope of the sheet or window that shows `root`.
     @MainActor
     static func make(app: XCUIApplication, root: XCUIElement) -> AuditScope? {
+        // A surface that has already gone (the transit playback) is audited as the main window.
+        let root = root.exists ? root : app.windows.matching(identifier: "main").firstMatch
         guard root.exists else { return nil }
         let f = root.frame
         let center = CGPoint(x: f.midX, y: f.midY)
-        let sheet = app.sheets.allElementsBoundByIndex.first { $0.exists && $0.frame.contains(center) }
+        // The innermost sheet (a confirmation over a sheet is a sheet of its own).
+        let sheet = app.sheets.allElementsBoundByIndex.filter { $0.exists && $0.frame.contains(center) }
+            .min { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
         let window = app.windows.allElementsBoundByIndex.first { $0.exists && $0.frame.contains(center) }
         guard let container = sheet ?? window, let snapshot = try? container.snapshot() else { return nil }
         var scope = AuditScope(visible: container.frame, keys: [], tableContainers: [])
@@ -52,7 +56,9 @@ struct AuditScope {
         let inner = Self.clippingTypes.contains(e.elementType) ? clip.intersection(e.frame) : clip
         let k = Self.key(e.elementType, e.frame)
         // Only elements on screen count as the surface (rows scrolled out of a scroll view are not drawn).
-        if e.frame.intersects(inner) { keys.insert(k) }
+        // Partly clipped text (a row half under the status bar) is not fully drawn either, so it cannot be measured.
+        let onScreen = e.elementType == .staticText ? inner.insetBy(dx: -1, dy: -1).contains(e.frame) : e.frame.intersects(inner)
+        if onScreen { keys.insert(k) }
         if e.elementType == .group, e.identifier.isEmpty, let parent {
             let inRow = Self.rowTypes.contains(parent.elementType)
             // The header row is a group directly in the table; its cells are groups in that row.
@@ -76,7 +82,7 @@ extension ParsecUITestCase {
     /// Before an audit: bring the app to the front (an inactive window draws dimmed titles and selections) and park the
     /// pointer outside the window, so no help tag covers the content being measured.
     func prepareForAudit() {
-        app.activate()
+        if app.state != .runningForeground { app.activate() }  // activating again would make the main window key
         let window = mainWindow.exists ? mainWindow : app.windows.firstMatch
         if window.exists {
             // Just outside the window's top-left corner: over the desktop, where nothing shows a help tag.

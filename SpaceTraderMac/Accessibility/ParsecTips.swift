@@ -253,6 +253,9 @@ struct ParsecTipViewStyle: TipViewStyle {
             .accessibilityIdentifier(id.closeIdentifier)
         }
         .padding(12)
+        // A labelled container (only drawn while the tip shows); the controls keep their own identifiers.
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(id.title))
         .padding(margin)
     }
 }
