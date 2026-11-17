@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M8 (starting)
-- **Next step:** M8: galaxy chart — write MAP.md (spec skeleton) first; Canvas map with zoom/pan, hover overlay cards (no .popover), range ring, wormholes, tracking, context search, route planner, detachable window, accessibility children/rotors; map benchmark baseline (pmsim bench / app perf test); UI flow 5; verify --ui at M8 exit.
-- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M7 exit (8/8 incl. UI flows 1, 3, 4 and the identifier walk)
+- **Current milestone:** M9 (starting)
+- **Next step:** M9: encounter mode + transit + arrival UX — write UI-ENC.md (skeleton) first; encounter mode (vector ships placeholder until M11, hull/shield bars, combat log from events, keyboard actions, auto-repeat via .encounter(.autoRepeat) timer 0.6 s + Esc stop, tactical readout), transit (Dock tile progress), plunder/trade/scoop/consent sheets, arrival report card, event feed, styled newspaper (NEWS-047 Palm override), special-event sheets, game over + career card, high scores view; every PendingDecision and ALR mapping has a presentation (test); UI flow 2 (-PMScenario pirateAmbush); verify --ui at M9 exit.
+- **Last gate result:** verify.sh --ui ALL GATES PASSED @ M8 exit (8/8 incl. flow 5); pmsim bench --check all OK; map render baseline 0.41 ms median (QA-REPORT MAP-091)
 - **Blockers:** none
 
 ## Milestones
@@ -17,7 +17,7 @@
 - [x] M5 Rulesets (Palm 1.2.2 and Modern) (2026-11-17, tag m5-done; Palm content pack + galaxy, all RUL flags in per-area rule groups, MOD-001…021, no open [verify] (accepted assumptions in QA-REPORT), 1546 spec IDs)
 - [x] M6 Persistence, high scores, cheats (2026-11-17, tag m6-done; SAV/SCORE/CHEAT/OPT traced; 500 fuzzed byte-identical round trips; v1 fixtures per ruleset)
 - [x] M7 App shell and docked screens (2026-11-17, tag m7-done; GameSession, Welcome/wizard, Bridge/Market/Shipyard+Designer/Outfitter/Crew/Bank/Quests, menus, files, Settings/Options, About/Help, App Intents, cheat console; UI flows 1/3/4 + identifier walk green)
-- [ ] M8 Galaxy chart
+- [x] M8 Galaxy chart (2026-11-17, tag m8-done; Canvas map, hover cards, range ring, wormholes, route planner (ParsecInsights) + follower, search, detachable window, mini chart, VoiceOver children + rotors; flow 5 green; pmsim bench real)
 - [ ] M9 Encounter, transit, event UX
 - [ ] M10 Trade intelligence, log, stats, achievements, flavor
 - [ ] M11 Art, icon, audio, haptics
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-17: M8 exit: MAP.md (104 IDs), route planner (lexicographic Dijkstra, verified vs brute force), app galaxy chart + flow 5. pmsim bench implemented (perform 0.0005 ms, arrival 0.04 ms, route 0.03 ms medians). Map render baseline 0.41 ms/frame (budget 8 ms). Deviation: flow 5 uses seed 13 (seed 11 meets police on the nearest warp).
 - 2026-11-17: M7 exit: app built by six worktree agents (foundation, engine UI queries, four section/area agents) + UI-flow agent. Flows found two real bugs: AppKit opened a leftover launch argument as a document (fixed with NSTreatUnknownArgumentsAsOpen=NO) and container accessibilityIdentifiers overwrote children (fixed with .accessibilityElement(children: .contain)). NEWS-047 retagged M9 (styled newspaper). Interim encounter/game-over surfaces remain until M9.
 - 2026-11-17: M6 exit: persistence rewrite (gameID/generation, backup recovery, validation, versioned high scores, loadForPlay reload rule, import clears Ironman), cheats (all C# Find codes + Palm codes/cheat form, cheatsUsed permanent), options (docked-only, normalized, Palm defaults). M7 specs UI-SHELL (129) + MENU (45) written. Decisions: galaxy code includes difficulty (generator needs it); interim encounter/game-over surfaces in M7 replaced in M9.
 - 2026-11-17: M6 started: ParsecPersistence SaveEnvelope/SaveCodec (sorted-key JSON, byte-identical round trips)/SaveMigrator (raw JSON, v1)/SlotStore (atomic, 3 rotating backups, autosave, import/export, Corrupt/ quarantine)/HighScoreStore; engine HighScoreTable (top 10, SCORE-031…036).
