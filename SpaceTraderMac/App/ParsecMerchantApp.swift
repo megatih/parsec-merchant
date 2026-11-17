@@ -37,12 +37,14 @@ struct ParsecMerchantApp: App {
         }
         .defaultSize(GalaxyWindowMetrics.defaultSize)
         .windowResizability(.contentMinSize)
+        .commandsRemoved()  // MENU-038: Window › Galaxy Chart comes from MenuCatalog (no duplicate auto item)
         Window("High Scores", id: HighScoresWindowView.windowID) {
             HighScoresWindowView()
                 .modifier(AppTextSize())
                 .environment(appDelegate.session)
         }
         .defaultSize(HighScoresWindowView.defaultSize)
+        .commandsRemoved()  // Window › High Scores comes from MenuCatalog (no duplicate auto item)
         Settings {
             SettingsView()
                 .environment(appDelegate.session)
@@ -51,10 +53,12 @@ struct ParsecMerchantApp: App {
             AboutView()
         }
         .windowResizability(.contentSize)
+        .commandsRemoved()  // the About item comes from MenuCommands
         Window("Parsec Merchant Help", id: AppWindowID.help) {
             HelpView()
                 .environment(appDelegate.helpRouter)
         }
         .defaultSize(width: 860, height: 600)
+        .commandsRemoved()  // the Help items come from MenuCommands
     }
 }
