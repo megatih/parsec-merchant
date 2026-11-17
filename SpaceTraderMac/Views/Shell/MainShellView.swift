@@ -43,7 +43,7 @@ struct MainShellView: View {
             case let .transit(playback):
                 TransitView(playback: playback)
             case .encounter:
-                InterimEncounterPanel()
+                EncounterView()
             case .gameOver:
                 GameOverView()
             case let .section(section):

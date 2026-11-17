@@ -41,7 +41,7 @@ nonisolated enum HelpContent {
         return url.flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
     }
 
-    /// The in-view keys that are not menu items (Market B/S; the encounter keys arrive with the Encounter menu in M9).
+    /// The in-view keys that are not menu items (Market B/S; the encounter keys are Encounter menu items, UI-ENC-034).
     static let inViewKeys: [(key: String, title: LocalizedStringResource)] = [
         ("B", "Market: buy one unit of the selected item"),
         ("S", "Market: sell one unit of the selected item"),
@@ -51,7 +51,7 @@ nonisolated enum HelpContent {
 
     /// UI-SHELL-110: the Keyboard Shortcuts table, generated from `MenuCatalog` so it can't drift from the menus.
     static func shortcutRows(milestone: Int = MenuCatalog.currentMilestone) -> [(shortcut: String, title: String)] {
-        let menus: [MenuName] = [.file, .edit, .view, .game, .help]
+        let menus: [MenuName] = [.file, .edit, .view, .game, .encounter, .help]
         let items = menus.flatMap { MenuCatalog.items(in: $0, milestone: milestone) }
         return items.compactMap { id in
             let e = MenuCatalog.entry(for: id)

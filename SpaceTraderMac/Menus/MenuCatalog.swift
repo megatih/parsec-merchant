@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecEngine
 import SwiftUI
 
 /// The menus of the menu bar that hold custom items (MENU §3).
 nonisolated enum MenuName: String, CaseIterable, Sendable {
-    case app, file, edit, view, game, window, help
+    case app, file, edit, view, game, encounter, window, help
 }
 
 /// One case per custom menu item (MENU-001). System items (Hide, Services, Minimize, Enter Full Screen…) are not cases.
-/// The Encounter menu's items arrive with UI-ENC in M9.
 nonisolated enum MenuItemID: String, CaseIterable, Sendable {
     // Parsec Merchant
     case about
@@ -19,6 +19,10 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
     case bridge, market, shipyard, outfitter, crew, bank, galaxy, quests, logbook, galaxyChart, zoomIn, zoomOut, zoomFit
     // Game
     case warp, jump, previousTarget, nextTarget, track, findSystem, plotRoute, fillFuel, repair, newspaper, options, retire
+    // Encounter (UI-ENC-034)
+    case encounterAttack, encounterFlee, encounterSurrender, encounterIgnore, encounterBribe, encounterSubmit, encounterTrade
+    case encounterPlunder, encounterBoard, encounterDrink, encounterMeet, encounterYield, encounterAutoRepeat, encounterResolve
+    case encounterStop
     // Window
     case mainWindow, galaxyChartWindow, highScores
     // Help
@@ -71,7 +75,8 @@ nonisolated struct MenuShortcut: Hashable, Sendable {
     /// The menu-style glyphs, e.g. "⇧⌘S" (for Help › Keyboard Shortcuts).
     var display: String {
         let order: [(Modifier, String)] = [(.control, "⌃"), (.option, "⌥"), (.shift, "⇧"), (.command, "⌘")]
-        return order.filter { modifiers.contains($0.0) }.map(\.1).joined() + key.uppercased()
+        let cap = key == EncounterKeys.escapeKey ? "⎋" : key.uppercased()
+        return order.filter { modifiers.contains($0.0) }.map(\.1).joined() + cap
     }
 }
 
@@ -86,7 +91,7 @@ nonisolated struct MenuEntry: Sendable {
 
 nonisolated enum MenuCatalog {
     /// Entries tagged above this milestone are absent from the menu bar (MENU-040).
-    static let currentMilestone = 8
+    static let currentMilestone = 9
     static let githubURL = URL(string: "https://github.com/megatih/parsec-merchant") ?? URL(fileURLWithPath: "/")
     static let openRecentRows = 10
 
@@ -130,6 +135,10 @@ nonisolated enum MenuCatalog {
         case .newspaper: return game("Newspaper", s("n", [.shift, .command]), "newspaper", milestone: 9)
         case .options: return game("Options…", s("o", [.option, .command]), "options")
         case .retire: return game("Retire…", nil, "retire")
+        case .encounterAttack, .encounterFlee, .encounterSurrender, .encounterIgnore, .encounterBribe, .encounterSubmit, .encounterTrade,
+             .encounterPlunder, .encounterBoard, .encounterDrink, .encounterMeet, .encounterYield, .encounterAutoRepeat,
+             .encounterResolve, .encounterStop:
+            return encounterEntry(id)
         case .mainWindow: return MenuEntry(menu: .window, titleKey: "Parsec Merchant", shortcut: nil, identifier: "menu.window.main", milestone: 7)
         case .galaxyChartWindow:
             return MenuEntry(menu: .window, titleKey: "Galaxy Chart", shortcut: nil, identifier: "menu.window.galaxyChart", milestone: 8)
@@ -159,6 +168,33 @@ nonisolated enum MenuCatalog {
         MenuEntry(menu: .game, titleKey: t, shortcut: sc, identifier: "menu.game.\(name)", milestone: milestone)
     }
 
+    /// UI-ENC-034: `menu.encounter.<EncounterAction>` / `autoRepeat`, shortcuts from `EncounterKeys`, milestone 9.
+    private static func encounterEntry(_ id: MenuItemID) -> MenuEntry {
+        guard let action = id.encounterAction else {
+            return MenuEntry(menu: .encounter, titleKey: "Auto-repeat", shortcut: EncounterKeys.autoRepeatToggle,
+                             identifier: "menu.encounter.autoRepeat", milestone: 9)
+        }
+        let title: LocalizedStringResource = switch action {
+        case .attack: "Attack"
+        case .flee: "Flee"
+        case .surrender: "Surrender"
+        case .ignore: "Ignore"
+        case .bribe: "Bribe"
+        case .submit: "Submit"
+        case .trade: "Trade"
+        case .plunder: "Plunder"
+        case .board: "Board"
+        case .drink: "Drink"
+        case .meet: "Meet"
+        case .yield: "Yield"
+        case .resolve: "Resolve"
+        case .stop: "Stop"
+        case .autoRepeat: "Auto-repeat"
+        }
+        return MenuEntry(menu: .encounter, titleKey: title, shortcut: EncounterKeys.shortcut(for: action),
+                         identifier: "menu.encounter.\(action.rawValue)", milestone: 9)
+    }
+
     private static func help(_ t: LocalizedStringResource, _ sc: MenuShortcut?, _ name: String) -> MenuEntry {
         MenuEntry(menu: .help, titleKey: t, shortcut: sc, identifier: "menu.help.\(name)", milestone: 7)
     }
@@ -181,6 +217,7 @@ nonisolated enum MenuCatalog {
                      .zoomFit]
         case .game: [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .fillFuel, .repair, .newspaper,
                      .options, .retire]
+        case .encounter: MenuItemID.encounterItems
         case .window: [.mainWindow, .galaxyChartWindow, .highScores]
         case .help: [.help, .prices, .shortcuts, .credits, .github]
         }

@@ -61,13 +61,15 @@ nonisolated struct MenuContext: Sendable, Equatable {
     var focusedMap: MapScope?
     /// MAP-070: the Galaxy Chart window is key (⌘F searches its map).
     var galaxyIsKey = false
+    /// UI-ENC-034: the current encounter's actions for the Encounter menu (nil outside `.encounter`).
+    var encounter: EncounterMenuState?
 
     static let noGame = MenuContext()
 
     /// The state-derived part of the context (pure; `make(session:)` adds the session and store facts).
     static func make(state: GameState?, isModal: Bool, selectedSection: Section = .bridge, currentSlotID: String? = nil,
                      canRevertToAutosave: Bool = false, recentSlots: [RecentSlot] = [], focusedMap: MapScope? = nil,
-                     galaxyIsKey: Bool = false, transitPlaying: Bool = false) -> MenuContext {
+                     galaxyIsKey: Bool = false, transitPlaying: Bool = false, autoRepeatOn: Bool = true) -> MenuContext {
         var c = MenuContext()
         c.isModal = isModal
         c.selectedSection = selectedSection
@@ -97,6 +99,7 @@ nonisolated struct MenuContext: Sendable, Equatable {
         c.hullFull = ship.hull >= ship.hullStrength(state.ruleset)
         c.canBuyFuel = !c.fuelFull && state.commander.cash >= spec.fuelCost
         c.canRepair = !c.hullFull && state.commander.cash >= spec.repairCost
+        if case .encounter = state.phase { c.encounter = EncounterMenuState.make(engine: GameEngine(state: state), autoRepeatOn: autoRepeatOn) }
         return c
     }
 
@@ -110,7 +113,7 @@ nonisolated struct MenuContext: Sendable, Equatable {
         return make(state: session.state, isModal: session.isModal, selectedSection: session.selectedSection,
                     currentSlotID: session.currentSlotID, canRevertToAutosave: session.canRevertToAutosave, recentSlots: recent,
                     focusedMap: focusedMap, galaxyIsKey: session.galaxyWindowIsKey,
-                    transitPlaying: session.transitPlayback != nil)
+                    transitPlaying: session.transitPlayback != nil, autoRepeatOn: session.encounterUI.autoRepeatEnabled)
     }
 }
 
@@ -129,6 +132,8 @@ nonisolated enum DisabledReason: Sendable, Equatable {
     case cannotAfford
     case noMapFocus
     case currentIronmanSlot
+    case notInEncounter
+    case autoRepeatUnavailable
     case engine(CommandError)
 
     @MainActor
@@ -147,6 +152,8 @@ nonisolated enum DisabledReason: Sendable, Equatable {
         case .cannotAfford: String(localized: "You can't afford it.")
         case .noMapFocus: String(localized: "Select the galaxy chart first.")
         case .currentIronmanSlot: String(localized: "This Ironman game is already loaded.")
+        case .notInEncounter: String(localized: "Only during an encounter.")
+        case .autoRepeatUnavailable: String(localized: "Turn on Continuous attack in Game › Options…, or use Resolve.")
         case let .engine(e): ReasonText.string(for: e)
         }
     }
@@ -238,6 +245,31 @@ nonisolated enum MenuRules {
             return gameCommand(c, and: c.canBuyFuel, else: c.fuelFull ? .tankFull : .cannotAfford)
         case .repair:
             return gameCommand(c, and: c.canRepair, else: c.hullFull ? .hullIntact : .cannotAfford)
+        case .encounterAttack, .encounterFlee, .encounterSurrender, .encounterIgnore, .encounterBribe, .encounterSubmit, .encounterTrade,
+             .encounterPlunder, .encounterBoard, .encounterDrink, .encounterMeet, .encounterYield, .encounterAutoRepeat,
+             .encounterResolve, .encounterStop:
+            return encounterItem(item, in: c)
+        }
+    }
+
+    /// UI-ENC-034 / MENU-036: an Encounter item is enabled iff nothing is presented, the phase is `.encounter` (a running
+    /// playback reads as `.inTransit`, UI-ENC-006) and its action has no rejection; Resolve, Stop and Auto-repeat follow
+    /// UI-ENC-031…033.
+    static func encounterItem(_ item: MenuItemID, in c: MenuContext) -> MenuAvailability {
+        if c.isModal { return .disabled(.modal) }
+        if !c.hasGame { return .disabled(.noGame) }
+        guard c.phase == .encounter, let enc = c.encounter else { return .disabled(.notInEncounter) }
+        switch item.encounterAction {
+        case nil:
+            return enc.autoRepeatAvailable ? .enabled : .disabled(.autoRepeatUnavailable)
+        case .stop?:
+            return enc.canStop ? .enabled : .disabled(.engine(.encounterActionUnavailable))
+        case .resolve?:
+            guard enc.resolveShown else { return .disabled(.engine(.encounterActionUnavailable)) }
+            return enc.resolveRejection.map { .disabled(.engine($0)) } ?? .enabled
+        case let action?:
+            guard let p = enc.preview(action) else { return .disabled(.engine(.encounterActionUnavailable)) }
+            return p.rejection.map { .disabled(.engine($0)) } ?? .enabled
         }
     }
 
@@ -264,8 +296,20 @@ nonisolated enum MenuRules {
     static func isShown(_ item: MenuItemID, in c: MenuContext) -> Bool {
         switch item {
         case .jump: c.singularityShown
+        case .encounterAttack, .encounterFlee, .encounterSurrender, .encounterIgnore, .encounterBribe, .encounterSubmit, .encounterTrade,
+             .encounterPlunder, .encounterBoard, .encounterDrink, .encounterMeet, .encounterYield, .encounterResolve:
+            MenuCatalog.entry(for: item).milestone <= MenuCatalog.currentMilestone && isEncounterItemShown(item, in: c)
         default: MenuCatalog.entry(for: item).milestone <= MenuCatalog.currentMilestone
         }
+    }
+
+    /// UI-ENC-034: during an encounter an action item is shown iff the preview offers it (Resolve iff Attack is offered);
+    /// outside encounters every item is shown, disabled (the menu mirrors the action bar).
+    static func isEncounterItemShown(_ item: MenuItemID, in c: MenuContext) -> Bool {
+        guard let enc = c.encounter else { return true }
+        if item == .encounterResolve { return enc.resolveShown }
+        guard let action = item.encounterAction else { return true }
+        return enc.preview(action) != nil
     }
 
     /// MENU-034: the Track item's title and command for the current target.

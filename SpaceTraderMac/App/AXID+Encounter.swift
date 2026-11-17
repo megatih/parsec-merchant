@@ -27,14 +27,14 @@ nonisolated extension AXID {
         static let tacticalEquipment = "encounter.tactical.equipment"
         static let tacticalFleeOdds = "encounter.tactical.fleeOdds"
         static func tribble(_ index: Int) -> String { "encounter.tribble.\(index)" }
-        /// The M7 interim panel (UI-SHELL-010); retired together with `InterimEncounterPanel`.
+        /// The M7 interim panel (UI-SHELL-010), retired with `InterimEncounterPanel` (kept as a constant, not in `all`).
         static let interimPanel = "encounter.panel"
 
         /// Actions that have a button (the `autoRepeat` engine tick has none, UI-ENC-028).
         static let buttonActions = EncounterAction.allCases.filter { $0 != .autoRepeat }
         static let all: [String] = [view, intro, badge, player, playerHull, playerShields, opponent, opponentHull,
                                     opponentShields, opponentDisabled, log, actions, autoRepeat, resumeDecision, tactical,
-                                    tacticalClass, tacticalEquipment, tacticalFleeOdds, interimPanel]
+                                    tacticalClass, tacticalEquipment, tacticalFleeOdds]
             + buttonActions.map(action)
     }
 }

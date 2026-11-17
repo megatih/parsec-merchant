@@ -84,18 +84,21 @@ struct PresentationHost: ViewModifier {
             guard let state = session.state else { return nil }
             let content = ConfirmationText.content(for: pending.confirmation, state: state)
             return DialogItem(id: presentation.id, content: content, onConfirm: { [session] in session.confirm(pending) },
-                              confirmID: AXID.Dialog.confirmationConfirm, cancelID: AXID.Dialog.confirmationCancel)
+                              confirmID: AXID.Dialog.confirmationConfirm, cancelID: AXID.Dialog.confirmationCancel,
+                              cancelLabel: ConfirmationText.cancelLabel(for: pending.confirmation.warning))
         case let .appConfirmation(c):
             let content = AppConfirmationText.content(for: c, session: session)
             return DialogItem(id: presentation.id, content: content, onConfirm: { [session] in session.confirm(c) },
                               confirmID: AXID.Dialog.appConfirmationConfirm, cancelID: AXID.Dialog.appConfirmationCancel)
         case let .scoop(item):
-            // UI-ENC-049 (interim form): Pick It Up / Leave It; the full-hold Make Room flow is added with the decision views.
-            let content = ScoopText.content(for: item)
-            return DialogItem(id: presentation.id, content: content,
-                              onConfirm: { [session] in session.answerScoop(accept: true) },
+            // UI-ENC-049: Pick It Up / Leave It; with a full hold, Make Room / Leave It (ALR-070/071).
+            let model = ScoopDialogModel.make(item: item, state: session.state)
+            return DialogItem(id: presentation.id, content: model.content,
+                              onConfirm: { [session] in
+                                  if model.holdIsFull { session.beginMakeRoom(for: item) } else { session.answerScoop(accept: true) }
+                              },
                               onCancel: { [session] in session.answerScoop(accept: false) },
-                              confirmID: AXID.Decision.scoopAccept, cancelID: AXID.Decision.scoopDecline,
+                              confirmID: model.confirmIdentifier, cancelID: AXID.Decision.scoopDecline,
                               cancelLabel: String(localized: "Leave It"))
         case .systemAlert, .sheet:
             return nil
@@ -146,15 +149,6 @@ enum SystemAlertText {
         case let .openFailed(reason, suggestion): [reason, suggestion].compactMap(\.self).joined(separator: "\n\n")
         case .nothingToContinue: ""
         }
-    }
-}
-
-/// Text of the scoop dialog (ALR-070).
-enum ScoopText {
-    static func content(for item: TradeItemType) -> ConfirmationContent {
-        ConfirmationContent(title: String(localized: "A canister of \(String(localized: Names.item(item))) floats by."),
-                            message: String(localized: "Pick it up?"),
-                            confirmLabel: String(localized: "Pick It Up"), isDestructive: false)
     }
 }
 

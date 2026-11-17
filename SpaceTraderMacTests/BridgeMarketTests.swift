@@ -463,17 +463,19 @@ struct BridgeMarketTests {
     func interimDecisionSheets() throws {
         let offerJSON = #"{"direction":"traderSells","item":3,"unitPrice":40,"maxQuantity":6,"unitsAvailable":9,"costBasisPerUnit":0}"#
         let offer = try JSONDecoder().decode(OrbitTradeOffer.self, from: Data(offerJSON.utf8))
-        let trade = InterimDecisionModel.Trade(offer: offer)
+        let trade = TradeOfferModel(offer: offer, cash: 1_000)
         #expect(trade.range == 0...6 && trade.initialQuantity == 6 && !trade.canAccept(0) && trade.canAccept(6) && !trade.canAccept(7))
         #expect(trade.acceptCommand(4) == .resolveTradeInOrbit(quantity: 4) && trade.acceptCommand(50) == .resolveTradeInOrbit(quantity: 6))
-        #expect(trade.declineCommand == .resolveTradeInOrbit(quantity: 0))
-        let rows = InterimDecisionModel.Plunder.rows(cargo: [0, 3, 0, 0, 0, 0, 0, 0, 0, 7])
-        #expect(rows.map(\.item) == [.furs, .robots] && rows.map(\.available) == [3, 7])
-        #expect(InterimDecisionModel.Plunder.takeCommand(.furs, amount: nil, available: 3) == .plunderTake(.furs, quantity: 3))
-        #expect(InterimDecisionModel.Plunder.takeCommand(.furs, amount: 9, available: 3) == .plunderTake(.furs, quantity: 3))
-        #expect(InterimDecisionModel.Plunder.doneCommand == .plunderDone)
-        #expect(InterimDecisionModel.scoopCommand(accept: true) == .resolveScoop(accept: true))
-        #expect(InterimDecisionModel.scoopCommand(accept: false) == .resolveScoop(accept: false))
+        #expect(TradeOfferModel.declineCommand == .resolveTradeInOrbit(quantity: 0))
+        let plunderSession = try TestSessions.playing()
+        var plunderState = try #require(plunderSession.state)
+        plunderState.commander.ship.cargo = Array(repeating: 0, count: TradeItemType.allCases.count)
+        let plunder = PlunderSheetModel.make(context: PlunderSheetContext(victimCargo: [0, 3, 0, 0, 0, 0, 0, 0, 0, 7], source: .opponent),
+                                             state: plunderState)
+        #expect(plunder.rows.map(\.item) == [.furs, .robots] && plunder.rows.map(\.available) == [3, 7])
+        #expect(plunder.rows[0].takeAllCommand == .plunderTake(.furs, quantity: 3))
+        #expect(plunder.rows[0].takeCommand(9) == .plunderTake(.furs, quantity: 3))
+        #expect(PlunderSheetModel.doneCommand == .plunderDone)
 
         // The newspaper: Read → buyNewspaper confirmation → the newspaper sheet → Close.
         let session = try TestSessions.playing()
@@ -504,9 +506,9 @@ struct BridgeMarketTests {
                   preview.actions.contains(where: { $0.action == .trade && $0.enabled }) else { continue }
             s.send(.encounter(.trade))
             guard case let .sheet(.tradeInOrbit(o)) = s.presentation else { continue }
-            let model = InterimDecisionModel.Trade(offer: o)
+            #expect(TradeOfferModel.make(offer: o, state: try #require(s.state)).offer == o)
             s.dismissPresentation()
-            s.send(model.declineCommand)
+            s.send(TradeOfferModel.declineCommand)
             #expect(s.lastRejection == nil && s.state?.pendingOrbitTrade == nil)
             traded = true
         }

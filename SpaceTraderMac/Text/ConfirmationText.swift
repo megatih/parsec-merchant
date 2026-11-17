@@ -40,9 +40,9 @@ enum ConfirmationText {
         let a1 = c.amounts.count > 1 ? c.amounts[1] : 0
         switch c.warning {
         case .attackPolice:
-            return ("Attack the Police?", "Attacking a police ship drops your police record to Criminal.", "Attack")
+            return ("Attack the Police?", "Your police record will drop to \(recordWord(a0)).", "Attack")
         case .attackTrader:
-            return ("Attack the Trader?", "Attacking a peaceful trader makes your police record Dubious.", "Attack")
+            return ("Attack the Trader?", "Attacking a peaceful trader is a crime. Your police record will drop to \(recordWord(a0)).", "Attack")
         case .attackCaptain:
             return ("Really Attack?", "Famous captains are well loved. Your record drops to Villain and the news will report it.", "Attack")
         case .fleeInspection, .submitWithNothingIllegal:
@@ -80,7 +80,7 @@ enum ConfirmationText {
         case .boardMarieCeleste:
             return ("Board the Ship?", "The derelict seems deserted. Its cargo is yours for the taking.", "Take Cargo")
         case .meetCaptain:
-            return ("Meet the Captain?", "The captain offers to trade equipment with you.", "Trade")
+            return ("Meet the Captain?", "The captain offers to trade equipment with you.", meetLabel(state))
         case .buyEscapePod:
             return ("Buy an Escape Pod?", "This costs \(credits(a0)) credits.", "Buy for \(credits(a0)) cr.")
         case .surrenderArtifact:
@@ -90,9 +90,33 @@ enum ConfirmationText {
                 ? ("Accept the Offer?", "This costs \(credits(a0)) credits.", "Accept")
                 : ("Accept the Offer?", "Do you want to accept?", "Accept")
         case .submitInspection:
-            return ("Submit to Inspection?", "The police will search your ship for illegal goods and passengers.", "Submit")
+            return ("Submit to Inspection?", "\(InspectionFindings.make(state: state).message)", "Submit")
         case .buyNewspaper:
             return ("Buy a Newspaper?", "The local paper costs \(credits(a0)) credits.", "Buy for \(credits(a0)) cr.")
+        }
+    }
+
+    /// UI-ENC-030: the `PoliceRecordType` word for a record score ("Criminal").
+    static func recordWord(_ score: Int) -> String {
+        String(localized: Names.policeRecord(PoliceRecordType(score: score)))
+    }
+
+    /// UI-ENC-050 (ALR-121): Captain Ahab trades for a shield; Conrad and Huie for a laser.
+    private static func meetLabel(_ state: GameState) -> LocalizedStringResource {
+        if case let .encounter(enc) = state.phase, enc.type == .captainAhab { return "Trade Shield" }
+        return "Trade Laser"
+    }
+
+    /// The dialog's cancel button (ALR-052, ALR-119…121: Leave It / Decline; otherwise Cancel).
+    static func cancelLabel(for w: WarningID) -> String {
+        switch w {
+        case .boardMarieCeleste, .drinkTonic: String(localized: "Leave It")
+        case .meetCaptain: String(localized: "Decline")
+        case .attackPolice, .attackTrader, .attackCaptain, .fleeInspection, .fleeMariePolice, .submitWithNothingIllegal,
+             .surrenderToPolice, .bribe, .buyEquipment, .sellEquipment, .buyShip, .fireMercenary, .stopInsurance,
+             .wildLeavesWithoutLaser, .wildLeavesForReactor, .litteringWarning, .useSingularity, .retire, .jettisonAll,
+             .buyEscapePod, .surrenderArtifact, .acceptSpecialEvent, .submitInspection, .buyNewspaper:
+            String(localized: "Cancel")
         }
     }
 }
