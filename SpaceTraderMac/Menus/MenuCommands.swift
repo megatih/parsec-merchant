@@ -32,6 +32,9 @@ struct MenuCommands: Commands {
         CommandMenu("Game") {
             GameMenuItems(session: session)
         }
+        CommandMenu("Encounter") {
+            EncounterMenuItems(session: session)
+        }
         CommandGroup(before: .windowList) {
             WindowMenuItems()
         }

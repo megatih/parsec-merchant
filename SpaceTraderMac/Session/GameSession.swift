@@ -21,7 +21,7 @@ final class GameSession {
 
     // MARK: Presentation
     private(set) var feed: [FeedItem] = []
-    private(set) var presentation: Presentation?
+    private(set) var presentation: Presentation? { didSet { encounterPresentationChanged() } }
     private(set) var pendingPresentations: [Presentation] = []
     var selectedSection: Section = .bridge
     var marketSelection: TradeItemType?
@@ -55,7 +55,7 @@ final class GameSession {
     /// UI-ENC-005: the last accepted step (cleared on load, new game and close).
     private(set) var lastStep: StepRecord?
     /// UI-ENC-007: the running transit playback, if any, and its current tick.
-    var transitPlayback: TransitPlayback?
+    var transitPlayback: TransitPlayback? { didSet { encounterPlaybackChanged() } }
     var transitTick = 0
     /// Set by the main window from `accessibilityReduceMotion` (the playback is then skipped, UI-ENC-007).
     var reduceMotion = false
@@ -67,6 +67,8 @@ final class GameSession {
     /// Presentations raised while a playback runs; shown when it ends (UI-ENC-009).
     @ObservationIgnored var deferredPresentations: [Presentation] = []
     @ObservationIgnored var attentionRequested = false
+    /// UI-ENC §3–5: the Encounter view's log, header, auto-repeat and Make Room state (GameSession+… in EncounterSession.swift).
+    let encounterUI = EncounterSession()
 
     // MARK: Services
     let slotStore: SlotStore
@@ -119,6 +121,7 @@ final class GameSession {
     /// Performs a command with warnings already acknowledged (e.g. the ship purchase review sends `[.buyShip]`).
     func send(_ command: Command, acknowledging: Set<WarningID>) {
         guard var engine else { return }
+        encounterWillSend(command)
         let before = engine.state
         let result = engine.perform(command, acknowledging: acknowledging)
         self.engine = engine
@@ -133,6 +136,7 @@ final class GameSession {
         if let rejection = result.rejection {
             lastRejection = rejection
             rejectionSerial += 1
+            encounterStepRejected(command)
             return
         }
         lastRejection = nil
@@ -175,6 +179,7 @@ final class GameSession {
         // Silent steps (the route follower's target selection after docking) leave it running.
         if transitPlayback != nil, !step.events.isEmpty || step.result.decision != nil { finishPlayback() }
         lastStep = step
+        consumeEncounterStep(step)
         if step.encounterStarted != nil { attentionRequested = false }
         startPlayback(for: step)
         updateDockAttention()
@@ -191,12 +196,16 @@ final class GameSession {
         attentionRequested = false
         dock.setProgress(nil)
         updateDockAttention()
+        resetEncounterUI()
     }
 
     // MARK: Presentation queue (UI-SHELL-005)
 
     func present(_ p: Presentation) {
-        if presentation == nil {
+        // UI-ENC-045: a decision re-raised by its own sheet (each plunder Take) updates the open sheet instead of queuing.
+        if let current = presentation, current.id == p.id {
+            presentation = p
+        } else if presentation == nil {
             presentation = p
         } else {
             pendingPresentations.append(p)

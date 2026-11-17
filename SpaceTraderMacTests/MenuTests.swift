@@ -135,7 +135,10 @@ struct MenuTests {
             if !MenuCatalog.standardRoleItems.contains(id) {
                 #expect(!MenuCatalog.reservedShortcuts.contains(sc), "\(id) uses reserved \(sc.display)")
             }
-            #expect(sc.modifiers.contains(.command) || sc.modifiers.contains(.control))
+            // MENU-037: only the Encounter menu has shortcuts without ⌘ or ⌃ (UI-ENC-035 checks them).
+            if MenuCatalog.entry(for: id).menu != .encounter {
+                #expect(sc.modifiers.contains(.command) || sc.modifiers.contains(.control))
+            }
         }
     }
 
@@ -145,7 +148,7 @@ struct MenuTests {
         for id in MenuItemID.allCases {
             let menu = MenuCatalog.entry(for: id).menu
             switch menu {
-            case .file, .edit, .view, .game: #expect(!on(id, c), "\(id)")
+            case .file, .edit, .view, .game, .encounter: #expect(!on(id, c), "\(id)")
             case .app, .window, .help: #expect(on(id, c), "\(id)")
             }
         }
@@ -335,7 +338,7 @@ struct MenuTests {
     @Test("MENU-024 the Game menu's rows in order (Plot Route… after Find System from M8) with separators")
     func gameOrder() {
         #expect(MenuCatalog.items(in: .game) == [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .fillFuel,
-                                                 .repair, .options, .retire])
+                                                 .repair, .newspaper, .options, .retire])
         #expect(MenuCatalog.items(in: .game, milestone: 7).contains(.plotRoute) == false)
         #expect(MenuCatalog.separatorAfter.isSuperset(of: [.findSystem, .repair, .options]))
         #expect(MenuCatalog.items(in: .game, milestone: 9).contains(.newspaper) && MenuCatalog.items(in: .game, milestone: 8).contains(.plotRoute))
@@ -491,7 +494,8 @@ struct MenuTests {
 
     @Test("MENU-038 Window › Parsec Merchant reopens the main window; Galaxy Chart from M8; High Scores is M9")
     func windowMenu() {
-        #expect(MenuCatalog.items(in: .window) == [.mainWindow, .galaxyChartWindow])
+        #expect(MenuCatalog.items(in: .window) == [.mainWindow, .galaxyChartWindow, .highScores])
+        #expect(MenuCatalog.items(in: .window, milestone: 8) == [.mainWindow, .galaxyChartWindow])
         #expect(MenuCatalog.entry(for: .galaxyChartWindow).identifier == "menu.window.galaxyChart")
         for (_, c) in Fx.named { #expect(on(.galaxyChartWindow, c)) }
         #expect(MenuCatalog.entry(for: .mainWindow).identifier == "menu.window.main" && SceneMetrics.mainWindowID == "main")
@@ -509,12 +513,13 @@ struct MenuTests {
 
     // MARK: Cross-checks
 
-    @Test("MENU-040 later-milestone entries are absent at M8")
+    @Test("MENU-040 later-milestone entries are absent at M9")
     func milestoneFilter() {
-        #expect(MenuCatalog.currentMilestone == 8)
+        #expect(MenuCatalog.currentMilestone == 9)
         let present = MenuName.allCases.flatMap { MenuCatalog.items(in: $0) }
-        #expect(!present.contains { MenuCatalog.entry(for: $0).milestone > 8 })
-        for id: MenuItemID in [.logbook, .newspaper, .highScores] {
+        #expect(!present.contains { MenuCatalog.entry(for: $0).milestone > 9 })
+        #expect(MenuItemID.encounterItems.allSatisfy { present.contains($0) && MenuCatalog.entry(for: $0).milestone == 9 })
+        for id: MenuItemID in [.logbook] {
             #expect(!present.contains(id) && !MenuRules.isShown(id, in: Fx.ctx(Fx.fresh())))
         }
         for id: MenuItemID in [.galaxy, .galaxyChart, .zoomIn, .zoomOut, .zoomFit, .plotRoute, .galaxyChartWindow] {

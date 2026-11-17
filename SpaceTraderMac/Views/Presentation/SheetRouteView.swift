@@ -23,11 +23,11 @@ struct SheetRouteView: View {
             GameOptionsSheet()
         case .cheatConsole:
             CheatConsoleSheet()
-        // Interim and temporary sheets until the UI-ENC views replace them (UI-ENC-045…047, -057, -071, -075, -092).
         case let .tradeInOrbit(offer):
-            InterimDecisionSheet(decision: .tradeInOrbit(offer))
+            TradeInOrbitSheet(offer: offer)
         case let .plunder(context):
-            InterimDecisionSheet(decision: .plunder(context.victimCargo))
+            PlunderSheet(context: context)
+        // Interim and temporary sheets until the UI-ENC views replace them (UI-ENC-057, -071, -075, -092).
         case let .newspaper(paper):
             InterimDecisionSheet(decision: .newspaper(paper))
         case let .narrative(page):

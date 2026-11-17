@@ -2,18 +2,8 @@
 import Foundation
 import ParsecEngine
 
-/// Encounter wording for the interim encounter panel and the feed (M7; UI-ENC replaces the panel in M9).
+/// Encounter stance wording for the feed. The Encounter view's header is `EncounterIntro` (UI-ENC-016).
 enum EncounterText {
-    /// The opening line: "At N clicks from X you encounter a pirate Gnat."
-    static func intro(preview: EncounterPreview, clicks: Int, destination: Int?, state: GameState) -> LocalizedStringResource {
-        let ship = String(localized: Names.ship(preview.opponentType))
-        let who = String(localized: Names.badge(preview.badge))
-        if let destination {
-            return "At \(clicks) clicks from \(Names.system(destination, in: state)) you encounter a \(who) \(ship)."
-        }
-        return "You encounter a \(who) \(ship)."
-    }
-
     // One line per encounter type; the case count is the complexity.
     // swiftlint:disable:next cyclomatic_complexity
     static func stance(_ type: EncounterType) -> LocalizedStringResource {
