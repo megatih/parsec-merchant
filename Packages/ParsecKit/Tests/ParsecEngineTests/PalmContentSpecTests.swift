@@ -206,6 +206,71 @@ struct PalmContentSpecTests {
         }
     }
 
+    /// A docked Palm game with `event` at the current system and the quest state that makes it shown.
+    /// Setups 0…3 mirror `questScenario`: the start ship; a Wasp with a Beam laser; plus the reactor; plus Wild aboard.
+    static func palmEventGame(_ event: SpecialEventType, setup v: Int) -> GameEngine {
+        makeEngine(.palm122) { s in
+            if v > 0 {
+                var ship = Ship(type: .wasp, spec: s.ruleset.tables.ship(.wasp))
+                ship.crew[0] = CrewID.commander
+                ship.weapons = [.beamLaser]
+                s.commander.ship = ship
+            }
+            if v == 2 { s.quests.reactor = 1 }
+            if v == 3 { s.hireCrew(CrewID.wild); s.quests.wild = 1 }
+            s.commander.cash = 600_000
+            s.commander.debt = 0
+            s.commander.reputationScore = 40
+            s.commander.policeRecordScore = [.eraseRecord, .wild, .reactor].contains(event) ? -10 : 10
+            switch event {
+            case .artifactDelivery: s.quests.artifact = 1
+            case .dragonflyBaratas: s.quests.dragonfly = 1
+            case .dragonflyMelina: s.quests.dragonfly = 2
+            case .dragonflyRegulas: s.quests.dragonfly = 3
+            case .dragonflyDestroyed: s.quests.dragonfly = 5
+            case .experimentStopped: s.quests.experiment = 1
+            case .experimentFailed: s.quests.experiment = 11
+            case .gemulonRescued: s.quests.gemulon = 1
+            case .gemulonInvaded: s.quests.gemulon = 8
+            case .japoriDelivery: s.quests.japori = 1
+            case .jarekGetsOut: s.hireCrew(CrewID.jarek); s.quests.jarek = 1
+            case .moonRetirement: s.quests.moon = 1
+            case .moon: s.commander.cash = 900_000
+            case .reactorDelivered: s.quests.reactor = 1
+            case .reactorLaser: s.quests.reactor = 21
+            case .scarabDestroyed, .scarabUpgradeHull: s.quests.scarab = 2
+            case .spaceMonsterKilled: s.quests.spaceMonster = 2
+            case .tribbleBuyer: s.commander.ship.tribbles = 500
+            case .wildGetsOut: if v != 3 { s.hireCrew(CrewID.wild); s.quests.wild = 1 }
+            default: break
+            }
+            s.galaxy.systems[s.commander.currentSystem].specialEvent = event
+        }
+    }
+
+    @Test("RUL-012 every Palm special event can be shown and completed in a Palm game")
+    func palmEventsPlayable() {
+        let palm = Ruleset.palm122.tables.specialEvents.map(\.type)
+        #expect(palm.count == 37)
+        let documented: Set<CommandError> = [.noFreeSlot, .noFreeQuarters, .wildRefusesReactor]
+        var shown = Set<SpecialEventType>(), completed = Set<SpecialEventType>()
+        for event in palm {
+            for v in 0..<4 {
+                var e = Self.palmEventGame(event, setup: v)
+                guard e.state.specialEventAvailable == event else { continue }
+                shown.insert(event)
+                let r = e.perform(.specialEvent, acknowledging: Set(WarningID.allCases))
+                if r.events.contains(.specialEventCompleted(event)) {
+                    completed.insert(event)
+                } else {
+                    #expect(r.rejection.map(documented.contains) == true, "\(event) setup \(v): \(r)")
+                }
+            }
+        }
+        #expect(palm.filter { !shown.contains($0) } == [], "never shown")
+        #expect(palm.filter { !completed.contains($0) } == [], "never completed")
+    }
+
     @Test("RUL-013 Sculpture, Princess and Scorpion content exist in Modern/Windows and are absent in Palm")
     func palmQuestsAbsent() {
         let quest: Set<SpecialEventType> = [.sculpture, .sculptureDelivered, .sculptureHiddenBays, .princess,
