@@ -33,7 +33,9 @@ for f in filter(None, tracked):
 # ART-066: no tracked raster or vector image outside the allowlist of generated outputs (all reproducible by make-icon.sh).
 import fnmatch
 IMAGE_EXT = (".png", ".jpg", ".jpeg", ".tif", ".tiff", ".heic", ".webp", ".pdf", ".svg", ".icns")
-ALLOWED = ["SpaceTraderMac/AppIcon.icon/Assets/*.png", "SpaceTraderMac/Assets.xcassets/AppIcon.appiconset/*.png"]
+ALLOWED = ["SpaceTraderMac/AppIcon.icon/Assets/*.png", "SpaceTraderMac/Assets.xcassets/AppIcon.appiconset/*.png",
+           # ART-066 from M12: the app screenshots exported by scripts/export-screenshots.sh (A11Y-049).
+           "docs/screenshots/*.png", "docs/screenshots/qa/*.png"]
 for f in filter(None, tracked):
     allowed = any(str(pathlib.PurePosixPath(f).parent) == str(pathlib.PurePosixPath(pat).parent)
                   and fnmatch.fnmatchcase(pathlib.PurePosixPath(f).name, pathlib.PurePosixPath(pat).name) for pat in ALLOWED)

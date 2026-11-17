@@ -88,7 +88,7 @@ extension ParsecUITestCase {
     @discardableResult
     func walk(_ group: UISurfaceCatalog.Group, extra requested: [String] = [], visit: SurfaceVisitor) -> [String] {
         // The light appearance unless the caller chose one (the machine may run in Dark mode, A11Y-023).
-        let extra = requested.contains("-AppleInterfaceStyle") ? requested : requested + ["-AppleInterfaceStyle", "Light"]
+        let extra = requested.contains("-PMAppearance") ? requested : requested + ["-PMAppearance", "light"]
         var visited: [String] = []
         func reach(_ name: String, _ rootElement: XCUIElement? = nil, file: StaticString = #filePath, line: UInt = #line) {
             guard let surface = UISurfaceCatalog.entries.first(where: { $0.name == name }) else {

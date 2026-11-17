@@ -7,6 +7,12 @@ nonisolated enum LaunchWindowSize: String, Sendable {
     case standard = "default"
 }
 
+/// `-PMAppearance` values (A11Y-002): the app appearance, independent of the Mac's.
+nonisolated enum LaunchAppearance: String, Sendable {
+    case light
+    case dark
+}
+
 /// `-PMTips` values (A11Y-002, A11Y-047).
 nonisolated enum TipsLaunchMode: String, Sendable {
     /// `Tips.hideAllTipsForTesting()` before `configure` (every UI test).
@@ -37,6 +43,8 @@ struct LaunchOptions: Equatable, Sendable {
     /// centred, ignoring the restored frame (UI tests use `default` so every run starts from the same frame).
     var windowSize: LaunchWindowSize?
     var minimumWindow: Bool { windowSize == .minimum }
+    /// `-PMAppearance light|dark`: forces the app's appearance (A11Y-002). Nil: follow the system.
+    var appearance: LaunchAppearance?
 
     static let none = LaunchOptions()
 
@@ -99,6 +107,11 @@ struct LaunchOptions: Equatable, Sendable {
             case "-PMWindowSize":
                 if let v = value(after: i), !v.hasPrefix("-") {
                     o.windowSize = LaunchWindowSize(rawValue: v)
+                    i += 1
+                }
+            case "-PMAppearance":
+                if let v = value(after: i), !v.hasPrefix("-") {
+                    o.appearance = LaunchAppearance(rawValue: v)
                     i += 1
                 }
             default:

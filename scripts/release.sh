@@ -35,10 +35,13 @@ APP="$DD/Build/Products/Release/$APPNAME.app"
 
 echo "== Signature"
 codesign --verify --strict --verbose=2 "$APP"
-codesign -d --entitlements - "$APP" 2>/dev/null | /usr/bin/grep -q "com.apple.security.app-sandbox" \
-  || { echo "RELEASE FAIL (sandbox entitlement missing)"; exit 1; }
-codesign -d --verbose=2 "$APP" 2>&1 | /usr/bin/grep -q "flags=.*runtime" \
-  || { echo "RELEASE FAIL (hardened runtime missing)"; exit 1; }
+# Capture first: `grep -q` exits early, and under pipefail the SIGPIPE'd codesign would fail the check.
+ENT="$(codesign -d --entitlements - "$APP" 2>&1)"
+SIG="$(codesign -d --verbose=2 "$APP" 2>&1)"
+/usr/bin/grep -q "com.apple.security.app-sandbox" <<< "$ENT" || { echo "RELEASE FAIL (sandbox entitlement missing)"; exit 1; }
+/usr/bin/grep -qE "flags=.*runtime" <<< "$SIG" || { echo "RELEASE FAIL (hardened runtime missing)"; exit 1; }
+/usr/bin/grep -q "Signature=adhoc" <<< "$SIG" || { echo "RELEASE FAIL (not ad-hoc signed)"; exit 1; }
+echo "ad-hoc signed, hardened runtime, app sandbox"
 
 echo "== Smoke test (-PMScenario smoke: new game, save and load in the sandbox, exit 0)"
 pkill -x "$APPNAME" 2>/dev/null || true

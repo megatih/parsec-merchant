@@ -4,7 +4,7 @@ import XCTest
 /// A11Y-047: the three tips under `-PMTips all`, their audit, close and Learn More; and the Market tip's first-visit life
 /// cycle on a fresh TipKit store. Every other test launches with `-PMTips off` (`ParsecUITestCase.withTipsOff`).
 final class TipsUITests: ParsecUITestCase {
-    override var launchArguments: [String] { UITestFixtures.launchArguments + ["-PMTips", "all", "-AppleInterfaceStyle", "Light"] }
+    override var launchArguments: [String] { UITestFixtures.launchArguments + ["-PMTips", "all", "-PMAppearance", "light"] }
 
     @MainActor
     func testEveryTipShowsPassesTheAuditClosesAndLearnsMore() throws {

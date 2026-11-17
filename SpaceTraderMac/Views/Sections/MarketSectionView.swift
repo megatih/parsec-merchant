@@ -63,6 +63,8 @@ struct MarketSectionView: View {
                     TableColumn("Actions") { (r: MarketRowModel) in actionsCell(r) }
                         .width(min: 240, ideal: 250)
                 }
+                // A11Y-026: at large Text Sizes cell text shrinks to fit its column instead of truncating prices and names.
+                .minimumScaleFactor(0.5)
                 .onKeyPress(phases: .down) { press in handleKey(press, rows: rows) }
                 .accessibilityLabel(Text("Market"))
                 .modifier(MarketRotorsModifier(rows: rows, intel: intel, namespace: rotorNamespace))
@@ -260,6 +262,7 @@ private struct ItemCell: View {
     let row: MarketRowModel
     /// A11Y-007: the row's custom actions.
     var perform: (RowAction.Kind) -> Void = { _ in }
+    @Environment(\.textScale) private var textScale
 
     var body: some View {
         let a11y = MarketRowAccessibility.make(row)
@@ -281,7 +284,14 @@ private struct ItemCell: View {
             Image(systemName: "shippingbox").foregroundStyle(.readableSecondary).accessibilityHidden(true)
             Text(Names.item(row.item))
             if row.isIllegal {
-                Text("Illegal")
+                // A11Y-026: above 1.3× Text Size the badge is an icon, so the item name keeps the column's width.
+                Group {
+                    if textScale > 1.3 {
+                        Image(systemName: "exclamationmark.triangle.fill").accessibilityHidden(true)
+                    } else {
+                        Text("Illegal")
+                    }
+                }
                     .scaledFont(.caption2, weight: .bold)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)

@@ -79,3 +79,9 @@ if not copied:
     print(f"export-screenshots: no {prefix}* attachments found", file=sys.stderr)
     sys.exit(1)
 PY
+
+# The QA review set is downscaled to 1320 px wide (1x of the 1100-pt window class) to keep the repository small;
+# the README set keeps its 2x resolution.
+if [ "$MODE" = "qa" ]; then
+  for f in "$DEST"/qa-*.png; do sips -Z 1320 "$f" > /dev/null; done
+fi

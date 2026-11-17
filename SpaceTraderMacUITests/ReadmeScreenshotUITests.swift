@@ -12,7 +12,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
     }
 
     /// A fixed seed, template flavor, no audio, no tips, fast travel, the default window, light appearance.
-    override var launchArguments: [String] { UITestFixtures.launchArguments + ["-AppleInterfaceStyle", "Light"] }
+    override var launchArguments: [String] { UITestFixtures.launchArguments + ["-PMAppearance", "light"] }
 
     @MainActor
     func testExportReadmeScreenshots() throws {
@@ -51,7 +51,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         shoot("readme-achievements")
         selectLogbookTab("Captain's Log")
 
-        relaunch(UITestFixtures.ambushLaunchArguments + ["-AppleInterfaceStyle", "Light"])
+        relaunch(UITestFixtures.ambushLaunchArguments + ["-PMAppearance", "light"])
         waitFor(AXID.Encounter.view)
         click(AXID.Encounter.attack)
         waitFor(AXID.Encounter.logRow(1))
@@ -78,7 +78,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         waitFor(AXID.GameOver.card)
         shoot("readme-gameover")
 
-        relaunch(UITestFixtures.launchArguments + ["-AppleInterfaceStyle", "Dark"])
+        relaunch(UITestFixtures.launchArguments + ["-PMAppearance", "dark"])
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
         type("1")

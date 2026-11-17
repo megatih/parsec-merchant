@@ -32,7 +32,7 @@ final class AccessibilityAuditUITests: ParsecUITestCase {
     func testFlow6DarkAppearanceContrast() throws {
         // covers: A11Y-023, A11Y-029
         let recorder = AuditRecorder()
-        let dark = ["-AppleInterfaceStyle", "Dark"]
+        let dark = ["-PMAppearance", "dark"]
         relaunch(UITestFixtures.launchArguments + dark)
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }

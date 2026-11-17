@@ -26,6 +26,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         IntentSessionBridge.session = session
     }
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // A11Y-002: -PMAppearance forces the app appearance before any window is drawn.
+        if let appearance = launchOptions.appearance {
+            NSApp.appearance = NSAppearance(named: appearance == .dark ? .darkAqua : .aqua)
+        }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         if let scenario = launchOptions.scenario {
             let status = ScenarioRunner.run(scenario, session: session)
