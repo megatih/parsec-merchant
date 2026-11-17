@@ -138,7 +138,8 @@ struct CaptainsLogView: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 260)
                 .focused($searchFocused)
-                .onExitCommand { model.searchText = "" }
+                // UI-KEYS-017 level 3: the window's Esc router clears the focused search.
+                .escapeHandler(.clearField, active: searchFocused && !model.searchText.isEmpty) { model.searchText = "" }
                 .accessibilityLabel(Text("Search the log"))  // A11Y-003
                 .accessibilityIdentifier(AXID.Logbook.search)
             // A11Y-029: an AppKit pull-down (SwiftUI's Menu has no press action for VoiceOver on macOS 27).

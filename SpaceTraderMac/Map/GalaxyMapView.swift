@@ -72,6 +72,21 @@ struct GalaxyMapView: View {
                 .environment(session)
         }
         .focusedSceneValue(\.contextSearch, scope.hasHUD ? ContextSearchAction { searchFocused = true } : nil)
+        // UI-KEYS-027: the Galaxy section opens with the canvas focused, so the arrows pan at once.
+        .task(id: scope) {
+            // After the canvas is laid out inside the GeometryReader (an assignment in onAppear comes too early).
+            guard scope.hasHUD else { return }
+            try? await Task.sleep(for: .milliseconds(150))
+            // The sidebar's outline view keeps AppKit's first responder after ⌘7; hand it to the SwiftUI host so the
+            // focused canvas receives the keys.
+            if let window = NSApp.keyWindow, window.firstResponder is NSTableView, let host = window.contentView {
+                window.makeFirstResponder(host)
+            }
+            canvasFocused = true
+        }
+        // UI-KEYS-017 levels 3 and 4, run by the main window's Esc router.
+        .escapeHandler(.clearField, active: searchFocused && !ui.searchText.isEmpty) { ui.searchText = "" }
+        .escapeHandler(.closeMapOverlay, active: ui.cardHit != nil || ui.legendShown || suggestionsVisible(snapshot)) { dismissOverlays() }
     }
 
     // MARK: Canvas
@@ -86,7 +101,8 @@ struct GalaxyMapView: View {
         return Canvas { ctx, _ in
             GalaxyMapRenderer.draw(in: &ctx, snapshot: snapshot, projected: projected, layers: MapLayer.m10, options: options)
         }
-        .focusable(scope.hasHUD)
+        // `.edit` interactions: the canvas takes focus by click or programmatically even without Full Keyboard Access.
+        .focusable(scope.hasHUD, interactions: .edit)
         .focused($canvasFocused)
         .focusEffectDisabled(false)
         .onContinuousHover(coordinateSpace: .local) { phase in
@@ -100,8 +116,11 @@ struct GalaxyMapView: View {
         .gesture(dragGesture(snapshot, projected: projected))
         .simultaneousGesture(pinchGesture(snapshot))
         .contextMenu { contextMenuItems(snapshot) }
-        .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow, .escape]) { press in
-            handleKey(press.key, snapshot: snapshot)
+        // UI-KEYS-001 / UI-KEYS-013: keys are looked up in `MapKeys` (arrows pan, ⌘= zooms in, Esc dismisses).
+        .onKeyPress(phases: .down) { press in
+            guard let action = MapKeys.action(for: MenuShortcut(press: press.key, characters: press.characters, modifiers: press.modifiers))
+            else { return .ignored }
+            return handleKey(action, snapshot: snapshot)
         }
         .focusedValue(\.mapControl, scope.hasHUD ? mapControl(snapshot) : nil)
         .accessibilityElement(children: .contain)
@@ -277,19 +296,38 @@ struct GalaxyMapView: View {
 
     // MARK: Keyboard (MAP-015)
 
-    private func handleKey(_ key: KeyEquivalent, snapshot: MapSnapshot) -> KeyPress.Result {
-        if key == .escape {
-            ui.closeCard()
-            ui.suggestionsShown = false
-            ui.legendShown = false
+    private func dismissOverlays() {
+        ui.closeCard()
+        ui.suggestionsShown = false
+        ui.legendShown = false
+    }
+
+    /// Whether the search's suggestion list is on screen (as `MapSearchView` shows it).
+    private func suggestionsVisible(_ snapshot: MapSnapshot) -> Bool {
+        scope.hasHUD && ui.suggestionsShown && !ui.suggestions(snapshot, sells: session.sellsMatches(ui.sellsItem)).isEmpty
+    }
+
+    private func handleKey(_ action: MapKeyAction, snapshot: MapSnapshot) -> KeyPress.Result {
+        let (dx, dy): (Int, Int)
+        switch action {
+        case .dismiss:
+            dismissOverlays()
             return .handled
-        }
-        guard scope.hasHUD else { return .ignored }
-        let (dx, dy): (Int, Int) = switch key {
-        case .leftArrow: (-1, 0)
-        case .rightArrow: (1, 0)
-        case .upArrow: (0, -1)
-        default: (0, 1)
+        case .zoomIn:
+            guard scope.hasHUD else { return .ignored }
+            zoom(MapViewport.zoomStep, snapshot: snapshot)
+            return .handled
+        case .zoomOut:
+            guard scope.hasHUD else { return .ignored }
+            zoom(1 / MapViewport.zoomStep, snapshot: snapshot)
+            return .handled
+        case .fit:
+            guard scope.hasHUD else { return .ignored }
+            fitGalaxy(snapshot)
+            return .handled
+        case let .pan(x, y):
+            guard scope.hasHUD else { return .ignored }
+            (dx, dy) = (x, y)
         }
         let v = ui.viewport(session: session, snapshot: snapshot)
         ui.animateViewport(to: v.pannedByArrow(dx: dx, dy: dy, viewSize: ui.viewSize, bounds: MapBounds(snapshot)), session: session,

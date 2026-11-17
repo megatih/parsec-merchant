@@ -23,8 +23,8 @@ struct FeedOverlay: View {
                 }
                 .disabled(!showLogbookEnabled)
                 .accessibilityIdentifier(AXID.LogbookLinks.feedShowLogbook)
+                // UI-KEYS-018: Esc reaches this through the main window's router (level 7).
                 Button("Close", action: dismiss)
-                    .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier(AXID.Status.feedClose)
             }
             .padding(10)

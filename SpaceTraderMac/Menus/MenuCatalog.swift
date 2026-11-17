@@ -74,11 +74,10 @@ nonisolated struct MenuShortcut: Hashable, Sendable {
         self.modifiers = modifiers
     }
 
-    /// The menu-style glyphs, e.g. "⇧⌘S" (for Help › Keyboard Shortcuts).
+    /// The menu-style glyphs, e.g. "⇧⌘S" (for Help › Keyboard Shortcuts; modifiers ⌃⌥⇧⌘, UI-KEYS-004).
     var display: String {
         let order: [(Modifier, String)] = [(.control, "⌃"), (.option, "⌥"), (.shift, "⇧"), (.command, "⌘")]
-        let cap = key == EncounterKeys.escapeKey ? "⎋" : key.uppercased()
-        return order.filter { modifiers.contains($0.0) }.map(\.1).joined() + cap
+        return order.filter { modifiers.contains($0.0) }.map(\.1).joined() + keyGlyph
     }
 }
 

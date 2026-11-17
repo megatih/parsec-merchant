@@ -336,8 +336,8 @@ private struct TargetCard: View {
                     Spacer()
                     if let jump = model?.jump { jumpButton(jump) }
                     if let model, model.system.index != session.state?.commander.currentSystem {
+                        // UI-KEYS-019: no Return here; warping is irreversible and has ⌘J.
                         Button("Warp") { session.send(.warp) }
-                            .keyboardShortcut(.defaultAction)
                             .disabled(!model.warp.isEnabled)
                             .help(model.warp.help)
                             .accessibilityHint(Text(AccessibilityHints.warp(to: model.system.name)))  // A11Y-005

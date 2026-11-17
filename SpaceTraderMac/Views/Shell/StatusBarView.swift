@@ -76,6 +76,8 @@ struct StatusBarView: View {
                         .offset(y: -34)
                 }
             }
+            // UI-KEYS-018: the window's Esc router closes the overlay (level 7).
+            .escapeHandler(.closeFeed, active: showFeed) { showFeed = false }
             .task(id: session.rejectionSerial) {
                 visibleRejection = session.lastRejection
                 guard visibleRejection != nil else { return }

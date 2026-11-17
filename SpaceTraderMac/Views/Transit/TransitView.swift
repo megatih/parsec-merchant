@@ -52,7 +52,6 @@ struct TransitView: View {
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onExitCommand { session.skipPlayback() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Transit.view)
     }

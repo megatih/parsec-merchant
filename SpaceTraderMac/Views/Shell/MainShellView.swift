@@ -8,12 +8,16 @@ struct MainShellView: View {
     @SceneStorage("selectedSection") private var storedSection: String = Section.bridge.rawValue
     @SceneStorage("inspectorVisible") private var inspectorVisible = true
     @Environment(\.accessibilityPreferences) private var prefs
+    /// UI-KEYS-018: the Esc handlers of the detail views, run by the window's one Esc router.
+    @State private var escapes = EscapeRegistry()
 
     var body: some View {
         @Bindable var session = session
+        // UI-KEYS-026: three focus sections (sidebar, detail, inspector), entered in that order.
         NavigationSplitView {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 260)
+                .focusSection()
         } detail: {
             VStack(spacing: 0) {
                 detail
@@ -21,11 +25,14 @@ struct MainShellView: View {
                 Divider()
                 StatusBarView()
             }
+            .focusSection()
         }
         .inspector(isPresented: $inspectorVisible) {
             ShipInspectorView()
                 .inspectorColumnWidth(min: 260, ideal: 300, max: 380)
+                .focusSection()
         }
+        .modifier(WindowEscapeRouter(registry: escapes))
         .toolbar { ShellToolbar(session: session, inspectorVisible: $inspectorVisible) }
         .onAppear {
             session.selectedSection = Section.restored(rawValue: storedSection, context: session.sectionContext)

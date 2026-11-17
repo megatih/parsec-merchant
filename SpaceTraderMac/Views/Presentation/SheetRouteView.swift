@@ -80,6 +80,8 @@ struct RetireSheet: View {
         }
         .padding(24)
         .frame(width: 420)
+        // UI-KEYS-020/021: Cancel is both the default and the Esc button.
+        .sheetEscape { session.cancel() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Dialog.retireSheet)
     }
