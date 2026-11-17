@@ -158,10 +158,12 @@ private struct TribbleOverlay: View {
 
 private struct TribbleButton: View {
     let index: Int
+    @Environment(GameSession.self) private var session
     @State private var wiggle = false
 
     var body: some View {
         Button {
+            session.tribbleClicked()  // AUD-030: the squeak; the wiggle is its visual twin
             withAnimation(.easeInOut(duration: 0.1).repeatCount(2, autoreverses: true)) { wiggle.toggle() }
         } label: {
             Image(systemName: "circle.hexagongrid.fill")

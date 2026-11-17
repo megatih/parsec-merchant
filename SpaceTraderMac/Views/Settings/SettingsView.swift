@@ -27,7 +27,7 @@ struct SettingsView: View {
         case .general: GeneralSettingsView()
         case .advanced: AdvancedSettingsView()
         case .intelligence: IntelligenceSettingsView()
-        case .sound: LaterSettingsView(tab: tab)
+        case .sound: SoundSettingsView()
         }
     }
 }
@@ -164,24 +164,5 @@ struct AdvancedSettingsView: View {
 
     private var clearBinding: Binding<Bool> {
         Binding { pendingClear != nil } set: { if !$0 { pendingClear = nil } }
-    }
-}
-
-/// Sound (M11): says which milestone brings it.
-struct LaterSettingsView: View {
-    let tab: SettingsTab
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: tab.systemImage).font(.largeTitle).foregroundStyle(.secondary)
-                .accessibilityHidden(true)
-            switch tab {
-            case .sound: Text("Sound settings arrive with the sound update (milestone 11).")
-            case .general, .advanced, .intelligence: EmptyView()
-            }
-        }
-        .foregroundStyle(.secondary)
-        .padding(40)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

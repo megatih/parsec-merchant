@@ -147,7 +147,9 @@ struct MarketSectionView: View {
         let sellReason = r.sellBlocker.map { ReasonText.string(for: $0) }
         return HStack(spacing: 6) {
             Button {
-                if let c = r.sellCommand(modifiers: TradeQuantity.current) { session.send(c) }
+                let modifiers = TradeQuantity.current
+                if TradeQuantity.snaps(modifiers: modifiers, maximum: r.row.maxSell) { session.performHaptic(.quantitySnap) }
+                if let c = r.sellCommand(modifiers: modifiers) { session.send(c) }
             } label: {
                 if r.isDumpMode { Text("Dump") } else { Image(systemName: "minus") }
             }
@@ -169,7 +171,9 @@ struct MarketSectionView: View {
                 .help(Text("Return buys this many, ⇧Return sells them."))
                 .accessibilityIdentifier(AXID.Market.quantity(r.item))
             Button {
-                if let c = r.buyCommand(modifiers: TradeQuantity.current) { session.send(c) }
+                let modifiers = TradeQuantity.current
+                if TradeQuantity.snaps(modifiers: modifiers, maximum: r.row.maxBuy) { session.performHaptic(.quantitySnap) }
+                if let c = r.buyCommand(modifiers: modifiers) { session.send(c) }
             } label: {
                 Image(systemName: "plus")
             }

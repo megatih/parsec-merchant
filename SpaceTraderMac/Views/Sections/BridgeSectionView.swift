@@ -260,7 +260,10 @@ private struct DockServiceCard: View {
         Binding {
             Double(min(max(amount, range.lowerBound), range.upperBound))
         } set: {
+            let old = amount
             amount = Int($0.rounded())
+            // AUD-040: reaching the end of the slider snaps (its twin is the full amount in the field).
+            if amount >= range.upperBound, old < range.upperBound { session.performHaptic(.sliderFull) }
         }
     }
 

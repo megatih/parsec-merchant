@@ -61,7 +61,10 @@ enum AppBootstrap {
         // LLM-024 / LLM-025: `-PMFlavor template` forces templates; otherwise the Settings toggle (default off) decides.
         let useModel = defaults.object(forKey: AppSettingsKey.useFoundationModels) as? Bool ?? false
         let flavor = FlavorService(mode: FlavorMode.derive(launch: options, useFoundationModels: useModel))
-        return GameSession(stores: stores, launchOptions: options, defaults: defaults,
-                           achievements: AchievementService(store: stores.achievementStore), flavor: flavor, dock: AppDock())
+        // AUD-044: `-PMAudio off` gets `SilentAudio`/`NoHaptics` and never creates an audio engine.
+        let services = SessionAudioFactory.make(options: options, defaults: defaults)
+        return GameSession(stores: stores, launchOptions: options, defaults: defaults, audio: services.audio,
+                           haptics: services.haptics, achievements: AchievementService(store: stores.achievementStore),
+                           flavor: flavor, dock: AppDock())
     }
 }

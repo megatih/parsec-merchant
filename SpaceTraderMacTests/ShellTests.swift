@@ -65,6 +65,7 @@ struct ShellTests {
         #expect((defaults.persistentDomain(forName: domain) ?? [:]).isEmpty)
         var options = LaunchOptions()
         options.resetState = true
+        options.audioOff = true
         let s = AppBootstrap.makeSession(options: options, defaults: defaults, root: root)
         #expect(s.mode == .welcome && s.slotStore.root == root)
     }

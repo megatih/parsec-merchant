@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
+import ParsecAudio
 import ParsecEngine
 import ParsecInsights
 import ParsecPersistence
@@ -46,10 +47,31 @@ enum OptionsTemplate {
     }
 }
 
-/// Session services (PRD §6.5). Audio and haptics are no-op stand-ins until M11; achievements (ACH-016) and flavor
-/// (LLM-018) are real from M10. The session calls them at the right moments.
-@MainActor protocol SessionAudio { func play(events: [GameEvent]) }
-@MainActor protocol SessionHaptics { func perform(events: [GameEvent]) }
+/// Session services (PRD §6.5). Audio and haptics are real from M11 (AUD-036; `AudioService`, `HapticsService`),
+/// achievements (ACH-016) and flavor (LLM-018) from M10. The session calls them at the right moments.
+@MainActor protocol SessionAudio: AnyObject {
+    /// After every accepted step (AUD-031…034).
+    func play(record: StepRecord)
+    /// App-originated cues (AUD-030): newspaper, achievement, tribble, the Settings test sound and rejections.
+    func play(app: AppCue)
+    /// The music mood derived from `DetailMode` (AUD-038).
+    func setMood(_ mood: MusicMood)
+    /// Transit playback progress, so cues revealed by the playback wait for its end (AUD-033).
+    func transit(_ event: TransitAudioEvent)
+    /// App activation (AUD-012 "Mute when inactive").
+    func setAppActive(_ active: Bool)
+    /// What the Settings › Sound status line shows (AUD-011).
+    var status: AudioStatus { get }
+}
+
+@MainActor protocol SessionHaptics: AnyObject {
+    /// After every accepted step (AUD-040).
+    func perform(record: StepRecord)
+    /// App-originated haptics: quantity snaps and full sliders (AUD-040).
+    func perform(app: AppHaptic)
+    /// Haptics fire only while the app is active (AUD-041).
+    func setAppActive(_ active: Bool)
+}
 
 /// ACH-016 / ACH-017: receives each recorded step's unlocks; returns the ids newly added to the app-wide store.
 @MainActor protocol SessionAchievements {
@@ -70,8 +92,22 @@ enum OptionsTemplate {
     func setResultHandler(_ handler: @escaping (FlavorResult) -> Void)
 }
 
-struct SilentAudio: SessionAudio { func play(events: [GameEvent]) {} }
-struct NoHaptics: SessionHaptics { func perform(events: [GameEvent]) {} }
+/// No audio: `-PMAudio off`, unit tests and previews (AUD-044).
+final class SilentAudio: SessionAudio {
+    func play(record: StepRecord) {}
+    func play(app: AppCue) {}
+    func setMood(_ mood: MusicMood) {}
+    func transit(_ event: TransitAudioEvent) {}
+    func setAppActive(_ active: Bool) {}
+    var status: AudioStatus { .offForLaunch }
+}
+
+/// No haptics: `-PMAudio off`, unit tests and previews (AUD-044).
+final class NoHaptics: SessionHaptics {
+    func perform(record: StepRecord) {}
+    func perform(app: AppHaptic) {}
+    func setAppActive(_ active: Bool) {}
+}
 
 /// ACH-018: the service that unlocks nothing (the reference run of the determinism test).
 struct NoAchievements: SessionAchievements {

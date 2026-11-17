@@ -33,6 +33,7 @@ extension GameSession {
         guard let playback = TransitPlayback.make(step: step, fast: isFastTravel), playback.tickCount > 0 else { return }
         transitPlayback = playback
         transitTick = 0
+        audio.transit(.started)
         dock.setProgress(DockTileProgress.fraction(playback: playback, tick: 0))
         guard let clock = playbackClock else { return }
         playbackTask = Task { [weak self] in
@@ -52,6 +53,7 @@ extension GameSession {
     func advancePlayback() -> Bool {
         guard let playback = transitPlayback else { return false }
         transitTick += 1
+        audio.transit(.tick(clicksFlown: playback.clicksFlown(atTick: transitTick)))
         if transitTick >= playback.tickCount {
             finishPlayback()
             return false
@@ -73,6 +75,7 @@ extension GameSession {
         transitPlayback = nil
         transitTick = 0
         dock.setProgress(nil)
+        audio.transit(.ended)
         let deferred = deferredPresentations
         deferredPresentations = []
         for p in deferred { present(p) }
@@ -105,6 +108,8 @@ extension GameSession {
     /// The app became active or inactive (AppDelegate).
     func setAppActive(_ active: Bool) {
         isAppActive = active
+        audio.setAppActive(active)
+        haptics.setAppActive(active)
         updateDockAttention()
     }
 }
