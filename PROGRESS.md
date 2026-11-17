@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M9 (starting)
-- **Next step:** M9: encounter mode + transit + arrival UX — write UI-ENC.md (skeleton) first; encounter mode (vector ships placeholder until M11, hull/shield bars, combat log from events, keyboard actions, auto-repeat via .encounter(.autoRepeat) timer 0.6 s + Esc stop, tactical readout), transit (Dock tile progress), plunder/trade/scoop/consent sheets, arrival report card, event feed, styled newspaper (NEWS-047 Palm override), special-event sheets, game over + career card, high scores view; every PendingDecision and ALR mapping has a presentation (test); UI flow 2 (-PMScenario pirateAmbush); verify --ui at M9 exit.
+- **Next step:** M9 (UI-ENC.md spec agent running): encounter mode + transit + arrival UX — write UI-ENC.md (skeleton) first; encounter mode (vector ships placeholder until M11, hull/shield bars, combat log from events, keyboard actions, auto-repeat via .encounter(.autoRepeat) timer 0.6 s + Esc stop, tactical readout), transit (Dock tile progress), plunder/trade/scoop/consent sheets, arrival report card, event feed, styled newspaper (NEWS-047 Palm override), special-event sheets, game over + career card, high scores view; every PendingDecision and ALR mapping has a presentation (test); UI flow 2 (-PMScenario pirateAmbush); verify --ui at M9 exit.
 - **Last gate result:** verify.sh --ui ALL GATES PASSED @ M8 exit (8/8 incl. flow 5); pmsim bench --check all OK; map render baseline 0.41 ms median (QA-REPORT MAP-091)
 - **Blockers:** none
 
