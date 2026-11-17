@@ -117,7 +117,7 @@ extension ParsecUITestCase {
         func at(_ name: String, _ e: XCUIElement? = nil, file: StaticString = #filePath, line: UInt = #line) {
             reach(name, e, file, line)
         }
-        relaunch(UITestFixtures.launchArguments + extra)
+        relaunch(UITestFixtures.launchArguments(seed: UITestFixtures.shellWalkSeed) + extra)
         at("welcome")
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { quickStartRuns }

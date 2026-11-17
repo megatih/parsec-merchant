@@ -5,6 +5,9 @@
 enum UITestFixtures {
     /// Modern, Normal, 5/5/5/5: buying one unit, next target and warp docks at the target after an uneventful trip.
     static let flowSeed: UInt64 = 11
+    /// The surface-catalog shell walk (A11Y-028): Quick Start docks at a tech-6 system with ships for sale, so the
+    /// walk reaches the ship purchase sheet (the flow seed's Castor has no shipyard stock).
+    static let shellWalkSeed: UInt64 = 24
     /// `GalaxyCode(ruleset: .modern, difficulty: .normal, seed: flowSeed).string`.
     static let flowGalaxyCode = "M2-B-S"
     /// Flow 5 (MAP-100, checked by the app test MapSessionTests): its seed, the in-range system nearest the Quick Start
