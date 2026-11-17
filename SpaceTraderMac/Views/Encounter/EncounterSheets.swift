@@ -44,6 +44,11 @@ struct PlunderSheet: View {
         .padding(24)
         .frame(minWidth: 460)
         .interactiveDismissDisabled()
+        // UI-KEYS-021: Esc and ⌘. press the only button.
+        .sheetEscape {
+            session.dismissPresentation()
+            session.send(PlunderSheetModel.doneCommand)
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Decision.plunderSheet)
     }

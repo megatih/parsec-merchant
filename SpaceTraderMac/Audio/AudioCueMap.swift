@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
+import ParsecArt
 import ParsecAudio
 import ParsecEngine
 
@@ -25,12 +26,9 @@ nonisolated struct ScheduledCue: Equatable, Sendable {
     }
 }
 
-/// AUD-032 / ART-044: the combat effect timing that sound follows (the player's beam at 0 s, the opponent's at
-/// 0.12 s, beams land 0.25 s later).
+/// AUD-032 / ART-044: the audio-only combat constants. Beam starts and the landing time come from ParsecArt's
+/// `CombatTiming` (the one source `CombatEffectPlanner` uses), so sound and picture cannot drift apart.
 nonisolated enum CombatCueTiming {
-    static let playerBeamStart = 0.0
-    static let opponentBeamStart = 0.12
-    static let beamDuration = 0.25
     /// The auto-repeat cadence; extra rounds of one step follow at this spacing.
     static let roundSpacing = 0.6
     /// Panning of the left (player) and right (opponent) panes.
@@ -44,10 +42,6 @@ nonisolated enum CombatCueTiming {
 
 /// AUD-031 / AUD-035: engine events → cues, and cues → their visual twins. Pure; every map is an exhaustive switch.
 enum AudioCueMap {
-    /// Encounter types whose opponent shoots in a round (`executeRound`'s attacking branch).
-    static let attackingTypes: Set<EncounterType> = [.dragonflyAttack, .famousCaptainAttack, .marieCelestePolice,
-                                                     .pirateAttack, .policeAttack, .scarabAttack, .scorpionAttack,
-                                                     .spaceMonsterAttack, .traderAttack]
 
     static func stingerVariant(_ badge: EncounterBadge) -> StingerVariant {
         switch badge {
@@ -251,7 +245,8 @@ enum AudioCueMap {
     }
 }
 
-/// AUD-032: follows the combat rounds of one step, so lasers, hits and the alarm match the effects (ART-043/044).
+/// AUD-032: follows the combat rounds of one step, so lasers, hits and the alarm match the effects (ART-043/044): the
+/// attacking encounter types and every start time are `CombatEffectPlanner`'s.
 struct CombatTracker {
     let ruleset: Ruleset
     let opponentAttacks: Bool
@@ -285,7 +280,7 @@ struct CombatTracker {
         let ended = if case .gameOver = record.after.phase { true } else { false }
         playerAlive = record.after.commander.ship.hull > 0 && !ended
         if case let .encounter(enc) = record.before.phase {
-            opponentAttacks = AudioCueMap.attackingTypes.contains(enc.type)
+            opponentAttacks = CombatEffectPlanner.opponentAttacks(enc.type)
             continuingAttack = enc.continueAttacking
             opponentWeapon = enc.opponent.weapons.max()
             opponentHull = enc.opponent.hull
@@ -312,14 +307,14 @@ struct CombatTracker {
         var cues: [ScheduledCue] = []
         let playerFired = (playerAttacked || continuingAttack || opponentHit) && !playerFled
         let opponentFired = opponentAttacks || playerHit
-        let land = CombatCueTiming.beamDuration
+        let land = CombatTiming.land
         if playerFired, let weapon = playerWeapon {
             cues.append(ScheduledCue(cue: .laser, variant: AudioCueMap.laserVariant(weapon).rawValue,
-                                     pan: CombatCueTiming.playerPan, offset: base + CombatCueTiming.playerBeamStart))
+                                     pan: CombatCueTiming.playerPan, offset: base + CombatTiming.playerBeamStart))
             if opponentHit {
                 let hullDropped = newOpponentHull < opponentHull
                 let shieldDropped = rounds == 1 && (opponentShieldsAfter.map { $0 < (opponentShieldsBefore ?? 0) } ?? false)
-                let at = base + CombatCueTiming.playerBeamStart + land
+                let at = base + CombatTiming.playerBeamStart + land
                 if shieldDropped || !hullDropped {
                     cues.append(ScheduledCue(cue: .shieldHit, pan: CombatCueTiming.opponentPan, offset: at))
                 }
@@ -328,11 +323,11 @@ struct CombatTracker {
         }
         if opponentFired, let weapon = opponentWeapon {
             cues.append(ScheduledCue(cue: .laser, variant: AudioCueMap.laserVariant(weapon).rawValue,
-                                     pan: CombatCueTiming.opponentPan, offset: base + CombatCueTiming.opponentBeamStart))
+                                     pan: CombatCueTiming.opponentPan, offset: base + CombatTiming.opponentBeamStart))
             if playerHit {
                 let hullDropped = newPlayerHull < playerHull
                 let shieldDropped = rounds == 1 && playerShieldsAfter < playerShieldsBefore
-                let at = base + CombatCueTiming.opponentBeamStart + land
+                let at = base + CombatTiming.opponentBeamStart + land
                 if shieldDropped || !hullDropped {
                     cues.append(ScheduledCue(cue: .shieldHit, pan: CombatCueTiming.playerPan, offset: at))
                 }
@@ -349,7 +344,7 @@ struct CombatTracker {
     func lowHullAlarm(index: Int) -> ScheduledCue? {
         guard playerAlive, hullPercentBefore > CombatCueTiming.lowHullPercent,
               hullPercentAfter <= CombatCueTiming.lowHullPercent else { return nil }
-        return ScheduledCue(cue: .lowHullAlarm, offset: elapsed + CombatCueTiming.opponentBeamStart + CombatCueTiming.beamDuration,
+        return ScheduledCue(cue: .lowHullAlarm, offset: elapsed + CombatEffectPlanner.landing,
                             eventIndex: index)
     }
 }

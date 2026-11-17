@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
+import ParsecArt
 import ParsecAudio
 import ParsecEngine
 import Testing
@@ -94,7 +95,7 @@ struct AudioMapTests {
         #expect(WeaponType.allCases.map { AudioCueMap.laserVariant($0).rawValue } == Array(0..<6))
     }
 
-    @Test("AUD-032 UI-ENC-100 a combat round: lasers at 0 / 0.12 s with the best weapon, hits land 0.25 s later")
+    @Test("AUD-032 UI-ENC-100 a combat round: lasers at 0 / 0.12 s with the best weapon, hits when the beam lands")
     func combatRound() {
         let before = AudioFixtures.encounter(playerHull: 80, opponentHull: 25)
         var after = before
@@ -111,8 +112,8 @@ struct AudioMapTests {
         let laserOpponent = cues.first { $0.cue == .laser && $0.pan > 0 }
         #expect(laserPlayer?.variant == LaserVariant.military.rawValue && laserPlayer?.offset == 0)
         #expect(laserOpponent?.variant == LaserVariant.beam.rawValue && laserOpponent?.offset == 0.12)
-        #expect(cues.contains { $0.cue == .hullHit && $0.pan > 0 && abs($0.offset - 0.25) < 1e-9 })
-        #expect(cues.contains { $0.cue == .hullHit && $0.pan < 0 && abs($0.offset - 0.37) < 1e-9 })
+        #expect(cues.contains { $0.cue == .hullHit && $0.pan > 0 && abs($0.offset - CombatTiming.land) < 1e-9 })
+        #expect(cues.contains { $0.cue == .hullHit && $0.pan < 0 && abs($0.offset - (0.12 + CombatTiming.land)) < 1e-9 })
         #expect(cues.allSatisfy { $0.offset <= 0.55 })
 
         // A miss is only the laser; a hit absorbed by shields is a shield hit.
@@ -134,6 +135,41 @@ struct AudioMapTests {
                                                            playerHull: 80, opponentHull: 25)],
                                              before: AudioFixtures.encounter(continueAttacking: true), after: before)
         #expect(AudioCueMap.requests(for: repeating).filter { $0.cue == .laser }.count == 2)
+    }
+
+    @Test("AUD-032 ART-043 ART-044 one timing source: laser and hit cues start exactly when the planner's beams, ripples and sparks start")
+    func plannerTimingIsShared() {
+        let before = AudioFixtures.encounter(playerHull: 80, opponentHull: 25)
+        var after = before
+        after.commander.ship.hull = 60
+        if case var .encounter(enc) = after.phase {
+            enc.opponent.hull = 20
+            after.phase = .encounter(enc)
+        }
+        let record = AudioFixtures.record([.playerAttacked, .combatRound(round: 1, playerHit: true, opponentHit: true,
+                                                                         playerHull: 60, opponentHull: 20)],
+                                          before: before, after: after, command: .encounter(.attack))
+        let plan = CombatEffectPlanner.plan(record: record)
+        let cues = AudioCueMap.requests(for: record)
+        func starts(_ match: (CombatEffect.Kind) -> Bool) -> Set<Double> { Set(plan.filter { match($0.kind) }.map(\.start)) }
+        let beamStarts = starts { if case .beam = $0 { true } else { false } }
+        let landStarts = starts {
+            switch $0 {
+            case .sparks, .shieldRipple: true
+            default: false
+            }
+        }
+        #expect(!beamStarts.isEmpty && !landStarts.isEmpty)
+        #expect(Set(cues.filter { $0.cue == .laser }.map(\.offset)) == beamStarts)
+        #expect(Set(cues.filter { $0.cue == .hullHit || $0.cue == .shieldHit }.map(\.offset)).isSubset(of: landStarts))
+        // The opponent-attack rule is the planner's for every encounter type.
+        for type in EncounterType.allCases {
+            let s = AudioFixtures.encounter(type: type)
+            let r = AudioFixtures.record([.combatRound(round: 1, playerHit: false, opponentHit: false, playerHull: 80, opponentHull: 25)],
+                                         before: s, after: s)
+            let opponentLaser = AudioCueMap.requests(for: r).contains { $0.cue == .laser && $0.pan > 0 }
+            #expect(opponentLaser == CombatEffectPlanner.opponentAttacks(type), "\(type)")
+        }
     }
 
     @Test("AUD-032 UI-ENC-100 the low-hull alarm plays once when the hull crosses to 25% or below")

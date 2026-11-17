@@ -26,6 +26,8 @@ struct ShipyardSectionView: View {
                 .onChange(of: model.cards.map(\.type)) { _, types in selection.prune(to: types) }
             }
         }
+        // UI-KEYS-018: the window's Esc router clears the comparison (level 8).
+        .escapeHandler(.clearCompare, active: selection.isComparing) { selection.clear() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.SectionRoot.root(.shipyard))
     }
@@ -166,7 +168,7 @@ private struct ShipCompareView: View {
                 Text("Compare").font(.headline)
                 Spacer()
                 Button("Clear Selection", action: onClear)
-                    .keyboardShortcut(.cancelAction)
+                    .help(Text("Esc clears the selection."))
                     .accessibilityIdentifier(AXID.Shipyard.compareClear)
             }
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {

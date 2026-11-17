@@ -35,8 +35,23 @@ struct NarrativeSheet: View {
         .padding(24)
         .frame(width: 480)
         .interactiveDismissDisabled()
+        // UI-KEYS-021: Esc on a message page presses Continue; on an offer it declines (the Decline button's
+        // `.cancelAction` handles it first).
+        .sheetEscape(escape)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Narrative.sheet)
+    }
+
+    /// Esc and ⌘.: Continue on the result page and on a message-only offer, Decline on an offer (§2.3).
+    private func escape() {
+        switch page {
+        case .result:
+            session.dismissPresentation()
+        case let .offer(type):
+            guard let state = session.state else { return session.cancel() }
+            let model = NarrativeModel.offer(type: type, state: state, preview: session.engine?.specialEventPreview)
+            if model.messageOnly { session.acceptSpecialEvent(messageOnly: true) } else { session.cancel() }
+        }
     }
 
     @ViewBuilder

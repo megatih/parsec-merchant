@@ -44,6 +44,8 @@ struct ReportSheetView: View {
         .padding(24)
         .frame(width: 520)
         .interactiveDismissDisabled()
+        // UI-KEYS-021: Esc and ⌘. press the only button.
+        .sheetEscape { session.dismissPresentation() }
         .accessibilityElement(children: .contain)
         .accessibilityValue(Text(verbatim: sheet.kind.rawValue))
         .accessibilityIdentifier(AXID.Report.sheet)

@@ -29,6 +29,8 @@ struct DeveloperTesterSheet: View {
             .padding(12)
         }
         .frame(width: 720, height: 520)
+        // UI-KEYS-021: Esc and ⌘. press the only button.
+        .sheetEscape { session.dismissPresentation() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.DevTester.sheet)
     }

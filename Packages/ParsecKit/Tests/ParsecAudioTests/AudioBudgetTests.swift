@@ -90,9 +90,14 @@ struct AudioBudget {
         }
         #if DEBUG
         let budget = Duration.milliseconds(250)
+        let configuration = "debug"
         #else
         let budget = Duration.milliseconds(50)
+        let configuration = "release"
         #endif
+        let ms = Double(best.components.attoseconds) / 1e15 + Double(best.components.seconds) * 1000
+        // scripts/bench-audio.sh greps this line (the QA-REPORT AUD-049 row records it).
+        print("AUD-049 \(configuration): rendered 1 s of audio in \(String(format: "%.2f", ms)) ms (budget \(budget))")
         #expect(best <= budget, "rendered 1 s in \(best)")
     }
 }

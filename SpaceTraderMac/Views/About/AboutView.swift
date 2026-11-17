@@ -135,5 +135,7 @@ struct LicenseSheet: View {
         }
         .padding(20)
         .frame(width: 620, height: 520)
+        // UI-KEYS-021: Esc and ⌘. press the only button.
+        .sheetEscape { dismiss() }
     }
 }

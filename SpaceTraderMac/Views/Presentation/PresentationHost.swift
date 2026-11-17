@@ -31,7 +31,8 @@ struct PresentationHost: ViewModifier {
             }
             .confirmationDialog(Text(verbatim: dialog?.content.title ?? ""), isPresented: dialogBinding(dialog),
                                 titleVisibility: .visible, presenting: dialog) { item in
-                if item.content.isDestructive {
+                // UI-KEYS-023: `DialogButtonPlan` decides which button carries Return (Cancel for a destructive dialog).
+                if DialogButtonPlan.make(isDestructive: item.content.isDestructive).cancelIsDefault {
                     Button(item.content.confirmLabel, role: .destructive) { item.onConfirm() }
                         .accessibilityIdentifier(item.confirmID)
                     Button(item.cancelLabel, role: .cancel) { cancel(item) }

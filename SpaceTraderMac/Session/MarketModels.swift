@@ -139,21 +139,43 @@ struct MarketRowModel: Identifiable, Equatable, Sendable {
     }
 }
 
-/// The B / S keys of the focused trade table (UI-SHELL-064).
+/// The B / S keys of the focused trade table (UI-SHELL-064, amended by UI-KEYS-012).
 enum MarketKeyAction: Equatable, Sendable {
     case buy(EventModifiers)
     case sell(EventModifiers)
     case buyMax
     case sellAll
 
-    /// B buys and S sells by the modifier quantity; ⇧B is Buy Max and ⇧S is Sell All (⇧ alone means "all" here).
+    /// UI-KEYS-012: plain B buys 1 and plain S sells 1; ⇧B is Buy Max and ⇧S is Sell All. Nothing with ⌘, ⌥ or ⌃: menu
+    /// key equivalents win over `.onKeyPress` (⌘S is Save). Keys are looked up in `bindings`, never matched here.
     static func make(characters: String, modifiers: EventModifiers) -> MarketKeyAction? {
-        let key = characters.lowercased()
-        guard key == "b" || key == "s" else { return nil }
-        guard !modifiers.contains(.control) else { return nil }
-        let shiftOnly = modifiers.contains(.shift) && !modifiers.contains(.command) && !modifiers.contains(.option)
-        if key == "b" { return shiftOnly ? .buyMax : .buy(modifiers) }
-        return shiftOnly ? .sellAll : .sell(modifiers)
+        let pressed = NormalizedShortcut(physical: MenuShortcut(characters.lowercased(), MenuShortcut.modifiers(modifiers)))
+        let binding = bindings.first { $0.context == .marketTable && NormalizedShortcut(physical: $0.shortcut) == pressed }
+        switch binding?.action {
+        case .marketBuyOne?: return .buy([])
+        case .marketSellOne?: return .sell([])
+        case .marketBuyMax?: return .buyMax
+        case .marketSellAll?: return .sellAll
+        default: return nil
+        }
+    }
+
+    /// UI-KEYS-001: the Market's keys (the table's letters and arrows, the quantity field's Return).
+    nonisolated static var bindings: [KeyBinding] {
+        let table: [(KeyActionID, MenuShortcut, LocalizedStringResource)] = [
+            (.marketBuyOne, MenuShortcut("b", []), "Market: buy one unit of the selected item"),
+            (.marketSellOne, MenuShortcut("s", []), "Market: sell or dump one unit of the selected item"),
+            (.marketBuyMax, MenuShortcut("b", [.shift]), "Market: Buy Max"),
+            (.marketSellAll, MenuShortcut("s", [.shift]), "Market: Sell All"),
+            (.marketSelectPrevious, MenuShortcut(MenuShortcut.upArrowKey, []), "Market: select the previous item"),
+            (.marketSelectNext, MenuShortcut(MenuShortcut.downArrowKey, []), "Market: select the next item"),
+        ]
+        let field: [(KeyActionID, MenuShortcut, LocalizedStringResource)] = [
+            (.marketBuyTyped, MenuShortcut(MenuShortcut.returnKey, []), "Market quantity: buy the typed quantity"),
+            (.marketSellTyped, MenuShortcut(MenuShortcut.returnKey, [.shift]), "Market quantity: sell the typed quantity"),
+        ]
+        return table.map { KeyBinding(action: $0.0, shortcut: $0.1, context: .marketTable, owner: .view(.marketTable), titleKey: $0.2) }
+            + field.map { KeyBinding(action: $0.0, shortcut: $0.1, context: .marketField, owner: .view(.marketQuantity), titleKey: $0.2) }
     }
 
     func command(for row: MarketRowModel) -> Command? {

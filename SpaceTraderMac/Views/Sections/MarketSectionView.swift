@@ -72,7 +72,10 @@ struct MarketSectionView: View {
                 let built = await MarketIntelModel.build(inputs)
                 if !Task.isCancelled { intel = built }
             }
-            .focusedSceneValue(\.marketFilterFocus, MarketFilterFocusAction { focusedField = .filter })
+            // MENU-018: ⌘F focuses the filter (the menu reads `contextSearch`).
+            .focusedSceneValue(\.contextSearch, ContextSearchAction { focusedField = .filter })
+            // UI-KEYS-017 level 3: the window's Esc router clears the focused filter.
+            .escapeHandler(.clearField, active: focusedField == .filter && !filter.isEmpty) { filter = "" }
             .sheet(item: $disposal) { d in
                 DisposalSheet(disposal: d) { command in
                     disposal = nil
@@ -93,7 +96,6 @@ struct MarketSectionView: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 240)
                 .focused($focusedField, equals: .filter)
-                .onExitCommand { filter = "" }
                 .help(Text("Show only items whose name contains this text. Esc clears it."))
                 .accessibilityIdentifier(AXID.Market.filter)
             Spacer()

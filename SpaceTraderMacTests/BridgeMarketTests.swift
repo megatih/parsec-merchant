@@ -369,15 +369,15 @@ struct BridgeMarketTests {
         #expect(TradeQuantity.resolve(modifiers: .control, maximum: 10) == 1)
     }
 
-    @Test("UI-SHELL-064 keys: B buys, S sells by the modifier quantity, ⇧B Buy Max, ⇧S Sell All; others ignored")
+    @Test("UI-SHELL-064 keys (amended by UI-KEYS-012): B buys 1, S sells 1, ⇧B Buy Max, ⇧S Sell All; ⌘/⌥/⌃ ignored")
     func marketKeys() throws {
         #expect(MarketKeyAction.make(characters: "b", modifiers: []) == .buy([]))
         #expect(MarketKeyAction.make(characters: "s", modifiers: []) == .sell([]))
         #expect(MarketKeyAction.make(characters: "B", modifiers: .shift) == .buyMax)
         #expect(MarketKeyAction.make(characters: "S", modifiers: .shift) == .sellAll)
-        #expect(MarketKeyAction.make(characters: "b", modifiers: .command) == .buy(.command))
-        #expect(MarketKeyAction.make(characters: "B", modifiers: [.shift, .command]) == .buy([.shift, .command]))
-        #expect(MarketKeyAction.make(characters: "s", modifiers: .option) == .sell(.option))
+        #expect(MarketKeyAction.make(characters: "b", modifiers: .command) == nil)
+        #expect(MarketKeyAction.make(characters: "B", modifiers: [.shift, .command]) == nil)
+        #expect(MarketKeyAction.make(characters: "s", modifiers: .option) == nil)
         #expect(MarketKeyAction.make(characters: "x", modifiers: []) == nil)
         #expect(MarketKeyAction.make(characters: "b", modifiers: .control) == nil)
         let s = fresh()

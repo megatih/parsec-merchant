@@ -41,32 +41,19 @@ nonisolated enum HelpContent {
         return url.flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
     }
 
-    /// The in-view keys that are not menu items (Market B/S; the encounter keys are Encounter menu items, UI-ENC-034).
-    static let inViewKeys: [(key: String, title: LocalizedStringResource)] = [
-        ("B", "Market: buy one unit of the selected item"),
-        ("S", "Market: sell one unit of the selected item"),
-        ("Return", "Confirm the default button"),
-        ("Esc", "Cancel a dialog or sheet"),
-    ]
-
-    /// UI-SHELL-110: the Keyboard Shortcuts table, generated from `MenuCatalog` so it can't drift from the menus.
+    /// UI-SHELL-110: the menu shortcut rows (from `KeyBindingTable`, so they can't drift from the menus).
     static func shortcutRows(milestone: Int = MenuCatalog.currentMilestone) -> [(shortcut: String, title: String)] {
-        let menus: [MenuName] = [.file, .edit, .view, .game, .encounter, .help]
-        let items = menus.flatMap { MenuCatalog.items(in: $0, milestone: milestone) }
-        return items.compactMap { id in
-            let e = MenuCatalog.entry(for: id)
-            return e.shortcut.map { ($0.display, String(localized: e.titleKey)) }
+        KeyboardShortcutsPage.make(milestone: milestone).flatMap { section in
+            section.rows.filter { row in KeyBindingTable.menuBindings.contains { $0.action == row.action && !row.isAlias } }
+                .map { ($0.display, $0.title) }
         }
     }
 
-    /// The full text of a topic: the bundled file, plus the generated table for Keyboard Shortcuts.
+    /// The full text of a topic: the bundled file, plus the generated table for Keyboard Shortcuts (UI-KEYS-002).
     static func text(_ topic: HelpTopic, bundle: Bundle = .main) -> String {
         let base = markdown(topic, bundle: bundle)
         guard topic == .keyboardShortcuts else { return base }
-        let menuLines = shortcutRows().map { "- **\($0.shortcut)** \($0.title)" }
-        let keyLines = inViewKeys.map { "- **\($0.key)** \(String(localized: $0.title))" }
-        return ([base, "## " + String(localized: "Menu shortcuts")] + menuLines + ["", "## " + String(localized: "In-view keys")] + keyLines)
-            .joined(separator: "\n")
+        return [base, KeyboardShortcutsPage.markdown()].joined(separator: "\n\n")
     }
 }
 

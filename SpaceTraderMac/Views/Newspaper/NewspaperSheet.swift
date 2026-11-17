@@ -47,12 +47,13 @@ struct NewspaperSheet: View {
                 Spacer()
                 Button("Close") { session.dismissPresentation() }
                     .keyboardShortcut(.defaultAction)
-                    .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier(AXID.Decision.newspaperClose)
             }
         }
         .padding(28)
         .frame(width: 560)
+        // UI-KEYS-021: Esc and ⌘. press the only button.
+        .sheetEscape { session.dismissPresentation() }
         .background(Color(nsColor: .textBackgroundColor))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Newspaper.sheet)

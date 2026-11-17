@@ -22,7 +22,6 @@ struct EncounterView: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onExitCommand { session.stopEncounter() }
         .onChange(of: session.stateGeneration) {
             effectPlan = CombatEffectPlanner.plan(record: session.lastStep)
             effectStart = effectPlan.isEmpty ? nil : .now

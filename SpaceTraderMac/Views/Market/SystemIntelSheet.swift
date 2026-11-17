@@ -55,6 +55,8 @@ struct SystemIntelSheet: View {
         }
         .padding(24)
         .frame(width: 440)
+        // UI-KEYS-021: Esc and ⌘. press the only button.
+        .sheetEscape(done)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.SystemIntel.sheet)
     }
