@@ -18,9 +18,9 @@ nonisolated enum MenuPhase: String, Sendable, Equatable {
     }
 }
 
-/// What ⌘F does in the shown section (MENU-018).
+/// What ⌘F does in the shown section (MENU-018): Market's filter, the galaxy map search (MAP-070), or Find System.
 nonisolated enum SearchContext: String, Sendable, Equatable {
-    case market, other
+    case market, galaxy, other
 }
 
 /// One Open Recent row (MENU-016).
@@ -57,16 +57,23 @@ nonisolated struct MenuContext: Sendable, Equatable {
     var hullFull = true
     var selectedSection: Section = .bridge
     var searchContext: SearchContext = .other
+    /// MAP-015: the map whose canvas has keyboard focus (enables the View zoom items).
+    var focusedMap: MapScope?
+    /// MAP-070: the Galaxy Chart window is key (⌘F searches its map).
+    var galaxyIsKey = false
 
     static let noGame = MenuContext()
 
     /// The state-derived part of the context (pure; `make(session:)` adds the session and store facts).
     static func make(state: GameState?, isModal: Bool, selectedSection: Section = .bridge, currentSlotID: String? = nil,
-                     canRevertToAutosave: Bool = false, recentSlots: [RecentSlot] = []) -> MenuContext {
+                     canRevertToAutosave: Bool = false, recentSlots: [RecentSlot] = [], focusedMap: MapScope? = nil,
+                     galaxyIsKey: Bool = false) -> MenuContext {
         var c = MenuContext()
         c.isModal = isModal
         c.selectedSection = selectedSection
-        c.searchContext = selectedSection == .market ? .market : .other
+        c.focusedMap = focusedMap
+        c.galaxyIsKey = galaxyIsKey
+        c.searchContext = galaxyIsKey || selectedSection == .galaxy ? .galaxy : selectedSection == .market ? .market : .other
         c.currentSlotID = currentSlotID
         c.canRevertToAutosave = canRevertToAutosave
         c.recentSlots = recentSlots
@@ -94,13 +101,14 @@ nonisolated struct MenuContext: Sendable, Equatable {
 
     /// The menu-bar context of the session (MENU-002).
     @MainActor
-    static func make(session: GameSession) -> MenuContext {
+    static func make(session: GameSession, focusedMap: MapScope? = nil) -> MenuContext {
         let ironmanSlot = session.state?.ironman == true ? session.gameID : nil
         let recent = session.recentSlots().map { slot in
             RecentSlot(id: slot.id, title: SlotText.recentTitle(slot), isCurrentIronmanSlot: slot.id == ironmanSlot)
         }
         return make(state: session.state, isModal: session.isModal, selectedSection: session.selectedSection,
-                    currentSlotID: session.currentSlotID, canRevertToAutosave: session.canRevertToAutosave, recentSlots: recent)
+                    currentSlotID: session.currentSlotID, canRevertToAutosave: session.canRevertToAutosave, recentSlots: recent,
+                    focusedMap: focusedMap, galaxyIsKey: session.galaxyWindowIsKey)
     }
 }
 
@@ -191,7 +199,7 @@ nonisolated enum MenuRules {
 
     static func availability(of item: MenuItemID, in c: MenuContext) -> MenuAvailability {
         switch item {
-        case .about, .mainWindow, .highScores, .help, .prices, .shortcuts, .credits, .github:
+        case .about, .mainWindow, .galaxyChartWindow, .highScores, .help, .prices, .shortcuts, .credits, .github:
             return .enabled
         case .newGame, .quickStart, .open, .openRecent, .importSave:
             return sessionCommand(c)
@@ -207,14 +215,15 @@ nonisolated enum MenuRules {
             return c.canRevertToAutosave ? .enabled : .disabled(.noAutosave)
         case .export, .closeGame:
             return anyGame(c)
-        case .find, .bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .findSystem, .plotRoute, .newspaper,
-             .options, .retire:
+        case .find, .bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .findSystem, .newspaper, .options, .retire:
             return gameCommand(c)
+        case .plotRoute:
+            return gameCommand(c, and: !c.targetIsCurrentSystem, else: .targetIsCurrentSystem)
         case .logbook, .galaxyChart:
             return anyGame(c)
         case .zoomIn, .zoomOut, .zoomFit:
             let base = anyGame(c)
-            return base.isEnabled ? .disabled(.noMapFocus) : base
+            return base.isEnabled && c.focusedMap == nil ? .disabled(.noMapFocus) : base
         case .warp:
             return warp(c)
         case .jump:

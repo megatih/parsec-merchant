@@ -28,6 +28,7 @@ enum AXID {
 
     enum Toolbar {
         static let target = "toolbar.target"
+        static let warp = "toolbar.warp"
         static let inspector = "toolbar.inspector"
     }
 
@@ -88,9 +89,39 @@ enum AXID {
         static let options = "menu.game.options"
     }
 
-    /// Section roots visited by ⌘1…⌘8 (⌘7 Galaxy is M8 and has no section yet).
+    /// Section roots visited by ⌘1…⌘8.
     static let sections: [(key: String, root: String)] = [
         ("1", "bridge.root"), ("2", "market.root"), ("3", "shipyard.root"), ("4", "outfitter.root"),
-        ("5", "crew.root"), ("6", "bank.root"), ("8", "quests.root"),
+        ("5", "crew.root"), ("6", "bank.root"), ("7", "galaxy.root"), ("8", "quests.root"),
     ]
+
+    /// The galaxy chart (MAP §20), per scope prefix: `galaxy`, `galaxyWindow`, `bridge.miniChart`.
+    struct Map {
+        let p: String
+        var map: String { "\(p).map" }
+        func system(_ i: Int) -> String { "\(p).system.\(i)" }
+        var hoverCard: String { "\(p).hoverCard" }
+        var legend: String { "\(p).legend" }
+        var legendToggle: String { "\(p).legend.toggle" }
+        var zoomIn: String { "\(p).zoomIn" }
+        var zoomOut: String { "\(p).zoomOut" }
+        var fitGalaxy: String { "\(p).fitGalaxy" }
+        var trackedRange: String { "\(p).trackedRange" }
+        var plotRoute: String { "\(p).context.plotRoute" }
+        var searchField: String { "\(p).search.field" }
+        var searchResultPrefix: String { "\(p).search.result." }
+        var filterInRange: String { "\(p).search.filter.inRange" }
+        var routePanel: String { "\(p).route.panel" }
+        func routeHop(_ n: Int) -> String { "\(p).route.hop.\(n)" }
+        var routeClear: String { "\(p).route.clear" }
+    }
+
+    enum Galaxy {
+        static let root = "galaxy.root"
+        static let windowRoot = "galaxyWindow.root"
+        static let section = Map(p: "galaxy")
+        static let window = Map(p: "galaxyWindow")
+        static let mini = Map(p: "bridge.miniChart")
+        static let sidebarRow = "sidebar.galaxy"
+    }
 }

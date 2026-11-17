@@ -176,9 +176,10 @@ extension FocusedValues {
 }
 
 enum ContextSearch {
-    /// Market with a published filter focuses it; everywhere else ⌘F opens Find System (UI-SHELL-085).
+    /// Market with a published filter focuses it; Galaxy (section or key window) focuses the map search (MAP-070);
+    /// everywhere else ⌘F opens Find System (UI-SHELL-085).
     static func perform(_ context: SearchContext, focused: ContextSearchAction?, session: GameSession) {
-        if context == .market, let focused {
+        if context == .market || context == .galaxy, let focused {
             focused.run()
         } else {
             session.present(.sheet(.findSystem))
@@ -206,6 +207,28 @@ struct SectionMenuItems: View {
             }
         }
         Divider()
+        MapViewMenuItems(session: session)
+    }
+}
+
+/// MENU-022 / MAP-015: Galaxy Chart ⇧⌘M and the zoom items, which act on the focused map.
+struct MapViewMenuItems: View {
+    let session: GameSession
+    @FocusedValue(\.mapControl) private var mapControl
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        let ctx = MenuContext.make(session: session, focusedMap: mapControl?.scope)
+        let a = { (id: MenuItemID) in MenuRules.availability(of: id, in: ctx) }
+        MenuItemButton(id: .galaxyChart, availability: a(.galaxyChart)) { openWindow(id: GalaxyWindowMetrics.id) }
+        MenuItemButton(id: .zoomIn, availability: mapControl?.canZoomIn == false ? .disabled(.noMapFocus) : a(.zoomIn)) {
+            mapControl?.zoomIn()
+        }
+        MenuItemButton(id: .zoomOut, availability: mapControl?.canZoomOut == false ? .disabled(.noMapFocus) : a(.zoomOut)) {
+            mapControl?.zoomOut()
+        }
+        MenuItemButton(id: .zoomFit, availability: a(.zoomFit)) { mapControl?.fit() }
+        Divider()
     }
 }
 
@@ -227,6 +250,7 @@ struct GameMenuItems: View {
             if let state = session.state { session.send(MenuRules.trackCommand(ctx, warpSystem: state.warpSystem)) }
         }
         MenuItemButton(id: .findSystem, availability: a(.findSystem)) { session.present(.sheet(.findSystem)) }
+        MenuItemButton(id: .plotRoute, availability: a(.plotRoute)) { session.plotRouteToTarget() }
         Divider()
         MenuItemButton(id: .fillFuel, availability: a(.fillFuel)) {
             if let state = session.state { session.send(.buyFuel(credits: state.fullTankCost)) }
@@ -248,6 +272,7 @@ struct WindowMenuItems: View {
 
     var body: some View {
         MenuItemButton(id: .mainWindow, availability: .enabled) { openWindow(id: SceneMetrics.mainWindowID) }
+        MenuItemButton(id: .galaxyChartWindow, availability: .enabled) { openWindow(id: GalaxyWindowMetrics.id) }
         Divider()
     }
 }

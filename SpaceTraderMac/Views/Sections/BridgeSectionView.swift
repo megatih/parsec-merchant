@@ -40,6 +40,11 @@ struct BridgeSectionView: View {
     @ViewBuilder
     private func rightColumn(_ state: GameState) -> some View {
         VStack(alignment: .leading, spacing: 16) {
+            GroupBox {
+                MiniChartView()
+            } label: {
+                Label("Short-Range Chart", systemImage: "map")
+            }
             TargetCard(model: TargetCardModel.make(state: state, isModal: session.isModal))
             if let special = SpecialEventCardModel.visible(state: state, gameID: session.gameID, declinedToken: declinedSpecial) {
                 SpecialEventCard(model: special) {
@@ -344,6 +349,7 @@ private struct NewspaperCard: View {
 
 private struct TargetCard: View {
     @Environment(GameSession.self) private var session
+    @Environment(\.openWindow) private var openWindow
     let model: TargetCardModel?
 
     var body: some View {
@@ -424,10 +430,23 @@ private struct TargetCard: View {
         if !model.preview.inRange {
             Text("Out of range").foregroundStyle(.red).bold()
         }
-        if model.showsTrack {
-            Button(model.isTracked ? "Untrack" : "Track") { session.send(model.trackCommand) }
-                .help(Text(model.isTracked ? "Stop tracking this system." : "Track this system on the way."))
-                .accessibilityIdentifier(AXID.Bridge.targetTrack)
+        HStack {
+            if model.showsTrack {
+                Button(model.isTracked ? "Untrack" : "Track") { session.send(model.trackCommand) }
+                    .help(Text(model.isTracked ? "Stop tracking this system." : "Track this system on the way."))
+                    .accessibilityIdentifier(AXID.Bridge.targetTrack)
+            }
+            let plot = MenuRules.availability(of: .plotRoute, in: MenuContext.make(state: session.state, isModal: session.isModal))
+            Button("Plot Route…") { session.plotRouteToTarget() }
+                .disabled(!plot.isEnabled)
+                .help(Text("Plan a multi-jump route to this system on the galaxy chart."))
+                .accessibilityIdentifier(AXID.Galaxy.bridgePlotRoute)
+            Button("Show on Map") {
+                if session.map.galaxyWindowOpen { openWindow(id: GalaxyWindowMetrics.id) }
+                session.showOnMap(model.system.index)
+            }
+            .help(Text("Centre the galaxy chart on this system."))
+            .accessibilityIdentifier(AXID.Galaxy.bridgeShowOnMap)
         }
     }
 

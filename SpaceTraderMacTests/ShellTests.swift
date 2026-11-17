@@ -87,7 +87,7 @@ struct ShellTests {
     func restoredSection() {
         let playing = SectionContext(hasGame: true, ended: false, hasShipyards: true, currentSystemHasShipyard: false)
         #expect(Section.restored(rawValue: "bank", context: playing) == .bank)
-        #expect(Section.restored(rawValue: "galaxy", context: playing) == .bridge)
+        #expect(Section.restored(rawValue: "logbook", context: playing) == .bridge)
         #expect(Section.restored(rawValue: nil, context: playing) == .bridge)
         #expect(Section.restored(rawValue: "bank", context: .noGame) == .bridge)
     }
@@ -129,12 +129,12 @@ struct ShellTests {
         #expect(s.mode == .playing && s.isDocked)
     }
 
-    @Test("UI-SHELL-035 sidebar rows in order with ⌘1…⌘6 and ⌘8 and identifiers sidebar.<section>")
+    @Test("UI-SHELL-035 sidebar rows in order with ⌘1…⌘8 (Galaxy ⌘7 from M8) and identifiers sidebar.<section>")
     func sidebarRows() {
-        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .quests])
-        #expect(Section.allCases.map(\.shortcutDigit) == ["1", "2", "3", "4", "5", "6", "8"])
+        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests])
+        #expect(Section.allCases.map(\.shortcutDigit) == ["1", "2", "3", "4", "5", "6", "7", "8"])
         #expect(Section.allCases.map(\.axID) == ["sidebar.bridge", "sidebar.market", "sidebar.shipyard", "sidebar.outfitter",
-                                                  "sidebar.crew", "sidebar.bank", "sidebar.quests"])
+                                                  "sidebar.crew", "sidebar.bank", "sidebar.galaxy", "sidebar.quests"])
     }
 
     @Test("UI-SHELL-036 badges: special event, mercenaries for hire, debt warning at 75,000")

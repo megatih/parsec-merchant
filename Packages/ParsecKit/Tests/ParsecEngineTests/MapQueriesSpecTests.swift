@@ -47,7 +47,7 @@ struct MapQueriesSpecTests {
         }
     }
 
-    @Test("MAP-093 fuelCostPerParsec follows the MOD-017 column swap and wormholeTaxPerJump is 25 × it")
+    @Test("MAP-093 fuelCostPerParsec follows the C#/Palm fuel-cost column swap and wormholeTaxPerJump is 25 × it")
     func fuelCostAndTax() {
         // The starting Gnat: C# fuelCost 1; Palm CostOfFuel 2; Modern reads the C# columns back in Palm order (2).
         let expected: [RulesetID: Int] = [.windows201: 1, .palm122: 2, .modern: 2]

@@ -7,11 +7,13 @@ import XCTest
 class ParsecUITestCase: XCTestCase {
     var app: XCUIApplication!
     let timeout: TimeInterval = 10
+    /// The `-PMSeed` of this test class (flow 5 uses its own seed).
+    var launchSeed: UInt64 { UITestFixtures.flowSeed }
 
     override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = UITestFixtures.launchArguments
+        app.launchArguments = UITestFixtures.launchArguments(seed: launchSeed)
         app.launch()
         XCTAssertTrue(mainWindow.waitForExistence(timeout: timeout), "the main window opens at launch")
     }

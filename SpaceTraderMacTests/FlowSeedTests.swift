@@ -9,6 +9,12 @@ import Testing
 enum FlowFixtures {
     static let flowSeed: UInt64 = 11
     static let flowGalaxyCode = "M2-B-S"
+    /// Flow 5 (MAP-100): seed 11's nearest target meets the police on the way, so flow 5 uses its own seed.
+    static let mapFlowSeed: UInt64 = 13
+    /// The in-range system nearest the flow-5 start; also hop 1 of the route to `mapRouteDestination`.
+    static let mapFlowTarget = 113
+    /// MAP-102: the nearest out-of-range system, two or more hops away.
+    static let mapRouteDestination = 124
 }
 
 @MainActor

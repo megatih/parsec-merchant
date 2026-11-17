@@ -88,6 +88,8 @@ struct MenuTests {
         c = MenuContext.make(session: s)
         #expect(c.hasGame && c.phase == .docked && !c.isModal && !c.isIronman && c.targetIsCurrentSystem)
         #expect(c.hasDestinations && !c.canBuyFuel && !c.canRepair && c.selectedSection == .bridge && c.searchContext == .other)
+        #expect(c.focusedMap == nil && !c.galaxyIsKey)
+        #expect(MenuContext.make(session: s, focusedMap: .galaxyWindow).focusedMap == .galaxyWindow)
         #expect(c.recentSlots.count == 1, "the creation autosave is listed")
         s.selectedSection = .market
         s.present(.sheet(.gameOptions))
@@ -299,11 +301,11 @@ struct MenuTests {
         #expect(!on(.find, Fx.ctx(nil)) && on(.find, Fx.ctx(Fx.fresh())))
     }
 
-    @Test("MENU-019 the View menu's M7 section items in order with ⌘1–⌘6 and ⌘8")
+    @Test("MENU-019 the View menu's section items in order with ⌘1–⌘8 (Galaxy ⌘7 from M8)")
     func viewOrder() {
-        let sections = MenuCatalog.items(in: .view)
-        #expect(sections == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .quests])
-        #expect(sections.compactMap { MenuCatalog.entry(for: $0).shortcut?.key } == ["1", "2", "3", "4", "5", "6", "8"])
+        let sections = MenuCatalog.items(in: .view).filter { $0.section != nil }
+        #expect(sections == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests])
+        #expect(sections.compactMap { MenuCatalog.entry(for: $0).shortcut?.key } == ["1", "2", "3", "4", "5", "6", "7", "8"])
         #expect(sections.compactMap(\.section) == Section.allCases)
     }
 
@@ -330,10 +332,11 @@ struct MenuTests {
 
     // MARK: Game
 
-    @Test("MENU-024 the Game menu's M7 rows in order with separators after Find System, Repair Hull and Options")
+    @Test("MENU-024 the Game menu's rows in order (Plot Route… after Find System from M8) with separators")
     func gameOrder() {
-        #expect(MenuCatalog.items(in: .game) == [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .fillFuel, .repair,
-                                                 .options, .retire])
+        #expect(MenuCatalog.items(in: .game) == [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .fillFuel,
+                                                 .repair, .options, .retire])
+        #expect(MenuCatalog.items(in: .game, milestone: 7).contains(.plotRoute) == false)
         #expect(MenuCatalog.separatorAfter.isSuperset(of: [.findSystem, .repair, .options]))
         #expect(MenuCatalog.items(in: .game, milestone: 9).contains(.newspaper) && MenuCatalog.items(in: .game, milestone: 8).contains(.plotRoute))
     }
@@ -486,9 +489,11 @@ struct MenuTests {
 
     // MARK: Window and Help
 
-    @Test("MENU-038 Window › Parsec Merchant reopens the main window; High Scores is M9")
+    @Test("MENU-038 Window › Parsec Merchant reopens the main window; Galaxy Chart from M8; High Scores is M9")
     func windowMenu() {
-        #expect(MenuCatalog.items(in: .window) == [.mainWindow])
+        #expect(MenuCatalog.items(in: .window) == [.mainWindow, .galaxyChartWindow])
+        #expect(MenuCatalog.entry(for: .galaxyChartWindow).identifier == "menu.window.galaxyChart")
+        for (_, c) in Fx.named { #expect(on(.galaxyChartWindow, c)) }
         #expect(MenuCatalog.entry(for: .mainWindow).identifier == "menu.window.main" && SceneMetrics.mainWindowID == "main")
         #expect(MenuCatalog.entry(for: .highScores).milestone == 9)
         for (_, c) in Fx.named { #expect(on(.mainWindow, c)) }
@@ -504,14 +509,30 @@ struct MenuTests {
 
     // MARK: Cross-checks
 
-    @Test("MENU-040 later-milestone entries are absent at M7")
+    @Test("MENU-040 later-milestone entries are absent at M8")
     func milestoneFilter() {
-        #expect(MenuCatalog.currentMilestone == 7)
+        #expect(MenuCatalog.currentMilestone == 8)
         let present = MenuName.allCases.flatMap { MenuCatalog.items(in: $0) }
-        #expect(!present.contains { MenuCatalog.entry(for: $0).milestone > 7 })
-        for id: MenuItemID in [.galaxy, .logbook, .galaxyChart, .zoomIn, .zoomOut, .zoomFit, .plotRoute, .newspaper, .highScores] {
+        #expect(!present.contains { MenuCatalog.entry(for: $0).milestone > 8 })
+        for id: MenuItemID in [.logbook, .newspaper, .highScores] {
             #expect(!present.contains(id) && !MenuRules.isShown(id, in: Fx.ctx(Fx.fresh())))
         }
+        for id: MenuItemID in [.galaxy, .galaxyChart, .zoomIn, .zoomOut, .zoomFit, .plotRoute, .galaxyChartWindow] {
+            #expect(present.contains(id))
+        }
+    }
+
+    @Test("MENU-022 Galaxy ⌘7, Galaxy Chart ⇧⌘M and the zoom items; zoom is enabled only while a map has focus")
+    func galaxyViewItems() {
+        #expect(MenuCatalog.entry(for: .galaxy).shortcut == MenuShortcut("7"))
+        #expect(MenuCatalog.entry(for: .galaxyChart).shortcut == MenuShortcut("m", [.shift, .command]))
+        #expect(MenuCatalog.items(in: .view).suffix(4) == [.galaxyChart, .zoomIn, .zoomOut, .zoomFit])
+        let unfocused = Fx.ctx(Fx.fresh())
+        #expect([MenuItemID.zoomIn, .zoomOut, .zoomFit].allSatisfy { !on($0, unfocused) })
+        #expect(MenuRules.availability(of: .zoomIn, in: unfocused).reason == .noMapFocus)
+        let focused = MenuContext.make(state: Fx.fresh(), isModal: false, focusedMap: .galaxy)
+        #expect([MenuItemID.zoomIn, .zoomOut, .zoomFit].allSatisfy { on($0, focused) })
+        #expect(on(.galaxyChart, unfocused) && !on(.galaxyChart, Fx.ctx(nil)))
     }
 
     @Test("MENU-041 enabled game items map to commands the engine accepts; engine reasons match its rejections")
@@ -560,7 +581,7 @@ struct MenuTests {
         c = MenuContext.make(session: s)
         #expect(s.selectedSection == .bridge)
         for id: MenuItemID in [.save, .export, .options, .retire] { #expect(on(id, c)) }
-        #expect(MenuCatalog.items(in: .view).allSatisfy { on($0, c) })
+        #expect(MenuCatalog.items(in: .view).filter { $0.section != nil || $0 == .galaxyChart }.allSatisfy { on($0, c) })
         #expect(!on(.warp, c))
         s.send(.selectNextTarget(forward: true))
         #expect(on(.warp, .make(session: s)))
@@ -581,7 +602,7 @@ struct MenuTests {
         #expect(s.mode == .gameOver(.retired))
         let c = MenuContext.make(session: s)
         for id: MenuItemID in [.save, .options, .retire, .warp] { #expect(!on(id, c)) }
-        #expect(MenuCatalog.items(in: .view).allSatisfy { !on($0, c) })
+        #expect(MenuCatalog.items(in: .view).filter { $0.section != nil }.allSatisfy { !on($0, c) })
         #expect(on(.export, c) && on(.closeGame, c))
     }
 

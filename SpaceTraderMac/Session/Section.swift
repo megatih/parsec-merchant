@@ -22,9 +22,9 @@ struct SectionContext: Equatable, Sendable {
     var designerAvailable: Bool { hasGame && !ended && hasShipyards && currentSystemHasShipyard }
 }
 
-/// The sidebar sections of the playing window, in display order. Galaxy (⌘7, M8) and Logbook (⌘9, M10) slot in later.
+/// The sidebar sections of the playing window, in display order. Logbook (⌘9, M10) slots in later.
 nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
-    case bridge, market, shipyard, outfitter, crew, bank, quests
+    case bridge, market, shipyard, outfitter, crew, bank, galaxy, quests
 
     var id: String { rawValue }
 
@@ -39,7 +39,7 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         return s
     }
 
-    /// The ⌘-digit shortcut (Galaxy keeps 7 free for M8).
+    /// The ⌘-digit shortcut.
     var shortcutDigit: Character {
         switch self {
         case .bridge: "1"
@@ -48,6 +48,7 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         case .outfitter: "4"
         case .crew: "5"
         case .bank: "6"
+        case .galaxy: "7"
         case .quests: "8"
         }
     }
@@ -60,6 +61,7 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         case .outfitter: "Outfitter"
         case .crew: "Crew"
         case .bank: "Bank"
+        case .galaxy: "Galaxy"
         case .quests: "Quests"
         }
     }
@@ -72,6 +74,7 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         case .outfitter: "wrench.and.screwdriver"
         case .crew: "person.3"
         case .bank: "building.columns"
+        case .galaxy: "map"
         case .quests: "list.star"
         }
     }

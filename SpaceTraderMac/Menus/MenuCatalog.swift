@@ -20,7 +20,7 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
     // Game
     case warp, jump, previousTarget, nextTarget, track, findSystem, plotRoute, fillFuel, repair, newspaper, options, retire
     // Window
-    case mainWindow, highScores
+    case mainWindow, galaxyChartWindow, highScores
     // Help
     case help, prices, shortcuts, credits, github
 
@@ -33,6 +33,7 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
         case .outfitter: .outfitter
         case .crew: .crew
         case .bank: .bank
+        case .galaxy: .galaxy
         case .quests: .quests
         default: nil
         }
@@ -47,6 +48,7 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
         case .outfitter: .outfitter
         case .crew: .crew
         case .bank: .bank
+        case .galaxy: .galaxy
         case .quests: .quests
         }
     }
@@ -84,7 +86,7 @@ nonisolated struct MenuEntry: Sendable {
 
 nonisolated enum MenuCatalog {
     /// Entries tagged above this milestone are absent from the menu bar (MENU-040).
-    static let currentMilestone = 7
+    static let currentMilestone = 8
     static let githubURL = URL(string: "https://github.com/megatih/parsec-merchant") ?? URL(fileURLWithPath: "/")
     static let openRecentRows = 10
 
@@ -129,6 +131,8 @@ nonisolated enum MenuCatalog {
         case .options: return game("Options…", s("o", [.option, .command]), "options")
         case .retire: return game("Retire…", nil, "retire")
         case .mainWindow: return MenuEntry(menu: .window, titleKey: "Parsec Merchant", shortcut: nil, identifier: "menu.window.main", milestone: 7)
+        case .galaxyChartWindow:
+            return MenuEntry(menu: .window, titleKey: "Galaxy Chart", shortcut: nil, identifier: "menu.window.galaxyChart", milestone: 8)
         case .highScores:
             return MenuEntry(menu: .window, titleKey: "High Scores", shortcut: nil, identifier: "menu.window.highScores", milestone: 9)
         case .help: return help("Parsec Merchant Help", s("?", [.command]), "help")
@@ -177,7 +181,7 @@ nonisolated enum MenuCatalog {
                      .zoomFit]
         case .game: [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .fillFuel, .repair, .newspaper,
                      .options, .retire]
-        case .window: [.mainWindow, .highScores]
+        case .window: [.mainWindow, .galaxyChartWindow, .highScores]
         case .help: [.help, .prices, .shortcuts, .credits, .github]
         }
     }

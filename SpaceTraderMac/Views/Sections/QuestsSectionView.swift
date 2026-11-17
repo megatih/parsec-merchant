@@ -48,6 +48,8 @@ struct QuestsSectionView: View {
 
 /// One open quest.
 private struct QuestCardView: View {
+    @Environment(GameSession.self) private var session
+    @Environment(\.openWindow) private var openWindow
     let card: QuestsModel.Card
     let state: GameState
     let select: (Int) -> Void
@@ -79,6 +81,15 @@ private struct QuestCardView: View {
                         .buttonStyle(.link)
                         .help(Text("Select \(Names.system(system, in: state)) as your target."))
                         .accessibilityIdentifier(AXID.Quests.system(entry: card.index, system: system))
+                    }
+                    if let first = card.entry.systems.first {
+                        Button("Show on Map") {
+                            if session.map.galaxyWindowOpen { openWindow(id: GalaxyWindowMetrics.id) }
+                            session.showOnMap(first)
+                        }
+                        .buttonStyle(.link)
+                        .help(Text("Centre the galaxy chart on \(Names.system(first, in: state))."))
+                        .accessibilityIdentifier(AXID.Galaxy.questShowOnMap(card.index))
                     }
                 }
             }

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 import Observation
-import os
 import ParsecEngine
+import ParsecInsights
 import ParsecPersistence
+import os
 
 /// The one session of the app (UI-SHELL-001). Owns the engine and all presentation state; views read it and call its
 /// methods. No view keeps a `GameEngine` or `GameState` copy beyond a render.
@@ -37,6 +38,18 @@ final class GameSession {
     /// File panels requested by menus or Welcome; the view that owns `fileImporter`/`fileExporter` binds to these.
     var isImporterPresented = false
     var isExporterPresented = false
+
+    // MARK: Galaxy chart (MAP §1, §12, §14; GameSession+Map.swift)
+    /// MAP-003: bumped on every accepted step, load, new game and close.
+    private(set) var stateGeneration = 0
+    /// MAP-063: the session-only planned route.
+    var plannedRoute: PlannedRoute?
+    /// Per-map viewports, show-on-map requests and window state.
+    let map = MapSessionState()
+    @ObservationIgnored var mapSnapshotCache: MapSnapshot?
+    @ObservationIgnored var mapSnapshotBuilds = 0
+    @ObservationIgnored var routeTask: Task<Void, Never>?
+    @ObservationIgnored var routePlanner: RoutePlanning = RoutePlanning.standard
 
     // MARK: Services
     let slotStore: SlotStore
@@ -99,6 +112,7 @@ final class GameSession {
             return
         }
         lastRejection = nil
+        stateGeneration += 1
         if let decision = result.decision {
             present(PresentationRouter.route(decision, state: state, command: command, acknowledged: acknowledged))
         }
@@ -110,6 +124,7 @@ final class GameSession {
         achievements.observe(events: result.events, state: state)
         let arrived = result.events.contains { if case .arrived = $0 { true } else { false } }
         runPersistenceTriggers(phaseBefore: phaseBefore, state: state, arrived: arrived)
+        if state.phase == .docked, phaseBefore != .docked || arrived { followPlannedRouteAfterDocking() }
     }
 
     /// The player confirmed: resend the same command with every warning acknowledged so far plus this one.
@@ -208,6 +223,8 @@ final class GameSession {
         recordedScore = nil
         marketSelection = nil
         selectedSection = .bridge
+        stateGeneration += 1
+        resetMapForNewGame()
         if case let .gameOver(end) = newEngine.state.phase { recordHighScore(end: end) }
     }
 
@@ -256,6 +273,8 @@ final class GameSession {
         lastRejection = nil
         recordedScore = nil
         selectedSection = .bridge
+        stateGeneration += 1
+        resetMapForNewGame()
     }
 
     // MARK: App confirmations

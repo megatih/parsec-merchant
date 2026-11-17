@@ -30,6 +30,13 @@ struct ParsecMerchantApp: App {
         .commands {
             MenuCommands(session: appDelegate.session, helpRouter: appDelegate.helpRouter)
         }
+        Window("Galaxy Chart", id: GalaxyWindowMetrics.id) {
+            GalaxyChartWindowView()
+                .modifier(AppTextSize())
+                .environment(appDelegate.session)
+        }
+        .defaultSize(GalaxyWindowMetrics.defaultSize)
+        .windowResizability(.contentMinSize)
         Settings {
             SettingsView()
                 .environment(appDelegate.session)

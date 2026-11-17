@@ -5,7 +5,7 @@ import XCTest
 final class IdentifierWalkUITests: ParsecUITestCase {
     @MainActor
     func testEveryInteractiveElementHasASchemeIdentifier() throws {
-        // covers: UI-SHELL-127
+        // covers: UI-SHELL-127, MAP-104, MAP-086, MAP-032, MAP-027
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
         type("s")                                         // a saved slot gives the Open sheet a row to walk
@@ -17,6 +17,24 @@ final class IdentifierWalkUITests: ParsecUITestCase {
             waitFor(section.root)
             walk(mainWindow, surface: "section \(section.root) with the inspector")
         }
+
+        // MAP-104: the Galaxy section with the legend and a planned route, and the Galaxy Chart window.
+        type("1")
+        click(AXID.Bridge.targetNext)
+        type("7")
+        waitFor(AXID.Galaxy.root)
+        click(AXID.Galaxy.section.legendToggle)
+        waitFor(AXID.Galaxy.section.legend)
+        chooseMenuItem("Game", "Plot Route…")
+        waitFor(AXID.Galaxy.section.routePanel)
+        walk(mainWindow, surface: "Galaxy section with legend and route")
+        XCTAssertTrue(element(AXID.Galaxy.section.system(0)).exists, "system accessibility children carry identifiers")
+        type("m", [.command, .shift])
+        let galaxyWindow = app.windows.matching(identifier: "galaxy").firstMatch
+        waitFor(AXID.Galaxy.windowRoot)
+        walk(galaxyWindow.exists ? galaxyWindow : app.windows.firstMatch, surface: "Galaxy Chart window")
+        type("w")
+        expect("the Galaxy Chart window closes") { !element(AXID.Galaxy.windowRoot).exists }
 
         type("o", [.command, .option])
         waitFor(AXID.Options.sheet)

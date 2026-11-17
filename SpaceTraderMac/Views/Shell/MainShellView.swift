@@ -59,6 +59,7 @@ struct SectionDetailView: View {
         case .outfitter: OutfitterSectionView()
         case .crew: CrewSectionView()
         case .bank: BankSectionView()
+        case .galaxy: GalaxySectionView()
         case .quests: QuestsSectionView()
         }
     }
