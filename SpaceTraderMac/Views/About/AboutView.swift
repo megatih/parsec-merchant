@@ -9,21 +9,26 @@ nonisolated enum AboutContent {
     struct Credit: Identifiable, Equatable {
         /// The identifier qualifier (`about.link.<id>`).
         var id: String
-        var names: String
+        /// Proper names (data); `names` joins two of them in a localized sentence.
+        var people: [String]
         var role: LocalizedStringResource
         var url: URL?
 
-        static func == (a: Credit, b: Credit) -> Bool { a.id == b.id && a.names == b.names && a.url == b.url }
+        var names: String {
+            people.count == 2 ? String(localized: "\(people[0]) and \(people[1])") : people.joined(separator: ", ")
+        }
+
+        static func == (a: Credit, b: Credit) -> Bool { a.id == b.id && a.people == b.people && a.url == b.url }
     }
 
     static let credits: [Credit] = [
-        Credit(id: "spronck", names: "Pieter Spronck", role: "Design and original code of Space Trader for Palm OS",
+        Credit(id: "spronck", people: ["Pieter Spronck"], role: "Design and original code of Space Trader for Palm OS",
                url: URL(string: "https://www.spronck.net/spacetrader/")),
-        Credit(id: "andersonGoldstein", names: "Sam Anderson and Samuel Goldstein", role: "Additional coding (Palm OS)", url: nil),
-        Credit(id: "lee", names: "Matt Lee", role: "DopeWars, from which parts of the original trading code were derived", url: nil),
-        Credit(id: "french", names: "Jay French", role: "Space Trader for Windows 2.01 (C# port)",
+        Credit(id: "andersonGoldstein", people: ["Sam Anderson", "Samuel Goldstein"], role: "Additional coding (Palm OS)", url: nil),
+        Credit(id: "lee", people: ["Matt Lee"], role: "DopeWars, from which parts of the original trading code were derived", url: nil),
+        Credit(id: "french", people: ["Jay French"], role: "Space Trader for Windows 2.01 (C# port)",
                url: URL(string: "https://github.com/SpaceTraderGame/SpaceTrader-Windows")),
-        Credit(id: "pierron", names: "David Pierron", role: "Additional coding (Windows)", url: nil),
+        Credit(id: "pierron", people: ["David Pierron"], role: "Additional coding (Windows)", url: nil),
     ]
 
     static let basedOn: LocalizedStringResource = "Based on Space Trader by Pieter Spronck."

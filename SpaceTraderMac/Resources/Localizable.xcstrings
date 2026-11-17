@@ -1,7 +1,8903 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "\"We know you removed illegal goods from the Marie Celeste. You must give them up at once!\"" : {
 
+    },
+    "%@" : {
+
+    },
+    "%@ %@ cr. (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ cr. (%3$@)"
+          }
+        }
+      }
+    },
+    "%@ %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "%@ %@, %lld clicks out: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@, %#@arg3@ out: %4$@"
+          },
+          "substitutions" : {
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg click"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg clicks"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "%@ (%lld units)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%#@arg2@)"
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg unit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg units"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$lld)"
+          }
+        }
+      }
+    },
+    "%@ (default)" : {
+
+    },
+    "%@ (minimum)" : {
+
+    },
+    "%@ +%@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ +%2$@ cr."
+          }
+        }
+      }
+    },
+    "%@ Dispatch" : {
+
+    },
+    "%@ Final score %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ Final score %2$@."
+          }
+        }
+      }
+    },
+    "%@ Memo" : {
+
+    },
+    "%@ Score %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ Score %2$lld."
+          }
+        }
+      }
+    },
+    "%@ amount in credits" : {
+
+    },
+    "%@ and %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ and %2$@"
+          }
+        }
+      }
+    },
+    "%@ can't be reached with a full tank (%lld parsecs per jump)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ can't be reached with a full tank (%#@arg2@ per jump)."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsec"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsecs"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ control waved us in without a second glance." : {
+
+    },
+    "%@ cr." : {
+
+    },
+    "%@ cr. daily" : {
+
+    },
+    "%@ cr./day" : {
+
+    },
+    "%@ credits" : {
+
+    },
+    "%@ high scores" : {
+
+    },
+    "%@ in %@, worth %@ on %@ level." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ in %2$@, worth %3$@ on %4$@ level."
+          }
+        }
+      }
+    },
+    "%@ is getting concerned." : {
+
+    },
+    "%@ is impatient." : {
+
+    },
+    "%@ is looking for work." : {
+
+    },
+    "%@ to %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ to %2$@."
+          }
+        }
+      }
+    },
+    "%@ tribbles aboard. Inspectors take note." : {
+
+    },
+    "%@ vs. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ vs. %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld bays · %lld hull" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %#@arg2@ · %3$lld hull"
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg bay"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg bays"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ · %lld parsecs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %#@arg2@"
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsec"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsecs"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ · Day %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · Day %2$lld"
+          }
+        }
+      }
+    },
+    "%@ – Captain's Log" : {
+
+    },
+    "%@ — Day %lld, %@ (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ — Day %2$lld, %3$@ (%4$@)"
+          }
+        }
+      }
+    },
+    "%@ — Day %lld, %@ (%@) · Ended" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ — Day %2$lld, %3$@ (%4$@) · Ended"
+          }
+        }
+      }
+    },
+    "%@ — Day %lld, %@ (%@) · Ironman" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ — Day %2$lld, %3$@ (%4$@) · Ironman"
+          }
+        }
+      }
+    },
+    "%@ — Day %lld, %@ (%@) · Ironman · Ended" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ — Day %2$lld, %3$@ (%4$@) · Ironman · Ended"
+          }
+        }
+      }
+    },
+    "%@ “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ “%2$@”"
+          }
+        }
+      }
+    },
+    "%@, %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "%@, %lld credits" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %#@arg2@"
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credits"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@, day %lld at %@, worth %lld credits, %@ rules." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, day %2$lld at %3$@, worth %#@arg4@, %5$@ rules."
+          },
+          "substitutions" : {
+            "arg4" : {
+              "argNum" : 4,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credits"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@, done" : {
+
+    },
+    "%@, locked" : {
+
+    },
+    "%@, locked, %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, locked, %2$lld of %3$lld"
+          }
+        }
+      }
+    },
+    "%@/bay" : {
+
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@ — %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@ — %3$@."
+          }
+        }
+      }
+    },
+    "%@: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld"
+          }
+        }
+      }
+    },
+    "%@: declined." : {
+
+    },
+    "%@: done." : {
+
+    },
+    "%lld (pirates %lld, police %lld, traders %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld (pirates %2$lld, police %3$lld, traders %4$lld)"
+          }
+        }
+      }
+    },
+    "%lld at %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld at %2$@ cr."
+          }
+        }
+      }
+    },
+    "%lld clicks" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld click"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld clicks"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld close calls later, the lights of %@ never looked so good." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@ later, the lights of %2$@ never looked so good."
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg close call"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg close calls"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld combat rounds" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld combat round"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld combat rounds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cr." : {
+
+    },
+    "%lld credits per day" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld credit per day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld credits per day"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld cute, furry tribbles." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cute, furry tribble."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cute, furry tribbles."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld d ago" : {
+
+    },
+    "%lld days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld days left" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day left"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days left"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld encounters on the way." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld encounter on the way."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld encounters on the way."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld free gadget slots" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld free gadget slot"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld free gadget slots"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld free quarters" : {
+
+    },
+    "%lld free shield slots" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld free shield slot"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld free shield slots"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld free weapon slots" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld free weapon slot"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld free weapon slots"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld hull points, %lld credits" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hull point"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hull points"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credits"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld installed" : {
+
+    },
+    "%lld items not bought there" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item not bought there"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld items not bought there"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld jumps" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld jump"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld jumps"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld jumps · %lld parsecs · %lld cr. (Estimate)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@ · %#@arg2@ · %3$lld cr. (Estimate)"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg jump"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg jumps"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsec"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsecs"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld mercenaries for hire" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mercenary for hire"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mercenaries for hire"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld unlocked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld unlocked"
+          }
+        }
+      }
+    },
+    "%lld parsecs" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld parsec"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld parsecs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld percent" : {
+
+    },
+    "%lld rounds" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld round"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rounds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld rounds against the %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@ against the %2$@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg round"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg rounds"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld tribbles aboard" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tribble aboard"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tribbles aboard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld units" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld units"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld units of illegal goods" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unit of illegal goods"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld units of illegal goods"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld × %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld × %2$@"
+          }
+        }
+      }
+    },
+    "%lld × %@ (charge %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld × %2$@ (charge %3$lld)"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+
+    },
+    "%lld%% (max)" : {
+
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "'Welfare Actually Boosts Economy,' Minister Says." : {
+
+    },
+    "(estimate)" : {
+
+    },
+    "(from %@ System)" : {
+
+    },
+    "(−%lld hull)" : {
+
+    },
+    "+" : {
+
+    },
+    "+%@ cr" : {
+
+    },
+    ", disabled" : {
+
+    },
+    "1 click" : {
+
+    },
+    "1 day left" : {
+
+    },
+    "1 jump" : {
+
+    },
+    "1 mercenary for hire" : {
+
+    },
+    "1 parsec" : {
+
+    },
+    "1 tribble aboard" : {
+
+    },
+    "1 unit" : {
+
+    },
+    "10 bays of antidote." : {
+
+    },
+    "120 systems, as on the Palm." : {
+
+    },
+    "5 extra cargo bays" : {
+
+    },
+    "55 percent opacity" : {
+
+    },
+    "A Tribble" : {
+
+    },
+    "A basic energy shield that absorbs incoming fire." : {
+
+    },
+    "A bitter day; the %@ won the exchange." : {
+
+    },
+    "A bribe isn't possible now." : {
+
+    },
+    "A brief meeting with a %@, nothing more." : {
+
+    },
+    "A canister of %@ floats by." : {
+
+    },
+    "A cheap, light laser. Better than nothing." : {
+
+    },
+    "A fracture in the space-time fabric pulls you to %@!" : {
+
+    },
+    "A hacker conveys to you that he has cracked the passwords to the galaxy-wide police computer network, and that he can erase your police record for the sum of 5000 credits. Do you want him to do that?" : {
+
+    },
+    "A handheld haggling computer." : {
+
+    },
+    "A hard burn put the %@ out of range." : {
+
+    },
+    "A hooded figure approaches you and asks if you'd be willing to deliver some recently aquired merchandise to Endor. He's holding a small sculpture of a man holding some kind of light sword that you strongly suspect was stolen. It appears to be made of plastic and not very valuable. \"I'll pay you 2,000 credits now, plus 15,000 on delivery,\" the figure says. After seeing the look on your face he adds, \"It's a collector's item. Will you deliver it or not?\"" : {
+
+    },
+    "A member of the Royal Family of Galvon has been kidnapped! Princess Ziyal was abducted by men while travelling across the planet. They escaped in a hi-tech ship called the Scorpion. Please rescue her! (You'll need to equip your ship with disruptors to be able to defeat the Scorpion without destroying it.) A ship bristling with weapons was blasting out of the system. It's trajectory before going to warp indicates that its destination was Centauri." : {
+
+    },
+    "A merchant prince offers you a very special and wondrous item for the sum of 1000 credits. Do you accept?" : {
+
+    },
+    "A milestone worth noting in the log." : {
+
+    },
+    "A moon of one's own: the finest trade of all." : {
+
+    },
+    "A new game begins (%@)." : {
+
+    },
+    "A new port: %@. The traders eyed our hold with interest." : {
+
+    },
+    "A portable singularity." : {
+
+    },
+    "A prototype disruptor of great power. It can't be bought anywhere." : {
+
+    },
+    "A quiet retirement, earned one trade at a time." : {
+
+    },
+    "A recent change in the political climate of this solar system has forced Ambassador Jarek to flee back to his home system, Devidia. Would you be willing to give him a lift?" : {
+
+    },
+    "A rip in the fabric of space-time flung you toward %@." : {
+
+    },
+    "A ship had its shields upgraded to Lighting Shields just two days ago. A shipyard worker overheard one of the crew saying they were headed to Inthara." : {
+
+    },
+    "A ship with shields that seemed to be like lightning recently fought many other ships in our system. I have never seen anything like it before. After it left, I heard it went to the Regulas system." : {
+
+    },
+    "A small favour done at %@." : {
+
+    },
+    "A small ship of a weird design docked here recently for repairs. The engineer who worked on it said that it had a weak hull, but incredibly strong shields. I heard it took off in the direction of the Melina system." : {
+
+    },
+    "A small ship with shields like I have never seen before was here a few days ago. It destroyed at least ten police ships! Last thing I heard was that it went to the Zalkon system." : {
+
+    },
+    "A solid all-round laser, stronger than a pulse laser." : {
+
+    },
+    "A space monster has invaded the Acamar system and is disturbing the trade routes. You'll be rewarded handsomely if you manage to destroy it." : {
+
+    },
+    "A stolen plastic sculpture of a man holding some kind of light sword." : {
+
+    },
+    "A strange disease has invaded the Japori system. We would like you to deliver these ten canisters of special antidote to Japori. Note that, if you accept, ten of your cargo bays will remain in use on your way to Japori. Do you accept this mission?" : {
+
+    },
+    "A trader in second-hand goods offers you 3 sealed cargo canisters for the sum of 1000 credits. It could be a good deal: they could contain robots. Then again, it might just be water. Do you want the canisters?" : {
+
+    },
+    "About Parsec Merchant" : {
+
+    },
+    "About window" : {
+
+    },
+    "Above average" : {
+
+    },
+    "Absent" : {
+
+    },
+    "Abundant" : {
+
+    },
+    "Accept" : {
+
+    },
+    "Accept the Offer?" : {
+
+    },
+    "Accept the offer." : {
+
+    },
+    "Accept…" : {
+
+    },
+    "Accessibility 1" : {
+
+    },
+    "Accessibility 2" : {
+
+    },
+    "Accessibility 3" : {
+
+    },
+    "Achievement unlocked: %@" : {
+
+    },
+    "Achievement unlocked: %@." : {
+
+    },
+    "Achievements" : {
+
+    },
+    "Achievements are disabled for this game because cheats were used." : {
+
+    },
+    "Actions" : {
+
+    },
+    "Active Quests" : {
+
+    },
+    "Additional coding (Palm OS)" : {
+
+    },
+    "Additional coding (Windows)" : {
+
+    },
+    "Adds five cargo bays to your ship." : {
+
+    },
+    "Advanced" : {
+
+    },
+    "Advertising Budgets to Increase." : {
+
+    },
+    "Aggressive Ship" : {
+
+    },
+    "Aggressive Ship Seen in Orbit Around Centauri" : {
+
+    },
+    "Agricultural" : {
+
+    },
+    "Alas, Gemulon has been invaded by aliens, which has thrown us back to pre-agricultural times. If only we had known the exact coordinates where they first arrived at our system, we might have prevented this tragedy from happening." : {
+
+    },
+    "Alert" : {
+
+    },
+    "Alerts (ALR)" : {
+
+    },
+    "Alien" : {
+
+    },
+    "Alien Artifact" : {
+
+    },
+    "Alien Invasion" : {
+
+    },
+    "Alien Invasion Devastates Planet!" : {
+
+    },
+    "Alien artifact" : {
+
+    },
+    "Alien invasion of Gemulon" : {
+
+    },
+    "Aliens Required to Carry Visible Identification at All Times!" : {
+
+    },
+    "All" : {
+
+    },
+    "All %@ high scores will be removed." : {
+
+    },
+    "All artwork, icons and sounds are new and generated in code. None of the original Space Trader pictures are used." : {
+
+    },
+    "All for One" : {
+
+    },
+    "All quests, shipyards and the ship designer." : {
+
+    },
+    "Allocation" : {
+
+    },
+    "Already insured." : {
+
+    },
+    "Always ignore when it is safe" : {
+
+    },
+    "Always pay for newspaper" : {
+
+    },
+    "Ambassador Jarek" : {
+
+    },
+    "Ambassador Jarek Returns from Crisis." : {
+
+    },
+    "Ambassador Jarek is very grateful to you for delivering him back to Devidia. As a reward, he gives you an experimental handheld haggling computer, which allows you to gain larger discounts when purchasing goods and equipment." : {
+
+    },
+    "Ambient music" : {
+
+    },
+    "An Ironman game has a single save and no reloading." : {
+
+    },
+    "An alien artifact." : {
+
+    },
+    "An alien with a fast-learning machine offers to increase one of your skills for the reasonable sum of 3000 credits. You won't be able to pick that skill, though. Do you accept his offer?" : {
+
+    },
+    "An eccentric alien billionaire wants to buy your collection of tribbles and offers half a credit for each of them. Do you accept his offer?" : {
+
+    },
+    "An estimate from public information: the opponent's class, visible equipment and your flee odds." : {
+
+    },
+    "An experimental shield of unmatched strength. It can't be bought anywhere." : {
+
+    },
+    "An infestation of tribbles." : {
+
+    },
+    "An uneventful trip." : {
+
+    },
+    "An unstable reactor taking up 5 bays, and %lld bays of enriched fuel." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "An unstable reactor taking up 5 bays, and %lld bay of enriched fuel."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "An unstable reactor taking up 5 bays, and %lld bays of enriched fuel."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Anarchy" : {
+
+    },
+    "Angry kingpins" : {
+
+    },
+    "Antidote" : {
+
+    },
+    "Antidote Destroyed" : {
+
+    },
+    "Antidote Taken" : {
+
+    },
+    "Any commodity" : {
+
+    },
+    "Any mercenaries who were traveling with you have left." : {
+
+    },
+    "App confirmation" : {
+
+    },
+    "Apple Intelligence" : {
+
+    },
+    "Apple Intelligence runs on this Mac only. Flavor text never changes the game." : {
+
+    },
+    "Are we there yet?" : {
+
+    },
+    "Arrested" : {
+
+    },
+    "Arrested. Sentenced to %lld days." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Arrested. Sentenced to %lld day."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Arrested. Sentenced to %lld days."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Arrested: %lld days in jail, fined %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrested: %#@arg1@ in jail, fined %2$@ cr."
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg day"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg days"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Arrested: %lld days in jail, fined %@ cr.; your ship was sold." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrested: %#@arg1@ in jail, fined %2$@ cr.; your ship was sold."
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg day"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg days"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Arrests" : {
+
+    },
+    "Arrival Report" : {
+
+    },
+    "Arrival report" : {
+
+    },
+    "Arrival report available." : {
+
+    },
+    "Arrived at %@ for the first time." : {
+
+    },
+    "Arrived at %@ · %lld encounters · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrived at %1$@ · %#@arg2@ · %3$@"
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg encounter"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg encounters"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Arrived at %@, day %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrived at %1$@, day %2$lld."
+          }
+        }
+      }
+    },
+    "Arrived at %@." : {
+
+    },
+    "Art Thief's Bane" : {
+
+    },
+    "Artifact Delivery" : {
+
+    },
+    "Artifact Lost" : {
+
+    },
+    "Artistic Populace" : {
+
+    },
+    "At %@ Jonathan Wild's escape was complete." : {
+
+    },
+    "At %@ a strange offer paid off." : {
+
+    },
+    "At %@ from %@ you encounter %@ %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At %1$@ from %2$@ you encounter %3$@ %4$@."
+          }
+        }
+      }
+    },
+    "At %@ the Gemulon affair was settled." : {
+
+    },
+    "At %@ the Princess's story turned a page." : {
+
+    },
+    "At %@ the Scarab chapter closed." : {
+
+    },
+    "At %@ the ambassador's journey ended." : {
+
+    },
+    "At %@ the artifact found its new keeper." : {
+
+    },
+    "At %@ the dream of a moon came closer." : {
+
+    },
+    "At %@ the experiment's fate was decided." : {
+
+    },
+    "At %@ the medicine reached those who needed it." : {
+
+    },
+    "At %@ the monster's story was finally told." : {
+
+    },
+    "At %@ the reactor was off our hands at last." : {
+
+    },
+    "At %@ the sculpture's travels ended." : {
+
+    },
+    "At %@ the tribble question was answered." : {
+
+    },
+    "At %lld clicks you meet a %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At %#@arg1@ you meet a %2$@."
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg click"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg clicks"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "At most 20 characters." : {
+
+    },
+    "Attack" : {
+
+    },
+    "Attack the Police?" : {
+
+    },
+    "Attack the Trader?" : {
+
+    },
+    "Attack until the encounter is resolved (R)" : {
+
+    },
+    "Attacking a peaceful trader is a crime. Your police record will drop to %@." : {
+
+    },
+    "Attacks until the encounter is resolved" : {
+
+    },
+    "Attempt to disable opponents when possible" : {
+
+    },
+    "Audio couldn't start" : {
+
+    },
+    "Auto-repair system" : {
+
+    },
+    "Auto-repeat" : {
+
+    },
+    "Auto-repeat ⌥A" : {
+
+    },
+    "Automatic repairs and fuel" : {
+
+    },
+    "Autosave" : {
+
+    },
+    "Autosave." : {
+
+    },
+    "Available" : {
+
+    },
+    "Average" : {
+
+    },
+    "Back" : {
+
+    },
+    "Back to Summary" : {
+
+    },
+    "Balanced" : {
+
+    },
+    "Bank" : {
+
+    },
+    "Baron Ignores Ultimatum!" : {
+
+    },
+    "Base price" : {
+
+    },
+    "Base price for the tech level" : {
+
+    },
+    "Based on Space Trader by Pieter Spronck." : {
+
+    },
+    "Bays %lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bays %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Bays: %lld/%lld, %lld free for buying" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bays: %1$lld/%2$lld, %3$lld free for buying"
+          }
+        }
+      }
+    },
+    "Beam laser" : {
+
+    },
+    "Because you don't have the credits to pay your fine, your ship is sold." : {
+
+    },
+    "Beetle" : {
+
+    },
+    "Beginner" : {
+
+    },
+    "Beloved Royal Returns Home!" : {
+
+    },
+    "Best buy here for %@: %@ %@/bay (%lld bays, %@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best buy here for %1$@: %2$@ %3$@/bay (%#@arg4@, %5$@)"
+          },
+          "substitutions" : {
+            "arg4" : {
+              "argNum" : 4,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg bay"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg bays"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Best crew" : {
+
+    },
+    "Best destinations for your hold: %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best destinations for your hold: %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Best for a first game." : {
+
+    },
+    "Best known: %@ %@/unit (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best known: %1$@ %2$@/unit (%3$@)"
+          }
+        }
+      }
+    },
+    "Best profit for your hold: %@" : {
+
+    },
+    "Best trade" : {
+
+    },
+    "Better prices for goods and equipment." : {
+
+    },
+    "Big Score" : {
+
+    },
+    "Binary Stream" : {
+
+    },
+    "Board" : {
+
+    },
+    "Board the Ship?" : {
+
+    },
+    "Boredom" : {
+
+    },
+    "Borrow" : {
+
+    },
+    "Borrowed %@ cr." : {
+
+    },
+    "Both ships were destroyed." : {
+
+    },
+    "Bottle" : {
+
+    },
+    "Bought %lld %@ for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought %1$lld %2$@ for %3$@ cr."
+          }
+        }
+      }
+    },
+    "Bought %lld %@ for %lld credits." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought %1$lld %2$@ for %#@arg3@."
+          },
+          "substitutions" : {
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credits"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Bought %lld %@ in orbit for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought %1$lld %2$@ in orbit for %3$@ cr."
+          }
+        }
+      }
+    },
+    "Bought %lld units of fuel for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought %#@arg1@ of fuel for %2$@ cr."
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg unit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg units"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Bought a %@ (net %@ cr.)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought a %1$@ (net %2$@ cr.)."
+          }
+        }
+      }
+    },
+    "Bought a %@ for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bought a %1$@ for %2$@ cr."
+          }
+        }
+      }
+    },
+    "Bought an escape pod for %@ cr." : {
+
+    },
+    "Bought equipment for %@ cr." : {
+
+    },
+    "Bought insurance." : {
+
+    },
+    "Bounties" : {
+
+    },
+    "Bounty Hunter" : {
+
+    },
+    "Bounty offered" : {
+
+    },
+    "Bribe" : {
+
+    },
+    "Bribe the Police?" : {
+
+    },
+    "Bridge" : {
+
+    },
+    "Bridge? This is Jonathan. Are we there yet? Heh, heh. Sorry, I couldn't resist." : {
+
+    },
+    "Bring Ambassador Jarek safely home." : {
+
+    },
+    "Brotherhood" : {
+
+    },
+    "Build Ship" : {
+
+    },
+    "Build a ship of your own design." : {
+
+    },
+    "Build “%@”?" : {
+
+    },
+    "Bumblebee" : {
+
+    },
+    "Business at %@ concluded to everyone's satisfaction." : {
+
+    },
+    "Buy" : {
+
+    },
+    "Buy %lld credits" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Buy %lld credit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Buy %lld credits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Buy %lld fuel (%lld cr.)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy %1$lld fuel (%2$lld cr.)"
+          }
+        }
+      }
+    },
+    "Buy 1" : {
+
+    },
+    "Buy 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ max)" : {
+
+    },
+    "Buy Equipment?" : {
+
+    },
+    "Buy Escape Pod (%@ cr.)" : {
+
+    },
+    "Buy Insurance" : {
+
+    },
+    "Buy Max" : {
+
+    },
+    "Buy Ship" : {
+
+    },
+    "Buy This Ship?" : {
+
+    },
+    "Buy a %@?" : {
+
+    },
+    "Buy a Newspaper?" : {
+
+    },
+    "Buy a full tank." : {
+
+    },
+    "Buy a moon and retire there." : {
+
+    },
+    "Buy an Escape Pod?" : {
+
+    },
+    "Buy an escape pod at the Shipyard" : {
+
+    },
+    "Buy as many as you can (%lld)" : {
+
+    },
+    "Buy for %@ cr." : {
+
+    },
+    "Buy fuel for this many credits." : {
+
+    },
+    "Buy markup (trader skill)" : {
+
+    },
+    "Buy or sell every commodity." : {
+
+    },
+    "Buy price" : {
+
+    },
+    "Buy this item." : {
+
+    },
+    "Buys as much as you can afford" : {
+
+    },
+    "Buy…" : {
+
+    },
+    "CEO: Corporate Rebranding Progressing." : {
+
+    },
+    "Calculating statistics…" : {
+
+    },
+    "Campaign Spending Aids Economy!" : {
+
+    },
+    "Can't afford" : {
+
+    },
+    "Can't be reached with a full tank" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Capitalist State" : {
+
+    },
+    "Captain" : {
+
+    },
+    "Captain Ahab hails you" : {
+
+    },
+    "Captain Conrad Comes Under Attack By Criminal!" : {
+
+    },
+    "Captain Conrad hails you" : {
+
+    },
+    "Captain Conrad's Ship Destroyed by Villain!" : {
+
+    },
+    "Captain Huie hails you" : {
+
+    },
+    "Captain Renwick developed a new organic hull material for his ship which cannot be damaged except by Pulse lasers. While he was celebrating this success, pirates boarded and stole the craft, which they have named the Scarab. Rumors suggest it's being hidden at the exit to a wormhole. Destroy the ship for a reward!" : {
+
+    },
+    "Captain! This is the Ambassador speaking. We should have been there by now?!" : {
+
+    },
+    "Captain's Log" : {
+
+    },
+    "Card" : {
+
+    },
+    "Cargo" : {
+
+    },
+    "Cargo For Sale" : {
+
+    },
+    "Cargo bays" : {
+
+    },
+    "Cargo bays in use / total." : {
+
+    },
+    "Cargo bays to leave empty when buying goods in-system" : {
+
+    },
+    "Carry 100,000 tribbles." : {
+
+    },
+    "Cartographer" : {
+
+    },
+    "Cash" : {
+
+    },
+    "Cash after the trade" : {
+
+    },
+    "Cash available: %@ cr." : {
+
+    },
+    "Caught littering." : {
+
+    },
+    "Caught littering. Police record score now %lld." : {
+
+    },
+    "Centre the galaxy chart on %@." : {
+
+    },
+    "Centre the galaxy chart on this system." : {
+
+    },
+    "Charge" : {
+
+    },
+    "Charge %lld" : {
+
+    },
+    "Cheapest" : {
+
+    },
+    "Cheat Console" : {
+
+    },
+    "Cheat accepted. This game is now flagged." : {
+
+    },
+    "Cheat console" : {
+
+    },
+    "Cheat readout available in the console." : {
+
+    },
+    "Cheated" : {
+
+    },
+    "Cheats" : {
+
+    },
+    "Cheats are on. This game is flagged and stays off the high-score table." : {
+
+    },
+    "Cheats used" : {
+
+    },
+    "Cheats used." : {
+
+    },
+    "Cheats were used in this game" : {
+
+    },
+    "Cheats were used, so this game is not on the high-score table." : {
+
+    },
+    "Cheats were used. Achievements are disabled for this game." : {
+
+    },
+    "Check the %@ step." : {
+
+    },
+    "Choose Target" : {
+
+    },
+    "Choose a difficulty" : {
+
+    },
+    "Choose a target system first." : {
+
+    },
+    "Choose an alert or a special event" : {
+
+    },
+    "Choose an item for sale or one of your slots." : {
+
+    },
+    "Choose another system to jump to." : {
+
+    },
+    "Choose the rules" : {
+
+    },
+    "Choose the system to warp to." : {
+
+    },
+    "Church Tidings" : {
+
+    },
+    "Citizens Mourn Destruction of Captain Huie's Ship!" : {
+
+    },
+    "Claim your moon at Utopia." : {
+
+    },
+    "Claimed moon" : {
+
+    },
+    "Claimed moon with Ziyal" : {
+
+    },
+    "Class" : {
+
+    },
+    "Classic" : {
+
+    },
+    "Clean" : {
+
+    },
+    "Clean Record" : {
+
+    },
+    "Clean record: up to %@" : {
+
+    },
+    "Clear" : {
+
+    },
+    "Clear High Scores?" : {
+
+    },
+    "Clear Selection" : {
+
+    },
+    "Clear filters" : {
+
+    },
+    "Clear…" : {
+
+    },
+    "Click %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Click a ship to select it; ⌘-click two or more to compare them." : {
+
+    },
+    "Click to target, ⌥-click to track, right-click to plot a route." : {
+
+    },
+    "Cloaking device" : {
+
+    },
+    "Close" : {
+
+    },
+    "Close All" : {
+
+    },
+    "Close Call" : {
+
+    },
+    "Close Game" : {
+
+    },
+    "Close Tip" : {
+
+    },
+    "Close Window" : {
+
+    },
+    "Close the Game?" : {
+
+    },
+    "Close the event feed, then clear the Shipyard comparison" : {
+
+    },
+    "Close this tip" : {
+
+    },
+    "Closed: %@" : {
+
+    },
+    "Code" : {
+
+    },
+    "Cold" : {
+
+    },
+    "Cold Snap Continues!" : {
+
+    },
+    "Cold Weather" : {
+
+    },
+    "Collapsed" : {
+
+    },
+    "Collect 10 bounties." : {
+
+    },
+    "Collector in %@ System seeks to purchase Tribbles." : {
+
+    },
+    "Colonel Jackson here. Do you want us to install a lightning shield on your current ship?" : {
+
+    },
+    "Combat" : {
+
+    },
+    "Combat log" : {
+
+    },
+    "Commander" : {
+
+    },
+    "Commander %@, day %lld, at %@. %@ credits, debt %@, worth %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commander %1$@, day %2$lld, at %3$@. %4$@ credits, debt %5$@, worth %6$@."
+          }
+        }
+      }
+    },
+    "Commander Status" : {
+
+    },
+    "Commander name" : {
+
+    },
+    "Commander! Wild here. What's taking us so long?!" : {
+
+    },
+    "Commander? Jarek here. Do you require any assitance in charting a course to Devidia?" : {
+
+    },
+    "Commodity" : {
+
+    },
+    "Communist State" : {
+
+    },
+    "Communities Seek Consensus." : {
+
+    },
+    "Compare" : {
+
+    },
+    "Competent" : {
+
+    },
+    "Complete the purchase." : {
+
+    },
+    "Completed" : {
+
+    },
+    "Completed (%lld)" : {
+
+    },
+    "Confederacy" : {
+
+    },
+    "Confirmation" : {
+
+    },
+    "Construct…" : {
+
+    },
+    "Continue" : {
+
+    },
+    "Continue Decision" : {
+
+    },
+    "Continue Game" : {
+
+    },
+    "Continue attacking fleeing ship" : {
+
+    },
+    "Continuous attack and flight" : {
+
+    },
+    "Convicted" : {
+
+    },
+    "Copy" : {
+
+    },
+    "Copy the galaxy code so a friend can play the same galaxy." : {
+
+    },
+    "Corporate Profits Up!" : {
+
+    },
+    "Corporate State" : {
+
+    },
+    "Costs %@ cr." : {
+
+    },
+    "Costs %lld credits" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Costs %lld credit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Costs %lld credits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Costs of the Next Warp" : {
+
+    },
+    "Couldn't afford all the transfers." : {
+
+    },
+    "Couldn't afford to transfer the %@." : {
+
+    },
+    "Couldn't transfer the %@." : {
+
+    },
+    "Count" : {
+
+    },
+    "Counter-Revolutionary Bureaucrats Purged from Party!" : {
+
+    },
+    "Countless Hearts Awaken." : {
+
+    },
+    "Court-Martials Up 2% This Year." : {
+
+    },
+    "Credits" : {
+
+    },
+    "Credits & License" : {
+
+    },
+    "Credits on hand." : {
+
+    },
+    "Crew" : {
+
+    },
+    "Crew & Passengers" : {
+
+    },
+    "Crew Quarters" : {
+
+    },
+    "Crew quarters" : {
+
+    },
+    "Criminal" : {
+
+    },
+    "Criminal Act!" : {
+
+    },
+    "Criminal record: up to %@" : {
+
+    },
+    "Critical" : {
+
+    },
+    "Crook" : {
+
+    },
+    "Crop Failure" : {
+
+    },
+    "Crop Failures" : {
+
+    },
+    "Crowding penalty" : {
+
+    },
+    "Current System" : {
+
+    },
+    "Current events" : {
+
+    },
+    "Current price here." : {
+
+    },
+    "Current ship" : {
+
+    },
+    "Current system" : {
+
+    },
+    "Custom Ship" : {
+
+    },
+    "Cut" : {
+
+    },
+    "Cybernetic State" : {
+
+    },
+    "Cycle Backward Through Windows" : {
+
+    },
+    "Cycle Through Windows" : {
+
+    },
+    "Daily Costs" : {
+
+    },
+    "Daily premium" : {
+
+    },
+    "Daily premium if insured" : {
+
+    },
+    "Daily wages: %@ cr." : {
+
+    },
+    "Dangerous" : {
+
+    },
+    "Dangerous Experiment" : {
+
+    },
+    "Dangerous Scorpion" : {
+
+    },
+    "Dangerous Scorpion Damages Several Other Ships Near Inthara" : {
+
+    },
+    "Dashed: estimate" : {
+
+    },
+    "Day" : {
+
+    },
+    "Day %@ · %@ · Credits %@ · Debt %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %1$@ · %2$@ · Credits %3$@ · Debt %4$@"
+          }
+        }
+      }
+    },
+    "Day %@ · Game over" : {
+
+    },
+    "Day %@ · In transit to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %1$@ · In transit to %2$@"
+          }
+        }
+      }
+    },
+    "Day %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %1$lld · %2$@"
+          }
+        }
+      }
+    },
+    "Day %lld · %@ · %lld cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %1$lld · %2$@ · %3$lld cr."
+          }
+        }
+      }
+    },
+    "Day %lld · %@ · Worth %@ cr. · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %1$lld · %2$@ · Worth %3$@ cr. · %4$@"
+          }
+        }
+      }
+    },
+    "Day %lld: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %1$lld: %2$@"
+          }
+        }
+      }
+    },
+    "Days" : {
+
+    },
+    "Days played" : {
+
+    },
+    "Deadline" : {
+
+    },
+    "Deadlines" : {
+
+    },
+    "Deadly" : {
+
+    },
+    "Debt" : {
+
+    },
+    "Debt Free" : {
+
+    },
+    "Debt warning" : {
+
+    },
+    "Debt warning: you owe %@ cr." : {
+
+    },
+    "Decision sheet" : {
+
+    },
+    "Decline" : {
+
+    },
+    "Decrease %@" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete This Saved Game?" : {
+
+    },
+    "Delete…" : {
+
+    },
+    "Deliver antidote to Japori." : {
+
+    },
+    "Deliver the alien artifact to Professor Berger at some hi-tech system." : {
+
+    },
+    "Deliver the alien artifact." : {
+
+    },
+    "Deliver the antidote to Japori." : {
+
+    },
+    "Deliver the stolen sculpture to Endor." : {
+
+    },
+    "Deliver the stolen sculpture." : {
+
+    },
+    "Deliver the unstable reactor to Nix before it consumes all its fuel." : {
+
+    },
+    "Deliver the unstable reactor to Nix for Henry Morgan." : {
+
+    },
+    "Deliver the unstable reactor." : {
+
+    },
+    "Democracy" : {
+
+    },
+    "Departed %@ for %@ (%@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Departed %1$@ for %2$@ (%3$@)."
+          }
+        }
+      }
+    },
+    "Departed %@ for %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Departed %1$@ for %2$@."
+          }
+        }
+      }
+    },
+    "Departed %@ through the wormhole to %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Departed %1$@ through the wormhole to %2$@."
+          }
+        }
+      }
+    },
+    "Departure costs" : {
+
+    },
+    "Desert" : {
+
+    },
+    "Design and original code of Space Trader for Palm OS" : {
+
+    },
+    "Design fee" : {
+
+    },
+    "Designer" : {
+
+    },
+    "Destroy a Wasp." : {
+
+    },
+    "Destroy the Dragonfly and claim its shield." : {
+
+    },
+    "Destroy the Scarab and upgrade your hull." : {
+
+    },
+    "Destruction of Captain Ahab's Ship Causes Anger!" : {
+
+    },
+    "Destructive confirmation" : {
+
+    },
+    "Details" : {
+
+    },
+    "Developer tester" : {
+
+    },
+    "Dialog Averts Eastern Conflict!" : {
+
+    },
+    "Dictatorship" : {
+
+    },
+    "Difficulty" : {
+
+    },
+    "Diplomatic Courier" : {
+
+    },
+    "Disabled" : {
+
+    },
+    "Disables an opponent's systems instead of destroying the ship." : {
+
+    },
+    "Disaster Averted" : {
+
+    },
+    "Discard" : {
+
+    },
+    "Discard the Current Game?" : {
+
+    },
+    "Discretion won the day; the %@ was left behind." : {
+
+    },
+    "Disease Antidotes Arrive! Health Officials Optimistic." : {
+
+    },
+    "Dismiss" : {
+
+    },
+    "Dismiss this crew member." : {
+
+    },
+    "Distance" : {
+
+    },
+    "Distribute all points." : {
+
+    },
+    "Distribute your skill points" : {
+
+    },
+    "Do It Anyway" : {
+
+    },
+    "Do you wish us to install the fuel compactor on your current ship? (You need a free gadget slot)" : {
+
+    },
+    "Dodging shots and escaping fights." : {
+
+    },
+    "Done" : {
+
+    },
+    "DopeWars, from which parts of the original trading code were derived" : {
+
+    },
+    "Dozen Blasphemers Excommunicated!" : {
+
+    },
+    "Dr. Fehler can't understand why the experiment failed. But the failure has had a dramatic and disastrous effect on the fabric of space-time itself. It seems that Dr. Fehler won't be getting tenure any time soon... and you may have trouble when you warp!" : {
+
+    },
+    "Dr. Fehler's experiment" : {
+
+    },
+    "Dragon Slayer" : {
+
+    },
+    "Dragonfly" : {
+
+    },
+    "Dragonfly Destroyed" : {
+
+    },
+    "Drink" : {
+
+    },
+    "Drink the Contents?" : {
+
+    },
+    "Drought" : {
+
+    },
+    "Drug Smugglers Sentenced to Death!" : {
+
+    },
+    "Dubious" : {
+
+    },
+    "Dump" : {
+
+    },
+    "Dump %@" : {
+
+    },
+    "Dump %@ cr." : {
+
+    },
+    "Dump All" : {
+
+    },
+    "Dumped %lld %@ for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dumped %1$lld %2$@ for %3$@ cr."
+          }
+        }
+      }
+    },
+    "Dumping cargo in space is littering. The police may fine you and your record suffers." : {
+
+    },
+    "Dump…" : {
+
+    },
+    "Each day without a claim adds 1% discount, up to 90%." : {
+
+    },
+    "Each skill is the best value in your crew, plus gadget and haggling bonuses, adjusted for difficulty." : {
+
+    },
+    "Each warp costs 10%% interest: %@ cr." : {
+
+    },
+    "Early Industrial" : {
+
+    },
+    "Easy" : {
+
+    },
+    "Editorial: Life in Harmony." : {
+
+    },
+    "Editorial: Taxes Too High!" : {
+
+    },
+    "Editorial: We Must Help Japori!" : {
+
+    },
+    "Editorial: Who Will Warn Gemulon?" : {
+
+    },
+    "Editorial: Why Wait to Invade?" : {
+
+    },
+    "Editors: Won't Someone Entertain Us?" : {
+
+    },
+    "Effective" : {
+
+    },
+    "Effective Skills" : {
+
+    },
+    "Effects volume" : {
+
+    },
+    "Ejects you safely when your ship is destroyed." : {
+
+    },
+    "Elite" : {
+
+    },
+    "Empty" : {
+
+    },
+    "En route to %@" : {
+
+    },
+    "En route to %@ via wormhole" : {
+
+    },
+    "Encounter" : {
+
+    },
+    "Encounter resumed." : {
+
+    },
+    "Encounter: Stop the repeat" : {
+
+    },
+    "Encounter: the default action" : {
+
+    },
+    "Encounters" : {
+
+    },
+    "Encounters fled" : {
+
+    },
+    "Encounters surrendered" : {
+
+    },
+    "Encounters won" : {
+
+    },
+    "Ended" : {
+
+    },
+    "Ended." : {
+
+    },
+    "Ending" : {
+
+    },
+    "Energy shield" : {
+
+    },
+    "Engineer" : {
+
+    },
+    "Enter Full Screen" : {
+
+    },
+    "Enter a name." : {
+
+    },
+    "Enter a ship name." : {
+
+    },
+    "Enter a valid amount." : {
+
+    },
+    "Enter a valid quantity." : {
+
+    },
+    "Equipment" : {
+
+    },
+    "Erase Record" : {
+
+    },
+    "Esc clears the selection." : {
+
+    },
+    "Escape Artist" : {
+
+    },
+    "Escape Pod" : {
+
+    },
+    "Escape Pod Activated" : {
+
+    },
+    "Escape pod" : {
+
+    },
+    "Escape pod installed" : {
+
+    },
+    "Escape pod installed." : {
+
+    },
+    "Estimate from the Average Price List (not visited or never seen)." : {
+
+    },
+    "Evidence Suggests %@ in the %@ System." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evidence Suggests %1$@ in the %2$@ System."
+          }
+        }
+      }
+    },
+    "Expanded" : {
+
+    },
+    "Experiment Failed" : {
+
+    },
+    "Experimental Craft Stolen! Critics Demand Security Review." : {
+
+    },
+    "Explorer" : {
+
+    },
+    "Export the log as a Markdown file." : {
+
+    },
+    "Export…" : {
+
+    },
+    "Extends your ship's range." : {
+
+    },
+    "Extra Extra Large" : {
+
+    },
+    "Extra Large" : {
+
+    },
+    "Fabric Mender" : {
+
+    },
+    "Failed" : {
+
+    },
+    "Fair" : {
+
+    },
+    "Faithful to the Windows 2.01 port, quirks included." : {
+
+    },
+    "Famed Captain Huie Attacked by Brigand!" : {
+
+    },
+    "Famed Hero %@ to Visit System!" : {
+
+    },
+    "Famous captains are well loved. Your record drops to Villain and the news will report it." : {
+
+    },
+    "Farmers Drafted to Defend Lord's Castle!" : {
+
+    },
+    "Fascist State" : {
+
+    },
+    "Fast travel" : {
+
+    },
+    "Feudal State" : {
+
+    },
+    "Few" : {
+
+    },
+    "Fewer dangers in space and an easier start." : {
+
+    },
+    "Fewest Jumps" : {
+
+    },
+    "Fight It Out" : {
+
+    },
+    "Fighter" : {
+
+    },
+    "Figures" : {
+
+    },
+    "Fill Fuel" : {
+
+    },
+    "Fill Up (%@ cr.)" : {
+
+    },
+    "Filter" : {
+
+    },
+    "Filter (on)" : {
+
+    },
+    "Filter items" : {
+
+    },
+    "Final cost" : {
+
+    },
+    "Finance" : {
+
+    },
+    "Finances" : {
+
+    },
+    "Find" : {
+
+    },
+    "Find Prices" : {
+
+    },
+    "Find System" : {
+
+    },
+    "Find System…" : {
+
+    },
+    "Find a system" : {
+
+    },
+    "Find and destroy the Scarab (which is hiding at the exit to a wormhole)." : {
+
+    },
+    "Find the Marie Celeste." : {
+
+    },
+    "Find…" : {
+
+    },
+    "Fines and bribes" : {
+
+    },
+    "Finish an Ironman game by retiring or buying the moon." : {
+
+    },
+    "Finish the current decision first." : {
+
+    },
+    "Finish the open dialog first." : {
+
+    },
+    "Fire" : {
+
+    },
+    "Fire %@?" : {
+
+    },
+    "Firearms" : {
+
+    },
+    "Fired %@." : {
+
+    },
+    "Firefly" : {
+
+    },
+    "First Profit" : {
+
+    },
+    "First landfall at %@. The charts did not do it justice." : {
+
+    },
+    "Fit" : {
+
+    },
+    "Fit Galaxy" : {
+
+    },
+    "Fit Range" : {
+
+    },
+    "Five bays that police inspections don't find." : {
+
+    },
+    "Five of your cargo bays now contain the unstable Ion Reactor, and ten of your bays contain enriched fuel." : {
+
+    },
+    "Fixes the classic bugs and exploits." : {
+
+    },
+    "Flea" : {
+
+    },
+    "Flea Built" : {
+
+    },
+    "Flee" : {
+
+    },
+    "Flee odds" : {
+
+    },
+    "Fleeing the customs police is a criminal act and will be reported." : {
+
+    },
+    "Follow the Dragonfly to Baratas." : {
+
+    },
+    "Follow the Dragonfly to Melina." : {
+
+    },
+    "Follow the Dragonfly to Regulas." : {
+
+    },
+    "Follow the Dragonfly to Zalkon." : {
+
+    },
+    "Follow the Scorpion to Centauri." : {
+
+    },
+    "Follow the Scorpion to Inthara." : {
+
+    },
+    "Follow the Scorpion to Qonos." : {
+
+    },
+    "Food" : {
+
+    },
+    "For Hire" : {
+
+    },
+    "For players who know the classic Windows game." : {
+
+    },
+    "For sale" : {
+
+    },
+    "Foreign Sabotage Suspected." : {
+
+    },
+    "Forget this route." : {
+
+    },
+    "Forgiving encounters and generous skills while you learn the ropes." : {
+
+    },
+    "Free bays %lld" : {
+
+    },
+    "Free quarters: %lld" : {
+
+    },
+    "Free slot" : {
+
+    },
+    "From rookie trader to moon owner. Not bad at all." : {
+
+    },
+    "Fuel" : {
+
+    },
+    "Fuel %lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuel %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Fuel %lld/%lld parsecs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuel %1$lld/%#@arg2@"
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsec"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg parsecs"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Fuel Compactor" : {
+
+    },
+    "Fuel after the jump" : {
+
+    },
+    "Fuel amount in credits" : {
+
+    },
+    "Fuel compactor" : {
+
+    },
+    "Fuel in parsecs / tank size." : {
+
+    },
+    "Fuel range" : {
+
+    },
+    "Fuel tanks" : {
+
+    },
+    "Full tank %lld" : {
+
+    },
+    "Full-tank range" : {
+
+    },
+    "Furs" : {
+
+    },
+    "Future Presents More Opportunities for Sacrifice!" : {
+
+    },
+    "Gadget" : {
+
+    },
+    "Gadget slots" : {
+
+    },
+    "Gadget type" : {
+
+    },
+    "Gadgets" : {
+
+    },
+    "Galactic criminal Henry Morgan wants this illegal ion reactor delivered to Nix. It's a very dangerous mission! The reactor and its fuel are bulky, taking up 15 bays. Worse, it's not stable -- its resonant energy will weaken your shields and hull strength while it's aboard your ship. Are you willing to deliver it?" : {
+
+    },
+    "Galaxy" : {
+
+    },
+    "Galaxy & Extras" : {
+
+    },
+    "Galaxy Chart" : {
+
+    },
+    "Galaxy and extras" : {
+
+    },
+    "Galaxy chart" : {
+
+    },
+    "Galaxy code" : {
+
+    },
+    "Galaxy map" : {
+
+    },
+    "Galaxy map: close the hover card, legend and suggestions" : {
+
+    },
+    "Galaxy map: pan down" : {
+
+    },
+    "Galaxy map: pan left" : {
+
+    },
+    "Galaxy map: pan right" : {
+
+    },
+    "Galaxy map: pan up" : {
+
+    },
+    "Game" : {
+
+    },
+    "Game exported." : {
+
+    },
+    "Game over: New Game…" : {
+
+    },
+    "Game saved." : {
+
+    },
+    "Game-over card" : {
+
+    },
+    "Games" : {
+
+    },
+    "Gargantuan" : {
+
+    },
+    "Gemulon Invaded" : {
+
+    },
+    "Gemulon Rescued" : {
+
+    },
+    "Gemulon Saved" : {
+
+    },
+    "Gemulon was invaded." : {
+
+    },
+    "General" : {
+
+    },
+    "General Report" : {
+
+    },
+    "Get Jonathan Wild to Kravat." : {
+
+    },
+    "Get full fuel tanks on arrival" : {
+
+    },
+    "Get full hull repairs on arrival" : {
+
+    },
+    "Get rid of those pesky tribbles." : {
+
+    },
+    "Get your Quantum Disruptor at Galvon." : {
+
+    },
+    "Get your fuel compactor at Gemulon." : {
+
+    },
+    "Get your hull upgraded at %@." : {
+
+    },
+    "Get your lightning shield at Zalkon." : {
+
+    },
+    "Get your special laser at Nix." : {
+
+    },
+    "Getting Started" : {
+
+    },
+    "Ghost Ship" : {
+
+    },
+    "GitHub Project" : {
+
+    },
+    "Gnat" : {
+
+    },
+    "Go to Crew" : {
+
+    },
+    "Go to the next step." : {
+
+    },
+    "Good" : {
+
+    },
+    "Government" : {
+
+    },
+    "Government Promises Increased Welfare Benefits!" : {
+
+    },
+    "Grasshopper" : {
+
+    },
+    "HQ: Invasion Plans Reviewed." : {
+
+    },
+    "Haggling" : {
+
+    },
+    "Haiku" : {
+
+    },
+    "Haptics" : {
+
+    },
+    "Haptics work only on Force Touch trackpads." : {
+
+    },
+    "Hard" : {
+
+    },
+    "Hardened" : {
+
+    },
+    "Hardened hull" : {
+
+    },
+    "Hardware Dispatch" : {
+
+    },
+    "Harmless" : {
+
+    },
+    "Has shipyard" : {
+
+    },
+    "Have hidden compartments installed at Endor." : {
+
+    },
+    "Heatmap" : {
+
+    },
+    "Heatmap commodity" : {
+
+    },
+    "Held" : {
+
+    },
+    "Hello, Commander. This is Colonel Jackson again. On behalf of the Space Corps, I thank you for your valuable assistance in destroying the Dragonfly. As a reward, we will install one of the experimental shields on your ship. Return here for that when you're ready." : {
+
+    },
+    "Henry Morgan takes delivery of the reactor with great glee. His men immediately set about stabilizing the fuel system. As a reward, Morgan offers you a special, high-powered laser that he designed. Return with an empty weapon slot when you want them to install it." : {
+
+    },
+    "Henry Morgan's custom laser. It can't be bought anywhere." : {
+
+    },
+    "Here" : {
+
+    },
+    "Hero" : {
+
+    },
+    "Hero Slays Space Monster! Parade, Honors Planned for Today." : {
+
+    },
+    "Hero of the Spaceways" : {
+
+    },
+    "Hi-Tech" : {
+
+    },
+    "Hidden Compartments" : {
+
+    },
+    "Hidden Compartments Removed" : {
+
+    },
+    "Hidden cargo bays" : {
+
+    },
+    "Hide Others" : {
+
+    },
+    "Hide Parsec Merchant" : {
+
+    },
+    "Hide the arrival report until your next trip." : {
+
+    },
+    "Hide the arrival report." : {
+
+    },
+    "Hide this offer until your next arrival." : {
+
+    },
+    "Hide unchanged" : {
+
+    },
+    "High Priest to Hold Special Services." : {
+
+    },
+    "High Scores" : {
+
+    },
+    "Hire" : {
+
+    },
+    "Hire this mercenary." : {
+
+    },
+    "Hired %@." : {
+
+    },
+    "His Majesty's Shipyard: Do you want us to install a quantum disruptor on your current ship?" : {
+
+    },
+    "History" : {
+
+    },
+    "Hitting what you shoot at." : {
+
+    },
+    "Hoarder Lynched by Angry Mob!" : {
+
+    },
+    "Hold at %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold at %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Homeland Report" : {
+
+    },
+    "Hornet" : {
+
+    },
+    "Hot Cargo" : {
+
+    },
+    "How Prices Work" : {
+
+    },
+    "How dangerous other pilots think you are." : {
+
+    },
+    "How the police see you." : {
+
+    },
+    "Huge" : {
+
+    },
+    "Huge Explosion Reported at Research Facility." : {
+
+    },
+    "Hull" : {
+
+    },
+    "Hull %lld%%" : {
+
+    },
+    "Hull Upgraded" : {
+
+    },
+    "Hull repaired, %lld percent." : {
+
+    },
+    "Hull strength" : {
+
+    },
+    "Hull strength as a percentage of the maximum." : {
+
+    },
+    "Hull strength." : {
+
+    },
+    "Ignore" : {
+
+    },
+    "Ignore dealing traders" : {
+
+    },
+    "Illegal" : {
+
+    },
+    "Illegal Goods Impounded" : {
+
+    },
+    "Illegal. %@" : {
+
+    },
+    "Illustration" : {
+
+    },
+    "Import…" : {
+
+    },
+    "Impossible" : {
+
+    },
+    "Impossible Odds" : {
+
+    },
+    "Improves" : {
+
+    },
+    "Improves your fighter skill." : {
+
+    },
+    "Improves your pilot skill." : {
+
+    },
+    "In 3 days and with 500 credits, you manage to convert your pod into a Flea." : {
+
+    },
+    "In Hold" : {
+
+    },
+    "In Range" : {
+
+    },
+    "In encounter" : {
+
+    },
+    "In range" : {
+
+    },
+    "In range · %lld fuel left after the jump" : {
+
+    },
+    "In transit" : {
+
+    },
+    "Increase %@" : {
+
+    },
+    "Industrial" : {
+
+    },
+    "Inform Gemulon about alien invasion by tomorrow." : {
+
+    },
+    "Inform Gemulon about alien invasion within %lld days." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Inform Gemulon about alien invasion within %lld day."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Inform Gemulon about alien invasion within %lld days."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Inline reason" : {
+
+    },
+    "Inspector" : {
+
+    },
+    "Install Hidden Compartments" : {
+
+    },
+    "Install Morgan's Laser" : {
+
+    },
+    "Insurance" : {
+
+    },
+    "Insurance Lost" : {
+
+    },
+    "Insurance in Bank…" : {
+
+    },
+    "Insurance paid %@ cr." : {
+
+    },
+    "Insurance pays out your ship's value if you escape in your pod." : {
+
+    },
+    "Insurance: %@ cr." : {
+
+    },
+    "Insured" : {
+
+    },
+    "Insurrection Crushed: Rebels Executed!" : {
+
+    },
+    "Intelligence" : {
+
+    },
+    "Interest" : {
+
+    },
+    "Interest: %@ cr." : {
+
+    },
+    "Interstate Update" : {
+
+    },
+    "Invasion Imminent! Plans in Place to Repel Hostile Invaders." : {
+
+    },
+    "Investigators Report Strange Craft." : {
+
+    },
+    "Iron Will" : {
+
+    },
+    "Ironman" : {
+
+    },
+    "Ironman." : {
+
+    },
+    "It appears to be a rare bottle of Captain Marmoset's Skill Tonic!" : {
+
+    },
+    "It doesn't notice you." : {
+
+    },
+    "It ignores you." : {
+
+    },
+    "Item" : {
+
+    },
+    "Item (0–9)" : {
+
+    },
+    "Jack of All Trades" : {
+
+    },
+    "Japori Disease" : {
+
+    },
+    "Japori disease" : {
+
+    },
+    "Jarek Gets Out" : {
+
+    },
+    "Jarek Taken Home" : {
+
+    },
+    "Jettison" : {
+
+    },
+    "Jettison %@" : {
+
+    },
+    "Jettison Everything?" : {
+
+    },
+    "Jettisoned %lld %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jettisoned %1$lld %2$@."
+          }
+        }
+      }
+    },
+    "Jettison…" : {
+
+    },
+    "Jobless Rate at All-Time Low!" : {
+
+    },
+    "Jonathan Wild" : {
+
+    },
+    "Jonathan Wild is arrested, and taken away to stand trial." : {
+
+    },
+    "Jonathan Wild is most grateful to you for spiriting him to safety. As a reward, he has one of his Cyber Criminals hack into the Police Database, and clean up your record. He also offers you the opportunity to take his talented nephew Zeethibal along as a Mercenary with no pay." : {
+
+    },
+    "Jonathan Wild joined the pirates." : {
+
+    },
+    "Jonathan Wild left your ship." : {
+
+    },
+    "Jonathan Wild sees the stolen sculpture. \"Wow, I only know of one of these left in the whole Universe!\" he exclaims, \"Geurge Locas must be beside himself with it being stolen.\" He seems very impressed with you, which makes you feel much better about the item your delivering." : {
+
+    },
+    "Jonathan Wild won't stay aboard with the reactor. He'll leave the ship." : {
+
+    },
+    "Jonathan Wild won't travel without a beam laser or better. He'll leave the ship." : {
+
+    },
+    "Jump to %@" : {
+
+    },
+    "Jump to %@ with the portable singularity." : {
+
+    },
+    "Jump to %@. The singularity is used up." : {
+
+    },
+    "Jump with the portable singularity." : {
+
+    },
+    "Just as you approach the docking bay, the reactor explodes into a huge radioactive fireball!" : {
+
+    },
+    "Just before the final demise of your ship, your escape pod gets activated and ejects you. After a few days, the Space Corps picks you up and drops you off at a nearby space port." : {
+
+    },
+    "Just yesterday a ship was seen in docking bay 327. A trader sold goods to a member of the crew, who was a native of Qonos. It's possible that's where they were going next." : {
+
+    },
+    "Keyboard Shortcuts" : {
+
+    },
+    "Kick It!" : {
+
+    },
+    "Kidnapped" : {
+
+    },
+    "Kidnappers Holding Out at Qonos" : {
+
+    },
+    "Kill the space monster at Acamar." : {
+
+    },
+    "Kills" : {
+
+    },
+    "Kills by ship type" : {
+
+    },
+    "Kills of" : {
+
+    },
+    "Kills: %lld" : {
+
+    },
+    "King Commissions New Artworks." : {
+
+    },
+    "King to Attend Celebrations." : {
+
+    },
+    "Labor Shortages" : {
+
+    },
+    "Lack of Workers" : {
+
+    },
+    "Large" : {
+
+    },
+    "Large (Default)" : {
+
+    },
+    "Large Turnout At Spaceport to Welcome %@!" : {
+
+    },
+    "Last Human Judge Retires." : {
+
+    },
+    "Last visit: Day %lld" : {
+
+    },
+    "Last visit: date unknown" : {
+
+    },
+    "Last visit: never" : {
+
+    },
+    "Last visited" : {
+
+    },
+    "Law Enforcement is closing in on notorious criminal kingpin Jonathan Wild. He would reward you handsomely for smuggling him home to Kravat. You'd have to avoid capture by the Police on the way. Are you willing to give him a berth?" : {
+
+    },
+    "Lawful" : {
+
+    },
+    "Leader's Voice" : {
+
+    },
+    "Learn More" : {
+
+    },
+    "Leave It" : {
+
+    },
+    "Leave Wild Behind" : {
+
+    },
+    "Leave Without Wild" : {
+
+    },
+    "Legend" : {
+
+    },
+    "Lets you slip past other ships when your engineer outclasses theirs." : {
+
+    },
+    "Lifeless" : {
+
+    },
+    "Lightning Shield" : {
+
+    },
+    "Lightning Ship" : {
+
+    },
+    "Lightning shield" : {
+
+    },
+    "Liked" : {
+
+    },
+    "List price" : {
+
+    },
+    "Load" : {
+
+    },
+    "Load a Saved Game?" : {
+
+    },
+    "Load from Defaults" : {
+
+    },
+    "Load the Imported Game Now?" : {
+
+    },
+    "Loading a save isn't possible in an Ironman game." : {
+
+    },
+    "Loading a saved game keeps this game off the high-score table." : {
+
+    },
+    "Loan" : {
+
+    },
+    "Local Elections on Schedule!" : {
+
+    },
+    "Local newspaper" : {
+
+    },
+    "Locals Rally to Deny Spaceport Access to %@!" : {
+
+    },
+    "Locals Welcome Visiting Hero %@!" : {
+
+    },
+    "Locked" : {
+
+    },
+    "Logbook" : {
+
+    },
+    "Logbook search: clear" : {
+
+    },
+    "Lord of the Moon" : {
+
+    },
+    "Loss %lld credits per unit" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Loss %lld credit per unit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Loss %lld credits per unit"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Lottery Winner" : {
+
+    },
+    "Low %@ · High %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low %1$@ · High %2$@"
+          }
+        }
+      }
+    },
+    "Lowest Risk" : {
+
+    },
+    "Machines" : {
+
+    },
+    "Main Menu" : {
+
+    },
+    "Major Faction Conflict Expected for the Weekend!" : {
+
+    },
+    "Make 10,000 credits profit in a single sale." : {
+
+    },
+    "Make Room" : {
+
+    },
+    "Make Room for %@" : {
+
+    },
+    "Making a Living" : {
+
+    },
+    "Mantis" : {
+
+    },
+    "Many" : {
+
+    },
+    "Map search: choose the suggestion" : {
+
+    },
+    "Map search: clear" : {
+
+    },
+    "Map search: next suggestion" : {
+
+    },
+    "Map search: previous suggestion" : {
+
+    },
+    "Marie Celeste" : {
+
+    },
+    "Market" : {
+
+    },
+    "Market Indices Read Record Levels!" : {
+
+    },
+    "Market filter: clear" : {
+
+    },
+    "Market fluctuation" : {
+
+    },
+    "Market quantity: buy the typed quantity" : {
+
+    },
+    "Market quantity: sell the typed quantity" : {
+
+    },
+    "Market: Buy Max" : {
+
+    },
+    "Market: Sell All" : {
+
+    },
+    "Market: buy one unit of the selected item" : {
+
+    },
+    "Market: select the next item" : {
+
+    },
+    "Market: select the previous item" : {
+
+    },
+    "Market: sell or dump one unit of the selected item" : {
+
+    },
+    "Master volume" : {
+
+    },
+    "Max" : {
+
+    },
+    "Maximum loan" : {
+
+    },
+    "Medicine" : {
+
+    },
+    "Medicine Delivery" : {
+
+    },
+    "Medieval" : {
+
+    },
+    "Medium" : {
+
+    },
+    "Meet" : {
+
+    },
+    "Meet Captain Ahab, Captain Conrad and Captain Huie." : {
+
+    },
+    "Meet the Captain?" : {
+
+    },
+    "Member of Royal Family kidnapped!" : {
+
+    },
+    "Menus" : {
+
+    },
+    "Mercenaries" : {
+
+    },
+    "Mercenaries %@ cr., insurance %@ cr., interest %@ cr., wormhole tax %@ cr. Total %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mercenaries %1$@ cr., insurance %2$@ cr., interest %3$@ cr., wormhole tax %4$@ cr. Total %5$@ cr."
+          }
+        }
+      }
+    },
+    "Mercenaries Leave" : {
+
+    },
+    "Mercenaries: %@ cr." : {
+
+    },
+    "Mercenary" : {
+
+    },
+    "Merchant Prince" : {
+
+    },
+    "Met before: %lld times, won %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Met before: %#@arg1@, won %2$lld"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg time"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg times"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Military State" : {
+
+    },
+    "Military laser" : {
+
+    },
+    "Millionaire" : {
+
+    },
+    "Millions at Peace." : {
+
+    },
+    "Mineral Poor" : {
+
+    },
+    "Mineral Rich" : {
+
+    },
+    "Minimal" : {
+
+    },
+    "Minimize" : {
+
+    },
+    "Minimize All" : {
+
+    },
+    "Moderate" : {
+
+    },
+    "Modern" : {
+
+    },
+    "Monarchy" : {
+
+    },
+    "Money" : {
+
+    },
+    "Monster" : {
+
+    },
+    "Monster Hunter" : {
+
+    },
+    "Monster Killed" : {
+
+    },
+    "Moon Bought" : {
+
+    },
+    "Moon For Sale" : {
+
+    },
+    "Moon at Utopia" : {
+
+    },
+    "Moon bought" : {
+
+    },
+    "More than the bank will lend." : {
+
+    },
+    "More than you can repay." : {
+
+    },
+    "Morgan's Laser" : {
+
+    },
+    "Morgan's Reactor" : {
+
+    },
+    "Morgan's laser" : {
+
+    },
+    "Morgan's technicians are standing by with something that looks a lot like a military laser -- if you ignore the additional cooling vents and anodized ducts. Do you want them to install Morgan's special laser?" : {
+
+    },
+    "Mosquito" : {
+
+    },
+    "Most Wanted" : {
+
+    },
+    "Mostly harmless" : {
+
+    },
+    "Motherland News" : {
+
+    },
+    "Music volume" : {
+
+    },
+    "Mute" : {
+
+    },
+    "Mute when inactive" : {
+
+    },
+    "N days left" : {
+
+    },
+    "Nanobot Output Exceeds Expectation." : {
+
+    },
+    "Narcotics" : {
+
+    },
+    "Narrative" : {
+
+    },
+    "Navigating system" : {
+
+    },
+    "Near %@ the Dragonfly business came to an end." : {
+
+    },
+    "Net price" : {
+
+    },
+    "Net price %@ credits, plus %@ credits for transferred equipment." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Net price %1$@ credits, plus %2$@ credits for transferred equipment."
+          }
+        }
+      }
+    },
+    "Net worth" : {
+
+    },
+    "New Game wizard" : {
+
+    },
+    "New Game…" : {
+
+    },
+    "New Network Protocols To Be Deployed." : {
+
+    },
+    "New Palace Planned; Taxes Increase." : {
+
+    },
+    "New Processor Hits 10 ZettaHerz!" : {
+
+    },
+    "New Rumors of %@ in the %@ System." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Rumors of %1$@ in the %2$@ System."
+          }
+        }
+      }
+    },
+    "New: %@" : {
+
+    },
+    "News" : {
+
+    },
+    "News From The Board" : {
+
+    },
+    "News from the Keep" : {
+
+    },
+    "News of %@ in the %@ System." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "News of %1$@ in the %2$@ System."
+          }
+        }
+      }
+    },
+    "News on day %lld: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "News on day %1$lld: %2$@"
+          }
+        }
+      }
+    },
+    "Newspaper" : {
+
+    },
+    "Next" : {
+
+    },
+    "Next (Start on the summary page)" : {
+
+    },
+    "Next Target" : {
+
+    },
+    "Next system in range" : {
+
+    },
+    "Next target" : {
+
+    },
+    "No More Tribbles" : {
+
+    },
+    "No Rain in Sight!" : {
+
+    },
+    "No Recent Games" : {
+
+    },
+    "No audio output device" : {
+
+    },
+    "No combat." : {
+
+    },
+    "No data" : {
+
+    },
+    "No data yet" : {
+
+    },
+    "No empty cargo bays." : {
+
+    },
+    "No entries match" : {
+
+    },
+    "No entries yet" : {
+
+    },
+    "No equipment for sale here." : {
+
+    },
+    "No escape pods for sale here." : {
+
+    },
+    "No events yet." : {
+
+    },
+    "No free quarters." : {
+
+    },
+    "No free slot." : {
+
+    },
+    "No fuel used · tax %lld cr." : {
+
+    },
+    "No game is loaded." : {
+
+    },
+    "No game loaded" : {
+
+    },
+    "No headlines" : {
+
+    },
+    "No heroics today: we yielded to the %@." : {
+
+    },
+    "No history" : {
+
+    },
+    "No more entries will be written in this log." : {
+
+    },
+    "No one for hire" : {
+
+    },
+    "No profitable trade known" : {
+
+    },
+    "No quarters for: %@" : {
+
+    },
+    "No repairs needed" : {
+
+    },
+    "No repairs needed." : {
+
+    },
+    "No room to scoop the canister." : {
+
+    },
+    "No saved game yet." : {
+
+    },
+    "No saved games yet." : {
+
+    },
+    "No sculpture or princess quests, no shipyards and no disruptors." : {
+
+    },
+    "No shields" : {
+
+    },
+    "No ships for sale here." : {
+
+    },
+    "No slot: lost" : {
+
+    },
+    "No slots" : {
+
+    },
+    "No special items." : {
+
+    },
+    "No system found." : {
+
+    },
+    "No system is in range." : {
+
+    },
+    "No target price" : {
+
+    },
+    "No target selected" : {
+
+    },
+    "No target selected. Use ‹ › or the toolbar to choose one." : {
+
+    },
+    "No-claim discount" : {
+
+    },
+    "Nobody here buys this." : {
+
+    },
+    "None" : {
+
+    },
+    "None available here." : {
+
+    },
+    "None for sale here." : {
+
+    },
+    "None installed" : {
+
+    },
+    "None yet" : {
+
+    },
+    "Normal" : {
+
+    },
+    "Not a valid galaxy code." : {
+
+    },
+    "Not applicable" : {
+
+    },
+    "Not available" : {
+
+    },
+    "Not available in an Ironman game." : {
+
+    },
+    "Not available in this build" : {
+
+    },
+    "Not available in this encounter." : {
+
+    },
+    "Not available in this ruleset" : {
+
+    },
+    "Not available in your language" : {
+
+    },
+    "Not enough cash to fill the tank." : {
+
+    },
+    "Not enough cash to repair the hull." : {
+
+    },
+    "Not enough cash." : {
+
+    },
+    "Not enough crew quarters." : {
+
+    },
+    "Not for hire." : {
+
+    },
+    "Not in your crew." : {
+
+    },
+    "Not installed" : {
+
+    },
+    "Not insured" : {
+
+    },
+    "Not insured." : {
+
+    },
+    "Not possible right now." : {
+
+    },
+    "Not sold here" : {
+
+    },
+    "Not sold here." : {
+
+    },
+    "Not visited" : {
+
+    },
+    "Not while the reactor is aboard." : {
+
+    },
+    "Nothing Special" : {
+
+    },
+    "Nothing special here." : {
+
+    },
+    "Nothing stirred on the way to %@. The crew slept well." : {
+
+    },
+    "Notice: %@ in the %@ System." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notice: %1$@ in the %2$@ System."
+          }
+        }
+      }
+    },
+    "Notify the authorities at %@ that the Scarab has been destroyed." : {
+
+    },
+    "Notoriety" : {
+
+    },
+    "Notorious Criminal %@ Sighted in %@!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notorious Criminal %1$@ Sighted in %2$@!"
+          }
+        }
+      }
+    },
+    "Notorious Criminal Jonathan Wild Arrested!" : {
+
+    },
+    "OK" : {
+
+    },
+    "Off" : {
+
+    },
+    "Off by default" : {
+
+    },
+    "Off for this launch" : {
+
+    },
+    "Olympics: Software Beats Wetware in All Events!" : {
+
+    },
+    "On" : {
+
+    },
+    "On Arrival" : {
+
+    },
+    "On your way to the escape pod, you grab the stolen sculpture. Oh well, at least you saved something." : {
+
+    },
+    "One Hand Clapping" : {
+
+    },
+    "One save, no reloading; your score gets an Ironman badge." : {
+
+    },
+    "Only during an encounter." : {
+
+    },
+    "Open" : {
+
+    },
+    "Open Recent" : {
+
+    },
+    "Open Saved Game" : {
+
+    },
+    "Open Saved Game…" : {
+
+    },
+    "Open the full story." : {
+
+    },
+    "Opens Parsec Merchant and continues your latest game." : {
+
+    },
+    "Opponent: %@" : {
+
+    },
+    "Options" : {
+
+    },
+    "Options changed." : {
+
+    },
+    "Options…" : {
+
+    },
+    "Ore" : {
+
+    },
+    "Original Palm 1.2.2" : {
+
+    },
+    "Our guns had the last word against the %@." : {
+
+    },
+    "Out of range" : {
+
+    },
+    "Out of range (dimmed)" : {
+
+    },
+    "Out of range." : {
+
+    },
+    "Outfitter" : {
+
+    },
+    "Over 100% of the maximum units." : {
+
+    },
+    "P/L" : {
+
+    },
+    "Pacifist State" : {
+
+    },
+    "Parsec Merchant" : {
+
+    },
+    "Parsec Merchant Help" : {
+
+    },
+    "Parsec Merchant is free software under the GNU General Public License, version 2 or later. It comes with ABSOLUTELY NO WARRANTY." : {
+
+    },
+    "Parsec Merchant — %@" : {
+
+    },
+    "Parsec Merchant — Cmdr. %@" : {
+
+    },
+    "Parsec Merchant — Cmdr. %@ · “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parsec Merchant — Cmdr. %1$@ · “%2$@”"
+          }
+        }
+      }
+    },
+    "Parsecs travelled" : {
+
+    },
+    "Party Reports Productivity Increase." : {
+
+    },
+    "Party: Bold New Future Predicted!" : {
+
+    },
+    "Passenger" : {
+
+    },
+    "Passenger On Board" : {
+
+    },
+    "Passengers can't be fired." : {
+
+    },
+    "Paste" : {
+
+    },
+    "Paused" : {
+
+    },
+    "Pax Humani" : {
+
+    },
+    "Pay %@ cr." : {
+
+    },
+    "Pay back as much of the debt as you can." : {
+
+    },
+    "Pay off a bank loan completely." : {
+
+    },
+    "Pay off your debt first." : {
+
+    },
+    "Peak net worth" : {
+
+    },
+    "Pet a tribble" : {
+
+    },
+    "Photon disruptor" : {
+
+    },
+    "Pick It Up" : {
+
+    },
+    "Pick it up?" : {
+
+    },
+    "Pilot" : {
+
+    },
+    "Pirate" : {
+
+    },
+    "Pirates" : {
+
+    },
+    "Pirates killed" : {
+
+    },
+    "Pirates looted %lld units of cargo." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pirates looted %lld unit of cargo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Pirates looted %lld units of cargo."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Pirates, police and traders destroyed." : {
+
+    },
+    "Plague" : {
+
+    },
+    "Plague Doctor" : {
+
+    },
+    "Plague Outbreaks" : {
+
+    },
+    "Plague Spreads! Outlook Grim." : {
+
+    },
+    "Plan a multi-jump route to this system on the galaxy chart." : {
+
+    },
+    "Plan on the Chart" : {
+
+    },
+    "Plan the cheapest route." : {
+
+    },
+    "Plan the route with the fewest jumps." : {
+
+    },
+    "Plan the route with the fewest pirates (and police, if you are wanted) on the way." : {
+
+    },
+    "Planet News" : {
+
+    },
+    "Planet of %@, %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planet of %1$@, %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "Play Test Sound" : {
+
+    },
+    "Plot Route" : {
+
+    },
+    "Plot Route to %@" : {
+
+    },
+    "Plot Route…" : {
+
+    },
+    "Plunder" : {
+
+    },
+    "Plunder the %@" : {
+
+    },
+    "Plundered %lld %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plundered %1$lld %2$@."
+          }
+        }
+      }
+    },
+    "Points remaining: %lld" : {
+
+    },
+    "Police" : {
+
+    },
+    "Police Confiscate Reactor" : {
+
+    },
+    "Police Confiscate Sculpture" : {
+
+    },
+    "Police Powers to Increase!" : {
+
+    },
+    "Police Trace Orbiting Space Litter to %@." : {
+
+    },
+    "Police Warning: %@ Will Dock At %@!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Police Warning: %1$@ Will Dock At %2$@!"
+          }
+        }
+      }
+    },
+    "Police killed" : {
+
+    },
+    "Police record" : {
+
+    },
+    "Police record is negative" : {
+
+    },
+    "Police record: %@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Police record: %1$@ (%2$lld)"
+          }
+        }
+      }
+    },
+    "Police record: %@ → %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Police record: %1$@ → %2$@"
+          }
+        }
+      }
+    },
+    "Police record: %@ → %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Police record: %1$@ → %2$@."
+          }
+        }
+      }
+    },
+    "Police, Politicians Vow Improvements." : {
+
+    },
+    "Police: %@ · Pirates: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Police: %1$@ · Pirates: %2$@"
+          }
+        }
+      }
+    },
+    "Politburo Approves New 5-Year Plan!" : {
+
+    },
+    "Polls: Happiness Quotient High!" : {
+
+    },
+    "Polls: Voter Satisfaction High!" : {
+
+    },
+    "Poor" : {
+
+    },
+    "Poor Soil" : {
+
+    },
+    "Post-Industrial" : {
+
+    },
+    "Power" : {
+
+    },
+    "Pre-Agricultural" : {
+
+    },
+    "Preview note" : {
+
+    },
+    "Previews only: the game is not changed." : {
+
+    },
+    "Previous Target" : {
+
+    },
+    "Previous system in range" : {
+
+    },
+    "Previous target" : {
+
+    },
+    "Price" : {
+
+    },
+    "Price per unit" : {
+
+    },
+    "Price: %@ cr." : {
+
+    },
+    "Priceless collector's item stolen from home of Geurge Locas!" : {
+
+    },
+    "Prices at %@" : {
+
+    },
+    "Prince Exiled for Palace Plot!" : {
+
+    },
+    "Princess Taken Home" : {
+
+    },
+    "Principle" : {
+
+    },
+    "Profit" : {
+
+    },
+    "Profit %lld credits per unit" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Profit %lld credit per unit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Profit %lld credits per unit"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Profit by commodity" : {
+
+    },
+    "Profit for hold" : {
+
+    },
+    "Profit per unit" : {
+
+    },
+    "Profitable Quarter Predicted." : {
+
+    },
+    "Profitable at Target" : {
+
+    },
+    "Psychopath" : {
+
+    },
+    "Pulse laser" : {
+
+    },
+    "Pulses" : {
+
+    },
+    "Purchase sheet option" : {
+
+    },
+    "Qty" : {
+
+    },
+    "Quantity" : {
+
+    },
+    "Quantity of %@" : {
+
+    },
+    "Quantity: %lld of at most %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantity: %1$lld of at most %2$lld"
+          }
+        }
+      }
+    },
+    "Quantum Disruptor" : {
+
+    },
+    "Quantum disruptor" : {
+
+    },
+    "Queen's Birthday Celebration Ends in Riots!" : {
+
+    },
+    "Quest" : {
+
+    },
+    "Quest Locations" : {
+
+    },
+    "Quest here" : {
+
+    },
+    "Quest location" : {
+
+    },
+    "Quest progress" : {
+
+    },
+    "Quests" : {
+
+    },
+    "Quick Start" : {
+
+    },
+    "Quit Parsec Merchant" : {
+
+    },
+    "Randomize" : {
+
+    },
+    "Range" : {
+
+    },
+    "Range %lld" : {
+
+    },
+    "Rank %lld, %@, score %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rank %1$lld, %2$@, score %3$@."
+          }
+        }
+      }
+    },
+    "Rank %lld, empty" : {
+
+    },
+    "Reach a net worth of 1,000,000 credits." : {
+
+    },
+    "Reach a net worth of 10,000 credits." : {
+
+    },
+    "Reach a net worth of 100,000 credits." : {
+
+    },
+    "Reach the police record Hero." : {
+
+    },
+    "Reach the police record Villain." : {
+
+    },
+    "Reactor" : {
+
+    },
+    "Reactor Delivered" : {
+
+    },
+    "Reactor Destroyed" : {
+
+    },
+    "Reactor Meltdown" : {
+
+    },
+    "Reactor Meltdown!" : {
+
+    },
+    "Reactor Warning" : {
+
+    },
+    "Read" : {
+
+    },
+    "Read the Target Column" : {
+
+    },
+    "Read the local newspaper." : {
+
+    },
+    "Read the newspaper for %@ cr.: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read the newspaper for %1$@ cr.: %2$@"
+          }
+        }
+      }
+    },
+    "Read the newspaper: %@" : {
+
+    },
+    "Ready to launch" : {
+
+    },
+    "Read…" : {
+
+    },
+    "Really Attack?" : {
+
+    },
+    "Really load another game?" : {
+
+    },
+    "Recent Events" : {
+
+    },
+    "Recent Games" : {
+
+    },
+    "Recommended" : {
+
+    },
+    "Redo" : {
+
+    },
+    "Reflective shield" : {
+
+    },
+    "Reflects much of the incoming fire. Stronger than an energy shield." : {
+
+    },
+    "Refuelled, %lld of %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refuelled, %1$lld of %2$lld."
+          }
+        }
+      }
+    },
+    "Relic Runner" : {
+
+    },
+    "Reloaded." : {
+
+    },
+    "Remind about loans" : {
+
+    },
+    "Reminder: you owe the bank %@ cr." : {
+
+    },
+    "Removed" : {
+
+    },
+    "Renaissance" : {
+
+    },
+    "Repaid %@ cr." : {
+
+    },
+    "Repaid %@ cr. The loan is paid off." : {
+
+    },
+    "Repaid %@ cr.; %@ cr. still owed." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repaid %1$@ cr.; %2$@ cr. still owed."
+          }
+        }
+      }
+    },
+    "Repair (%@ cr.)" : {
+
+    },
+    "Repair Hull" : {
+
+    },
+    "Repair amount in credits" : {
+
+    },
+    "Repair the hull completely." : {
+
+    },
+    "Repair the hull for this many credits." : {
+
+    },
+    "Repaired %lld hull points for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repaired %#@arg1@ for %2$@ cr."
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hull point"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hull points"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Repairs in flight and stronger shields." : {
+
+    },
+    "Repairs the hull during flight and improves your engineer skill." : {
+
+    },
+    "Repay" : {
+
+    },
+    "Repay All (%@ cr.)" : {
+
+    },
+    "Repeat the last action every 0.6 seconds (⌥A)" : {
+
+    },
+    "Report: Kingdoms Near Flashpoint!" : {
+
+    },
+    "Reports" : {
+
+    },
+    "Reports of %@ in the %@ System." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reports of %1$@ in the %2$@ System."
+          }
+        }
+      }
+    },
+    "Reputation" : {
+
+    },
+    "Reputation: %@" : {
+
+    },
+    "Reputation: %@ → %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reputation: %1$@ → %2$@"
+          }
+        }
+      }
+    },
+    "Reputation: %@ → %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reputation: %1$@ → %2$@."
+          }
+        }
+      }
+    },
+    "Requires an escape pod." : {
+
+    },
+    "Rescue the Princess and bring her home." : {
+
+    },
+    "Reserve money for warp costs" : {
+
+    },
+    "Reset" : {
+
+    },
+    "Reset Achievements…" : {
+
+    },
+    "Reset Tips" : {
+
+    },
+    "Reset all achievements?" : {
+
+    },
+    "Resolve" : {
+
+    },
+    "Resource" : {
+
+    },
+    "Restores some Palm behaviour the Windows port lost." : {
+
+    },
+    "Restrictions on Corporate Freedom Abolished by Courts!" : {
+
+    },
+    "Retire" : {
+
+    },
+    "Retire?" : {
+
+    },
+    "Retired" : {
+
+    },
+    "Retirement" : {
+
+    },
+    "Retire…" : {
+
+    },
+    "Retiring now scores %@." : {
+
+    },
+    "Return %@ to Galvon." : {
+
+    },
+    "Return %@ to Galvon.\nShe is becoming anxious to arrive at home, and is no longer of any help in engineering functions." : {
+
+    },
+    "Return buys this many, ⇧Return sells them." : {
+
+    },
+    "Revert" : {
+
+    },
+    "Revert to Autosave" : {
+
+    },
+    "Revert to the Autosave?" : {
+
+    },
+    "Review and build this ship." : {
+
+    },
+    "Review the purchase." : {
+
+    },
+    "Rich Fauna" : {
+
+    },
+    "Rich Soil" : {
+
+    },
+    "Riots, Looting Mar Factional Negotiations." : {
+
+    },
+    "Robot Shortages Predicted for Q4." : {
+
+    },
+    "Robots" : {
+
+    },
+    "Round %lld: %@, %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Round %1$lld: %2$@, %3$@."
+          }
+        }
+      }
+    },
+    "Route and hop number" : {
+
+    },
+    "Route to %@" : {
+
+    },
+    "Royal Escort" : {
+
+    },
+    "Royal Rescue" : {
+
+    },
+    "Royal Return" : {
+
+    },
+    "Royal Times" : {
+
+    },
+    "Rules" : {
+
+    },
+    "Ruleset" : {
+
+    },
+    "Rulesets" : {
+
+    },
+    "Rumors Continue: Melina Orbitted by Odd Starcraft." : {
+
+    },
+    "Rumors Suggest Known Criminal J. Wild May Come to Kravat!" : {
+
+    },
+    "Run" : {
+
+    },
+    "Running" : {
+
+    },
+    "Sacred Texts on Public Display." : {
+
+    },
+    "Save" : {
+
+    },
+    "Save As…" : {
+
+    },
+    "Save Template" : {
+
+    },
+    "Save as Defaults" : {
+
+    },
+    "Save this design to your templates." : {
+
+    },
+    "Saved games" : {
+
+    },
+    "Scarab" : {
+
+    },
+    "Scarab Breaker" : {
+
+    },
+    "Scarab Destroyed" : {
+
+    },
+    "Scarab Stolen" : {
+
+    },
+    "Scientist Adds Alien Artifact to Museum Collection." : {
+
+    },
+    "Scientists Cancel High-profile Test! Committee to Investigate Design." : {
+
+    },
+    "Scooped up %lld %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scooped up %1$lld %2$@."
+          }
+        }
+      }
+    },
+    "Scooped up a canister of %@." : {
+
+    },
+    "Score" : {
+
+    },
+    "Scorpion" : {
+
+    },
+    "Scorpion Defeated! Kidnapped Member of Galvon Royal Family Freed!" : {
+
+    },
+    "Sculpture Delivered" : {
+
+    },
+    "Sculpture Saved" : {
+
+    },
+    "Sealed Canisters" : {
+
+    },
+    "Search systems" : {
+
+    },
+    "Search the log" : {
+
+    },
+    "Security Scandal: Test Craft Confirmed Stolen." : {
+
+    },
+    "Seed" : {
+
+    },
+    "Seen on day %lld." : {
+
+    },
+    "Select" : {
+
+    },
+    "Select %@ as your target." : {
+
+    },
+    "Select All" : {
+
+    },
+    "Select a commodity to see how its price is made" : {
+
+    },
+    "Select an item" : {
+
+    },
+    "Select the galaxy chart first." : {
+
+    },
+    "Sell" : {
+
+    },
+    "Sell 1" : {
+
+    },
+    "Sell All" : {
+
+    },
+    "Sell Equipment?" : {
+
+    },
+    "Sell cargo for more than you paid." : {
+
+    },
+    "Sell for %@ cr." : {
+
+    },
+    "Sell here: %@/unit" : {
+
+    },
+    "Sell price" : {
+
+    },
+    "Sell price over %lld visits: from %lld to %lld credits" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sell price over %#@arg1@: from %2$lld to %#@arg3@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg visit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg visits"
+                    }
+                  }
+                }
+              }
+            },
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credits"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Sell this item." : {
+
+    },
+    "Seller in %@ System has Utopian Moon available." : {
+
+    },
+    "Sells %@" : {
+
+    },
+    "Sells commodity" : {
+
+    },
+    "Sells…" : {
+
+    },
+    "Serenity Reigns." : {
+
+    },
+    "Serious Crop Failure! Must We Ration?" : {
+
+    },
+    "Set Target" : {
+
+    },
+    "Settings…" : {
+
+    },
+    "Severe Drought" : {
+
+    },
+    "Sheet" : {
+
+    },
+    "Sheets and dialogs" : {
+
+    },
+    "Shield" : {
+
+    },
+    "Shield slots" : {
+
+    },
+    "Shield type" : {
+
+    },
+    "Shields" : {
+
+    },
+    "Shields %lld%%" : {
+
+    },
+    "Shift for 5, Command for 20, Shift-Command for 100, Option for all" : {
+
+    },
+    "Ship" : {
+
+    },
+    "Ship Destroyed" : {
+
+    },
+    "Ship Sold" : {
+
+    },
+    "Ship name" : {
+
+    },
+    "Ship name (optional)" : {
+
+    },
+    "Ship purchase review" : {
+
+    },
+    "Ship value" : {
+
+    },
+    "Ship's comm — %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ship's comm — %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Ships" : {
+
+    },
+    "Shipwright" : {
+
+    },
+    "Shipyard" : {
+
+    },
+    "Shipyard in %@ System offers to design custom ships." : {
+
+    },
+    "Short-Range Chart" : {
+
+    },
+    "Show Commander Status" : {
+
+    },
+    "Show Logbook" : {
+
+    },
+    "Show Statistics" : {
+
+    },
+    "Show all" : {
+
+    },
+    "Show flavor text in the Captain's Log" : {
+
+    },
+    "Show newspaper on arrival" : {
+
+    },
+    "Show on Map" : {
+
+    },
+    "Show only items whose name contains this text. Esc clears it." : {
+
+    },
+    "Show or Hide Inspector" : {
+
+    },
+    "Show or Hide Sidebar" : {
+
+    },
+    "Show or hide the legend" : {
+
+    },
+    "Show or hide the ship status." : {
+
+    },
+    "Show range to tracked system" : {
+
+    },
+    "Show recent events." : {
+
+    },
+    "Show the arrival report on Bridge." : {
+
+    },
+    "Show the arrival report." : {
+
+    },
+    "Show the best buys and destinations above the Market table." : {
+
+    },
+    "Show the mercenaries in Crew." : {
+
+    },
+    "Show the systems in range" : {
+
+    },
+    "Show the whole galaxy (⌘0)" : {
+
+    },
+    "Show trade recommendations" : {
+
+    },
+    "Silhouette" : {
+
+    },
+    "Since you cannot pay your insurance while you're in prison, it is retracted." : {
+
+    },
+    "Since your ship was insured, the bank pays you the total worth of the destroyed ship." : {
+
+    },
+    "Singularity" : {
+
+    },
+    "Singularity destination: %@" : {
+
+    },
+    "Sir! Are you taking me home or merely taking the place of my previous captors?!" : {
+
+    },
+    "Size" : {
+
+    },
+    "Skill" : {
+
+    },
+    "Skill Increase" : {
+
+    },
+    "Skills" : {
+
+    },
+    "Skip" : {
+
+    },
+    "Skip the rest of the trip animation." : {
+
+    },
+    "Skip the transit animation." : {
+
+    },
+    "Slot" : {
+
+    },
+    "Slots" : {
+
+    },
+    "Small" : {
+
+    },
+    "Smuggle Jonathan Wild to Kravat." : {
+
+    },
+    "Smuggle Jonathan Wild to Kravat.\nWild is getting impatient, and will no longer aid your crew along the way." : {
+
+    },
+    "Smuggler's Friend" : {
+
+    },
+    "Socialist State" : {
+
+    },
+    "Software Bug Causes Mass Confusion." : {
+
+    },
+    "Sold %lld %@ for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ for %3$@ cr."
+          }
+        }
+      }
+    },
+    "Sold %lld %@ for %@ cr. (loss %@ cr.)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ for %3$@ cr. (loss %4$@ cr.)"
+          }
+        }
+      }
+    },
+    "Sold %lld %@ for %@ cr. (profit %@ cr.)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ for %3$@ cr. (profit %4$@ cr.)"
+          }
+        }
+      }
+    },
+    "Sold %lld %@ for %@ cr. (profit %@ cr.)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ for %3$@ cr. (profit %4$@ cr.)."
+          }
+        }
+      }
+    },
+    "Sold %lld %@ for %lld credits." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ for %#@arg3@."
+          },
+          "substitutions" : {
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credit"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg credits"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Sold %lld %@ in orbit for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ in orbit for %3$@ cr."
+          }
+        }
+      }
+    },
+    "Sold %lld %@ in orbit for %@ cr. (loss %@ cr.)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ in orbit for %3$@ cr. (loss %4$@ cr.)"
+          }
+        }
+      }
+    },
+    "Sold %lld %@ in orbit for %@ cr. (profit %@ cr.)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold %1$lld %2$@ in orbit for %3$@ cr. (profit %4$@ cr.)"
+          }
+        }
+      }
+    },
+    "Sold a %@ for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sold a %1$@ for %2$@ cr."
+          }
+        }
+      }
+    },
+    "Sold equipment for %@ cr." : {
+
+    },
+    "Some" : {
+
+    },
+    "Sound" : {
+
+    },
+    "Source" : {
+
+    },
+    "Sources report %@ in the %@ System." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sources report %1$@ in the %2$@ System."
+          }
+        }
+      }
+    },
+    "Sources say %@ in the %@ System." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sources say %1$@ in the %2$@ System."
+          }
+        }
+      }
+    },
+    "Southern States Resist Federal Taxation for Capital Projects!" : {
+
+    },
+    "Space Corps follows %@ with alleged stolen sculpture to %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Space Corps follows %1$@ with alleged stolen sculpture to %2$@."
+          }
+        }
+      }
+    },
+    "Space Corps is indebted to you for destroying the Scarab and the pirates who stole it. As a reward, we can have Captain Renwick upgrade the hull of your ship. Note that his upgrades won't be transferable if you buy a new ship! Come back with the ship you wish to upgrade." : {
+
+    },
+    "Space Littering" : {
+
+    },
+    "Space Monster" : {
+
+    },
+    "Space Monster Threatens Homeworld!" : {
+
+    },
+    "Space Trader for Windows 2.01 (C# port)" : {
+
+    },
+    "Space folded, and %@ was suddenly outside the viewport." : {
+
+    },
+    "Space is merciless. For veterans only." : {
+
+    },
+    "Space keeps its own accounts. This one is closed." : {
+
+    },
+    "Space monster" : {
+
+    },
+    "Special" : {
+
+    },
+    "Special Herbs" : {
+
+    },
+    "Special event message" : {
+
+    },
+    "Special event offer" : {
+
+    },
+    "Special events" : {
+
+    },
+    "Special offer here" : {
+
+    },
+    "Special resource" : {
+
+    },
+    "Special resources unknown" : {
+
+    },
+    "Spectacular Display as Stolen Ship Destroyed in Fierce Space Battle." : {
+
+    },
+    "Standard options" : {
+
+    },
+    "Star-Struck" : {
+
+    },
+    "Start" : {
+
+    },
+    "Start the game." : {
+
+    },
+    "State Denies Food Rationing Required to Prevent Famine." : {
+
+    },
+    "State Tribune" : {
+
+    },
+    "State of Satori" : {
+
+    },
+    "States Denied Federal Funds over Local Laws!" : {
+
+    },
+    "States Dispute Natural Resource Rights!" : {
+
+    },
+    "States Request Federal Intervention in Citrus Conflict!" : {
+
+    },
+    "Statistic" : {
+
+    },
+    "Statistics" : {
+
+    },
+    "Statistics since day %lld" : {
+
+    },
+    "Statistics since the start" : {
+
+    },
+    "Status" : {
+
+    },
+    "Status Report" : {
+
+    },
+    "Status: %@" : {
+
+    },
+    "Step %lld of %lld: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %1$lld of %2$lld: %3$@"
+          }
+        }
+      }
+    },
+    "Stock" : {
+
+    },
+    "Stolen Sculpture" : {
+
+    },
+    "Stolen sculpture" : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stop Dr. Fehler's experiment at Daled by tomorrow." : {
+
+    },
+    "Stop Dr. Fehler's experiment at Daled within %lld days." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Stop Dr. Fehler's experiment at Daled within %lld day."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Stop Dr. Fehler's experiment at Daled within %lld days."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Stop Dr. Fehler's experiment." : {
+
+    },
+    "Stop Insurance" : {
+
+    },
+    "Stop Insurance?" : {
+
+    },
+    "Stop Tracking" : {
+
+    },
+    "Stop Tracking “%@”" : {
+
+    },
+    "Stop tracking on arrival" : {
+
+    },
+    "Stop tracking this system." : {
+
+    },
+    "Stopped insurance." : {
+
+    },
+    "Stopping resets your no-claim discount." : {
+
+    },
+    "Storage Banks to be Upgraded!" : {
+
+    },
+    "Strange Ship" : {
+
+    },
+    "Strange Ship Observed in Regulas Orbit." : {
+
+    },
+    "Stricter Immigration Laws Installed." : {
+
+    },
+    "Strife and War" : {
+
+    },
+    "Submit" : {
+
+    },
+    "Submit to Inspection?" : {
+
+    },
+    "Successful Bakunin Day Rally!" : {
+
+    },
+    "Summary" : {
+
+    },
+    "Sun Rises." : {
+
+    },
+    "Surrender" : {
+
+    },
+    "Surrender Artifact" : {
+
+    },
+    "Surrender the Artifact?" : {
+
+    },
+    "Surrender?" : {
+
+    },
+    "Survive an encounter with less than 10% hull." : {
+
+    },
+    "Survive in an escape pod." : {
+
+    },
+    "Swarms" : {
+
+    },
+    "Sweetwater Oceans" : {
+
+    },
+    "System Backup Rescheduled." : {
+
+    },
+    "System alert" : {
+
+    },
+    "System intel" : {
+
+    },
+    "System name" : {
+
+    },
+    "System size" : {
+
+    },
+    "Systems visited" : {
+
+    },
+    "Tactical readout in encounters" : {
+
+    },
+    "Take" : {
+
+    },
+    "Take All" : {
+
+    },
+    "Take Cargo" : {
+
+    },
+    "Take ambassador Jarek to Devidia." : {
+
+    },
+    "Take ambassador Jarek to Devidia.\nJarek is wondering why the journey is taking so long, and is no longer of much help in negotiating trades." : {
+
+    },
+    "Take the chosen amount." : {
+
+    },
+    "Tank full" : {
+
+    },
+    "Tank full." : {
+
+    },
+    "Target" : {
+
+    },
+    "Target %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Target %@, out of range" : {
+
+    },
+    "Target shows what each item is estimated to fetch at your target system. The strip above the table suggests the best trades." : {
+
+    },
+    "Target: %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target: %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "Targeting system" : {
+
+    },
+    "Tech level" : {
+
+    },
+    "TechNews" : {
+
+    },
+    "Technicians spend the day retrofitting the hull of your ship." : {
+
+    },
+    "Technocracy" : {
+
+    },
+    "Tells you your commander's day, location, cash, debt and worth." : {
+
+    },
+    "Template saved." : {
+
+    },
+    "Template text is forced by a launch argument" : {
+
+    },
+    "Templates" : {
+
+    },
+    "Temple Restoration Fund at 81%." : {
+
+    },
+    "Ten of your cargo bays now contain antidote for the Japori system." : {
+
+    },
+    "Termite" : {
+
+    },
+    "Terrible Boredom" : {
+
+    },
+    "Terror Strikes Locals on Arrival of %@!" : {
+
+    },
+    "Text Size" : {
+
+    },
+    "Text fields" : {
+
+    },
+    "Thank you for delivering the medicine to us. We don't have any money to reward you, but we do have an alien fast-learning machine with which we will increase your skills." : {
+
+    },
+    "That choice isn't valid." : {
+
+    },
+    "That wormhole isn't here." : {
+
+    },
+    "The %@ Arsenal" : {
+
+    },
+    "The %@ Chorus" : {
+
+    },
+    "The %@ Herald" : {
+
+    },
+    "The %@ Majority" : {
+
+    },
+    "The %@ Mandate" : {
+
+    },
+    "The %@ Market" : {
+
+    },
+    "The %@ Proletariat" : {
+
+    },
+    "The %@ Sentry" : {
+
+    },
+    "The %@ Times" : {
+
+    },
+    "The %@ and we went our separate ways." : {
+
+    },
+    "The %@ attacks." : {
+
+    },
+    "The %@ crossed our path and was gone." : {
+
+    },
+    "The %@ didn't get away." : {
+
+    },
+    "The %@ drifted dark behind us as we moved on." : {
+
+    },
+    "The %@ had the better of us." : {
+
+    },
+    "The %@ hails that they wish to surrender to you." : {
+
+    },
+    "The %@ has been disabled." : {
+
+    },
+    "The %@ hits you." : {
+
+    },
+    "The %@ is fleeing." : {
+
+    },
+    "The %@ is still following you." : {
+
+    },
+    "The %@ learned to leave us alone." : {
+
+    },
+    "The %@ missed you." : {
+
+    },
+    "The %@ took what it wanted. We kept our lives." : {
+
+    },
+    "The Captain requests a brief meeting with you." : {
+
+    },
+    "The Command" : {
+
+    },
+    "The Daily Koan" : {
+
+    },
+    "The Daily Planet" : {
+
+    },
+    "The Daily Worker" : {
+
+    },
+    "The Fanfare" : {
+
+    },
+    "The Future" : {
+
+    },
+    "The Galvonian Ambassador to Qonos approaches you. The Princess needs a ride home. Will you take her? I don't think she'll feel safe with anyone else." : {
+
+    },
+    "The Grassroot" : {
+
+    },
+    "The Invisible Hand" : {
+
+    },
+    "The Ion Reactor is emitting a shrill whine, and it's shaking. The display indicates that it is suffering from fuel starvation." : {
+
+    },
+    "The Ion Reactor is smoking and making loud noises. The display warns that the core is close to the melting temperature." : {
+
+    },
+    "The King and Queen are extremely grateful to you for returning their daughter to them. The King says, \"Ziyal is priceless to us, but we feel we must offer you something as a reward. Visit my shipyard captain and he'll install one of our new Quantum Disruptors.\"" : {
+
+    },
+    "The Loyal Subject" : {
+
+    },
+    "The Marie Celeste appears to be completely abandoned." : {
+
+    },
+    "The Objectivist" : {
+
+    },
+    "The Og had a gift, but you have no free shield slot." : {
+
+    },
+    "The People's Syndicate" : {
+
+    },
+    "The People's Voice" : {
+
+    },
+    "The Police confiscate the Ion reactor as evidence of your dealings with unsavory characters." : {
+
+    },
+    "The Police confiscate the stolen sculpture and return it to its rightful owner." : {
+
+    },
+    "The Princess" : {
+
+    },
+    "The Space Corps decides to give ambassador Jarek a lift home to Devidia." : {
+
+    },
+    "The Space Corps decides to give the Princess a ride home to Galvon since you obviously weren't up to the task." : {
+
+    },
+    "The Space Corps removed the antidote for Japori from your ship and delivered it, fulfilling your assignment." : {
+
+    },
+    "The Spiritual Advisor" : {
+
+    },
+    "The System Clock" : {
+
+    },
+    "The Temple Tribune" : {
+
+    },
+    "The Town Crier" : {
+
+    },
+    "The alien artifact has been lost in the wreckage of your ship." : {
+
+    },
+    "The alien increases one of your skills." : {
+
+    },
+    "The alien uses his alien technology to beam over your whole collection of tribbles to his ship." : {
+
+    },
+    "The aliens will take the artifact. Your quest ends here." : {
+
+    },
+    "The antidote for the Japori system has been destroyed with your ship. You should return to %@ and get some more." : {
+
+    },
+    "The approach to %@ was calm; the docking clamps took us gently." : {
+
+    },
+    "The bottle may hold a tonic, or something worse." : {
+
+    },
+    "The canisters contain %@." : {
+
+    },
+    "The captain offers to trade equipment with you." : {
+
+    },
+    "The captain trained your %@ skill." : {
+
+    },
+    "The classic balance of risk and reward." : {
+
+    },
+    "The commander hung up the flight jacket for good." : {
+
+    },
+    "The commander settled on a moon and watched the traders fly." : {
+
+    },
+    "The crew raised a glass to the occasion." : {
+
+    },
+    "The damaged file was moved to the Corrupt folder inside the Parsec Merchant folder." : {
+
+    },
+    "The derelict seems deserted. Its cargo is yours for the taking." : {
+
+    },
+    "The destruction of your ship was made much more spectacular by the added explosion of the Ion Reactor." : {
+
+    },
+    "The drink was a strange one." : {
+
+    },
+    "The encounter changed: %@." : {
+
+    },
+    "The experiment at Daled was performed." : {
+
+    },
+    "The extra bays are in use." : {
+
+    },
+    "The file couldn't be read." : {
+
+    },
+    "The file couldn't be written: %@" : {
+
+    },
+    "The fuel tanks are full." : {
+
+    },
+    "The game couldn't be saved." : {
+
+    },
+    "The game has ended." : {
+
+    },
+    "The game is over." : {
+
+    },
+    "The hacker resets your police record to Clean." : {
+
+    },
+    "The high-score table couldn't be updated." : {
+
+    },
+    "The hold is empty." : {
+
+    },
+    "The hull needs no repairs." : {
+
+    },
+    "The imported game was added to your saved games." : {
+
+    },
+    "The inspection found nothing." : {
+
+    },
+    "The local paper costs %@ cr." : {
+
+    },
+    "The local paper costs %@ credits." : {
+
+    },
+    "The log begins at %@ (%@, %@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The log begins at %1$@ (%2$@, %3$@)."
+          }
+        }
+      }
+    },
+    "The log ends here, among the stars." : {
+
+    },
+    "The log resumes at %@; earlier entries are unknown." : {
+
+    },
+    "The model is downloading" : {
+
+    },
+    "The organic hull used in the Scarab is still not ready for day-to-day use. But Captain Renwick can certainly upgrade your hull with some of his retrofit technology. It's light stuff, and won't reduce your ship's range. Should he upgrade your ship?" : {
+
+    },
+    "The original" : {
+
+    },
+    "The original quirks are kept." : {
+
+    },
+    "The police also impound all of the illegal goods you have on board." : {
+
+    },
+    "The police confiscated the reactor." : {
+
+    },
+    "The police hail they want you to surrender." : {
+
+    },
+    "The police summon you to submit to an inspection." : {
+
+    },
+    "The police will confiscate illegal cargo and passengers, and you'll be arrested." : {
+
+    },
+    "The police will search your ship and find %@." : {
+
+    },
+    "The police will search your ship. They will find nothing illegal." : {
+
+    },
+    "The reactor is getting hot (status %lld)." : {
+
+    },
+    "The reactor melted down." : {
+
+    },
+    "The reactor's radiation killed all your tribbles." : {
+
+    },
+    "The reactor's radiation killed half your tribbles." : {
+
+    },
+    "The rules can't be changed once the game has started." : {
+
+    },
+    "The saved game couldn't be opened." : {
+
+    },
+    "The saved game is damaged and no backup could be restored." : {
+
+    },
+    "The sculpture was taken." : {
+
+    },
+    "The ship was sold, the stories kept." : {
+
+    },
+    "The singularity was used up, but you couldn't leave." : {
+
+    },
+    "The singularity will be used up, but you can't leave: %@" : {
+
+    },
+    "The strongest laser on the open market." : {
+
+    },
+    "The target is this system." : {
+
+    },
+    "The template couldn't be saved." : {
+
+    },
+    "The tonic did you good." : {
+
+    },
+    "The trader offers to buy %@" : {
+
+    },
+    "The trader offers to sell %@" : {
+
+    },
+    "The tribbles were sold with your ship." : {
+
+    },
+    "The trip to %@ brought %lld encounters; the crew wants shore leave." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The trip to %1$@ brought %#@arg2@; the crew wants shore leave."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg encounter"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg encounters"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The wormhole spat us out near %@, stomachs still spinning." : {
+
+    },
+    "Theocracy" : {
+
+    },
+    "There are no open quests." : {
+
+    },
+    "There is a small but habitable moon for sale in the Utopia system, for the very reasonable sum of half a million credits. If you accept it, you can retire to it and live a peaceful, happy, and wealthy life. Do you wish to buy it?" : {
+
+    },
+    "There's no autosave of this game to go back to." : {
+
+    },
+    "There's no game to continue." : {
+
+    },
+    "These police don't take bribes." : {
+
+    },
+    "These police will let you go for %@ credits." : {
+
+    },
+    "They won't accept your surrender." : {
+
+    },
+    "They'll leave your ship at this system." : {
+
+    },
+    "This Ironman game is already loaded." : {
+
+    },
+    "This Mac doesn't support Apple Intelligence" : {
+
+    },
+    "This alien artifact should be delivered to professor Berger, who is currently traveling. You can probably find him at a hi-tech solar system. The alien race which produced this artifact seems keen on getting it back, however, and may hinder the carrier. Are you, for a price, willing to deliver it?" : {
+
+    },
+    "This can't be undone." : {
+
+    },
+    "This costs %@ credits." : {
+
+    },
+    "This file isn't a Parsec Merchant saved game." : {
+
+    },
+    "This game was reloaded, so it is not on the high-score table." : {
+
+    },
+    "This game's score was already recorded, at rank %lld." : {
+
+    },
+    "This game's score was already recorded." : {
+
+    },
+    "This information of the arrival of the alien invasion force allows us to prepare a defense. You have saved our way of life. As a reward, we have a fuel compactor gadget for you, which will increase the travel distance by 3 parsecs for any ship. Return here to get it installed." : {
+
+    },
+    "This is Colonel Jackson of the Space Corps. An experimental ship, code-named \"Dragonfly\", has been stolen. It is equipped with very special, almost indestructible shields. It shouldn't fall into the wrong hands and we will reward you if you destroy it. It has been last seen in the Baratas system." : {
+
+    },
+    "This is professor Berger. I thank you for delivering the alien artifact to me. I hope the aliens weren't too much of a nuisance. I have transferred 20000 credits to your account, which I assume compensates for your troubles." : {
+
+    },
+    "This save was damaged; an earlier backup was restored." : {
+
+    },
+    "This saved game was made by a newer version of Parsec Merchant." : {
+
+    },
+    "This screen isn't available yet." : {
+
+    },
+    "This ship can't be built here." : {
+
+    },
+    "This system is currently at war." : {
+
+    },
+    "This system is currently lacking enough workers." : {
+
+    },
+    "This system is currently ravaged by a plague." : {
+
+    },
+    "This system is currently suffering from a cold spell." : {
+
+    },
+    "This system is currently suffering from a crop failure." : {
+
+    },
+    "This system is currently suffering from a drought." : {
+
+    },
+    "This system is currently suffering from extreme boredom." : {
+
+    },
+    "This system is currently under no particular pressure." : {
+
+    },
+    "Three sealed canisters of %@ were loaded." : {
+
+    },
+    "Through the Wormhole" : {
+
+    },
+    "Through the wormhole and into %@ in a heartbeat." : {
+
+    },
+    "Thug Assaults Captain Ahab!" : {
+
+    },
+    "Timewarp isn't available in an Ironman game." : {
+
+    },
+    "Tint the map by known prices, profit, police, pirates, tech level or last visit." : {
+
+    },
+    "Tiny" : {
+
+    },
+    "Tips" : {
+
+    },
+    "Tips will appear again the next time you open Parsec Merchant." : {
+
+    },
+    "Total" : {
+
+    },
+    "Total costs" : {
+
+    },
+    "Total shield charge over total shield power." : {
+
+    },
+    "Total trade profit" : {
+
+    },
+    "Total: %@ cr." : {
+
+    },
+    "Tougher opponents and stricter police." : {
+
+    },
+    "Track" : {
+
+    },
+    "Track Target" : {
+
+    },
+    "Track a system to jump to." : {
+
+    },
+    "Track this system" : {
+
+    },
+    "Track this system on the way." : {
+
+    },
+    "Track “%@”" : {
+
+    },
+    "Tracked" : {
+
+    },
+    "Tracked system" : {
+
+    },
+    "Tracking" : {
+
+    },
+    "Trade" : {
+
+    },
+    "Trade Intelligence" : {
+
+    },
+    "Trade Laser" : {
+
+    },
+    "Trade Shield" : {
+
+    },
+    "Trade in orbit" : {
+
+    },
+    "Trade-in" : {
+
+    },
+    "Trade-in value" : {
+
+    },
+    "Trader" : {
+
+    },
+    "Trader activity" : {
+
+    },
+    "Trader discount" : {
+
+    },
+    "Traders" : {
+
+    },
+    "Traders killed" : {
+
+    },
+    "Trades" : {
+
+    },
+    "Trading this is illegal; police may confiscate it." : {
+
+    },
+    "Transfer equipment to the new ship" : {
+
+    },
+    "Transfer for %@ cr." : {
+
+    },
+    "Transfer to the new ship" : {
+
+    },
+    "Transit interrupted" : {
+
+    },
+    "Transit progress" : {
+
+    },
+    "Transit: Skip" : {
+
+    },
+    "Transport %@ from Qonos to Galvon." : {
+
+    },
+    "Travel" : {
+
+    },
+    "Travel through a wormhole." : {
+
+    },
+    "Travelers Claim Sighting of Ship Materializing in Orbit!" : {
+
+    },
+    "Travelers Report Timespace Damage, Warp Problems!" : {
+
+    },
+    "Tribble" : {
+
+    },
+    "Tribble Buyer" : {
+
+    },
+    "Tribble Trouble" : {
+
+    },
+    "Tribbles" : {
+
+    },
+    "Tribbles Killed" : {
+
+    },
+    "Tribbles Removed" : {
+
+    },
+    "Tribbles: %@ → %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tribbles: %1$@ → %2$@."
+          }
+        }
+      }
+    },
+    "Trusted" : {
+
+    },
+    "Turn on Apple Intelligence in System Settings" : {
+
+    },
+    "Turn on Continuous attack in Game › Options…, or use Resolve." : {
+
+    },
+    "Type a system name; Return selects it." : {
+
+    },
+    "Unanimity" : {
+
+    },
+    "Unarmed" : {
+
+    },
+    "Unavailable" : {
+
+    },
+    "Undo" : {
+
+    },
+    "Uneventful trip." : {
+
+    },
+    "Unidentified Ship: A Threat to Zalkon?" : {
+
+    },
+    "Units used: %lld of %lld (%lld%%)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Units used: %1$lld of %2$lld (%3$lld%%)"
+          }
+        }
+      }
+    },
+    "Universal Peace: Is it Possible?" : {
+
+    },
+    "Unknown" : {
+
+    },
+    "Unlocked" : {
+
+    },
+    "Unlocked %@" : {
+
+    },
+    "Unstable reactor" : {
+
+    },
+    "Untrack" : {
+
+    },
+    "Unvisited" : {
+
+    },
+    "Unvisited system" : {
+
+    },
+    "Up to %@ cr." : {
+
+    },
+    "Update Parsec Merchant to open it. The file was left where it was." : {
+
+    },
+    "Upgrade Hull" : {
+
+    },
+    "Upon your warning, Dr. Fehler calls off the experiment. As your  reward, you are given a Portable Singularity. This device will, for one time only, instantaneously transport you to any system in the galaxy. The Singularity can be accessed  by clicking the \"J\" (Jump) button on the Galactic Chart." : {
+
+    },
+    "Usable only from %@" : {
+
+    },
+    "Use Singularity" : {
+
+    },
+    "Use Singularity…" : {
+
+    },
+    "Use Wormhole to %@" : {
+
+    },
+    "Use the Singularity?" : {
+
+    },
+    "Vacant" : {
+
+    },
+    "Value" : {
+
+    },
+    "Version %@ (%@) · Engine %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %1$@ (%2$@) · Engine %3$@"
+          }
+        }
+      }
+    },
+    "Via wormhole · tax %lld cr." : {
+
+    },
+    "View License" : {
+
+    },
+    "Villain" : {
+
+    },
+    "Visit" : {
+
+    },
+    "Visit 50 systems." : {
+
+    },
+    "Visit every system in the galaxy." : {
+
+    },
+    "Visited" : {
+
+    },
+    "Visited system" : {
+
+    },
+    "Visited, date unknown" : {
+
+    },
+    "Wanted by the government" : {
+
+    },
+    "War" : {
+
+    },
+    "War News: Offensives Continue!" : {
+
+    },
+    "War of Succession Threatens!" : {
+
+    },
+    "Warlike Populace" : {
+
+    },
+    "Warn Gemulon of the invasion in time." : {
+
+    },
+    "Warning" : {
+
+    },
+    "Warp" : {
+
+    },
+    "Warp (⌘J) flies to the target in one go. Its help tag lists the fuel and costs of the trip." : {
+
+    },
+    "Warp costs %lld cr." : {
+
+    },
+    "Warp to Your Target" : {
+
+    },
+    "Warps to %@. Warping can't be undone." : {
+
+    },
+    "Was killed" : {
+
+    },
+    "Wasp" : {
+
+    },
+    "Wasp Swatter" : {
+
+    },
+    "Water" : {
+
+    },
+    "We added %@ to the log of places we have seen." : {
+
+    },
+    "We limped into %@ after %lld encounters on the way." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We limped into %1$@ after %#@arg2@ on the way."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg encounter"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg encounters"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "We lowered our shields before the %@ and hoped for mercy." : {
+
+    },
+    "We outran the %@ with the engines screaming." : {
+
+    },
+    "We received word that aliens will invade Gemulon seven days from now. We know exactly at which coordinates they will arrive, but we can't warn Gemulon because an ion storm disturbs all forms of communication. We need someone, anyone, to deliver this info to Gemulon within six days." : {
+
+    },
+    "We thank you for destroying the space monster that circled our system for so long. Please accept 15000 credits as reward for your heroic deed." : {
+
+    },
+    "We will remember that %@ for a long time." : {
+
+    },
+    "Weapon" : {
+
+    },
+    "Weapon slots" : {
+
+    },
+    "Weapon type" : {
+
+    },
+    "Weapons" : {
+
+    },
+    "Weapons Research Increases Kill-Ratio!" : {
+
+    },
+    "Weird Mushrooms" : {
+
+    },
+    "Weird Ship" : {
+
+    },
+    "Welcome to the Utopia system. Your own moon is available for you to retire to it, if you feel inclined to do that. Are you ready to retire and lead a happy, peaceful, and wealthy life?" : {
+
+    },
+    "Welcome: Quick Start" : {
+
+    },
+    "What changes" : {
+
+    },
+    "What the next warp to your target will cost." : {
+
+    },
+    "What you owe the bank. Each warp adds 10% interest." : {
+
+    },
+    "What your current ship, its equipment and its cargo are worth." : {
+
+    },
+    "What's taking us so long?!" : {
+
+    },
+    "What's your name, Commander?" : {
+
+    },
+    "When your ship is impounded, the police go over it with a fine-toothed comb. You hidden compartments are found and removed." : {
+
+    },
+    "While reviewing the plans for Dr. Fehler's new space-warping drive, Dr. Lowenstam discovered a critical error. If you don't go to Daled and stop the experiment within ten days, the time-space continuum itself could be damaged!" : {
+
+    },
+    "Why This Price" : {
+
+    },
+    "Why this price? %@" : {
+
+    },
+    "Wild Arrested" : {
+
+    },
+    "Wild Gets Out" : {
+
+    },
+    "Wild Won't Stay Aboard" : {
+
+    },
+    "Wild boards only with a beam laser or better." : {
+
+    },
+    "Wild won't board while the reactor is aboard." : {
+
+    },
+    "Win the game on Hard or Impossible." : {
+
+    },
+    "Win the game on Impossible." : {
+
+    },
+    "Window" : {
+
+    },
+    "Windows 2.01" : {
+
+    },
+    "Without an escape pod your insurance ends and the no-claim discount is lost." : {
+
+    },
+    "Word of this will travel between the ports." : {
+
+    },
+    "Wormhole" : {
+
+    },
+    "Wormhole Traffic Delayed as Stolen Craft Destroyed." : {
+
+    },
+    "Wormhole Travelers Harassed by Unusual Ship!" : {
+
+    },
+    "Wormhole and link direction" : {
+
+    },
+    "Wormhole jumps" : {
+
+    },
+    "Wormhole tax" : {
+
+    },
+    "Wormhole tax: %@ cr." : {
+
+    },
+    "Wormhole to %@" : {
+
+    },
+    "Wormholes" : {
+
+    },
+    "Worth" : {
+
+    },
+    "Write log entries with Apple Intelligence" : {
+
+    },
+    "Written by Apple Intelligence" : {
+
+    },
+    "Yet another dark, hooded figure approaches. \"Do you have the action fig- umm, the sculpture?\" You hand it over and hear what sounds very much like a giggle from under the hood. \"I know you were promised 15,000 credits on delivery, but I'm strapped for cash right now. However, I have something better for you. I have an acquaintance who can install hidden compartments in your ship.\" Return with an empty gadget slot when you're ready to have it installed." : {
+
+    },
+    "Yield" : {
+
+    },
+    "You Have Nothing Illegal" : {
+
+    },
+    "You achieved a score of %@." : {
+
+    },
+    "You already fly this type." : {
+
+    },
+    "You already have one." : {
+
+    },
+    "You are arrested and taken to the space station, where you are brought before a court of law." : {
+
+    },
+    "You are convicted to %@ in prison and a fine of %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You are convicted to %1$@ in prison and a fine of %2$@."
+          }
+        }
+      }
+    },
+    "You are hailed with an offer to trade goods." : {
+
+    },
+    "You are here" : {
+
+    },
+    "You are here." : {
+
+    },
+    "You are lucky! While docking on the space port, you receive a message that you won 1000 credits in a lottery. The prize had been added to your account." : {
+
+    },
+    "You are now the proud owner of a little, cute, furry tribble." : {
+
+    },
+    "You attacked." : {
+
+    },
+    "You bought a moon in the Utopia system. Go there to claim it." : {
+
+    },
+    "You bought the sealed canisters and put them in your cargo bays." : {
+
+    },
+    "You can't afford it." : {
+
+    },
+    "You can't pay the wormhole tax." : {
+
+    },
+    "You can't pay your insurance." : {
+
+    },
+    "You can't pay your mercenaries." : {
+
+    },
+    "You can't surrender with the Princess aboard." : {
+
+    },
+    "You carry nothing illegal, so submitting costs you nothing. Do it anyway?" : {
+
+    },
+    "You claimed your moon and retired there with Ziyal." : {
+
+    },
+    "You claimed your moon." : {
+
+    },
+    "You couldn't depart: %@" : {
+
+    },
+    "You destroyed the %@." : {
+
+    },
+    "You disabled the %@." : {
+
+    },
+    "You earned a bounty of %@ cr." : {
+
+    },
+    "You entered the high-score table at rank %lld." : {
+
+    },
+    "You escaped, but took a hit." : {
+
+    },
+    "You escaped." : {
+
+    },
+    "You found a gift from the Og." : {
+
+    },
+    "You get %@ cr." : {
+
+    },
+    "You get %lld credits" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You get %lld credit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You get %lld credits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "You have no debt." : {
+
+    },
+    "You have no insurance." : {
+
+    },
+    "You have no singularity." : {
+
+    },
+    "You have no weapons." : {
+
+    },
+    "You have none to sell." : {
+
+    },
+    "You have taken %@ on board. While on board %@ will lend you expertise, but may stop helping if the journey takes too long." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have taken %1$@ on board. While on board %2$@ will lend you expertise, but may stop helping if the journey takes too long."
+          }
+        }
+      }
+    },
+    "You hit the %@." : {
+
+    },
+    "You hold" : {
+
+    },
+    "You missed the %@." : {
+
+    },
+    "You need a disruptor for this." : {
+
+    },
+    "You need a laser for this." : {
+
+    },
+    "You notice the Ion Reactor has begun to consume fuel rapidly. In a single day, it has burned up nearly half a bay of fuel!" : {
+
+    },
+    "You now have Henry Morgan's special laser installed on your ship." : {
+
+    },
+    "You now have a fuel compactor installed on your ship." : {
+
+    },
+    "You now have hidden compartments equivalent to 5 extra cargo bays installed in your ship. Police won't find illegal cargo hidden in these compartments." : {
+
+    },
+    "You now have one lightning shield installed on your ship." : {
+
+    },
+    "You now have one quantum disruptor installed on your ship." : {
+
+    },
+    "You paid %@ credits for these goods." : {
+
+    },
+    "You paid a bribe of %@ cr." : {
+
+    },
+    "You receive %@ cr." : {
+
+    },
+    "You retired." : {
+
+    },
+    "You surrendered the artifact." : {
+
+    },
+    "You tried to flee." : {
+
+    },
+    "You were blackmailed for %@ cr." : {
+
+    },
+    "You were fined %@ cr." : {
+
+    },
+    "You were killed." : {
+
+    },
+    "You will be arrested." : {
+
+    },
+    "You yielded to the police." : {
+
+    },
+    "You'll get %@ credits." : {
+
+    },
+    "You'll return to the Welcome window." : {
+
+    },
+    "You're taken to a warehouse and whisked through the door. A grubby alien of some humanoid species - you're not sure which one - approaches. \"So you're the being who needs Hidden Compartments. Should I install them in your ship?\" (It requires a free gadget slot.)" : {
+
+    },
+    "You: %@" : {
+
+    },
+    "You: %@ “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You: %1$@ “%2$@”"
+          }
+        }
+      }
+    },
+    "Your %@ skill increased." : {
+
+    },
+    "Your %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Your %lld units of cargo stay behind; their cost is part of the trade-in." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your %lld unit of cargo stays behind; its cost is part of the trade-in."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your %lld units of cargo stay behind; their cost is part of the trade-in."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Your current ship" : {
+
+    },
+    "Your custom ship has been built." : {
+
+    },
+    "Your debt is too large for another loan." : {
+
+    },
+    "Your debt is too large to trade." : {
+
+    },
+    "Your debt is too large to travel." : {
+
+    },
+    "Your debt is very high. At %@ cr. you can no longer trade or travel." : {
+
+    },
+    "Your escape pod saved you. Insurance paid %@ cr." : {
+
+    },
+    "Your hold is full. Make room to pick it up?" : {
+
+    },
+    "Your insurance stays active." : {
+
+    },
+    "Your no-claim discount will be lost." : {
+
+    },
+    "Your opponent attacks." : {
+
+    },
+    "Your opponent escaped." : {
+
+    },
+    "Your opponent is fleeing." : {
+
+    },
+    "Your own value, and in brackets the ship's effective value with crew and gadgets." : {
+
+    },
+    "Your passengers need quarters." : {
+
+    },
+    "Your police record" : {
+
+    },
+    "Your police record will drop to %@." : {
+
+    },
+    "Your precious cargo stayed hidden." : {
+
+    },
+    "Your progress since the autosave is lost." : {
+
+    },
+    "Your progress since the last save will be lost." : {
+
+    },
+    "Your saved defaults" : {
+
+    },
+    "Your score didn't make the high-score table." : {
+
+    },
+    "Your ship is insured." : {
+
+    },
+    "Your ship was destroyed by the %@." : {
+
+    },
+    "Your ship was destroyed by the alien %@." : {
+
+    },
+    "Your ship was destroyed by the pirate %@." : {
+
+    },
+    "Your ship was destroyed by the police %@." : {
+
+    },
+    "Your ship was destroyed by the trader %@." : {
+
+    },
+    "Your ship was destroyed when the reactor melted down." : {
+
+    },
+    "Your ship was destroyed." : {
+
+    },
+    "Your ship, cargo and cash, minus your debt." : {
+
+    },
+    "Your slots" : {
+
+    },
+    "Your tribbles all died in the explosion." : {
+
+    },
+    "Your tribbles ate %lld units of food." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your tribbles ate %lld unit of food."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your tribbles ate %lld units of food."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Your tribbles ate narcotics and died; %lld bays now hold furs." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your tribbles ate narcotics and died; %lld bay now holds furs."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your tribbles ate narcotics and died; %lld bays now hold furs."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Yours" : {
+
+    },
+    "Zoom In" : {
+
+    },
+    "Zoom Out" : {
+
+    },
+    "Zoom in (⌘+)" : {
+
+    },
+    "Zoom out (⌘−)" : {
+
+    },
+    "[Ziyal] Oh Captain? (giggles) Would it help if I got out and pushed?" : {
+
+    },
+    "^[%lld credit](inflect: true)" : {
+
+    },
+    "^[%lld day](inflect: true)" : {
+
+    },
+    "a bottle floats in space" : {
+
+    },
+    "a derelict ship drifts nearby" : {
+
+    },
+    "a drifting" : {
+
+    },
+    "a famous captain in a" : {
+
+    },
+    "a floating" : {
+
+    },
+    "a horrifying" : {
+
+    },
+    "a pirate" : {
+
+    },
+    "a police" : {
+
+    },
+    "a stolen" : {
+
+    },
+    "a stolen sculpture" : {
+
+    },
+    "a trader" : {
+
+    },
+    "alien ship" : {
+
+    },
+    "an alien" : {
+
+    },
+    "an illegal Ion Reactor" : {
+
+    },
+    "an unnamed system" : {
+
+    },
+    "arrested" : {
+
+    },
+    "avg %@ cr." : {
+
+    },
+    "boredom" : {
+
+    },
+    "bought %lld %@ for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bought %1$lld %2$@ for %3$@ cr."
+          }
+        }
+      }
+    },
+    "bounty %@ cr." : {
+
+    },
+    "cold weather" : {
+
+    },
+    "crop failure" : {
+
+    },
+    "current ship" : {
+
+    },
+    "current system" : {
+
+    },
+    "destroyed" : {
+
+    },
+    "destroyed the %@" : {
+
+    },
+    "destroyed the %@ (bounty %@ cr.)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "destroyed the %1$@ (bounty %2$@ cr.)"
+          }
+        }
+      }
+    },
+    "disabled" : {
+
+    },
+    "disabled it" : {
+
+    },
+    "dotted ring" : {
+
+    },
+    "drank a good tonic" : {
+
+    },
+    "drank a strange brew" : {
+
+    },
+    "drank the strange brew" : {
+
+    },
+    "drank the tonic; it did you good" : {
+
+    },
+    "drought" : {
+
+    },
+    "due today" : {
+
+    },
+    "due tomorrow" : {
+
+    },
+    "escaped" : {
+
+    },
+    "escaped in the pod" : {
+
+    },
+    "escaped, but took a hit" : {
+
+    },
+    "est." : {
+
+    },
+    "estimate" : {
+
+    },
+    "filled system glyph" : {
+
+    },
+    "fined %@ cr." : {
+
+    },
+    "full opacity" : {
+
+    },
+    "hatching on legend swatches" : {
+
+    },
+    "held %lld" : {
+
+    },
+    "hollow system glyph" : {
+
+    },
+    "hull %lld%%, no shields" : {
+
+    },
+    "hull %lld%%, shields %lld%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hull %1$lld%%, shields %2$lld%%"
+          }
+        }
+      }
+    },
+    "in range" : {
+
+    },
+    "in this game, day %lld" : {
+
+    },
+    "inspected, nothing found" : {
+
+    },
+    "it got away" : {
+
+    },
+    "lack of workers" : {
+
+    },
+    "legend with numeric labels" : {
+
+    },
+    "live" : {
+
+    },
+    "locked" : {
+
+    },
+    "lowest hull %lld%%" : {
+
+    },
+    "new" : {
+
+    },
+    "no incident" : {
+
+    },
+    "no unusual events" : {
+
+    },
+    "nobody" : {
+
+    },
+    "not visited" : {
+
+    },
+    "out of range" : {
+
+    },
+    "paid a bribe of %@ cr." : {
+
+    },
+    "passed by" : {
+
+    },
+    "passed the inspection" : {
+
+    },
+    "passenger" : {
+
+    },
+    "pirate" : {
+
+    },
+    "pirate ship" : {
+
+    },
+    "pirates" : {
+
+    },
+    "pirates took %lld units of cargo" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "pirates took %lld unit of cargo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "pirates took %lld units of cargo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "plague" : {
+
+    },
+    "plundered" : {
+
+    },
+    "plundered %@" : {
+
+    },
+    "police" : {
+
+    },
+    "police record level word" : {
+
+    },
+    "police ship" : {
+
+    },
+    "quest location" : {
+
+    },
+    "raided by pirates" : {
+
+    },
+    "raided, %lld units taken" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "raided, %lld unit taken"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "raided, %lld units taken"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "reputation level word" : {
+
+    },
+    "route stop %lld" : {
+
+    },
+    "sell %lld credits" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "sell %lld credit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "sell %lld credits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "sold %lld %@ for %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sold %1$lld %2$@ for %3$@ cr."
+          }
+        }
+      }
+    },
+    "special ship" : {
+
+    },
+    "striped bar" : {
+
+    },
+    "surrendered the artifact" : {
+
+    },
+    "target" : {
+
+    },
+    "target %lld credits (estimate)" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "target %lld credit (estimate)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "target %lld credits (estimate)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "the Dragonfly attacks" : {
+
+    },
+    "the Dragonfly ignores you" : {
+
+    },
+    "the Scarab attacks" : {
+
+    },
+    "the Scarab ignores you" : {
+
+    },
+    "the Scorpion attacks" : {
+
+    },
+    "the Scorpion ignores you" : {
+
+    },
+    "the confirm button" : {
+
+    },
+    "the customs police want a word" : {
+
+    },
+    "the destructive button" : {
+
+    },
+    "the famous Captain Ahab in a" : {
+
+    },
+    "the famous Captain Conrad in a" : {
+
+    },
+    "the famous Captain Huie in a" : {
+
+    },
+    "the famous captain attacks" : {
+
+    },
+    "the famous captain's ship is disabled" : {
+
+    },
+    "the kidnappers in a" : {
+
+    },
+    "the opponent escaped" : {
+
+    },
+    "the pirate attacks" : {
+
+    },
+    "the pirate flees" : {
+
+    },
+    "the pirate ignores you" : {
+
+    },
+    "the pirate ship is disabled" : {
+
+    },
+    "the pirate surrenders" : {
+
+    },
+    "the police attack" : {
+
+    },
+    "the police flee" : {
+
+    },
+    "the police ignore you" : {
+
+    },
+    "the police ship is disabled" : {
+
+    },
+    "the police surrender" : {
+
+    },
+    "the police want to inspect your ship" : {
+
+    },
+    "the space monster attacks" : {
+
+    },
+    "the space monster ignores you" : {
+
+    },
+    "the trader attacks" : {
+
+    },
+    "the trader flees" : {
+
+    },
+    "the trader ignores you" : {
+
+    },
+    "the trader offers to buy cargo" : {
+
+    },
+    "the trader offers to sell cargo" : {
+
+    },
+    "the trader ship is disabled" : {
+
+    },
+    "the trader surrenders" : {
+
+    },
+    "they were hit" : {
+
+    },
+    "they weren't hit" : {
+
+    },
+    "today" : {
+
+    },
+    "tracked" : {
+
+    },
+    "traded" : {
+
+    },
+    "trader" : {
+
+    },
+    "trader ship" : {
+
+    },
+    "traders" : {
+
+    },
+    "trained %@" : {
+
+    },
+    "trained your %@ skill" : {
+
+    },
+    "unlocked" : {
+
+    },
+    "visited" : {
+
+    },
+    "vs. current" : {
+
+    },
+    "war" : {
+
+    },
+    "won %lld, fled %lld, surrendered %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "won %1$lld, fled %2$lld, surrendered %3$lld"
+          }
+        }
+      }
+    },
+    "wormhole to %@" : {
+
+    },
+    "yielded" : {
+
+    },
+    "yielded to the police" : {
+
+    },
+    "you were hit" : {
+
+    },
+    "you weren't hit" : {
+
+    },
+    "your ship was destroyed" : {
+
+    },
+    "±0 cr" : {
+
+    },
+    "“Space Trader” is used only to credit the original work. Parsec Merchant is not affiliated with HermitWorks Entertainment or any owner of that name." : {
+
+    },
+    "↺" : {
+
+    },
+    "↺ reloaded" : {
+
+    },
+    "−" : {
+
+    },
+    "−%@ cr" : {
+
+    }
   },
   "version" : "1.0"
 }

@@ -46,7 +46,11 @@ app_build_test() {
   local rc=$?
   tail -40 "$LOGS/xcodebuild-app.log"
   [ $rc -eq 0 ] || return $rc
-  scripts/warnings-gate.sh "$LOGS/xcodebuild-app.log"
+  scripts/warnings-gate.sh "$LOGS/xcodebuild-app.log" || return 1
+  # A11Y-035: the localization check, from M12, on this step's build products (--export in --ui mode and final-check).
+  if [ "${MILESTONE:-0}" -ge 12 ]; then
+    if [ "$MODE" = "ui" ]; then scripts/l10n-check.sh --export; else scripts/l10n-check.sh; fi
+  fi
 }
 ui_tests() {
   rm -rf build/results/ui.xcresult

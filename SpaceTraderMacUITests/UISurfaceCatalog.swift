@@ -120,7 +120,7 @@ extension ParsecUITestCase {
         relaunch(UITestFixtures.launchArguments + extra)
         at("welcome")
         click(AXID.Welcome.quickStart)
-        expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
+        expect("the Quick Start game runs") { quickStartRuns }
         type("s")  // a saved slot gives the Open sheet a row
         if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
         waitFor(AXID.Inspector.root)
@@ -170,7 +170,7 @@ extension ParsecUITestCase {
         type("w")
         expect("the Galaxy Chart window closes") { !element(AXID.Galaxy.windowRoot).exists }
 
-        app.menuBars.menuBarItems["Window"].click()
+        menuBarItem("Window").click()
         let highScores = menuItem("Window", "High Scores").firstMatch
         XCTAssertTrue(highScores.waitForExistence(timeout: timeout), "Window › High Scores exists")
         highScores.click()
@@ -226,7 +226,8 @@ extension ParsecUITestCase {
             .matching(NSPredicate(format: "identifier BEGINSWITH 'shipyard.ship.' AND identifier ENDSWITH '.buy'")).firstMatch
         if buy.waitForExistence(timeout: timeout) { buy.click() }
         at("ship-purchase-sheet", waitFor(AXID.A11y.shipPurchaseSheet))
-        click(AXID.A11y.shipPurchaseCancel)
+        // Close it only when it opened, so a missed step fails once and the walk goes on.
+        if element(AXID.A11y.shipPurchaseCancel).exists { click(AXID.A11y.shipPurchaseCancel) }
         expect("the purchase review closes") { !element(AXID.A11y.shipPurchaseSheet).exists }
 
         chooseMenuItem("Game", "Retire…")
@@ -317,7 +318,7 @@ extension ParsecUITestCase {
         for _ in 0..<3 where !reached {
             relaunch(UITestFixtures.playbackArguments + extra)
             click(AXID.Welcome.quickStart)
-            expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
+            expect("the Quick Start game runs") { quickStartRuns }
             type("1")
             click(AXID.Bridge.targetNext)
             type("j")
@@ -374,7 +375,9 @@ extension ParsecUITestCase {
         if byID.waitForExistence(timeout: 2) {
             byID.click()
         } else if let title = titles[tab] {
-            let button = app.toolbars.buttons[title].exists ? app.toolbars.buttons[title] : app.buttons[title].firstMatch
+            let inToolbar = pseudoLocalized ? app.toolbars.buttons.matching(titlePredicate(title)).firstMatch : app.toolbars.buttons[title]
+            let anywhere = pseudoLocalized ? app.buttons.matching(titlePredicate(title)).firstMatch : app.buttons[title].firstMatch
+            let button = inToolbar.exists ? inToolbar : anywhere
             if button.waitForExistence(timeout: timeout) { button.click() }
         }
     }
@@ -382,7 +385,11 @@ extension ParsecUITestCase {
     /// Selects a Logbook tab by title (the tab control is a segmented picker).
     func selectLogbookTab(_ title: String, file: StaticString = #filePath, line: UInt = #line) {
         let control = waitFor(AXID.Logbook.tab, file: file, line: line)
-        let candidates = [control.radioButtons[title], control.buttons[title], control.descendants(matching: .any)[title]]
+        let match = titlePredicate(title)
+        let candidates = pseudoLocalized
+            ? [control.radioButtons.matching(match).firstMatch, control.buttons.matching(match).firstMatch,
+               control.descendants(matching: .any).matching(match).firstMatch]
+            : [control.radioButtons[title], control.buttons[title], control.descendants(matching: .any)[title]]
         guard let segment = candidates.first(where: { $0.exists }) else { return XCTFail("tab \(title)", file: file, line: line) }
         // A click right after an audit can be dropped while the app is still busy: retry until the segment is selected.
         for _ in 0..<3 where !segment.isSelected {

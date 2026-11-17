@@ -241,14 +241,3 @@ struct CargoDisposal: Identifiable, Equatable, Sendable {
         return kind == .jettison ? .jettisonCargo(item, quantity: q) : .dumpCargo(item, quantity: q)
     }
 }
-
-/// ⌘F in Market focuses the item filter (UI-SHELL-067, MENU-018): the Market publishes this action as a focused
-/// scene value and the Find menu item calls it when present.
-struct MarketFilterFocusAction {
-    let focus: () -> Void
-    func callAsFunction() { focus() }
-}
-
-extension FocusedValues {
-    @Entry var marketFilterFocus: MarketFilterFocusAction?
-}

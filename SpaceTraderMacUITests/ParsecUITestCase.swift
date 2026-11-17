@@ -115,13 +115,43 @@ class ParsecUITestCase: XCTestCase {
 
     // MARK: Menus (MENU-008: SwiftUI menu items expose no identifier on macOS, so items are found by English title)
 
+    /// A11Y-040: set while a pseudolanguage runs. English titles then also match their pseudo forms (doubled
+    /// "Game Game", or accented and bounded "[# G̈a̧m̧ë #]", matched diacritic-insensitively), since menu items and
+    /// segments have no identifier.
+    var pseudoLocalized = false
+
+    /// The title predicate of an English title: exact, plus its pseudo forms under `pseudoLocalized`.
+    func titlePredicate(_ english: String) -> NSPredicate {
+        guard pseudoLocalized else { return NSPredicate(format: "title == %@ OR label == %@", english, english) }
+        let forms = [english, "\(english) \(english)", "[# \(english) #]"]
+        return NSCompoundPredicate(orPredicateWithSubpredicates: forms.flatMap {
+            [NSPredicate(format: "title ==[d] %@", $0), NSPredicate(format: "label ==[d] %@", $0)]
+        })
+    }
+
+    /// Text with the pseudolanguage decoration removed: diacritics folded, the "[# … #]" bounds dropped.
+    static func plainText(_ s: String) -> String {
+        s.folding(options: .diacriticInsensitive, locale: nil).replacingOccurrences(of: "[# ", with: "")
+            .replacingOccurrences(of: " #]", with: "")
+    }
+
+    /// Whether the Quick Start game runs (the subtitle starts "Day 0"; doubled or accented under a pseudolanguage).
+    var quickStartRuns: Bool {
+        pseudoLocalized ? Self.plainText(subtitle).contains("Day 0") : subtitle.hasPrefix("Day 0")
+    }
+
+    func menuBarItem(_ menu: String) -> XCUIElement {
+        pseudoLocalized ? app.menuBars.menuBarItems.matching(titlePredicate(menu)).firstMatch : app.menuBars.menuBarItems[menu]
+    }
+
     func menuItem(_ menu: String, _ title: String) -> XCUIElement {
-        app.menuBars.menuBarItems[menu].menus.menuItems[title]
+        pseudoLocalized ? menuBarItem(menu).menus.menuItems.matching(titlePredicate(title)).firstMatch
+            : app.menuBars.menuBarItems[menu].menus.menuItems[title]
     }
 
     /// Opens `menu`, reads whether `title` is enabled, and closes the menu again.
     func isMenuItemEnabled(_ menu: String, _ title: String) -> Bool {
-        app.menuBars.menuBarItems[menu].click()
+        menuBarItem(menu).click()
         let item = menuItem(menu, title)
         XCTAssertTrue(item.waitForExistence(timeout: timeout), "\(menu) › \(title) exists")
         let enabled = item.isEnabled
@@ -130,7 +160,7 @@ class ParsecUITestCase: XCTestCase {
     }
 
     func chooseMenuItem(_ menu: String, _ title: String, file: StaticString = #filePath, line: UInt = #line) {
-        app.menuBars.menuBarItems[menu].click()
+        menuBarItem(menu).click()
         let item = menuItem(menu, title)
         XCTAssertTrue(item.waitForExistence(timeout: timeout), "\(menu) › \(title) exists", file: file, line: line)
         item.click()

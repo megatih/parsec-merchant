@@ -7,9 +7,12 @@ enum WindowTitles {
     static func make(state: GameState?) -> (title: String, subtitle: String?) {
         let app = String(localized: "Parsec Merchant")
         guard let state else { return (app, nil) }
-        var title = String(localized: "Parsec Merchant — Cmdr. \(state.commander.name)")
+        let commander = state.commander.name
+        let title: String
         if let ship = state.commander.shipName, !ship.isEmpty {
-            title += String(localized: " · “\(ship)”")
+            title = String(localized: "Parsec Merchant — Cmdr. \(commander) · “\(ship)”")
+        } else {
+            title = String(localized: "Parsec Merchant — Cmdr. \(commander)")
         }
         let days = state.commander.days.formatted()
         let subtitle: String
