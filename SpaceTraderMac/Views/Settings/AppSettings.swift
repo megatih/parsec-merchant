@@ -116,11 +116,16 @@ struct AppSettings {
     func isFastTravel(launch: LaunchOptions) -> Bool { fastTravel || launch.fastTravel }
 }
 
-/// Applies the Text Size setting to a window (UI-SHELL-100).
+/// Applies the Text Size setting to a window (UI-SHELL-100, A11Y-024): `.dynamicTypeSize` for anything that honours it,
+/// plus the app's text scale (macOS ignores `dynamicTypeSize` for text styles) and the scaled body font for controls.
 struct AppTextSize: ViewModifier {
     @AppStorage(AppSettingsKey.textSize) private var textSize = TextSizeSetting.standard.rawValue
 
     func body(content: Content) -> some View {
-        content.dynamicTypeSize((TextSizeSetting(rawValue: textSize) ?? .standard).dynamicTypeSize)
+        let setting = TextSizeSetting(rawValue: textSize) ?? .standard
+        content
+            .font(AppFontMetrics.font(.body, scale: setting.scale))
+            .environment(\.textScale, setting.scale)
+            .dynamicTypeSize(setting.dynamicTypeSize)
     }
 }

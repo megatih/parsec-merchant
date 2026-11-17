@@ -18,7 +18,7 @@ struct SettingsView: View {
                 .accessibilityIdentifier(AXID.Settings.tab(tab))
             }
         }
-        .modifier(AppTextSize())
+        .modifier(SceneAccessibility())
     }
 
     @ViewBuilder
@@ -42,26 +42,27 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
-            Picker(selection: $textSize) {
-                ForEach(TextSizeSetting.allCases, id: \.self) { size in
-                    Text(size.title).tag(size.rawValue)
-                }
+            // A11Y-029: AppKit pop-ups (a SwiftUI Picker exposes no press action to VoiceOver on macOS 27).
+            LabeledContent {
+                PopUpMenuButton(title: "", items: TextSizeSetting.allCases.map { size in
+                    PopUpMenuButton.Item(title: String(localized: size.title)) { textSize = size.rawValue }
+                }, pullsDown: false, selectedIndex: TextSizeSetting.allCases.firstIndex { $0.rawValue == textSize } ?? 2,
+                accessibilityLabel: String(localized: "Text Size"), identifier: AXID.Settings.textSize)
             } label: {
                 Text("Text Size")
             }
-            .accessibilityIdentifier(AXID.Settings.textSize)
-            Toggle(isOn: $fastTravel) { Text("Fast travel") }
+            Toggle(isOn: $fastTravel) { Text("Fast travel") }.accessibilityLabel(Text("Fast travel"))
                 .help(Text("Skip the transit animation."))
                 .accessibilityIdentifier(AXID.Settings.fastTravel)
-            Picker(selection: $arrivalStyle) {
-                ForEach(ArrivalReportStyle.allCases, id: \.self) { style in
-                    Text(style.title).tag(style.rawValue)
-                }
+            LabeledContent {
+                PopUpMenuButton(title: "", items: ArrivalReportStyle.allCases.map { style in
+                    PopUpMenuButton.Item(title: String(localized: style.title)) { arrivalStyle = style.rawValue }
+                }, pullsDown: false, selectedIndex: ArrivalReportStyle.allCases.firstIndex { $0.rawValue == arrivalStyle } ?? 0,
+                accessibilityLabel: String(localized: "Arrival report"), identifier: AXID.Settings.arrivalReportStyle)
             } label: {
                 Text("Arrival report")
             }
-            .accessibilityIdentifier(AXID.Settings.arrivalReportStyle)
-            Toggle(isOn: $tacticalReadout) { Text("Tactical readout in encounters") }
+            Toggle(isOn: $tacticalReadout) { Text("Tactical readout in encounters") }.accessibilityLabel(Text("Tactical readout in encounters"))
                 .accessibilityIdentifier(AXID.Settings.tacticalReadout)
             LabeledContent {
                 if let code = SettingsGalaxyCode.text(state: session.state) {
@@ -73,7 +74,7 @@ struct GeneralSettingsView: View {
                     }
                 } else {
                     Text("No game loaded")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.readableSecondary)
                         .accessibilityIdentifier(AXID.Settings.galaxyCode)
                 }
             } label: {
@@ -96,11 +97,12 @@ enum SettingsGalaxyCode {
     }
 }
 
-/// Advanced: Clear High Scores per ruleset (UI-SHELL-101) and Reset Achievements (ACH-021). Reset Tips is M12.
+/// Advanced: Clear High Scores per ruleset (UI-SHELL-101), Reset Achievements (ACH-021) and Reset Tips (A11Y-046).
 struct AdvancedSettingsView: View {
     @Environment(GameSession.self) private var session
     @State private var pendingClear: RulesetID?
     @State private var pendingReset = false
+    @State private var tipsResetRequested = false
 
     var body: some View {
         Form {
@@ -125,9 +127,24 @@ struct AdvancedSettingsView: View {
                 }
             } header: {
                 Text("Achievements")
-            } footer: {
-                Text("Reset Tips arrives in a later update.")
-                    .foregroundStyle(.secondary)
+            }
+            SwiftUI.Section {
+                // A11Y-046: not destructive, no confirmation; applied at the next launch, before TipKit is configured.
+                LabeledContent {
+                    Button("Reset Tips") {
+                        TipTriggers.requestReset(defaults: session.defaults)
+                        tipsResetRequested = true
+                    }
+                    .accessibilityIdentifier(AXID.Tips.resetTips)
+                } label: {
+                    Text("Tips")
+                }
+                if tipsResetRequested {
+                    Text("Tips will appear again the next time you open Parsec Merchant.")
+                        .accessibilityIdentifier(AXID.Tips.resetTipsStatus)
+                }
+            } header: {
+                Text("Tips")
             }
         }
         .formStyle(.grouped)

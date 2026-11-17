@@ -12,9 +12,9 @@ struct CareerCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                Text(verbatim: card.commanderName).font(.title2.bold())
+                Text(verbatim: card.commanderName).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
                 Spacer()
-                Text(verbatim: CareerText.ship(card)).foregroundStyle(.secondary)
+                Text(verbatim: CareerText.ship(card)).foregroundStyle(.readableSecondary)
             }
             Divider()
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 6) {
@@ -45,7 +45,7 @@ struct CareerCardView: View {
                 HStack {
                     ForEach(badges, id: \.self) { badge in
                         Text(verbatim: badge)
-                            .font(.caption.bold())
+                            .scaledFont(.caption, weight: .bold)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
                             .overlay(Capsule().strokeBorder(.secondary))
@@ -59,7 +59,7 @@ struct CareerCardView: View {
 
     private func row(_ label: LocalizedStringResource, _ value: Text) -> some View {
         GridRow {
-            Text(label).foregroundStyle(.secondary)
+            Text(label).foregroundStyle(.readableSecondary)
             value
         }
     }

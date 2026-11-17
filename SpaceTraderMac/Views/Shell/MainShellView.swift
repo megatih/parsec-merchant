@@ -7,7 +7,7 @@ struct MainShellView: View {
     @Environment(GameSession.self) private var session
     @SceneStorage("selectedSection") private var storedSection: String = Section.bridge.rawValue
     @SceneStorage("inspectorVisible") private var inspectorVisible = true
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityPreferences) private var prefs
 
     var body: some View {
         @Bindable var session = session
@@ -29,10 +29,14 @@ struct MainShellView: View {
         .toolbar { ShellToolbar(session: session, inspectorVisible: $inspectorVisible) }
         .onAppear {
             session.selectedSection = Section.restored(rawValue: storedSection, context: session.sectionContext)
-            session.reduceMotion = reduceMotion
+            session.reduceMotion = prefs.reduceMotion
+            session.updateTips()
         }
-        .onChange(of: reduceMotion) { _, new in session.reduceMotion = new }
-        .onChange(of: session.selectedSection) { _, new in storedSection = new.rawValue }
+        .onChange(of: prefs.reduceMotion) { _, new in session.reduceMotion = new }
+        .onChange(of: session.selectedSection) { _, new in
+            storedSection = new.rawValue
+            session.updateTips()  // A11Y-044
+        }
     }
 
     /// UI-ENC-001: the detail mode decides the content (transit, encounter, game over or the selected section).

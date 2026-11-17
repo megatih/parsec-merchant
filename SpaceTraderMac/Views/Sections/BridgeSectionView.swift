@@ -81,8 +81,9 @@ private struct SystemCard: View {
                         .frame(width: 72, height: 72)
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel(Text(SystemText.planetLabel(model)))
+                        .accessibilityAddTraits(.isImage)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(verbatim: model.name).font(.title2.bold())
+                        Text(verbatim: model.name).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
                         if let pressure = model.pressure, let tag = SystemText.pressure(pressure) {
                             PressureTag(text: tag, description: SystemText.pressureDescription(pressure))
                         }
@@ -92,7 +93,7 @@ private struct SystemCard: View {
                 Divider()
                 HStack {
                     LabeledContent("Galaxy code") {
-                        Text(verbatim: galaxyCode).font(.body.monospaced()).textSelection(.enabled)
+                        Text(verbatim: galaxyCode).scaledFont(.body, design: .monospaced).textSelection(.enabled)
                     }
                     .accessibilityIdentifier(AXID.Bridge.galaxyCode)
                     Spacer()
@@ -130,7 +131,7 @@ private struct SystemFacts: View {
 
     private func row(_ title: LocalizedStringResource, @ViewBuilder value: () -> some View) -> some View {
         GridRow {
-            Text(title).foregroundStyle(.secondary)
+            Text(title).foregroundStyle(.readableSecondary)
             value()
         }
         .accessibilityElement(children: .combine)
@@ -164,7 +165,7 @@ private struct PressureTag: View {
 
     var body: some View {
         Label { Text(text) } icon: { Image(systemName: "exclamationmark.triangle.fill") }
-            .font(.caption.bold())
+            .scaledFont(.caption, weight: .bold)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(Capsule().fill(Color.orange.opacity(0.2)))
@@ -191,9 +192,14 @@ private struct DockServiceCard: View {
                     gaugeText
                 }
                 .gaugeStyle(.linearCapacity)
-                .accessibilityLabel(gaugeText)
+                // A11Y-004: a progress element with "11 of 14" / "78 percent" (a labelled gauge has no role).
+                .accessibilityRepresentation {
+                    ProgressView(value: Double(model.current), total: Double(max(1, model.maximum))) { gaugeText }
+                        .accessibilityValue(Text(verbatim: isFuel ? AccessibilityText.of(model.current, model.maximum)
+                                                     : AccessibilityText.percent(model.percent)))
+                }
                 if model.isComplete {
-                    Text(isFuel ? "Tank full" : "No repairs needed").foregroundStyle(.secondary)
+                    Text(isFuel ? "Tank full" : "No repairs needed").foregroundStyle(.readableSecondary)
                 } else {
                     controls
                 }
@@ -221,6 +227,7 @@ private struct DockServiceCard: View {
                 }
                 .disabled(model.blocker != nil)
                 .help(reason.map { Text($0) } ?? Text(isFuel ? "Buy a full tank." : "Repair the hull completely."))
+                .accessibilityHint(Text(AccessibilityHints.fillUp))  // A11Y-005
                 .accessibilityIdentifier(isFuel ? AXID.Bridge.fuelFillUp : AXID.Bridge.repairFull)
                 Spacer()
             }
@@ -244,7 +251,7 @@ private struct DockServiceCard: View {
                         .accessibilityIdentifier(isFuel ? AXID.Bridge.fuelBuy : AXID.Bridge.repairBuy)
                 }
             } else if let reason {
-                Text(reason).font(.callout).foregroundStyle(.secondary)
+                Text(reason).scaledFont(.callout).foregroundStyle(.readableSecondary)
             }
         }
     }
@@ -296,10 +303,11 @@ private struct TargetCard: View {
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 10) {
+                InlineTipView(tip: WarpTip(), id: .warp)  // A11Y-043 (UX-VISION §11)
                 if let model, model.system.index != session.state?.commander.currentSystem {
                     details(model)
                 } else {
-                    Text("No target selected. Use ‹ › or the toolbar to choose one.").foregroundStyle(.secondary)
+                    Text("No target selected. Use ‹ › or the toolbar to choose one.").foregroundStyle(.readableSecondary)
                 }
                 if let jump = model?.jump, jump.rejection == nil, let state = session.state {
                     Label { Text("Singularity destination: \(Names.system(jump.destination, in: state))") } icon: {
@@ -332,6 +340,7 @@ private struct TargetCard: View {
                             .keyboardShortcut(.defaultAction)
                             .disabled(!model.warp.isEnabled)
                             .help(model.warp.help)
+                            .accessibilityHint(Text(AccessibilityHints.warp(to: model.system.name)))  // A11Y-005
                             .accessibilityIdentifier(AXID.Bridge.targetWarp)
                     }
                 }
@@ -347,7 +356,7 @@ private struct TargetCard: View {
 
     @ViewBuilder
     private func details(_ model: TargetCardModel) -> some View {
-        Text(verbatim: model.system.name).font(.title3.bold())
+        Text(verbatim: model.system.name).scaledFont(.title3, weight: .bold).accessibilityAddTraits(.isHeader)
         if model.viaWormhole, let state = session.state {
             Label { Text("Wormhole to \(Names.system(model.system.index, in: state))") } icon: { Image(systemName: "tornado") }
         }
@@ -355,13 +364,13 @@ private struct TargetCard: View {
         Divider()
         Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
             GridRow {
-                Text("Distance").foregroundStyle(.secondary)
+                Text("Distance").foregroundStyle(.readableSecondary)
                 Text("\(model.preview.distance) parsecs").monospacedDigit()
             }
             .accessibilityElement(children: .combine)
             if model.preview.inRange {
                 GridRow {
-                    Text("Fuel after the jump").foregroundStyle(.secondary)
+                    Text("Fuel after the jump").foregroundStyle(.readableSecondary)
                     Text("\(model.preview.fuelAfter) parsecs").monospacedDigit()
                 }
                 .accessibilityElement(children: .combine)
@@ -369,7 +378,7 @@ private struct TargetCard: View {
             }
         }
         if !model.preview.inRange {
-            Text("Out of range").foregroundStyle(.red).bold()
+            Text("Out of range").foregroundStyle(.signalRed).bold()
         }
         HStack {
             if model.showsTrack {
@@ -402,7 +411,7 @@ private struct TargetCard: View {
 
     private func costRow(_ title: LocalizedStringResource, _ value: Int) -> some View {
         GridRow {
-            Text(title).foregroundStyle(.secondary)
+            Text(title).foregroundStyle(.readableSecondary)
             Text("\(value.formatted()) cr.").monospacedDigit()
         }
         .accessibilityElement(children: .combine)

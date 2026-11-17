@@ -17,22 +17,22 @@ struct IntelTargetCell: View {
             if let quote, let sell = quote.sell {
                 HStack(spacing: 6) {
                     Text(verbatim: sell.formatted()).monospacedDigit()
-                    Text(verbatim: IntelText.age(quote)).font(.caption2).foregroundStyle(.secondary)
+                    Text(verbatim: IntelText.age(quote)).scaledFont(.caption2).foregroundStyle(.readableSecondary)
                     if let buyHere {
                         let diff = sell - buyHere
                         Text(verbatim: "\(IntelText.arrow(diff)) \(IntelText.signed(diff))")
-                            .font(.caption)
+                            .scaledFont(.caption)
                             .monospacedDigit()
-                            .foregroundStyle(diff > 0 ? Color.green : diff < 0 ? Color.red : Color.secondary)
+                            .foregroundStyle(diff > 0 ? Color.signalGreen : diff < 0 ? Color.signalRed : Color.secondary)
                     }
                     if let profitPerBay {
-                        Text("\(IntelText.signed(profitPerBay))/bay").font(.caption2).monospacedDigit()
+                        Text("\(IntelText.signed(profitPerBay))/bay").scaledFont(.caption2).monospacedDigit()
                     }
                 }
                 .opacity(quote.staleness == .old ? 0.55 : 1)
                 .help(IntelText.help(quote))
             } else {
-                Text(verbatim: "—").foregroundStyle(.secondary).accessibilityLabel(Text("No target price"))
+                Image(systemName: "minus").accessibilityLabel(Text("No target price"))
                     .help(quote.map(IntelText.help) ?? String(localized: "The target is this system."))
             }
         }
@@ -56,11 +56,12 @@ struct PriceSparkline: View {
                 .chartYAxis(.hidden)
                 .frame(width: 70, height: 20)
             } else {
-                Text("No history").font(.caption2).foregroundStyle(.secondary)
+                Text("No history").scaledFont(.caption2).foregroundStyle(.readableSecondary)
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("History"))
+        .accessibilityAddTraits(.isImage)
         .accessibilityValue(Text(verbatim: IntelText.historyValue(series)))
         .accessibilityIdentifier(AXID.MarketIntel.history(item))
     }
@@ -77,7 +78,7 @@ struct RecommendationStripView: View {
         let targetName = Names.system(intel.target, in: state)
         VStack(alignment: .leading, spacing: 4) {
             if intel.bestBuys.isEmpty && intel.bestDestinations.isEmpty {
-                Text("No profitable trade known").foregroundStyle(.secondary)
+                Text("No profitable trade known").foregroundStyle(.readableSecondary)
             }
             ForEach(Array(intel.bestBuys.enumerated()), id: \.offset) { n, r in
                 Button {
@@ -104,7 +105,7 @@ struct RecommendationStripView: View {
                 .accessibilityIdentifier(AXID.MarketIntel.recommendationDestination(n + 1))
             }
         }
-        .font(.callout)
+        .scaledFont(.callout)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
@@ -130,7 +131,7 @@ struct PriceExplanationPanel: View {
         VStack(alignment: .leading, spacing: 4) {
             if let item, let explanation, !explanation.steps.isEmpty {
                 HStack {
-                    Text("Why this price? \(Text(Names.item(item)))").font(.headline)
+                    Text("Why this price? \(Text(Names.item(item)))").scaledFont(.headline)
                     Spacer()
                     if explanation.steps.contains(where: \.isNeutral) {
                         Button(showAll ? "Hide unchanged" : "Show all") { showAll.toggle() }
@@ -144,13 +145,13 @@ struct PriceExplanationPanel: View {
                         Spacer()
                         Text(verbatim: step.factor == .base ? step.valueAfter.formatted() : IntelText.signed(step.delta))
                             .monospacedDigit()
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.readableSecondary)
                         Text(verbatim: step.valueAfter.formatted()).monospacedDigit().frame(width: 60, alignment: .trailing)
                     }
-                    .font(.callout)
+                    .scaledFont(.callout)
                 }
             } else {
-                Text("Select a commodity to see how its price is made").foregroundStyle(.secondary)
+                Text("Select a commodity to see how its price is made").foregroundStyle(.readableSecondary)
             }
         }
         .padding(.horizontal, 12)

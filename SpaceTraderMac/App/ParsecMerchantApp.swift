@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import AppKit
 import ParsecEngine
 import SwiftUI
 
@@ -14,6 +15,36 @@ enum SceneMetrics {
     static let mainWindowID = "main"
 }
 
+/// `-PMWindowSize min|default` (A11Y-002): sets the hosting window to the main window's minimum or default size and centres
+/// it, ignoring the restored frame.
+struct LaunchWindowSizer: NSViewRepresentable {
+    let size: CGSize
+
+    final class SizerView: NSView {
+        var size = CGSize.zero
+        /// Applied once per process: later moves (Welcome ↔ playing shell) keep the user's frame.
+        static var applied = false
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window, !Self.applied else { return }
+            Self.applied = true
+            let size = size
+            DispatchQueue.main.async {
+                window.setContentSize(size)
+                window.center()
+            }
+        }
+    }
+
+    func makeNSView(context: Context) -> SizerView {
+        let view = SizerView()
+        view.size = size
+        return view
+    }
+
+    func updateNSView(_ nsView: SizerView, context: Context) {}
+}
+
 @main
 struct ParsecMerchantApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
@@ -22,8 +53,14 @@ struct ParsecMerchantApp: App {
         Window("Parsec Merchant", id: SceneMetrics.mainWindowID) {
             RootView()
                 .modifier(FileTransferHost())
-                .modifier(AppTextSize())
+                .modifier(SceneAccessibility())
+                .background {
+                    if let size = appDelegate.launchOptions.windowSize {
+                        LaunchWindowSizer(size: size == .minimum ? SceneMetrics.mainMinimumSize : SceneMetrics.mainDefaultSize)
+                    }
+                }
                 .environment(appDelegate.session)
+                .environment(appDelegate.helpRouter)
         }
         .defaultSize(SceneMetrics.mainDefaultSize)
         .windowResizability(.contentMinSize)
@@ -32,7 +69,7 @@ struct ParsecMerchantApp: App {
         }
         Window("Galaxy Chart", id: GalaxyWindowMetrics.id) {
             GalaxyChartWindowView()
-                .modifier(AppTextSize())
+                .modifier(SceneAccessibility())
                 .environment(appDelegate.session)
         }
         .defaultSize(GalaxyWindowMetrics.defaultSize)
@@ -40,7 +77,7 @@ struct ParsecMerchantApp: App {
         .commandsRemoved()  // MENU-038: Window › Galaxy Chart comes from MenuCatalog (no duplicate auto item)
         Window("High Scores", id: HighScoresWindowView.windowID) {
             HighScoresWindowView()
-                .modifier(AppTextSize())
+                .modifier(SceneAccessibility())
                 .environment(appDelegate.session)
         }
         .defaultSize(HighScoresWindowView.defaultSize)
@@ -51,11 +88,13 @@ struct ParsecMerchantApp: App {
         }
         Window("About Parsec Merchant", id: AppWindowID.about) {
             AboutView()
+                .modifier(SceneAccessibility())
         }
         .windowResizability(.contentSize)
         .commandsRemoved()  // the About item comes from MenuCommands
         Window("Parsec Merchant Help", id: AppWindowID.help) {
             HelpView()
+                .modifier(SceneAccessibility())
                 .environment(appDelegate.helpRouter)
         }
         .defaultSize(width: 860, height: 600)

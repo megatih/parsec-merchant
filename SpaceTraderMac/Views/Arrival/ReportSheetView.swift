@@ -11,7 +11,7 @@ struct ReportSheetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label {
-                Text(ReportSheetText.title(sheet.kind)).font(.title2.bold())
+                Text(ReportSheetText.title(sheet.kind)).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             } icon: {
                 Image(systemName: ReportSheetText.symbol(sheet.kind))
             }
@@ -19,7 +19,7 @@ struct ReportSheetView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ForEach(Array(sheet.criticalSections.enumerated()), id: \.offset) { _, section in
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(verbatim: section.title).font(.headline)
+                            Text(verbatim: section.title).scaledFont(.headline)
                             ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
                                 Text(verbatim: line).fixedSize(horizontal: false, vertical: true)
                             }
@@ -27,7 +27,7 @@ struct ReportSheetView: View {
                     }
                     if let arrival = sheet.arrival {
                         if !sheet.criticalSections.isEmpty { Divider() }
-                        Text(verbatim: arrival.summary).font(.headline)
+                        Text(verbatim: arrival.summary).scaledFont(.headline)
                         ArrivalSectionsView(report: arrival)
                     }
                 }

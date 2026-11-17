@@ -17,7 +17,7 @@ struct EncounterView: View {
                let opponent = ShipPaneModel.opponent(state: engine.state, preview: preview) {
                 content(engine: engine, preview: preview, opponent: opponent)
             } else {
-                Text("Encounter").foregroundStyle(.secondary)
+                Text("Encounter").foregroundStyle(.readableSecondary)
             }
         }
         .padding(24)
@@ -83,8 +83,8 @@ private struct EncounterHeader: View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 if let intro {
-                    Text(verbatim: intro.headline).font(.title3)
-                    Text(verbatim: intro.action).foregroundStyle(.secondary)
+                    Text(verbatim: intro.headline).scaledFont(.title3)
+                    Text(verbatim: intro.action).foregroundStyle(.readableSecondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -96,13 +96,14 @@ private struct EncounterHeader: View {
                 EncounterBadgeGlyph(badge: badge.glyph)
                     .frame(width: 16, height: 16)
             }
-            .font(.callout.bold())
+            .scaledFont(.callout, weight: .bold)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(badge.isSpecial ? Color.yellow.opacity(0.35) : Color.secondary.opacity(0.15), in: Capsule())
             .overlay(Capsule().strokeBorder(badge.isSpecial ? Color.yellow : Color.clear, lineWidth: 1))
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(verbatim: badge.word))
+            .accessibilityAddTraits(.isStaticText)
             .accessibilityIdentifier(AXID.Encounter.badge)
         }
     }
@@ -119,7 +120,7 @@ private struct EncounterLogView: View {
             List(selection: $selection) {
                 ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
                     Text(verbatim: line.display)
-                        .font(.callout)
+                        .scaledFont(.callout)
                         .textSelection(.enabled)
                         .id(index)
                         .accessibilityIdentifier(AXID.Encounter.logRow(index))
@@ -140,6 +141,7 @@ private struct EncounterLogView: View {
             }
         }
         .frame(minHeight: 140)
+        .accessibilityLabel(Text("Combat log"))  // A11Y-003
         .accessibilityIdentifier(AXID.Encounter.log)
     }
 }
@@ -166,7 +168,8 @@ private struct TribbleButton: View {
     let index: Int
     @Environment(GameSession.self) private var session
     @State private var wiggleStart: Date?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityPreferences) private var a11yPrefs
+    private var reduceMotion: Bool { a11yPrefs.reduceMotion }
 
     var body: some View {
         Button {
@@ -199,20 +202,20 @@ private struct TacticalReadoutPanel: View {
     var body: some View {
         Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
             GridRow {
-                Text("Class").foregroundStyle(.secondary)
+                Text("Class").foregroundStyle(.readableSecondary)
                 Text(verbatim: TacticalText.shipClass(readout, ruleset: ruleset))
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier(AXID.Encounter.tacticalClass)
             GridRow {
-                Text("Equipment").foregroundStyle(.secondary)
+                Text("Equipment").foregroundStyle(.readableSecondary)
                 Text(verbatim: TacticalText.equipment(readout))
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier(AXID.Encounter.tacticalEquipment)
             if let odds = TacticalText.fleeOdds(readout) {
                 GridRow {
-                    Text("Flee odds").foregroundStyle(.secondary)
+                    Text("Flee odds").foregroundStyle(.readableSecondary)
                     Text(verbatim: odds)
                 }
                 .accessibilityElement(children: .combine)
@@ -220,25 +223,18 @@ private struct TacticalReadoutPanel: View {
             }
             if let metBefore {
                 GridRow {
-                    Text("History").foregroundStyle(.secondary)
+                    Text("History").foregroundStyle(.readableSecondary)
                     Text(verbatim: metBefore)
                 }
                 .accessibilityElement(children: .combine)
             }
         }
-        .font(.callout)
+        .scaledFont(.callout)
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
         .help(Text("An estimate from public information: the opponent's class, visible equipment and your flee odds."))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Encounter.tactical)
-    }
-}
-
-/// Posts VoiceOver announcements for new combat-log rows (UI-ENC-025).
-struct VoiceOverAnnouncer: EncounterAnnouncer {
-    func announce(_ text: String) {
-        AccessibilityNotification.Announcement(text).post()
     }
 }

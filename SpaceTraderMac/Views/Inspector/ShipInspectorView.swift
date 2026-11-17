@@ -22,6 +22,8 @@ struct ShipInspectorView: View {
                 costs(m)
             }
             .formStyle(.grouped)
+            .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
+            .scrollEdgeEffectHidden(true, for: .bottom)  // A11Y-029: no fade over the last rows
             .accessibilityIdentifier(AXID.Inspector.root)
         }
     }
@@ -34,9 +36,9 @@ struct ShipInspectorView: View {
                 ShipPortrait(input: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right))
                     .frame(width: 72, height: 48)
                 VStack(alignment: .leading) {
-                    Text(verbatim: m.commanderName).font(.headline)
+                    Text(verbatim: m.commanderName).scaledFont(.headline)
                     Text("\(String(localized: Names.difficulty(m.difficulty))) · Day \(m.days)")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.readableSecondary)
                     if let name = m.shipName {
                         Text("\(String(localized: Names.ship(m.shipType))) “\(name)”")
                     } else {
@@ -50,6 +52,11 @@ struct ShipInspectorView: View {
                     .frame(width: 120)
             }
             .help(Text("Hull strength as a percentage of the maximum."))
+            // A11Y-004: one progress element "Hull", "78 percent" (a gauge in a LabeledContent has no role).
+            .accessibilityRepresentation {
+                ProgressView(value: Double(m.hullPercent), total: 100) { Text("Hull") }
+                    .accessibilityValue(Text(verbatim: AccessibilityText.percent(m.hullPercent)))
+            }
             .accessibilityIdentifier(AXID.Inspector.hull)
             LabeledContent("Shields") {
                 if let s = m.shields {
@@ -127,7 +134,7 @@ struct ShipInspectorView: View {
                 }
             }
             if m.specialCargo.isEmpty {
-                Text("No special items.").foregroundStyle(.secondary)
+                Text("No special items.").foregroundStyle(.readableSecondary)
             } else {
                 ForEach(m.specialCargo.indices, id: \.self) { i in
                     Text(InspectorText.specialCargo(m.specialCargo[i]))
@@ -149,9 +156,9 @@ struct ShipInspectorView: View {
             }
             if m.escapePod { Text("Escape pod") }
             if m.hardenedHull { Text("Hardened hull") }
-            if m.freeWeaponSlots > 0 { Text("\(m.freeWeaponSlots) free weapon slots").foregroundStyle(.secondary) }
-            if m.freeShieldSlots > 0 { Text("\(m.freeShieldSlots) free shield slots").foregroundStyle(.secondary) }
-            if m.freeGadgetSlots > 0 { Text("\(m.freeGadgetSlots) free gadget slots").foregroundStyle(.secondary) }
+            if m.freeWeaponSlots > 0 { Text("\(m.freeWeaponSlots) free weapon slots").foregroundStyle(.readableSecondary) }
+            if m.freeShieldSlots > 0 { Text("\(m.freeShieldSlots) free shield slots").foregroundStyle(.readableSecondary) }
+            if m.freeGadgetSlots > 0 { Text("\(m.freeGadgetSlots) free gadget slots").foregroundStyle(.readableSecondary) }
         }
     }
 
@@ -161,7 +168,7 @@ struct ShipInspectorView: View {
             ForEach(m.crew, id: \.crewID) { row in
                 LabeledContent {
                     if row.isPassenger {
-                        Text("passenger").foregroundStyle(.secondary)
+                        Text("passenger").foregroundStyle(.readableSecondary)
                     } else {
                         Text("\(row.dailyWage.formatted()) cr./day").monospacedDigit()
                     }
@@ -169,7 +176,7 @@ struct ShipInspectorView: View {
                     Text(verbatim: Names.crew(row.crewID, in: state))
                 }
             }
-            Text("\(m.freeQuarters) free quarters").foregroundStyle(.secondary)
+            Text("\(m.freeQuarters) free quarters").foregroundStyle(.readableSecondary)
         }
     }
 
@@ -178,7 +185,7 @@ struct ShipInspectorView: View {
         SwiftUI.Section("Active Quests") {
             let log = state.questLog
             if log.isEmpty {
-                Text(QuestText.none).foregroundStyle(.secondary)
+                Text(QuestText.none).foregroundStyle(.readableSecondary)
             }
             ForEach(Array(log.enumerated()), id: \.offset) { i, entry in
                 Button { session.selectedSection = .quests } label: {

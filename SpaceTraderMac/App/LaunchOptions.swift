@@ -1,6 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import Foundation
 
+/// `-PMWindowSize` values (A11Y-002).
+nonisolated enum LaunchWindowSize: String, Sendable {
+    case minimum = "min"
+    case standard = "default"
+}
+
+/// `-PMTips` values (A11Y-002, A11Y-047).
+nonisolated enum TipsLaunchMode: String, Sendable {
+    /// `Tips.hideAllTipsForTesting()` before `configure` (every UI test).
+    case off
+    /// `Tips.showAllTipsForTesting()` before `configure` (TipsUITests).
+    case all
+}
+
 /// Debug launch arguments (CHEAT-047…051). Read by the app only; the engine never sees them.
 struct LaunchOptions: Equatable, Sendable {
     /// `-PMSeed <n>`: New Game and Quick Start use this seed (CHEAT-048).
@@ -15,6 +29,14 @@ struct LaunchOptions: Equatable, Sendable {
     var audioOff = false
     /// `-PMResetState`: wipe the Debug build's Application Support folder and defaults before anything is read (CHEAT-051).
     var resetState = false
+    /// `-PMA11y <list>`: forces accessibility display settings on (A11Y-002), OR'd with the system's (A11Y-001).
+    var accessibility = AccessibilityPreferences.standard
+    /// `-PMTips off|all`: hides every tip or shows all of them (A11Y-047). Nil: TipKit's own rules.
+    var tips: TipsLaunchMode?
+    /// `-PMWindowSize min|default`: opens the main window at its 1100×720 minimum (A11Y-002) or its 1320×860 default size,
+    /// centred, ignoring the restored frame (UI tests use `default` so every run starts from the same frame).
+    var windowSize: LaunchWindowSize?
+    var minimumWindow: Bool { windowSize == .minimum }
 
     static let none = LaunchOptions()
 
@@ -62,6 +84,21 @@ struct LaunchOptions: Equatable, Sendable {
                 o.resetState = true
                 if let v = value(after: i), ["YES", "NO", "1", "0", "true", "false"].contains(v) {
                     o.resetState = ["YES", "1", "true"].contains(v)
+                    i += 1
+                }
+            case "-PMA11y":
+                if let v = value(after: i), !v.hasPrefix("-") {
+                    o.accessibility = AccessibilityPreferences.parse(list: v)
+                    i += 1
+                }
+            case "-PMTips":
+                if let v = value(after: i), !v.hasPrefix("-") {
+                    o.tips = TipsLaunchMode(rawValue: v)
+                    i += 1
+                }
+            case "-PMWindowSize":
+                if let v = value(after: i), !v.hasPrefix("-") {
+                    o.windowSize = LaunchWindowSize(rawValue: v)
                     i += 1
                 }
             default:

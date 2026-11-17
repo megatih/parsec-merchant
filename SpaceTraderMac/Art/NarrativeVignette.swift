@@ -52,6 +52,7 @@ struct NarrativeVignetteView: View {
             .frame(width: 96, height: 72)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(NarrativeVignette.kind(for: type).isShip ? Text("Ship") : Text("Illustration"))
+            .accessibilityAddTraits(.isImage)
     }
 }
 

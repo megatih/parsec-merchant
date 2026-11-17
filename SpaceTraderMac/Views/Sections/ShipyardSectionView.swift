@@ -58,26 +58,25 @@ struct ShipyardSectionView: View {
                 EscapePodStripView(strip: model.escapePod)
                 if !model.hasShipsForSale {
                     Text("No ships for sale here.")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
+                        .scaledFont(.headline)
+                        .foregroundStyle(.readableSecondary)
                 }
                 if selection.isComparing {
                     ShipCompareView(rows: ShipCompare.rows(model, selection: selection)) { selection.clear() }
                 }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 12)], spacing: 12) {
+                AccessibleLazyVGrid(label: "Ships", columns: [GridItem(.adaptive(minimum: 230), spacing: 12)], spacing: 12) {
                     ForEach(model.cards) { card in
-                        ShipCardView(card: card, selected: selection.contains(card.type)) {
+                        ShipCardView(card: card, selected: selection.contains(card.type), onBuy: {
                             session.present(.sheet(.shipPurchase(.ship(card.type))))
-                        }
-                        .onTapGesture {
+                        }, onCompare: { selection.click(card.type, command: true) }, onTap: {
                             selection.click(card.type, command: NSEvent.modifierFlags.contains(.command))
-                        }
+                        })
                     }
                 }
                 if !model.cards.isEmpty {
                     Text("Click a ship to select it; ⌘-click two or more to compare them.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .scaledFont(.footnote)
+                        .foregroundStyle(.readableSecondary)
                 }
             }
             .padding()
@@ -90,6 +89,9 @@ private struct ShipCardView: View {
     let card: ShipCardModel
     let selected: Bool
     let onBuy: () -> Void
+    var onCompare: () -> Void = {}
+    /// Click selects, ⌘-click adds to the comparison (applied inside, so the card stays one labelled element).
+    var onTap: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -97,13 +99,13 @@ private struct ShipCardView: View {
                 ShipPortrait(input: ArtAdapters.specInput(card.type, spec: card.spec))
                     .frame(width: 66, height: 44)
                 VStack(alignment: .leading) {
-                    Text(Names.ship(card.type)).font(.headline)
-                    Text(Names.size(card.spec.size)).font(.caption).foregroundStyle(.secondary)
+                    Text(Names.ship(card.type)).scaledFont(.headline)
+                    Text(Names.size(card.spec.size)).scaledFont(.caption).foregroundStyle(.readableSecondary)
                 }
                 Spacer()
                 if card.isYours {
                     Text("Yours")
-                        .font(.caption.bold())
+                        .scaledFont(.caption, weight: .bold)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(.tint.opacity(0.2), in: Capsule())
@@ -112,17 +114,17 @@ private struct ShipCardView: View {
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 2) {
                 ForEach(ShipStatField.allCases, id: \.self) { f in
                     GridRow {
-                        Text(f.title).foregroundStyle(.secondary)
+                        Text(f.title).foregroundStyle(.readableSecondary)
                         Text(verbatim: f.value(card.spec).formatted()).monospacedDigit()
                     }
                 }
             }
-            .font(.callout)
+            .scaledFont(.callout)
             price
             if let blocker = card.blocker {
                 Text(ReasonText.text(for: blocker))
-                    .font(.footnote)
-                    .foregroundStyle(.orange)
+                    .scaledFont(.footnote)
+                    .foregroundStyle(.signalOrange)
             }
             if card.canOpenPurchase {
                 Button("Buy…", action: onBuy)
@@ -138,19 +140,23 @@ private struct ShipCardView: View {
                 .strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 2)
         }
         .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(selected ? .isSelected : [])
+        .modifier(RowAccessibilityModifier(row: ShipCardAccessibility.make(card)) { kind in
+            kind == .buy ? onBuy() : onCompare()
+        })  // A11Y-007
         .accessibilityIdentifier(AXID.Shipyard.ship(card.type))
     }
 
     @ViewBuilder private var price: some View {
         switch card.price {
         case let .pay(n)?:
-            Text("\(n.formatted()) cr.").font(.headline).monospacedDigit()
+            Text("\(n.formatted()) cr.").scaledFont(.headline).monospacedDigit()
         case let .receive(n)?:
-            Text("You get \(n.formatted()) cr.").font(.headline).monospacedDigit()
+            Text("You get \(n.formatted()) cr.").scaledFont(.headline).monospacedDigit()
         case nil:
-            Text("Your current ship").foregroundStyle(.secondary)
+            Text("Your current ship").foregroundStyle(.readableSecondary)
         }
     }
 }
@@ -163,7 +169,7 @@ private struct ShipCompareView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Compare").font(.headline)
+                Text("Compare").scaledFont(.headline)
                 Spacer()
                 Button("Clear Selection", action: onClear)
                     .keyboardShortcut(.cancelAction)
@@ -177,14 +183,14 @@ private struct ShipCompareView: View {
                 }
                 ForEach(rows) { row in
                     GridRow {
-                        Text(row.field.title).foregroundStyle(.secondary)
+                        Text(row.field.title).foregroundStyle(.readableSecondary)
                         Text(verbatim: row.current.formatted()).monospacedDigit()
                         ForEach(row.cells, id: \.type) { cell in
                             HStack(spacing: 4) {
                                 Text(verbatim: cell.value.formatted()).monospacedDigit()
                                 Text(verbatim: ShipCompare.deltaText(cell.delta))
-                                    .font(.caption)
-                                    .foregroundStyle(cell.delta > 0 ? .green : (cell.delta < 0 ? .red : .secondary))
+                                    .scaledFont(.caption)
+                                    .foregroundStyle(cell.delta > 0 ? .signalGreen : (cell.delta < 0 ? .signalRed : .secondary))
                             }
                         }
                     }
@@ -213,12 +219,12 @@ private struct EscapePodStripView: View {
                     .help(strip.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Ejects you safely when your ship is destroyed."))
                     .accessibilityIdentifier(AXID.Shipyard.escapePodBuy)
                 if let blocker = strip.blocker {
-                    Text(ReasonText.text(for: blocker)).font(.footnote).foregroundStyle(.secondary)
+                    Text(ReasonText.text(for: blocker)).scaledFont(.footnote).foregroundStyle(.readableSecondary)
                 }
             }
             Divider().frame(height: 20)
             Text(strip.insured ? "Insured" : "Not insured")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
             Button("Insurance in Bank…") { session.selectedSection = .bank }
                 .buttonStyle(.link)
                 .accessibilityIdentifier(AXID.Shipyard.insuranceBank)

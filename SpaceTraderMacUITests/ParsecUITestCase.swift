@@ -15,7 +15,7 @@ class ParsecUITestCase: XCTestCase {
     override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = launchArguments
+        app.launchArguments = Self.withTipsOff(launchArguments)
         app.launch()
         XCTAssertTrue(mainWindow.waitForExistence(timeout: timeout), "the main window opens at launch")
     }
@@ -23,9 +23,18 @@ class ParsecUITestCase: XCTestCase {
     /// Terminates the app and launches it again with `arguments` (for tests that walk several scenarios).
     func relaunch(_ arguments: [String], file: StaticString = #filePath, line: UInt = #line) {
         app.terminate()
-        app.launchArguments = arguments
+        app.launchArguments = Self.withTipsOff(arguments)
         app.launch()
         XCTAssertTrue(mainWindow.waitForExistence(timeout: timeout), "the main window opens at launch", file: file, line: line)
+    }
+
+    /// A11Y-047: every launch hides all tips (`-PMTips off`) unless the arguments choose a tips mode themselves; and it
+    /// ignores saved window state, so a window or frame restored from another run never covers or moves the main window.
+    static func withTipsOff(_ arguments: [String]) -> [String] {
+        var a = arguments.contains("-PMTips") ? arguments : arguments + ["-PMTips", "off"]
+        // No restored windows (a Galaxy Chart or High Scores window left open by another run would cover the main window).
+        if !a.contains("-ApplePersistenceIgnoreState") { a += ["-ApplePersistenceIgnoreState", "YES"] }
+        return a
     }
 
     override func tearDown() async throws {

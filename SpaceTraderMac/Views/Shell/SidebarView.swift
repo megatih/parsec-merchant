@@ -13,8 +13,8 @@ struct SidebarView: View {
         List(selection: selectionBinding(locked: lock != .none)) {
             if let label = lock.label {
                 Text(label)
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
+                    .scaledFont(.caption, weight: .bold)
+                    .foregroundStyle(.readableSecondary)
                     .accessibilityIdentifier(AXID.Transit.sidebarPhaseLabel)
             }
             ForEach(Section.allCases) { section in
@@ -44,15 +44,17 @@ private struct SidebarRow: View {
 
     var body: some View {
         HStack {
-            Label { Text(section.title) } icon: { Image(systemName: section.systemImage) }
+            // A11Y-029: the icon is its own (hidden) image, so the title is measured on its own for contrast.
+            Image(systemName: section.systemImage).foregroundStyle(.tint).frame(width: 20).accessibilityHidden(true)
+            Text(section.title)
             Spacer()
             if let badge {
                 badgeView(badge)
                     .accessibilityLabel(Text(badge.accessibilityLabel))
             }
             Text(verbatim: "⌘\(section.shortcutDigit)")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .scaledFont(.caption)
+                .foregroundStyle(.readableSecondary)
                 .accessibilityHidden(true)
         }
     }
@@ -66,16 +68,17 @@ private struct SidebarRow: View {
                 .accessibilityIdentifier(AXID.Sidebar.bridgeBadge)
         case let .count(n):
             Text(verbatim: "\(n)")
-                .font(.caption.bold())
+                .scaledFont(.caption, weight: .bold)
                 .padding(.horizontal, 6)
                 .background(Capsule().fill(.quaternary))
                 .accessibilityIdentifier(AXID.Sidebar.crewBadge)
         case .debtWarning:
             HStack(spacing: 2) {
                 Circle().fill(.red).frame(width: 8, height: 8)
-                Image(systemName: "exclamationmark").font(.caption.bold()).foregroundStyle(.red)
+                Image(systemName: "exclamationmark").scaledFont(.caption, weight: .bold).foregroundStyle(.signalRed)
             }
             .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: AccessibilityText.bankDebtBadge))  // A11Y-004
             .accessibilityIdentifier(AXID.Sidebar.bankBadge)
         }
     }

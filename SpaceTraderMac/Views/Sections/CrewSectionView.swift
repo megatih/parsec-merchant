@@ -28,8 +28,8 @@ struct CrewSectionView: View {
 
     private func quarters(_ model: CrewModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Crew Quarters").font(.title3.bold())
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
+            Text("Crew Quarters").scaledFont(.title3, weight: .bold).accessibilityAddTraits(.isHeader)
+            AccessibleLazyVGrid(label: "Crew Quarters", columns: columns, alignment: .leading, spacing: 12) {
                 ForEach(model.seats) { seat in
                     SeatCard(seat: seat, standing: model.standing) { id in session.send(.fire(crewID: id)) }
                 }
@@ -39,11 +39,11 @@ struct CrewSectionView: View {
 
     private func forHire(_ model: CrewModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("For Hire").font(.title3.bold())
+            Text("For Hire").scaledFont(.title3, weight: .bold).accessibilityAddTraits(.isHeader)
             if model.forHire.isEmpty {
-                Text("No one for hire").foregroundStyle(.secondary)
+                Text("No one for hire").foregroundStyle(.readableSecondary)
             } else {
-                LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
+                AccessibleLazyVGrid(label: "For Hire", columns: columns, alignment: .leading, spacing: 12) {
                     ForEach(model.forHire) { card in
                         HireCardView(card: card) { session.send(.hire(crewID: card.crewID)) }
                     }
@@ -69,11 +69,11 @@ private struct SeatCard: View {
             case let .mercenary(id, name, skills, wage):
                 header(name, badge: nil, crewID: id)
                 SkillBars(skills: skills)
-                Text("\(wage.formatted()) cr. daily").monospacedDigit().foregroundStyle(.secondary)
+                Text("\(wage.formatted()) cr. daily").monospacedDigit().foregroundStyle(.readableSecondary)
             case let .passenger(id, name):
                 header(name, badge: "Passenger", crewID: id)
             case .vacant:
-                Text("Vacant").font(.headline).foregroundStyle(.secondary)
+                Text("Vacant").scaledFont(.headline).foregroundStyle(.readableSecondary)
             }
             if seat.canBeFired, let id = seat.crewID {
                 Button("Fire", role: .destructive) { fire(id) }
@@ -81,7 +81,7 @@ private struct SeatCard: View {
                     .help(seat.fireBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Dismiss this crew member."))
                     .accessibilityIdentifier(AXID.Crew.fire(id))
                 if let blocker = seat.fireBlocker {
-                    Text(ReasonText.text(for: blocker)).font(.caption).foregroundStyle(.secondary)
+                    Text(ReasonText.text(for: blocker)).scaledFont(.caption).foregroundStyle(.readableSecondary)
                 }
             }
         }
@@ -89,17 +89,21 @@ private struct SeatCard: View {
         .padding(12)
         .background(.background.secondary, in: .rect(cornerRadius: 10))
         .accessibilityElement(children: .contain)
+        .modifier(RowAccessibilityModifier(row: CrewRowAccessibility.make(seat)
+                                           ?? RowAccessibility(label: String(localized: "Vacant"), value: "", actions: [])) { _ in
+            if let id = seat.crewID, seat.canBeFired, seat.fireBlocker == nil { fire(id) }
+        })
         .accessibilityIdentifier(AXID.Crew.seat(seat.index))
     }
 
     private func header(_ name: String, badge: LocalizedStringResource?, crewID: Int) -> some View {
         HStack {
             CrewAvatarView(crewID: crewID)
-            Text(verbatim: name).font(.headline)
+            Text(verbatim: name).scaledFont(.headline)
             Spacer()
             if let badge {
                 Text(badge)
-                    .font(.caption.bold())
+                    .scaledFont(.caption, weight: .bold)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(.tint.opacity(0.2), in: .capsule)
@@ -113,8 +117,8 @@ private struct SeatCard: View {
             Text("Reputation: \(String(localized: Names.reputation(standing.reputation)))")
             Text("Kills: \(standing.kills)")
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
+        .scaledFont(.caption)
+        .foregroundStyle(.readableSecondary)
     }
 }
 
@@ -127,7 +131,7 @@ private struct HireCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 CrewAvatarView(crewID: card.crewID)
-                Text(verbatim: card.name).font(.headline)
+                Text(verbatim: card.name).scaledFont(.headline)
             }
             SkillBars(skills: card.skills)
             HStack {
@@ -139,11 +143,13 @@ private struct HireCardView: View {
                     .accessibilityIdentifier(AXID.Crew.hire(card.crewID))
             }
             if let blocker = card.blocker {
-                Text(ReasonText.text(for: blocker)).font(.caption).foregroundStyle(.secondary)
+                Text(ReasonText.text(for: blocker)).scaledFont(.caption).foregroundStyle(.readableSecondary)
             }
         }
         .padding(12)
         .background(.background.secondary, in: .rect(cornerRadius: 10))
+        .accessibilityElement(children: .contain)
+        .modifier(RowAccessibilityModifier(row: CrewRowAccessibility.make(card)) { _ in if card.blocker == nil { hire() } })
     }
 }
 
@@ -152,14 +158,16 @@ private struct SkillBars: View {
     let skills: [Int]
 
     var body: some View {
-        Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 2) {
+        Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 2) {  // room between bar and number (A11Y-029)
             ForEach(SkillType.allCases, id: \.self) { skill in
                 let value = skills.indices.contains(skill.rawValue) ? skills[skill.rawValue] : 0
                 GridRow {
-                    Text(Names.skill(skill)).font(.caption)
+                    Text(Names.skill(skill)).scaledFont(.caption)
+                    // A11Y-029: the number sits between the texts, not against the bar's fill.
+                    Text(verbatim: value.formatted()).scaledFont(.caption).monospacedDigit()
                     ProgressView(value: Double(min(max(value, 0), 10)), total: 10)
                         .frame(width: 90)
-                    Text(verbatim: value.formatted()).font(.caption).monospacedDigit()
+                        .accessibilityHidden(true)
                 }
                 .accessibilityElement(children: .combine)
             }
@@ -173,7 +181,7 @@ private struct EffectiveSkillsPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Effective Skills").font(.title3.bold())
+            Text("Effective Skills").scaledFont(.title3, weight: .bold).accessibilityAddTraits(.isHeader)
             Grid(alignment: .trailing, horizontalSpacing: 16, verticalSpacing: 6) {
                 GridRow {
                     Text("Skill").gridColumnAlignment(.leading)
@@ -183,15 +191,20 @@ private struct EffectiveSkillsPanel: View {
                     Text("Difficulty")
                     Text("Effective")
                 }
-                .font(.caption.bold())
-                .foregroundStyle(.secondary)
+                .scaledFont(.caption, weight: .bold)
+                .foregroundStyle(.readableSecondary)
                 Divider()
                 ForEach(model.skills) { row in
                     GridRow {
                         Text(Names.skill(row.skill))
                         Text(verbatim: row.crewMaximum.formatted())
                         Text(verbatim: signed(row.gadgetBonus))
-                        Text(verbatim: row.skill == .trader ? signed(row.hagglingBonus) : "–")
+                        if row.skill == .trader {
+                            Text(verbatim: signed(row.hagglingBonus))
+                        } else {
+                            // A11Y-029: a symbol, not a dash glyph too thin to measure.
+                            Image(systemName: "minus").accessibilityLabel(Text("Not applicable"))
+                        }
                         Text(verbatim: signed(row.difficultyAdjustment))
                         Text(verbatim: row.effective.formatted()).bold()
                     }
@@ -202,7 +215,7 @@ private struct EffectiveSkillsPanel: View {
                 Text("Free quarters: \(model.freeQuarters)")
                 Text("Daily wages: \(model.dailyWages.formatted()) cr.").monospacedDigit()
             }
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.readableSecondary)
         }
         .padding(12)
         .background(.background.secondary, in: .rect(cornerRadius: 10))

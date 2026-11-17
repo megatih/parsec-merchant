@@ -3,12 +3,6 @@ import Foundation
 import Observation
 import ParsecEngine
 
-/// Posts VoiceOver announcements (UI-ENC-025). The app posts `AccessibilityNotification.Announcement`; tests record.
-@MainActor
-protocol EncounterAnnouncer {
-    func announce(_ text: String)
-}
-
 /// The Encounter view's session state (UI-ENC-024, -025, -033, -038, -043, -049): the combat log, the header, the
 /// auto-repeat driver and switch, and the Make Room flow. Not saved.
 @Observable @MainActor
@@ -23,11 +17,23 @@ final class EncounterSession {
     fileprivate(set) var autoRepeatEnabled = true
     /// UI-ENC-049: the canister waiting while the player makes room (the jettison sheet over the Encounter view).
     fileprivate(set) var makeRoomItem: TradeItemType?
-    /// UI-ENC-025: the last announcement (one per step).
+    /// UI-ENC-025 / A11Y-011: the last announcement (one per step).
     private(set) var lastAnnouncement: String?
+    /// The current step's new combat rows, joined; the session posts them with the rest of the step (A11Y-011).
+    @ObservationIgnored private(set) var pendingCombatText: String?
 
     @ObservationIgnored let driver = AutoRepeatDriver()
-    @ObservationIgnored var announcer: any EncounterAnnouncer = VoiceOverAnnouncer()
+    /// A11Y-011: the session's one announcer (`GameSession.announcer` reads and writes this).
+    @ObservationIgnored var announcer: any Announcer = VoiceOverAnnouncer()
+
+    /// Takes the combat text collected during the step.
+    func takePendingCombatText() -> String? {
+        defer { pendingCombatText = nil }
+        return pendingCombatText
+    }
+
+    /// Records what the session posted for the step.
+    func noteAnnounced(_ text: String) { lastAnnouncement = text }
 
     fileprivate func start(intro: EncounterIntro?) {
         log = []
@@ -39,9 +45,7 @@ final class EncounterSession {
     fileprivate func append(_ lines: [CombatLogLine]) {
         guard !lines.isEmpty else { return }
         log.append(contentsOf: lines)
-        let text = lines.map(\.display).joined(separator: " ")
-        lastAnnouncement = text
-        announcer.announce(text)
+        pendingCombatText = lines.map(\.display).joined(separator: " ")
     }
 
     fileprivate func markActed() { actedInEncounter = true }
@@ -53,6 +57,7 @@ final class EncounterSession {
         actedInEncounter = false
         makeRoomItem = nil
         lastAnnouncement = nil
+        pendingCombatText = nil
         guard let state, let resumedIntro = EncounterIntro.resumed(state: state) else { return }
         intro = resumedIntro
         actedInEncounter = true

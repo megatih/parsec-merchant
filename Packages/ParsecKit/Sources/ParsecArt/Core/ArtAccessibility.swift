@@ -25,12 +25,19 @@ public struct ArtAccessibility: Sendable, Hashable {
     public func ambientPhase(_ phase: Double) -> Double { reduceMotion ? 0 : phase }
 }
 
+extension EnvironmentValues {
+    /// The host app's resolved settings (system OR'd with its debug overrides). When set, art reads this instead of the
+    /// four system environment values.
+    @Entry public var artAccessibilityOverride: ArtAccessibility?
+}
+
 /// Reads the four settings from the environment for a host view.
 public struct ArtAccessibilityReader<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.artAccessibilityOverride) private var override
     private let content: (ArtAccessibility) -> Content
 
     public init(@ViewBuilder content: @escaping (ArtAccessibility) -> Content) {
@@ -38,7 +45,8 @@ public struct ArtAccessibilityReader<Content: View>: View {
     }
 
     public var body: some View {
-        content(ArtAccessibility(reduceMotion: reduceMotion, increaseContrast: contrast == .increased,
-                                 reduceTransparency: reduceTransparency, differentiateWithoutColor: differentiateWithoutColor))
+        content(override ?? ArtAccessibility(reduceMotion: reduceMotion, increaseContrast: contrast == .increased,
+                                             reduceTransparency: reduceTransparency,
+                                             differentiateWithoutColor: differentiateWithoutColor))
     }
 }

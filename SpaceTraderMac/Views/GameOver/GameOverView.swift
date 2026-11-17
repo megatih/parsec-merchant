@@ -35,21 +35,22 @@ struct GameOverView: View {
                 .frame(width: 280, height: 150)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(Names.ending(m.end)))
+                .accessibilityAddTraits(.isImage)
                 .accessibilityIdentifier(AXID.GameOver.vignette)
             Text(Names.ending(m.end))
-                .font(.largeTitle.bold())
+                .scaledFont(.largeTitle, weight: .bold)
                 .multilineTextAlignment(.center)
             if let cause = m.cause {
                 Text(verbatim: CareerText.cause(cause))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
             }
             Text(verbatim: CareerText.score(m.scoreText))
-                .font(.title3)
+                .scaledFont(.title3)
                 .monospacedDigit()
                 .accessibilityIdentifier(AXID.GameOver.score)
             if let outcome = m.highScoreText {
                 Text(verbatim: outcome)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
                     .accessibilityIdentifier(AXID.GameOver.highScore)
             }
             CareerCardView(card: m.career)

@@ -34,11 +34,12 @@ struct OpenSavedGameSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Open Saved Game")
-                .font(.title2.bold())
+                .scaledFont(.title2, weight: .bold)
             if model.rows.isEmpty {
                 Text("No saved games yet.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
                     .frame(maxWidth: .infinity, minHeight: 240)
+                    .accessibilityLabel(Text("Saved games"))  // A11Y-003
                     .accessibilityIdentifier(AXID.Files.list)
             } else {
                 List(model.rows, selection: $selection) { row in
@@ -53,6 +54,7 @@ struct OpenSavedGameSheet: View {
                     if let id = ids.first, model.canOpen(id) { open(id) }
                 }
                 .frame(minHeight: 240)
+                .accessibilityLabel(Text("Saved games"))  // A11Y-003
                 .accessibilityIdentifier(AXID.Files.list)
             }
             HStack {

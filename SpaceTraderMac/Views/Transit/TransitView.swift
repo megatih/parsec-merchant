@@ -19,7 +19,7 @@ struct TransitView: View {
                 } icon: {
                     Image(systemName: "tornado")
                 }
-                .font(.headline)
+                .scaledFont(.headline)
                 .padding(12)
                 .background(.orange.opacity(0.2), in: RoundedRectangle(cornerRadius: 8))
                 .accessibilityElement(children: .combine)
@@ -27,20 +27,22 @@ struct TransitView: View {
             }
             if let state = session.state {
                 Text(TransitText.title(playback, state: state))
-                    .font(.title2)
+                    .scaledFont(.title2)
                 TransitArt(ship: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right),
                            progress: Double(flown) / Double(TransitPlayback.totalClicks), wormhole: playback.viaWormhole, seed: state.seed)
                     .frame(maxWidth: 520, minHeight: 110, maxHeight: 130)
             }
             TransitTrack(flown: flown)
                 .frame(maxWidth: 520)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("Transit progress"))
-                .accessibilityValue(Text("Click \(flown) of \(TransitPlayback.totalClicks)"))
+                // A11Y-004: a progress element "Click N of 20".
+                .accessibilityRepresentation {
+                    ProgressView(value: Double(flown), total: Double(TransitPlayback.totalClicks)) { Text("Transit progress") }
+                        .accessibilityValue(Text(verbatim: AccessibilityText.transitClick(flown, of: TransitPlayback.totalClicks)))
+                }
                 .accessibilityIdentifier(AXID.Transit.progress)
             if playback.isFrozen {
                 Text("Transit interrupted")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.readableSecondary)
             } else {
                 Button("Skip") { session.skipPlayback() }
                     .keyboardShortcut(.defaultAction)

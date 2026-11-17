@@ -16,7 +16,7 @@ struct NarrativeSheet: View {
                     offer(NarrativeModel.offer(type: type, state: state, preview: session.engine?.specialEventPreview))
                 }
             case let .result(result):
-                Text(verbatim: result.title).font(.title2.bold())
+                Text(verbatim: result.title).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier(AXID.Narrative.title)
                 ScrollView {
@@ -46,7 +46,7 @@ struct NarrativeSheet: View {
                 NarrativeVignetteView(type: model.type, state: state)
                     .accessibilityIdentifier(AXID.Narrative.vignette)
             }
-            Text(verbatim: model.title).font(.title2.bold())
+            Text(verbatim: model.title).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier(AXID.Narrative.title)
         }
@@ -56,7 +56,7 @@ struct NarrativeSheet: View {
         .frame(maxHeight: 240)
         .accessibilityIdentifier(AXID.Narrative.story)
         if let price = model.priceLine {
-            Text(verbatim: price).monospacedDigit().font(.headline)
+            Text(verbatim: price).monospacedDigit().scaledFont(.headline)
         }
         if let blocker = model.blocker {
             Label {
@@ -64,7 +64,7 @@ struct NarrativeSheet: View {
             } icon: {
                 Image(systemName: "exclamationmark.circle")
             }
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.readableSecondary)
         }
         HStack {
             Spacer()
@@ -96,7 +96,7 @@ struct SpecialEventCardView: View {
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 10) {
-                Text(SpecialEventText.title(model.type)).font(.headline)
+                Text(SpecialEventText.title(model.type)).scaledFont(.headline)
                 Text(verbatim: NarrativeModel.excerpt(String(localized: SpecialEventText.story(model.type))))
                     .fixedSize(horizontal: false, vertical: true)
                 if let price = NarrativeModel.priceLine(model.price) {

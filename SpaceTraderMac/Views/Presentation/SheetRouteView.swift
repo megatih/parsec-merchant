@@ -47,7 +47,7 @@ struct PlaceholderSheet: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("This screen isn't available yet.")
-                .font(.headline)
+                .scaledFont(.headline)
             Button("Close") { session.dismissPresentation() }
                 .keyboardShortcut(.defaultAction)
                 .accessibilityIdentifier(AXID.Dialog.placeholderClose)
@@ -65,7 +65,7 @@ struct RetireSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Retire?")
-                .font(.title2.bold())
+                .scaledFont(.title2, weight: .bold)
             if let state = session.state {
                 Text(verbatim: ConfirmationText.content(for: pending.confirmation, state: state).message)
             }

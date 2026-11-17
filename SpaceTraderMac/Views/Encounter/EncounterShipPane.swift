@@ -26,11 +26,11 @@ struct ShipPaneView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(verbatim: model.title).font(.headline)
+                Text(verbatim: model.title).scaledFont(.headline)
                 if model.isDisabled {
                     Label("Disabled", systemImage: "bolt.slash.fill")
-                        .font(.caption.bold())
-                        .foregroundStyle(.orange)
+                        .scaledFont(.caption, weight: .bold)
+                        .foregroundStyle(.signalOrange)
                         .accessibilityIdentifier(AXID.Encounter.opponentDisabled)
                 }
             }
@@ -44,6 +44,7 @@ struct ShipPaneView: View {
             .frame(maxWidth: .infinity, minHeight: 90, maxHeight: 120)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(verbatim: model.accessibilityLabel))
+            .accessibilityAddTraits(.isImage)
             EncounterBar(model: model.hull)
                 .accessibilityIdentifier(identifiers.hull)
             EncounterBar(model: model.shields)
@@ -67,28 +68,38 @@ struct ShipPaneView: View {
 /// UI-ENC-019: a labelled bar ("Hull 78%", "Shields 40%", "No shields"); a critical hull adds a warning symbol.
 struct EncounterBar: View {
     let model: EncounterBarModel
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityPreferences) private var a11yPrefs
+    private var reduceMotion: Bool { a11yPrefs.reduceMotion }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 if model.isCritical {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.signalRed)
                 }
-                Text(verbatim: model.text).font(.caption).monospacedDigit()
+                Text(verbatim: model.text).scaledFont(.caption).monospacedDigit()
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule().fill(Color.secondary.opacity(0.2))
                     Capsule().fill(tint).frame(width: geo.size.width * model.fraction)
+                    // A11Y-021: stripes on a critical hull under Differentiate Without Color.
+                    if model.isCritical, ColorSignal.hullCritical.extra(prefs: a11yPrefs) != nil {
+                        BarStripes().clipShape(Capsule()).frame(width: geo.size.width * model.fraction)
+                    }
                 }
+                // A11Y-018: the bar outline (2 pt under Increase Contrast).
+                .overlay(Capsule().strokeBorder(Color.primary.opacity(0.45),
+                                                lineWidth: ContrastStyle.make(prefs: a11yPrefs).barOutlineWidth))
             }
             .frame(height: 6)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: model.fraction)
+            .animation(MotionPolicy.animation(for: .gaugeChange, prefs: a11yPrefs), value: model.fraction)
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(verbatim: model.text))
-        .accessibilityValue(Text(verbatim: model.value))
+        // A11Y-004: a progress element "Hull 78%" with the value "78 percent" ("No shields" without shields).
+        .accessibilityRepresentation {
+            ProgressView(value: model.fraction) { Text(verbatim: model.text) }
+                .accessibilityValue(Text(verbatim: model.percent.map(AccessibilityText.percent) ?? AccessibilityText.noShields))
+        }
     }
 
     private var tint: Color {
@@ -96,5 +107,22 @@ struct EncounterBar: View {
         case .hull: model.isCritical ? .red : .green
         case .shields: .blue
         }
+    }
+}
+
+/// Diagonal stripes for a bar's pattern twin (A11Y-021).
+struct BarStripes: View {
+    var body: some View {
+        Canvas { context, size in
+            var x: CGFloat = -size.height
+            while x < size.width {
+                var p = Path()
+                p.move(to: CGPoint(x: x, y: size.height))
+                p.addLine(to: CGPoint(x: x + size.height, y: 0))
+                context.stroke(p, with: .color(.black.opacity(0.45)), lineWidth: 1.5)
+                x += 5
+            }
+        }
+        .accessibilityHidden(true)
     }
 }

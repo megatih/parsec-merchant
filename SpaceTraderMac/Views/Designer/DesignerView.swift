@@ -123,7 +123,7 @@ struct DesignerView: View {
                 .tint(tint)
             Text("Units used: \(quote.unitsUsed) of \(quote.maxUnits) (\(quote.percentOfMax)%)")
                 .monospacedDigit()
-                .foregroundStyle(level == .over ? .red : .primary)
+                .foregroundStyle(level == .over ? .signalRed : .primary)
         }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(AXID.ShipDesigner.units)
@@ -137,7 +137,7 @@ struct DesignerView: View {
                 ShipPortrait(input: ShipArtInput(kind: .custom, sizeClass: draft.size.rawValue,
                                                  custom: ArtAdapters.customParams(design: draft.design, base: draft.silhouette)))
                     .frame(width: 220, height: 120)
-                Text(Names.ship(draft.silhouette)).foregroundStyle(.secondary)
+                Text(Names.ship(draft.silhouette)).foregroundStyle(.readableSecondary)
             }
             .frame(maxWidth: .infinity, minHeight: 160)
             .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
@@ -151,7 +151,7 @@ struct DesignerView: View {
                     costRow("Total", quote.totalCost).bold()
                 }
                 if let blocker = quote.blocker {
-                    Text(ReasonText.text(for: blocker)).foregroundStyle(.orange)
+                    Text(ReasonText.text(for: blocker)).foregroundStyle(.signalOrange)
                 }
                 HStack {
                     Button("Save Template") { save(draft.design) }
@@ -166,7 +166,7 @@ struct DesignerView: View {
                         .accessibilityIdentifier(AXID.ShipDesigner.construct)
                 }
                 if let saveMessage {
-                    Text(saveMessage).font(.footnote).foregroundStyle(.secondary)
+                    Text(saveMessage).scaledFont(.footnote).foregroundStyle(.readableSecondary)
                 }
             }
             Spacer()

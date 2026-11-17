@@ -69,6 +69,8 @@ nonisolated enum MapGlyphStyle {
 
 /// The map palette (UX-VISION §7): named colours with light and dark variants, drawn in code.
 struct MapStyle {
+    /// A11Y-018 / MAP-087: stroke widths are doubled under Increase Contrast.
+    var strokeScale = 1.0
     var differentiateWithoutColor = false
 
     static let standard = MapStyle()

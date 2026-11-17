@@ -14,7 +14,7 @@ struct SystemIntelSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             if let state = session.state, let inputs = session.intelInputs() {
                 let m = SystemIntelModel.make(system: system, book: inputs.book, snapshot: inputs.snapshot)
-                Text("Prices at \(Names.system(system, in: state))").font(.title2.bold())
+                Text("Prices at \(Names.system(system, in: state))").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
                 Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
                     GridRow {
                         Text("Item").bold()
@@ -28,7 +28,7 @@ struct SystemIntelSheet: View {
                             Text(Names.item(row.item))
                             Text(verbatim: row.quote.sell.map { $0.formatted() } ?? "—").monospacedDigit()
                             Text(verbatim: row.quote.buy.map { $0.formatted() } ?? "—").monospacedDigit()
-                            Text(verbatim: IntelText.age(row.quote)).foregroundStyle(.secondary)
+                            Text(verbatim: IntelText.age(row.quote)).foregroundStyle(.readableSecondary)
                         }
                         .opacity(row.quote.staleness == .old ? 0.55 : 1)
                         .help(IntelText.help(row.quote))
@@ -43,8 +43,8 @@ struct SystemIntelSheet: View {
                     }
                     Text(verbatim: SystemIntelText.lastVisit(m.lastVisit))
                 }
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                .scaledFont(.callout)
+                .foregroundStyle(.readableSecondary)
             }
             HStack {
                 Spacer()

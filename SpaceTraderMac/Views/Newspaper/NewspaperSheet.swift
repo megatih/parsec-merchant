@@ -20,8 +20,8 @@ struct NewspaperSheet: View {
                         .accessibilityIdentifier(AXID.Newspaper.masthead)
                     Rectangle().frame(height: 2)
                     Text(verbatim: model.dateLine)
-                        .font(.system(.caption, design: .serif).smallCaps())
-                        .foregroundStyle(.secondary)
+                        .scaledFont(.caption, design: .serif).textCase(.uppercase)
+                        .foregroundStyle(.readableSecondary)
                     Rectangle().frame(height: 1)
                 }
                 ScrollView {
@@ -32,7 +32,7 @@ struct NewspaperSheet: View {
                                 ForEach(Array(lines.enumerated()), id: \.offset) { row, line in
                                     let index = column == 0 ? row : model.columns[0].count + row
                                     Text(verbatim: line)
-                                        .font(.system(.title3, design: .serif).weight(.semibold))
+                                        .scaledFont(.title3, weight: .semibold, design: .serif)
                                         .fixedSize(horizontal: false, vertical: true)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .accessibilityIdentifier(AXID.Newspaper.headline(index))
@@ -68,11 +68,11 @@ struct NewspaperCardView: View {
         GroupBox {
             HStack {
                 if let masthead = model.masthead {
-                    Text(verbatim: masthead).font(.system(.headline, design: .serif))
+                    Text(verbatim: masthead).scaledFont(.headline, design: .serif)
                 } else {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Local newspaper")
-                        Text("Price: \(model.cost.formatted()) cr.").monospacedDigit().foregroundStyle(.secondary)
+                        Text("Price: \(model.cost.formatted()) cr.").monospacedDigit().foregroundStyle(.readableSecondary)
                     }
                 }
                 Spacer()
@@ -82,7 +82,7 @@ struct NewspaperCardView: View {
                     .accessibilityIdentifier(AXID.Bridge.newspaperRead)
             }
             if let blocker = model.blocker {
-                Text(ReasonText.text(for: blocker)).font(.caption).foregroundStyle(.secondary)
+                Text(ReasonText.text(for: blocker)).scaledFont(.caption).foregroundStyle(.readableSecondary)
             }
         } label: {
             Label("Newspaper", systemImage: "newspaper")

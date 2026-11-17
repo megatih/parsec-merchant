@@ -14,17 +14,23 @@ struct StatusBarView: View {
             HStack(spacing: 16) {
                 Text("Bays \(model.filledBays)/\(model.totalBays)")
                     .help(Text("Cargo bays in use / total."))
+                    .accessibilityLabel(Text("Cargo bays"))
+                    .accessibilityValue(Text(verbatim: AccessibilityText.of(model.filledBays, model.totalBays)))  // A11Y-004
                     .accessibilityIdentifier(AXID.Status.bays)
                 Text("Fuel \(model.fuel)/\(model.fuelCapacity)")
                     .help(Text("Fuel in parsecs / tank size."))
+                    .accessibilityLabel(Text("Fuel"))
+                    .accessibilityValue(Text(verbatim: AccessibilityText.of(model.fuel, model.fuelCapacity)))
                     .accessibilityIdentifier(AXID.Status.fuel)
                 Text("Hull \(model.hullPercent)%")
                     .help(Text("Hull strength."))
+                    .accessibilityLabel(Text("Hull"))
+                    .accessibilityValue(Text(verbatim: AccessibilityText.percent(model.hullPercent)))
                     .accessibilityIdentifier(AXID.Status.hull)
                 Divider().frame(height: 14)
                 if let reason = visibleRejection {
                     Text(ReasonText.text(for: reason))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(.signalOrange)
                         .accessibilityIdentifier(AXID.Status.reason)
                 }
                 if session.arrivalCard != nil, session.selectedSection != .bridge, !session.isInputLocked {
@@ -58,7 +64,7 @@ struct StatusBarView: View {
                 .accessibilityIdentifier(AXID.Status.feed)
                 Spacer()
             }
-            .font(.callout)
+            .scaledFont(.callout)
             .monospacedDigit()
             .padding(.horizontal, 12)
             .padding(.vertical, 6)

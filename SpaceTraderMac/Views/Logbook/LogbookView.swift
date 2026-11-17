@@ -139,23 +139,17 @@ struct CaptainsLogView: View {
                 .frame(maxWidth: 260)
                 .focused($searchFocused)
                 .onExitCommand { model.searchText = "" }
+                .accessibilityLabel(Text("Search the log"))  // A11Y-003
                 .accessibilityIdentifier(AXID.Logbook.search)
-            Menu {
-                ForEach(LogCategory.allCases, id: \.self) { c in
-                    Toggle(isOn: Binding { model.filter.categories.contains(c) } set: { _ in model.toggle(c) }) {
-                        Label { Text(LogCategoryStyle.title(c)) } icon: { Image(systemName: LogCategoryStyle.symbol(c)) }
-                    }
-                    .accessibilityIdentifier(AXID.Logbook.filter(c))
-                }
-                Divider()
-                Button("Clear filters") { model.clearFilters() }
-                    .accessibilityIdentifier(AXID.Logbook.filterClear)
-            } label: {
-                Label("Filter", systemImage: model.filter.isEmpty
-                      ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-            }
-            .fixedSize()
-            .accessibilityIdentifier(AXID.Logbook.filter)
+            // A11Y-029: an AppKit pull-down (SwiftUI's Menu has no press action for VoiceOver on macOS 27).
+            PopUpMenuButton(title: model.filter.isEmpty ? String(localized: "Filter") : String(localized: "Filter (on)"),
+                            items: LogCategory.allCases.map { c in
+                                PopUpMenuButton.Item(title: String(localized: LogCategoryStyle.title(c)),
+                                                     isOn: model.filter.categories.contains(c),
+                                                     identifier: AXID.Logbook.filter(c)) { model.toggle(c) }
+                            } + [.separator, PopUpMenuButton.Item(title: String(localized: "Clear filters"),
+                                                                  identifier: AXID.Logbook.filterClear) { model.clearFilters() }],
+                            accessibilityLabel: String(localized: "Filter"), identifier: AXID.Logbook.filter)
             Spacer()
             Button {
                 exportDocument = LogMarkdownDocument(text: LogExport.markdown(journal: journal, state: state, filter: model.filter,
@@ -193,6 +187,7 @@ struct CaptainsLogView: View {
             else { return [] }
             return [NSItemProvider(object: text as NSString)]
         }
+        .accessibilityLabel(Text("Captain's Log"))  // A11Y-003
         .accessibilityIdentifier(AXID.Logbook.list)
     }
 
@@ -211,7 +206,7 @@ private struct LogEntryRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: LogCategoryStyle.symbol(entry.kind.category))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.readableSecondary)
                 .frame(width: 18)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
@@ -221,20 +216,20 @@ private struct LogEntryRow: View {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
                         if entry.flavor?.source == .foundationModels {
                             Image(systemName: "apple.intelligence")
-                                .font(.caption)
+                                .scaledFont(.caption)
                                 .help(Text("Written by Apple Intelligence"))
                                 .accessibilityLabel(Text("Apple Intelligence"))
                         }
-                        Text(verbatim: flavor).font(.callout).italic().foregroundStyle(.secondary)
+                        Text(verbatim: flavor).scaledFont(.callout).italic().foregroundStyle(.readableSecondary)
                     }
                 }
                 if case let .encounter(record) = entry.kind {
                     DisclosureGroup {
                         Text(verbatim: LogEntryText.encounterDetails(record))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .scaledFont(.caption)
+                            .foregroundStyle(.readableSecondary)
                     } label: {
-                        Text("Details").font(.caption)
+                        Text("Details").scaledFont(.caption)
                     }
                 }
             }

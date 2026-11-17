@@ -38,7 +38,8 @@ struct EncounterStage: View {
     let opponent: ShipPaneModel
     let plan: [CombatEffect]
     let planStart: Date?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityPreferences) private var a11yPrefs
+    private var reduceMotion: Bool { a11yPrefs.reduceMotion }
     @Environment(\.appearsActive) private var appearsActive
     @State private var settledStart: Date?
 

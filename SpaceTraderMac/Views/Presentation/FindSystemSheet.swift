@@ -12,7 +12,7 @@ struct FindSystemSheet: View {
     var body: some View {
         @Bindable var session = session
         VStack(alignment: .leading, spacing: 12) {
-            Text("Find System").font(.title2.bold())
+            Text("Find System").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
             TextField("System name", text: $text)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit(select)
@@ -37,10 +37,10 @@ struct FindSystemSheet: View {
                 }
             }
             if noMatch {
-                Text("No system found.").foregroundStyle(.red)
+                Text("No system found.").foregroundStyle(.signalRed)
             }
             if ironmanRefusal {
-                Text("Loading a save isn't possible in an Ironman game.").foregroundStyle(.red)
+                Text("Loading a save isn't possible in an Ironman game.").foregroundStyle(.signalRed)
             }
             Toggle("Track this system", isOn: $session.findTrackSystem)
                 .accessibilityIdentifier(AXID.FindSystem.track)
