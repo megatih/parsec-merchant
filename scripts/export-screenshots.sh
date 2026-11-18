@@ -3,12 +3,13 @@
 # A11Y-049: exports screenshots from UI-test attachments. Never called by verify.sh.
 #   PM_EXPORT_SCREENSHOTS=1 scripts/export-screenshots.sh        runs ReadmeScreenshotUITests, copies readme-* to docs/screenshots/
 #   PM_EXPORT_SCREENSHOTS=1 scripts/export-screenshots.sh --qa   copies qa-* from the last build/results/ui.xcresult to docs/screenshots/qa/
+#   PM_EXPORT_SCREENSHOTS=1 scripts/export-screenshots.sh --manual  runs ManualQAUITests (M13 review evidence), copies qa-manual-*
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 usage() {
-  echo "usage: PM_EXPORT_SCREENSHOTS=1 $0 [--qa]" >&2
+  echo "usage: PM_EXPORT_SCREENSHOTS=1 $0 [--qa|--manual]" >&2
   echo "  default: run ReadmeScreenshotUITests and copy readme-*.png to docs/screenshots/" >&2
   echo "  --qa:    copy qa-*.png from build/results/ui.xcresult to docs/screenshots/qa/" >&2
   exit 2
@@ -19,6 +20,7 @@ MODE="readme"
 case "${1:-}" in
   "") ;;
   --qa) MODE="qa" ;;
+  --manual) MODE="manual" ;;
   *) usage ;;
 esac
 
@@ -35,6 +37,20 @@ if [ "$MODE" = "readme" ]; then
     test -only-testing:SpaceTraderMacUITests/ReadmeScreenshotUITests > build/logs/export-screenshots.log 2>&1 || {
       tail -40 build/logs/export-screenshots.log
       echo "export-screenshots: the screenshot test failed" >&2
+      exit 1
+    }
+elif [ "$MODE" = "manual" ]; then
+  RESULT="build/results/manualqa.xcresult"
+  PREFIX="qa-manual-"
+  DEST="docs/screenshots/qa"
+  EXPECTED=""
+  rm -rf "$RESULT"
+  mkdir -p build/logs
+  TEST_RUNNER_PM_EXPORT_SCREENSHOTS=1 xcodebuild -project SpaceTraderMac.xcodeproj -scheme SpaceTraderMac \
+    -destination 'platform=macOS' -derivedDataPath build/DD -resultBundlePath "$RESULT" \
+    test -only-testing:SpaceTraderMacUITests/ManualQAUITests > build/logs/export-manual.log 2>&1 || {
+      tail -40 build/logs/export-manual.log
+      echo "export-screenshots: the QA review test failed" >&2
       exit 1
     }
 else
@@ -82,6 +98,6 @@ PY
 
 # The QA review set is downscaled to 1320 px wide (1x of the 1100-pt window class) to keep the repository small;
 # the README set keeps its 2x resolution.
-if [ "$MODE" = "qa" ]; then
+if [ "$MODE" = "qa" ] || [ "$MODE" = "manual" ]; then
   for f in "$DEST"/qa-*.png; do sips -Z 1320 "$f" > /dev/null; done
 fi
