@@ -185,7 +185,7 @@ final class M12KeysUITests: ParsecUITestCase {
     /// One Esc router: the feed overlay closes first, then the Shipyard comparison clears.
     @MainActor
     func testEscapeClosesTheFeedOverlayThenClearsTheComparison() throws {
-        // covers: UI-KEYS-018, UI-KEYS-017
+        // covers: UI-KEYS-018, UI-KEYS-017, UI-PTR-020 (the Compare toggle is a new control beside each card)
         var cards: [XCUIElement] = []
         for seed in [UITestFixtures.flowSeed, UITestFixtures.mapFlowSeed, 1, 2, 3, 4, 5, 6] {
             if seed != UITestFixtures.flowSeed { relaunch(UITestFixtures.launchArguments(seed: seed)) }
@@ -293,7 +293,7 @@ final class M12KeysUITests: ParsecUITestCase {
     /// Return in the Market quantity field buys the typed quantity.
     @MainActor
     func testReturnInTheQuantityFieldBuysTheTypedQuantity() throws {
-        // covers: UI-KEYS-022, UI-SHELL-062
+        // covers: UI-KEYS-022, UI-SHELL-062, UI-PTR-020
         quickStart()
         type("2")
         waitFor(AXID.Market.table)
