@@ -4,8 +4,8 @@
 
 ## Status
 - **Current milestone:** M13 (in progress)
-- **Next step:** M13: (1) `caffeinate -dimsu scripts/verify.sh --ui` on HEAD at 2x; (2) with the owner hand checks confirmed, mark M13 [x], tag m13-done, push, run `scripts/final-check.sh`. Done: v1.0.0 published (target main @ f307bbb, zip + .sha256); the downloaded zip verifies and launches; pmsim bench within budget; UI-KEYS-029 keyboard suite 13/13 with Full Keyboard Access.
-- **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, after the Documents access was allowed; UI-KEYS-029 fixes and QA rows); verify --ui ALL GATES PASSED @ edfcd7e (display 3360×1890); idle-cpu 4.40%; bench-map and pmsim bench PASS
+- **Next step:** M13: (1) done — verify --ui ALL GATES PASSED @ 4da1c04; (2) with the owner hand checks confirmed, mark M13 [x], tag m13-done, push, run `scripts/final-check.sh`. Done: v1.0.0 published (target main @ f307bbb, zip + .sha256); the downloaded zip verifies and launches; pmsim bench within budget; UI-KEYS-029 keyboard suite 13/13 with Full Keyboard Access.
+- **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, after the Documents access was allowed; UI-KEYS-029 fixes and QA rows); verify --ui ALL GATES PASSED @ 4da1c04 (display 3360×1890, 8-ui-tests 3130s); idle-cpu 4.40%; bench-map and pmsim bench PASS
 - **Blockers:** Owner hand checks (PRD §10 QA rows; everything else continues): (a) A11Y-013/A11Y-015 VoiceOver focus and rotor passes (the agent cannot drive VoiceOver); (b) AUD-052 listening and an output-device switch during play; (c) UI-KEYS-016 German and French input sources (switching system input sources is the owner's call); (d) ART-058 Dock/Finder icon with the Dark, Tinted and Clear icon styles; (e) LLM-031 the "Apple Intelligence off" step; (f) keep the display at 3360×1890 (2x) during `verify.sh --ui` (the contrast audit misreads plain text at 1x). Owner: do (a)–(e) per the QA-REPORT rows and tell the agent the result.
 
 ## Milestones
