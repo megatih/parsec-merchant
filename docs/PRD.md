@@ -333,7 +333,7 @@ Every subsystem below is specified in `docs/specs/<AREA>.md` with requirement ID
    - Swift Testing: `@Test("ECO-012 …")`.
    - XCUITest: `XCTContext.runActivity(named: "UI-007 …")` or a `// covers: UI-007` comment.
    - `[manual]` IDs: a QA-REPORT row.
-5. **`scripts/spec-trace.sh`** reads the current milestone from PROGRESS.md. It fails if any ID tagged `{M≤current}` (and not `[manual]`) is unreferenced by a test, or if a test references an unknown ID. At M13 it requires **every** ID to be traced.
+5. **`scripts/spec-trace.sh`** reads the current milestone from PROGRESS.md. It fails if any ID tagged `{M≤current}` (and not `[manual]`) is unreferenced by a test, or if a test references an unknown ID. At M17 it requires **every** ID to be traced (the threshold moved from M13 to M17 for the 1.1 work; `PM_TRACE_MILESTONE=<n>` previews a later milestone). While a milestone is in progress the PROGRESS.md status line keeps the last finished milestone first (`M13 done (M14 in progress)`), so IDs tagged for the milestone in progress are not due until it exits.
 6. **When code exposes a spec error,** fix the spec first, citing the source, then fix the code.
 
 ## 8. Quality gates
@@ -345,7 +345,7 @@ It prints `PASS`/`FAIL` per step and ends with `ALL GATES PASSED` and `EXIT=0` (
 |---|---|---|
 | `--quick` | 1, 2 (tests without coverage), 6 | between small steps |
 | default | 1–7 | before every commit |
-| `--ui` | 1–8 | at the end of M7, M8, M9, M12 and M13, and in final-check |
+| `--ui` | 1–8 | at the end of M7, M8, M9, M12, M13, M14, M15, M16 and M17, and in final-check |
 
 1. `swift build --package-path Packages/ParsecKit`. Warnings are errors via `swiftSettings: [.treatAllWarnings(as: .error)]`.
 2. `swift test --package-path Packages/ParsecKit --enable-code-coverage`, then `scripts/coverage-gate.sh`. The gate parses the JSON at `swift test --show-codecov-path` and sums the line counts per module path (`/Sources/ParsecEngine/` …). **Schedule:**
@@ -441,15 +441,19 @@ Don't start M(n+1) while the gate is red. Commit after every green step.
 | **M11** | ParsecArt (17 ship types, planets, glyphs, effects); the app icon via `make-icon.sh`: a Liquid Glass `.icon` bundle (layered PNGs plus `icon.json`) [verify format] with a full-bleed `.appiconset` fallback; ParsecAudio SFX, music and haptics; Sound settings. | Art and audio tests green. `actool` reports no icon warnings. Launching with audio on produces no runtime errors. |
 | **M12** | Polish: HIG, Liquid Glass and shortcut audit (UI-KEYS.md); Reduce Motion, Increase Contrast, Reduce Transparency and Differentiate Without Color; Text Size; full keyboard navigation; localization completeness (`xcodebuild -exportLocalizations`, plus a check that no catalog entry is `new` or `stale`); a pseudo-localization screenshot run; TipKit tips; performance pass; README screenshots (`PM_EXPORT_SCREENSHOTS=1`). | `verify.sh --ui` green, including flows 6 and 7. Localization check clean. |
 | **M13** | Release:<ul><li>README covering features, screenshots, rulesets, installation with "Open Anyway" steps (System Settings › Privacy & Security), build from source, credits and license; plus CHANGELOG.</li><li>`release.sh`: Release build signed to run locally (`CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=`, hardened runtime plus entitlements, no `--deep`), `codesign --verify --strict`, `ditto` to `dist/Parsec-Merchant-1.0.0.zip`, SHA-256.</li><li>Release-build smoke test: launch with `-PMScenario smoke`, which saves and loads in the sandbox and exits 0.</li><li>`gh release create v1.0.0`.</li><li>QA-REPORT.md and the full `final-check.sh`.</li></ul> | See §10 and GOAL.md. |
+| **M14** | 1.1: planets and space (CPU-baked sphere-projected planets, Metal live Bridge planet, class taxonomy). Normative text: `docs/PRD-1.1.md` §6 M14. | `verify.sh --ui`; `bench-map.sh` ≤ 8 ms; `idle-cpu.sh` ≤ 5%; visual review row in QA-REPORT. |
+| **M15** | 1.1: stat-driven ships, sizing, endings and icon. Normative text: `docs/PRD-1.1.md` §6 M15. | `verify.sh --ui`; `make-icon.sh --check`; `idle-cpu.sh`; visual review row. |
+| **M16** | 1.1: pointer and touch first, keyboard complete (UI-POINTER.md). Normative text: `docs/PRD-1.1.md` §6 M16. | `verify.sh --ui`; touch checklist row. |
+| **M17** | 1.1: polish and release v1.1.0. Normative text: `docs/PRD-1.1.md` §6 M17. | See §10 and `docs/PRD-1.1.md` §7. |
 
 ## 10. Final check and QA
-**`scripts/final-check.sh`** is committed in M13 and runs these checks, printing `PASS`/`FAIL` for each. It ends with `FINAL CHECK n/8 PASS` and `EXIT=<code>`.
+**`scripts/final-check.sh`** is committed in M13 (retargeted to v1.1.0 in M14) and runs these checks, printing `PASS`/`FAIL` for each. It ends with `FINAL CHECK n/8 PASS` and `EXIT=<code>`.
 1. `scripts/verify.sh --ui` ends with `ALL GATES PASSED` on the current HEAD.
-2. PROGRESS.md has all 14 milestones (M0 to M13) marked `[x]` and no open blockers.
-3. `gh release view v1.0.0 --repo megatih/parsec-merchant` lists `Parsec-Merchant-1.0.0.zip`.
+2. PROGRESS.md has all 18 milestones (M0 to M17) marked `[x]` and no open blockers.
+3. `gh release view v1.1.0 --repo megatih/parsec-merchant` lists `Parsec-Merchant-1.1.0.zip`.
 4. `docs/QA-REPORT.md` contains every item below, each marked ✓, with no ✗ or TODO.
 5. Release launch:
-   - `gh release download v1.0.0` into a new temp folder, then unzip it with `ditto`.
+   - `gh release download v1.1.0` into a new temp folder, then unzip it with `ditto`.
    - `pkill -x "Parsec Merchant"`, then `open -n <tmp>/Parsec\ Merchant.app`.
    - `pgrep -f "<tmp>/Parsec Merchant.app"` finds it, then quit it.
    
@@ -509,5 +513,5 @@ Don't start M(n+1) while the gate is red. Commit after every green step.
 | Palm source fetch fails | Implement from research 04; mark the ruleset "experimental"; log the assumption |
 | git push authentication | Owner pre-flight `gh auth setup-git` |
 
-## 13. Definition of Done (v1.0.0)
-v1.0.0 is done when **one turn** shows the complete, unedited output of `scripts/final-check.sh` ending with `FINAL CHECK 8/8 PASS` and `EXIT=0`, after M0–M13 are all checked.
+## 13. Definition of Done (v1.1.0)
+v1.0.0 was done on 2026-11-18 (M0–M13). v1.1.0 (milestones M14–M17, `docs/PRD-1.1.md`, which wins over this file for that work) is done when **one turn** shows the complete, unedited output of `scripts/final-check.sh` ending with `FINAL CHECK 8/8 PASS` and `EXIT=0`, after M0–M17 are all checked.

@@ -3,7 +3,7 @@
 A native macOS 27 remake of Space Trader (Pieter Spronck, GPL). It is built from the C# port at `/Users/megatih/Downloads/SpaceTraderSource201`, which is **read-only reference: never modify it**. The only exception is the differential harness (PRD §8.4), which compiles a *copy* under `build/harness/` (gitignored).
 
 ## Source of truth
-1. `docs/PRD.md` is **normative**: decisions, architecture, milestones, gates, operating rules.
+1. `docs/PRD.md` is **normative**: decisions, architecture, milestones, gates, operating rules. For M14–M17 (release 1.1.0) `docs/PRD-1.1.md` extends it and wins where they differ.
 2. `docs/design/UX-VISION.md` is the design direction for every screen.
 3. `docs/specs/*.md` holds requirements with IDs (ECO-012…). Tests reference these IDs.
 4. `docs/research/01–06` is research input. **The QA ERRATA block at the top of each file overrides that file's body.** Re-verify every value against the source before encoding it.
@@ -13,9 +13,9 @@ A native macOS 27 remake of Space Trader (Pieter Spronck, GPL). It is built from
 - **Gates:**
   - `scripts/verify.sh --quick` between small steps.
   - `scripts/verify.sh` before every commit.
-  - `scripts/verify.sh --ui` at the end of M7, M8, M9, M12 and M13.
+  - `scripts/verify.sh --ui` at the end of M7, M8, M9, M12, M13, M14, M15, M16 and M17.
   - Success prints `ALL GATES PASSED` and `EXIT=0`.
-- Completion: `scripts/final-check.sh` (M13).
+- Completion: `scripts/final-check.sh` (M17).
 - Engine fast loop: `swift test --package-path Packages/ParsecKit --filter <Suite>`
 - App build: `xcodebuild -project SpaceTraderMac.xcodeproj -scheme SpaceTraderMac -destination 'platform=macOS' -derivedDataPath build/DD build`
 - Benchmarks: `swift run --package-path Packages/ParsecKit -c release pmsim bench`

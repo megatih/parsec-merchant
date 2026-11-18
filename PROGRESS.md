@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M13 done (all milestones complete)
-- **Next step:** none — project complete. `scripts/final-check.sh` FINAL CHECK 8/8 PASS, EXIT=0 on 43f0d38 (2026-11-18, display 3360×1890). An earlier run on d6ad647 scored 7/8 (UI-ENC-096 transit-snapshot timing flake, fixed in 43f0d38 with the Debug-only `-PMSlowTravel`, CHEAT-050). Owner hand checks (a)–(e) passed 2026-11-18 (docs/QA-HANDCHECKS.md).
-- **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, after the Documents access was allowed; UI-KEYS-029 fixes and QA rows); verify --ui ALL GATES PASSED @ 4da1c04 (display 3360×1890, 8-ui-tests 3130s); idle-cpu 4.40%; bench-map and pmsim bench PASS
+- **Current milestone:** M13 done (M14 in progress)
+- **Next step:** M14 spike (PRD-1.1 §6): CAMetalLayer sphere on the Bridge on a throwaway branch, Release build, `scripts/idle-cpu.sh` ≤ 5% (else walk the D2 ladder, ADR); confirm CGImage-in-Canvas renders byte-identically twice through `ArtSnapshot`. Then ART.md spec rewrites. v1.0 was complete at 43f0d38 (final-check 8/8).
+- **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, M14 setup on top of e08f1ff)
 - **Blockers:** none
 
 ## Milestones
@@ -23,6 +23,20 @@
 - [x] M11 Art, icon, audio, haptics (2026-11-17, tag m11-done; ParsecArt (17 ships, planets, glyphs, effects, scenes) + Liquid Glass .icon via make-icon.sh (actool clean, step 7b); ParsecAudio synth (allocation-free render), 30 cues with visual twins, music off by default, haptics, Sound settings)
 - [x] M12 Polish, accessibility, localization, screenshots (2026-11-17, tag m12-done; UI-KEYS binding table + conflict audit + Esc router, A11Y (VoiceOver model, rotors, display settings, Text Size fallback, TipKit), flows 6/7 green, localization (2,221 keys, l10n-check in step 4, pseudo-localization), combat timing unified, AUD-049 release budget)
 - [x] M13 Final QA and GitHub release v1.0.0 (2026-11-18, tag m13-done; v1.0.0 published with zip + .sha256; verify --ui green; QA-REPORT all ✓ incl. owner hand checks; idle CPU 4.4%; final-check.sh)
+- [ ] M14 Planets and space (docs/PRD-1.1.md)
+- [ ] M15 Ships, sizing, endings and icon
+- [ ] M16 Pointer and touch first
+- [ ] M17 Polish and release 1.1.0
+
+## M14 checklist
+- [x] Setup: PRD-1.1 committed, D10 spec-trace threshold 17 + PM_TRACE_MILESTONE, final-check/release/marketing version 1.1.0, PRD.md/CLAUDE.md folded
+- [ ] Spike: Metal layer idle CPU; CGImage-in-Canvas determinism
+- [ ] Specs: ART.md rewrites + new IDs from ART-068; UI-SHELL-054; MAP-095
+- [ ] Tests rewritten/added (PlanetSpaceTests, ArtCoreTests budgets, ArtEffectsTests, Metal parity)
+- [ ] ParsecArt: PlanetNoise, PlanetClass, PlanetTextureBaker, PlanetSphere, recipe/art rewrite, StarGlow
+- [ ] App: PlanetMetalView + shader, PlanetPortrait, Bridge hero, map sprites
+- [ ] pmart planet sheet; look review; QA-REPORT row
+- [ ] Exit: verify --ui, bench-map ≤ 8 ms, idle-cpu ≤ 5%, largest-text + pseudo-loc review at 1100×720, tag m14-done
 
 ## M0 checklist
 - [x] .gitignore before first push
@@ -53,6 +67,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-18: 1.1 work started (docs/PRD-1.1.md, M14–M17). Setup: spec-trace threshold 13 → 17 with PM_TRACE_MILESTONE preview; final-check/release retargeted to v1.1.0 and 18 milestones; marketing version 1.1.0.
 - 2026-11-18: A11Y-027/042 screenshot review and fixes (sidebar, wizard header/footer, Market columns, Shipyard strip, Galaxy HUD layout, crew header/skills, Settings/Options buttons, feed overlay); the RTL pseudo run passes -AppleTextDirection YES and now mirrors; the galaxy map stays left to right. QA and README screenshots re-exported. Notes in A11Y.md §12a.
 - 2026-11-17: M11 exit. Notes: ImageRenderer.cgImage is not byte-deterministic — art tests/pmart render into a fixed RGBA sRGB CGContext; pmart icon works from the command line (no PM_ICON_OUT fallback needed). Open QA rows needing the owner at M13: AUD-052 (2-min listening + device switch), ART screenshot rows. Audio CombatTracker duplicates CombatEffectPlanner timing (unify in M12).
 - 2026-11-17: M10 exit: INT/LOG/STAT/ACH/LLM (197 IDs). ADR-0003 journal saved beside state. ART/AUD specs for M11 written ahead. Insights coverage 99%. UI suite now launches with -PMFlavor template.

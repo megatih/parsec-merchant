@@ -1,11 +1,12 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Spec traceability (PRD §7). IDs tagged {Mn} with n <= current milestone must be referenced by a test
-# (or by docs/QA-REPORT.md for [manual] IDs). Tests may not reference unknown IDs. At M13 every ID must be traced.
+# (or by docs/QA-REPORT.md for [manual] IDs). Tests may not reference unknown IDs. At M17 every ID must be traced.
+# PM_TRACE_MILESTONE=<n> overrides the milestone read from PROGRESS.md, to preview IDs that are not yet due.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-M="$(scripts/lib-milestone.sh)"
+M="${PM_TRACE_MILESTONE:-$(scripts/lib-milestone.sh)}"
 /usr/bin/python3 -I - "$M" <<'PY'
 import re, sys, pathlib
 m = int(sys.argv[1])
@@ -32,7 +33,7 @@ qa_refs = set(ref_re.findall(qa.read_text())) if qa.exists() else set()
 unknown = sorted(r for r in refs if r not in specs and not r.startswith(("SHA-", "UTF-", "ISO-")))
 missing = []
 for rid, info in specs.items():
-    due = info["m"] <= m or m >= 13
+    due = info["m"] <= m or m >= 17
     if not due:
         continue
     traced = (rid in qa_refs) if info["manual"] else (rid in refs)

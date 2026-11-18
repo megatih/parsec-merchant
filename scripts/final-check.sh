@@ -7,8 +7,8 @@ set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT" || exit 1
 REPO="megatih/parsec-merchant"
-TAG="v1.0.0"
-ASSET="Parsec-Merchant-1.0.0.zip"
+TAG="v1.1.0"
+ASSET="Parsec-Merchant-1.1.0.zip"
 APPNAME="Parsec Merchant"
 LOGS="build/final/logs"
 mkdir -p "$LOGS"
@@ -29,9 +29,9 @@ c1() { scripts/verify.sh --ui | tee /dev/stderr | tail -2 | /usr/bin/grep -q "AL
 c2() {
   local n
   # Count distinct milestones: checklist items such as "- [x] M0 exit: …" must not stand in for an unchecked milestone.
-  n=$(/usr/bin/grep -oE '^- \[x\] M([0-9]|1[0-3]) ' PROGRESS.md | sort -u | wc -l | tr -d ' ')
-  echo "milestones checked: $n/14"
-  [ "$n" -eq 14 ] || return 1
+  n=$(/usr/bin/grep -oE '^- \[x\] M([0-9]|1[0-7]) ' PROGRESS.md | sort -u | wc -l | tr -d ' ')
+  echo "milestones checked: $n/18"
+  [ "$n" -eq 18 ] || return 1
   /usr/bin/python3 -I - <<'PY'
 import re, sys
 s = open("PROGRESS.md").read()
@@ -101,7 +101,7 @@ c8() {
 }
 
 check 1 "verify --ui ALL GATES PASSED on HEAD" c1
-check 2 "all milestones M0-M13 checked, no open blockers" c2
+check 2 "all milestones M0-M17 checked, no open blockers" c2
 check 3 "gh release $TAG lists $ASSET" c3
 check 4 "QA-REPORT complete, all ✓" c4
 check 5 "downloaded release app launches (open -n, pgrep -f)" c5
