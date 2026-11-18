@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M14 done (M15 in progress)
-- **Next step:** (1) Re-export screenshots in the mirror; review Shipyard/inspector/designer/encounter/transit/game-over and the Market Actions column at the default window; write the M15 and M16 QA-REPORT rows. (2) M15 exit (`make-icon.sh --check`, `idle-cpu.sh`), flip PROGRESS, tag m15-done; M16 exit, tag m16-done. (3) M17: benches, `scripts/release.sh --publish`, QA-REPORT rows, tags m17-done and v1.1.0, `scripts/final-check.sh` from this folder (see Blockers).
-- **Last gate result:** mirror, 2026-11-19 03:1x–04:2x: `verify.sh --ui` step 8 PASS (52 UI tests, 6 skipped, 0 failures, 3497 s); its step 4 failed on the UI-PTR-004 source audit (compact route-panel bezels), fixed as a documented exception, then `verify.sh` (non-UI) ALL GATES PASSED on the final tree (516 app tests). `pmsim bench --check` OK and `idle-cpu.sh` 3.10% / 3.00% on 79e7d9e.
+- **Current milestone:** M15 done (M16 in progress)
+- **Next step:** M16 exit (same green run covers it): flip to M16 done, tag m16-done. Then M17: `pmsim bench`, CHANGELOG/README final pass, `scripts/release.sh --publish`, QA-REPORT release rows, tags m17-done and v1.1.0, `scripts/final-check.sh` from this folder (see Blockers).
+- **Last gate result:** mirror, 2026-11-19 05:2x–06:4x on d355f44: `verify.sh --ui` ALL GATES PASSED (516 app tests; 52 UI tests, 6 skipped, 0 failures, 3484 s); `bench-map.sh` zoom 4 median 0.253 ms (budget 8 ms). Repo folder: `idle-cpu.sh` 3.20% / 3.00% (budget 5%, Release build), `make-icon.sh --check` OK.
 - **Blockers:** OWNER ACTION (needed only for the last step, `scripts/final-check.sh` from this folder): the Debug test host needs Documents access. If macOS asks "“Parsec Merchant” would like to access files in your Documents folder.", click **Allow** (or enable it in System Settings › Privacy & Security › Files and Folders › Parsec Merchant). The agent does not answer privacy prompts. Until then all gates run on a mirror at `~/Library/Caches/ParsecMerchantMirror`. (UI automation and hosted tests work again since 2026-11-19 02:37.)
 
 ## Milestones
@@ -24,7 +24,7 @@
 - [x] M12 Polish, accessibility, localization, screenshots (2026-11-17, tag m12-done; UI-KEYS binding table + conflict audit + Esc router, A11Y (VoiceOver model, rotors, display settings, Text Size fallback, TipKit), flows 6/7 green, localization (2,221 keys, l10n-check in step 4, pseudo-localization), combat timing unified, AUD-049 release budget)
 - [x] M13 Final QA and GitHub release v1.0.0 (2026-11-18, tag m13-done; v1.0.0 published with zip + .sha256; verify --ui green; QA-REPORT all ✓ incl. owner hand checks; idle CPU 4.4%; final-check.sh)
 - [x] M14 Planets and space (2026-11-18, tag m14-done; 10 planet classes baked from seeded noise and sphere-projected, live Metal Bridge planet at 30 fps (ADR-0004), hero stage with star glow, cached map sprites; ART-068…080; idle CPU 2.6%)
-- [ ] M15 Ships, sizing, endings and icon (code and unit tests done; look review and exit gates open)
+- [x] M15 Ships, sizing, endings and icon (2026-11-19, tag m15-done; stat-driven hull generator with archetypes and specials, no insect anatomy, D7 layout in every panel, lit ending scenes on a 16:9 card, icon hauler = generated freighter; verify --ui green in the mirror on d355f44, make-icon --check OK, idle CPU 3.2%/3.0%; QA-REPORT M15 visual review row)
 - [ ] M16 Pointer and touch first
 - [ ] M17 Polish and release 1.1.0
 
