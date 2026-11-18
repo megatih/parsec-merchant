@@ -52,15 +52,10 @@ private struct ActionButton: View {
 
     private var base: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
-                Text(verbatim: button.label)
-                if let cap = button.keyCap {
-                    Text(verbatim: cap)
-                        .scaledFont(.caption, design: .monospaced)
-                        .foregroundStyle(.readableSecondary)
-                }
-            }
+            // UI-PTR-014: the action name on a large button; the key is in the help tag.
+            Text(verbatim: button.label).pointerTarget()
         }
+        .controlSize(.large)
         .disabled(!button.isEnabled)
         .help(Text(verbatim: button.help))
         .accessibilityLabel(Text(verbatim: button.label))

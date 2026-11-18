@@ -4,9 +4,9 @@
 
 ## Status
 - **Current milestone:** M14 done (M15 in progress)
-- **Next step:** M15 specs (PRD-1.1 §6 M15): rewrite ART.md conventions line 11, ART-008…014/016/039…041/053, add stat-to-geometry, hardpoint, layout and ending IDs; amend UX-VISION §7/§5.5, UI-ENC-018/098/101, UI-SHELL-047/068/074. Then tests, then ShipArtStats + ShipHullGenerator + ShipSpecials (drafts of the generator and features exist only in the session scratchpad; rewrite from the spec if lost).
-- **Last gate result:** verify.sh --ui ALL GATES PASSED on dab4ba2 (2026-11-18, 8-ui-tests 3153 s, 47 tests, 0 failures); bench-map zoom 4 median 0.25 ms; idle-cpu 2.60%/2.60%
-- **Blockers:** none
+- **Next step:** M15 exit is still open: export screenshots and review ships/endings in the app (Shipyard, inspector, designer, encounter, transit, game over), QA-REPORT row, `verify.sh --ui`, `make-icon.sh --check`, `idle-cpu.sh`, tag m15-done. M16 is under way in the same tree (chips, compare toggle, drag and drop, map selection card, wheel zoom, 36 pt targets, context menus, PointerTests): still to do: PointerTargetUITests + PointerOnlyScenarioUITests, updates to UI flows that used the old controls, decide how standard push buttons meet the 36 pt walk (see decisions log), Help pages. Gates run in the mirror (see Blockers).
+- **Last gate result:** verify.sh ALL GATES PASSED in the mirror (2026-11-18 23:1x, working tree after M15 ships/endings/icon and the first M16 controls; 515 app tests, 75 art tests)
+- **Blockers:** OWNER ACTION (open since 2026-11-18 22:30): macOS shows the privacy alert "“Parsec Merchant” would like to access files in your Documents folder." for the Debug test host. Click **Allow**. Until then app-hosted tests that read the source tree hang when run from this folder. The agent does not click privacy consent dialogs. Workaround in use: the gates run on an rsync mirror of the working tree at `~/Library/Caches/ParsecMerchantMirror` (outside the protected folders; the Debug sandbox may read any path), which needs no consent. `scripts/final-check.sh` in this folder still needs the Allow.
 
 ## Milestones
 - [x] M0 Tooling, project setup, specs, Palm source, GitHub repo (2026-11-17, tag m0-done)
@@ -24,7 +24,7 @@
 - [x] M12 Polish, accessibility, localization, screenshots (2026-11-17, tag m12-done; UI-KEYS binding table + conflict audit + Esc router, A11Y (VoiceOver model, rotors, display settings, Text Size fallback, TipKit), flows 6/7 green, localization (2,221 keys, l10n-check in step 4, pseudo-localization), combat timing unified, AUD-049 release budget)
 - [x] M13 Final QA and GitHub release v1.0.0 (2026-11-18, tag m13-done; v1.0.0 published with zip + .sha256; verify --ui green; QA-REPORT all ✓ incl. owner hand checks; idle CPU 4.4%; final-check.sh)
 - [x] M14 Planets and space (2026-11-18, tag m14-done; 10 planet classes baked from seeded noise and sphere-projected, live Metal Bridge planet at 30 fps (ADR-0004), hero stage with star glow, cached map sprites; ART-068…080; idle CPU 2.6%)
-- [ ] M15 Ships, sizing, endings and icon
+- [ ] M15 Ships, sizing, endings and icon (code and unit tests done; look review and exit gates open)
 - [ ] M16 Pointer and touch first
 - [ ] M17 Polish and release 1.1.0
 
@@ -54,6 +54,10 @@
 - [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-18: Gates run in a mirror. The Debug and Release apps share the bundle id `io.github.megatih.ParsecMerchant` (the JSON project's `[config=Debug]` override is not applied), both are ad-hoc signed, and macOS re-asks for Documents access for the test host; the mirror at `~/Library/Caches/ParsecMerchantMirror` (not under /tmp: the `/tmp` symlink breaks the source audits' relative paths) avoids the prompt. Script: session scratchpad `mirror-run.sh` = rsync (excluding build, .build, dist, .claude) then run the command there.
+- 2026-11-18: M16 SDK check: `NSIsTouchNative` and `directTouchSystemGesturesDisabled` are not in the macOS 27.2 SDK (headers and swiftinterface searched); standard gestures only (UI-PTR-016).
+- 2026-11-18: M15: haulers with 55+ bays are spine freighters (containers outside a narrow spine), a stat rule that also keeps Beetle and Termite apart (ART-013 worst pair now gnat/scorpion 0.83). Larger size classes get a relatively narrower beam. A `cinema` planet LOD (1024×512) serves the endings' limb views. Ship edges use a fixed dark edge instead of the light dark-mode outline token.
+- 2026-11-18: M16 Market row: chips + Sell + qty field + Buy + disposal button; the separate Max/All buttons are gone (chip Max then Buy/Sell is the same two clicks; ⇧B/⇧S and the accessibility actions remain).
 - 2026-11-18: ParsecArt is compiled with -O in Debug too (Package.swift `artOptimised`): unoptimised per-pixel baking/projection is 20–30× slower (hero bake 136–220 ms vs 9 ms) and would stall the Debug app and UI tests. Budgets and debugFactor unchanged.
 - 2026-11-18: SourceAuditTests UI-KEYS-035 forbids `Image(decorative` in app code, so the map's sprite draw lives in ParsecArt (`PlanetRenderer.drawSprite`).
 - 2026-11-18: ADR-0004. Spike: idle floor 0.2–0.4%; the map's 5 fps vortex TimelineView alone costs ~4.5% (whole-window pass). The spike's Metal figure (~0.3%) was invalid (its shader did not compile, found by the ART-074 parity test); the working Metal planet at 30 fps measures 2.3–2.5% total idle. Decision: D2 rung 1 (Metal, 30 fps); the Bridge mini chart draws vortices still, the Galaxy section keeps AmbientSchedule and pauses it when no wormhole is in view. Idle-CPU readings are noisy while the App Store daemon is installing updates; re-measure on a quiet machine.

@@ -3,6 +3,19 @@ import ParsecArt
 import ParsecEngine
 import SwiftUI
 
+/// PRD-1.1 D7: the sizes of the ship panels, in points.
+nonisolated enum ShipPanelSize {
+    static let cardBanner: CGFloat = 96
+    static let inspectorHero: CGFloat = 104
+    static let purchaseHero: CGFloat = 120
+    static let compare = CGSize(width: 96, height: 56)
+    static let vignette = CGSize(width: 160, height: 120)
+    static let encounterPane: ClosedRange<CGFloat> = 160...240
+    static let transit: ClosedRange<CGFloat> = 150...180
+    /// The ending scene is a cinematic 16:9 card as wide as the game-over card.
+    static let endingAspect: CGFloat = 16.0 / 9
+}
+
 /// ART-051: a still ship portrait (inspector, shipyard cards, designer preview) with the environment's accessibility flags.
 struct ShipPortrait: View {
     let input: ShipArtInput

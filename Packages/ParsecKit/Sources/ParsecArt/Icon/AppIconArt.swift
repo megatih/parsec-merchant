@@ -54,18 +54,25 @@ public enum AppIconArt {
         return p.strokedPath(StrokeStyle(lineWidth: 9 * s, lineCap: .round))
     }
 
-    /// The Beetle hauler as one solid path, heading up-right at 35°, in design space scaled by `s`. The detailed version
-    /// cuts the elytra seam and the cockpit out of the silhouette and adds the engine nozzles, so it reads as a ship.
+    /// The generated freighter as one solid path, heading up-right at 35°, in design space scaled by `s`. The detailed
+    /// version cuts the bridge window and the gaps between the container rows out of the silhouette and adds the engine
+    /// nozzles, so it reads as a cargo ship.
     static func hauler(scale s: Double, simplified: Bool = false) -> Path {
-        let bp = ShipBlueprints.blueprint(.beetle)
+        // ART-053: the generated freighter (an ART-010 hauler).
+        let bp = ShipHullGenerator.make(ShipArtStats.standard(.beetle), variant: ArtSeed.kind(.beetle))
         let g = ShipGeometry.make(bp)
         var shape = g.silhouette
         if !simplified {
-            var seam = Path()
-            seam.move(to: CGPoint(x: bp.tailX - 0.02, y: 0.5))
-            seam.addLine(to: CGPoint(x: 0.76, y: 0.5))
-            shape = shape.subtracting(ArtGeometry.stroke(seam, width: 0.035, round: false))
-            shape = shape.subtracting(Path(ellipseIn: CGRect(x: 0.82, y: 0.455, width: 0.08, height: 0.09)))
+            let c = bp.cockpit
+            shape = shape.subtracting(Path(roundedRect: CGRect(x: c.x - c.length, y: 0.5 - c.width / 2, width: c.length, height: c.width),
+                                           cornerRadius: c.length * 0.3))
+            let len = bp.noseX - bp.tailX
+            for k in 1...3 {
+                let x = bp.tailX + len * (0.08 + 0.185 * Double(k))
+                shape = shape.subtracting(Path(CGRect(x: x - 0.011, y: 0, width: 0.022, height: 1)))
+            }
+            // A keel girder keeps the container rows one ship.
+            shape = shape.union(Path(CGRect(x: bp.tailX + len * 0.1, y: 0.5 - 0.03, width: len * 0.72, height: 0.06)).intersection(g.silhouette))
             for e in bp.engines {
                 for side in [-1.0, 1.0] {
                     let y = 0.5 + side * e.yOffset

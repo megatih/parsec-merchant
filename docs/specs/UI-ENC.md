@@ -73,7 +73,7 @@
 
 ## 4. Actions, keys and the Encounter menu
 
-- **UI-ENC-027** {M9} [UI] [M][W][P] The action bar (`encounter.actions`) holds one button per `EncounterPreview.actions` entry, in table order (ENC-130). Its identifier is `encounter.action.<EncounterAction>`. Each label is the action name followed by its key cap ("Attack  A"). The help tag is "Attack (A)", or the `ReasonText` of the preview's rejection when the button is disabled. After the type buttons come Resolve, Stop and the Auto-repeat toggle (UI-ENC-031…033). The bar is one of the two allowed custom `.glassEffect` surfaces. All buttons are disabled while `isInputLocked`. (source: UX-VISION §5.2 buttons, §7 "Liquid Glass … the Encounter action bar"; ENC-130, ENC-186)
+- **UI-ENC-027** {M9} [UI] [M][W][P] The action bar (`encounter.actions`) holds one button per `EncounterPreview.actions` entry, in table order (ENC-130). Its identifier is `encounter.action.<EncounterAction>`. Each label is the action name alone on a large button (UI-PTR-014); the key cap is in the help tag, not in the label. The help tag is "Attack (A)", or the `ReasonText` of the preview's rejection when the button is disabled. After the type buttons come Resolve, Stop and the Auto-repeat toggle (UI-ENC-031…033). The bar is one of the two allowed custom `.glassEffect` surfaces. All buttons are disabled while `isInputLocked`. (source: UX-VISION §5.2 buttons, §7 "Liquid Glass … the Encounter action bar"; ENC-130, ENC-186)
 - **UI-ENC-028** {M9} [M][W][P] `EncounterKeys.key(for: EncounterAction) -> KeyEquivalent?` and `modifiers(for:)` are pure:
   - A attack, F flee, S surrender, I ignore, B bribe, U submit, T trade, P plunder, O board, D drink, M meet, Y yield;
   - R resolve, ⌥A auto-repeat (the toggle), Esc stop;

@@ -1210,6 +1210,9 @@
     ", disabled" : {
 
     },
+    "1" : {
+
+    },
     "1 click" : {
 
     },
@@ -1235,6 +1238,12 @@
 
     },
     "120 systems, as on the Palm." : {
+
+    },
+    "20" : {
+
+    },
+    "5" : {
 
     },
     "5 extra cargo bays" : {
@@ -1394,6 +1403,9 @@
 
     },
     "Active Quests" : {
+
+    },
+    "Add this ship to the comparison." : {
 
     },
     "Additional coding (Palm OS)" : {
@@ -2210,7 +2222,10 @@
     "Buy 1" : {
 
     },
-    "Buy 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ max)" : {
+    "Buy 20" : {
+
+    },
+    "Buy 5" : {
 
     },
     "Buy Equipment?" : {
@@ -2223,6 +2238,9 @@
 
     },
     "Buy Max" : {
+
+    },
+    "Buy Max (%lld)" : {
 
     },
     "Buy Ship" : {
@@ -2249,9 +2267,6 @@
     "Buy an escape pod at the Shipyard" : {
 
     },
-    "Buy as many as you can (%lld)" : {
-
-    },
     "Buy for %@ cr." : {
 
     },
@@ -2265,6 +2280,9 @@
 
     },
     "Buy price" : {
+
+    },
+    "Buy the selected amount (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ max)" : {
 
     },
     "Buy this item." : {
@@ -2502,10 +2520,7 @@
         }
       }
     },
-    "Click a ship to select it; ⌘-click two or more to compare them." : {
-
-    },
-    "Click to target, ⌥-click to track, right-click to plot a route." : {
+    "Click a system to target it. Its card has Track and Plot Route." : {
 
     },
     "Cloaking device" : {
@@ -3089,6 +3104,9 @@
     "Dr. Fehler's experiment" : {
 
     },
+    "Drag an installed item here to sell it" : {
+
+    },
     "Dragon Slayer" : {
 
     },
@@ -3122,7 +3140,22 @@
     "Dump %@ cr." : {
 
     },
-    "Dump All" : {
+    "Dump 1" : {
+
+    },
+    "Dump 20" : {
+
+    },
+    "Dump 5" : {
+
+    },
+    "Dump All (%lld)" : {
+
+    },
+    "Dump cargo…" : {
+
+    },
+    "Dump the selected amount (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)" : {
 
     },
     "Dumped %lld %@ for %@ cr." : {
@@ -4131,6 +4164,9 @@
     "Jettison Everything?" : {
 
     },
+    "Jettison cargo…" : {
+
+    },
     "Jettisoned %lld %@." : {
       "localizations" : {
         "en" : {
@@ -5049,6 +5085,9 @@
     "Open" : {
 
     },
+    "Open Galaxy Chart" : {
+
+    },
     "Open Recent" : {
 
     },
@@ -5056,6 +5095,9 @@
 
     },
     "Open Saved Game…" : {
+
+    },
+    "Open the Galaxy chart" : {
 
     },
     "Open the full story." : {
@@ -5666,6 +5708,12 @@
     "Reminder: you owe the bank %@ cr." : {
 
     },
+    "Remove from Compare" : {
+
+    },
+    "Remove this ship from the comparison." : {
+
+    },
     "Removed" : {
 
     },
@@ -5847,9 +5895,6 @@
 
     },
     "Return %@ to Galvon.\nShe is becoming anxious to arrive at home, and is no longer of any help in engineering functions." : {
-
-    },
-    "Return buys this many, ⇧Return sells them." : {
 
     },
     "Revert" : {
@@ -6043,7 +6088,16 @@
     "Sell 1" : {
 
     },
+    "Sell 20" : {
+
+    },
+    "Sell 5" : {
+
+    },
     "Sell All" : {
+
+    },
+    "Sell All (%lld)" : {
 
     },
     "Sell Equipment?" : {
@@ -6113,6 +6167,9 @@
         }
       }
     },
+    "Sell the selected amount (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)" : {
+
+    },
     "Sell this item." : {
 
     },
@@ -6135,6 +6192,15 @@
 
     },
     "Set Target" : {
+
+    },
+    "Set the quantity to 1" : {
+
+    },
+    "Set the quantity to 5" : {
+
+    },
+    "Set the quantity to the most possible" : {
 
     },
     "Settings…" : {
@@ -7436,6 +7502,15 @@
     "Trade" : {
 
     },
+    "Trade 1 unit at a time" : {
+
+    },
+    "Trade 20 units at a time" : {
+
+    },
+    "Trade 5 units at a time" : {
+
+    },
     "Trade Intelligence" : {
 
     },
@@ -7443,6 +7518,9 @@
 
     },
     "Trade Shield" : {
+
+    },
+    "Trade as many as possible" : {
 
     },
     "Trade in orbit" : {
@@ -7551,6 +7629,9 @@
     "Type a system name; Return selects it." : {
 
     },
+    "Type an amount, then choose Buy or Sell." : {
+
+    },
     "Type the name of a system." : {
 
     },
@@ -7619,6 +7700,9 @@
 
     },
     "Usable only from %@" : {
+
+    },
+    "Use Compare on two or more ships to see them side by side. Double-click a ship to review its purchase." : {
 
     },
     "Use Singularity" : {
@@ -7826,6 +7910,9 @@
 
     },
     "Why This Price" : {
+
+    },
+    "Why This Price?" : {
 
     },
     "Why this price? %@" : {

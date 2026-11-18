@@ -67,6 +67,7 @@ struct PlunderSheet: View {
             .accessibilityLabel(Text("Quantity of \(Names.item(item))"))  // A11Y-003
             .accessibilityValue(Text(verbatim: AccessibilityText.units(value.wrappedValue)))  // A11Y-004
             .accessibilityIdentifier(AXID.Decision.plunderQuantity(item))
+            QuantityChips(value: value, range: 1...max(1, row.maxTake), idPrefix: AXID.Decision.plunderQuantity(item), isEnabled: row.canTake)
             Button("Take") { session.send(row.takeCommand(value.wrappedValue)) }
                 .disabled(!row.canTake)
                 .help(blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Take the chosen amount."))
@@ -103,6 +104,7 @@ struct TradeInOrbitSheet: View {
                     .accessibilityLabel(Text("Quantity"))
                     .accessibilityValue(Text(verbatim: AccessibilityText.units(q)))
                     .accessibilityIdentifier(AXID.Decision.tradeQuantity)
+                    QuantityChips(value: Binding { q } set: { quantity = model.clamp($0) }, range: model.range, idPrefix: AXID.Decision.tradeQuantity)
                     Button("Max") { quantity = model.range.upperBound }
                         .accessibilityIdentifier(AXID.Decision.tradeMax)
                 }
@@ -170,6 +172,7 @@ struct EncounterMakeRoomSheet: View {
                     .accessibilityLabel(Text("Quantity"))
                     .accessibilityValue(Text(verbatim: AccessibilityText.units(min(quantity, held))))
                     .accessibilityIdentifier(AXID.Market.disposalQuantity)
+                    QuantityChips(value: $quantity, range: 1...max(1, held), idPrefix: AXID.Market.disposalQuantity)
                     HStack {
                         Spacer()
                         Button("Cancel") { session.endMakeRoom() }

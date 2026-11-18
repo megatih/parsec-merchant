@@ -9,7 +9,7 @@
    - Choices go to a single sheet or inline confirmation.
    - Validation errors go **inline**: disabled controls with a reason in the help tag or status text, not an alert.
 3. **Show the money.** Every trade decision shows profit and loss right where you make it: per unit, per bay, and against the target system's price.
-4. **Keyboard first, mouse friendly.** Every action has a menu item and a shortcut. Trading uses modifier-key quantity multipliers. Encounters use single keys. Full Keyboard Access works everywhere.
+4. **Pointer and touch first, keyboard complete.** Every action is discoverable and quick with a pointer or a finger alone: visible buttons and chips, 36 pt targets, hover feedback, context menus, drag and drop. Nothing needs a modifier key, a hover or the keyboard. The keyboard stays a complete second path: every action has a menu item and a shortcut, modifier clicks are accelerators, encounters keep their single keys, and Full Keyboard Access works everywhere.
 5. **Native, not themed.** Use stock SwiftUI and AppKit controls, system typography, SF Symbols and Liquid Glass applied by the system. Our personality comes from the *art* (procedural ships, planets, starfield), from *motion* and from *sound*, not from re-skinned controls.
 6. **Respect the classic.** Every mechanic, quest and number of the chosen ruleset is present. Modernization only removes friction and adds understanding; it never changes outcomes, except through the explicitly chosen ruleset.
 7. **Accessible by construction.** Everything works under VoiceOver, with Reduce Motion, Increase Contrast and Reduce Transparency, and at larger text sizes. Color is never the only signal: pair it with symbols, signs (+/−) or weight.
@@ -84,20 +84,20 @@ A `Table` with one row per commodity:
 | P/L | per-unit profit or loss if you sell here (green ▲ / red ▼ **with sign**) |
 | Target | target system's sell price (from current intel; dimmed if the data is old), Δ vs here, **profit per bay** |
 | History | Swift Charts sparkline of remembered prices at this system (Trade Intelligence) |
-| Actions | − / + steppers, a quantity field, **Buy Max**, **Sell All** |
+| Actions | quantity chips (1 / 5 / 20 / Max) with **Buy** and **Sell** buttons, a quantity field with its own Buy and Sell, **Buy Max**, **Sell All**, and Jettison or Dump when it applies |
 
-- **Quantity modifiers (Endless Sky style):** these apply **only to the − / + buttons and the B/S keys, never to row clicks** (⌘-click stays multi-select). A click is 1; ⇧ ×5; ⌘ ×20; ⇧⌘ ×100; ⌥ = max or all.
+- **Quantity chips:** each row's chips choose how much Buy and Sell trade. Modifier keys are accelerators of the same buttons (⇧ ×5; ⌘ ×20; ⇧⌘ ×100; ⌥ = max or all) and apply **only to the Buy and Sell buttons, never to row clicks** (⌘-click stays multi-select).
 - **Keyboard:** B buys and S sells the selected row; ⇧B is Buy Max; ⇧S is Sell All; arrow keys move between rows.
   - These keys are handled by `.onKeyPress` on the **focused trade table** (type-to-select disabled). They are inactive while a quantity field has focus, so plain-letter shortcuts never fire while typing.
 - **"Why this price?"**: the row detail shows the price breakdown from legitimate information: base for the tech level, government, size, pressure, the resource if known, and your record.
 - **Haptic** `.alignment` when the quantity reaches max affordable, max bays or max stock.
 - **Footer:** bays used/free (respects "leave N bays empty"), cash available (respects "reserve money"), and a projected profit summary for the current hold at the target.
 - **Recommendations strip** (Trade Intelligence): "Best buy here for {target}: Robots +412/bay" and "Best destinations within range for your hold." These are computed from known intel only, never from hidden information (fairness rule).
-- **Jettison and Dump** live in the Held cell's context menu, with confirmation when a littering penalty applies.
+- **Jettison and Dump** are a visible button on the row and an item of the row's context menu, with confirmation when a littering penalty applies. Every row has a context menu with all of its actions.
 
 ### 4.3 Shipyard (⌘3)
 - **Ship grid:** cards for each ship sold here, each with a vector portrait, key stats and net price after trade-in. Your current ship is marked "Yours."
-- **Compare mode:** select two or more ships (⌘-click) for a side-by-side stat table with deltas, against your ship by default. This replaces the WinForms Info and Buy buttons.
+- **Compare mode:** each card has a Compare toggle (⌘-click is an accelerator); double-click opens the purchase sheet. Two or more compared ships show a side-by-side stat table with deltas, against your ship by default. This replaces the WinForms Info and Buy buttons.
 - **Purchase review sheet:** one sheet replaces the C# chain of up to 8 prompts. It shows:
   - trade-in breakdown
   - a checklist of transferable unique equipment, each with its transfer cost (Morgan's laser, Lightning shield, Fuel compactor, Hidden bays, Quantum disruptor)
@@ -142,7 +142,8 @@ A `Table` with one row per commodity:
 - **Interaction:**
   - scroll or drag to pan; pinch and ⌘+ / ⌘− to zoom; "Fit Range" and "Fit Galaxy" buttons
   - hover shows an overlay card (never a popover): name, government, tech, distance, jumps needed, known prices and best profit
-  - click selects a target; double-click sets the target and moves focus to Warp (it **never warps directly**, because warping is irreversible); ⌥-click tracks
+  - click or tap selects a target and pins a selection card with Set Target, Track and Plot Route buttons (hover only previews); double-click sets the target and moves focus to Warp (it **never warps directly**, because warping is irreversible); ⌥-click is an accelerator for Track
+  - a plain mouse wheel zooms about the pointer, two-finger scrolling pans, pinch zooms
   - right-click opens a context menu: Set Target, Track, Plot Route, Find Prices
 - **Find** (⌘F is context search: on Galaxy it finds systems, in the Logbook it searches the log, in Market it filters items; Game › Find System… ⌥⌘F always opens system search): a search field with autocomplete over system names, plus filters ("has shipyard", "quest here", "sells Robots").
 - **Route planner:** pick a destination out of range, and Dijkstra over in-range hops plus wormholes computes the fewest-jumps route or the cheapest route, showing costs per hop. The engine still warps one hop at a time; the plan simply pre-selects the next target after each arrival.
@@ -284,6 +285,8 @@ M0 produces `docs/specs/ALR.md`, mapping **every** AlertType by name. A test ass
 - **UI tests** walk each section and check that elements have labels.
 
 ## 10. Keyboard map
+The keyboard is the complete second path (principle 4); nothing below is the only way to do something.
+
 | Action | Keys |
 |---|---|
 | New Game / Open / Save / Save As / Export | ⌘N / ⌘O / ⌘S / ⇧⌘S / ⇧⌘E |

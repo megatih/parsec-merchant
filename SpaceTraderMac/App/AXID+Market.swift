@@ -13,6 +13,8 @@ extension AXID {
         static func buyMax(_ item: TradeItemType) -> String { "market.row.\(item).buyMax" }
         static func sellAll(_ item: TradeItemType) -> String { "market.row.\(item).sellAll" }
         static func quantity(_ item: TradeItemType) -> String { "market.row.\(item).quantity" }
+        static func chip(_ item: TradeItemType, _ chip: TradeChip) -> String { "market.row.\(item).chip.\(chip.idSuffix)" }
+        static func menu(_ item: TradeItemType, _ action: String) -> String { "market.row.\(item).menu.\(action)" }
         static func jettison(_ item: TradeItemType) -> String { "market.row.\(item).jettison" }
         static func dump(_ item: TradeItemType) -> String { "market.row.\(item).dump" }
         /// The Held and Buy cells (read by UI flow 1).
@@ -23,8 +25,9 @@ extension AXID {
         static let disposalConfirm = "market.disposal.confirm"
         static let disposalCancel = "market.disposal.cancel"
         static let all: [String] = [table, filter, footer, disposalSheet, disposalQuantity, disposalConfirm, disposalCancel]
-            + TradeItemType.allCases.flatMap {
-                [row($0), buy($0), sell($0), buyMax($0), sellAll($0), quantity($0), jettison($0), dump($0), held($0), buyPrice($0)]
+            + TradeItemType.allCases.flatMap { item in
+                [row(item), buy(item), sell(item), quantity(item), jettison(item), dump(item), held(item), buyPrice(item)]
+                    + TradeChip.allCases.map { chip(item, $0) }
             }
     }
 }

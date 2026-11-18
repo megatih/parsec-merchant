@@ -210,7 +210,7 @@ struct NewGameWizard: View {
                         Text(WizardText.skillDescription(skill)).scaledFont(.callout).foregroundStyle(.readableSecondary)
                     }
                     Spacer()
-                    Button { update { $0.decrement(skill) } } label: { Image(systemName: "minus") }
+                    Button { update { $0.decrement(skill) } } label: { Image(systemName: "minus").pointerTarget() }
                         .disabled(!d.canDecrement(skill))
                         .accessibilityLabel(Text("Decrease \(String(localized: Names.skill(skill)))"))
                         .accessibilityIdentifier(AXID.NewGame.skillDecrement(skill))
@@ -219,7 +219,7 @@ struct NewGameWizard: View {
                         .monospacedDigit()
                         .frame(width: 28)
                         .accessibilityIdentifier(AXID.NewGame.skillValue(skill))
-                    Button { update { $0.increment(skill) } } label: { Image(systemName: "plus") }
+                    Button { update { $0.increment(skill) } } label: { Image(systemName: "plus").pointerTarget() }
                         .disabled(!d.canIncrement(skill))
                         .accessibilityLabel(Text("Increase \(String(localized: Names.skill(skill)))"))
                         .accessibilityIdentifier(AXID.NewGame.skillIncrement(skill))

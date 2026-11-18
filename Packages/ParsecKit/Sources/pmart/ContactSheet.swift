@@ -11,6 +11,8 @@ enum ContactSheet {
         switch page {
         case nil: image = IconExport.render(sheet.background(Color(white: 0.85)), pixels: 1600)
         case "planets": image = IconExport.render(PlanetSheet.sheet, pixels: 1600)
+        case "ships": image = IconExport.render(ShipSheet.sheet, pixels: 1600)
+        case "endings": image = IconExport.render(ShipSheet.endings, pixels: 1600)
         default: fail("unknown page \(page ?? "")")
         }
         try IconExport.writePNG(image, to: url)

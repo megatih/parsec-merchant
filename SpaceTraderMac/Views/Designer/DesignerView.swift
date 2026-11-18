@@ -135,12 +135,14 @@ struct DesignerView: View {
     private func summary(_ draft: DesignerDraft, quote: DesignQuote?) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack {
-                ShipPortrait(input: ShipArtInput(kind: .custom, sizeClass: draft.size.rawValue,
-                                                 custom: ArtAdapters.customParams(design: draft.design, base: draft.silhouette)))
-                    .frame(width: 220, height: 120)
+                // D7: the preview fills its box.
+                ShipPortrait(input: ArtAdapters.designInput(draft.design, style: draft.silhouette, price: quote?.spec.price ?? 0))
+                    .frame(maxWidth: .infinity, minHeight: 130, maxHeight: 220)
+                    .padding(.horizontal, 12)
                 Text(Names.ship(draft.silhouette)).foregroundStyle(.readableSecondary)
             }
-            .frame(maxWidth: .infinity, minHeight: 160)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, minHeight: 180)
             .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
             if let quote {
                 Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {

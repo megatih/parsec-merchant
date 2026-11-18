@@ -348,7 +348,7 @@ struct BridgeMarketTests {
         #expect(r.fieldCommand(text: "1", sell: true) == nil)
         #expect(TradeQuantity.modifiers(from: [.shift, .command]) == [.shift, .command])
         #expect(TradeItemType.allCases.allSatisfy { i in
-            [AXID.Market.buy(i), AXID.Market.sell(i), AXID.Market.buyMax(i), AXID.Market.sellAll(i), AXID.Market.quantity(i)]
+            ([AXID.Market.buy(i), AXID.Market.sell(i), AXID.Market.quantity(i)] + TradeChip.allCases.map { AXID.Market.chip(i, $0) })
                 .allSatisfy(AXID.all.contains)
         })
     }

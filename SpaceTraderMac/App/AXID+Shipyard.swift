@@ -6,6 +6,7 @@ nonisolated extension AXID {
     enum Shipyard {
         static func ship(_ t: ShipType) -> String { "shipyard.ship.\(t)" }
         static func buy(_ t: ShipType) -> String { "shipyard.ship.\(t).buy" }
+        static func compareToggle(_ t: ShipType) -> String { "shipyard.ship.\(t).compare" }
         static let ships = "shipyard.ships"
         static let designer = "shipyard.designer"
         static let compare = "shipyard.compare"
@@ -13,7 +14,7 @@ nonisolated extension AXID {
         static let escapePodBuy = "shipyard.escapePod.buy"
         static let insuranceBank = "shipyard.insurance.bank"
         static let all: [String] = [ships, designer, compare, compareClear, escapePodBuy, insuranceBank]
-            + ShipType.allCases.flatMap { [ship($0), buy($0)] }
+            + ShipType.allCases.flatMap { [ship($0), buy($0), compareToggle($0)] }
     }
 
     enum ShipPurchase {
@@ -48,7 +49,8 @@ nonisolated extension AXID {
         static func offer(_ item: EquipmentItem) -> String { "outfitter.offer.\(item.caseName)" }
         static func slot(_ g: OutfitterGroup, slot: Int) -> String { "outfitter.slot.\(g.rawValue).\(slot)" }
         static let detail = "outfitter.detail"
-        static let all: [String] = [detail] + OutfitterGroup.allCases.map(group)
+        static let sellWell = "outfitter.sellWell"
+        static let all: [String] = [detail, sellWell] + OutfitterGroup.allCases.map(group)
             + EquipmentItem.catalog.flatMap { [buy($0), offer($0)] }
             + OutfitterGroup.allCases.flatMap { g in (0..<OutfitterGroup.maxSlots).flatMap { [sell(g, slot: $0), slot(g, slot: $0)] } }
     }

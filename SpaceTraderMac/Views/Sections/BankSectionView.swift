@@ -177,7 +177,7 @@ private struct AmountRow: View {
             HStack(spacing: 12) {
                 // A11Y-029: the title stands apart from the slider's knob, in one column for both rows.
                 Text(title).frame(minWidth: 56, alignment: .leading).accessibilityHidden(true)
-                Slider(value: sliderValue, in: 0...Double(max(1, limit)), step: 1) { Text(title) }
+                Slider(value: sliderValue, in: 0...Double(max(1, limit)), step: Double(BankSlider.step(limit: limit))) { Text(title) }
                     .labelsHidden()
                     .disabled(blocker != nil || limit == 0)
                     .accessibilityLabel(Text(title))  // A11Y-003

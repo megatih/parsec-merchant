@@ -1,166 +1,277 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import SwiftUI
 
-/// ART-009: geometry of each `ShipFeature`, placed from the blueprint's hull profile.
+/// ART-009: geometry of each `ShipFeature`, placed from the blueprint's hull profile. Every feature is a piece of built
+/// machinery (or, for the two oddities, a sea creature's limb and a bottle's cork); none is insect anatomy.
 enum ShipFeatures {
     typealias Parts = (solid: [ShipPart], detail: [ShipPart])
 
     static func parts(_ f: ShipFeature, bp: ShipBlueprint, hull: Path) -> Parts {
-        let nose = bp.noseX, tail = bp.tailX
         switch f {
-        case .antennae: return (mirrored(antenna(nose: nose, bp: bp)), [])
-        case .proboscis:
-            return ([ShipPart(ArtGeometry.capsule(from: CGPoint(x: nose - 0.04, y: 0.5), to: CGPoint(x: min(0.99, nose + 0.17), y: 0.5),
-                                                  radius: 0.009), .dark)], [])
-        case .abdomenLight: return ([], [ShipPart(abdomen(bp), .glow, solid: false)])
-        case let .stripes(n): return ([], [ShipPart(stripes(n, bp: bp).intersection(hull), .accent, solid: false)])
-        case .elytraSeam:
-            var p = Path()
-            p.move(to: CGPoint(x: tail + 0.04, y: 0.5))
-            p.addLine(to: CGPoint(x: nose - (nose - tail) * 0.25, y: 0.5))
-            return ([], [ShipPart(p, .dark, solid: false, lineWidth: 0.012)])
-        case let .segments(n): return ([], [ShipPart(segmentLines(n, bp: bp), .dark, solid: false, lineWidth: 0.01)])
-        case .mandibles: return (mirrored(mandible(nose: nose, bp: bp)), [])
-        case .stinger:
-            let w = max(0.02, bp.halfWidth(at: tail + 0.02))
-            let tip = max(0.005, tail - 0.1)
-            return ([ShipPart(ArtGeometry.polygon([CGPoint(x: tail + 0.04, y: 0.5 - w * 0.6), CGPoint(x: tip, y: 0.5),
-                                                   CGPoint(x: tail + 0.04, y: 0.5 + w * 0.6)]), .dark)], [])
-        case .waist:
-            let x = bp.waistX, w = bp.halfWidth(at: x) + 0.012
-            return ([], [ShipPart(Path(CGRect(x: x - 0.012, y: 0.5 - w, width: 0.024, height: 2 * w)), .accent, solid: false)])
-        case .rearLegs: return (mirrored(rearLeg(bp)), [])
-        case .pincers: return (mirrored(pincer(nose: nose, bp: bp)), [])
-        case let .curledTail(n): return (curledTail(n, bp: bp), [])
-        case .hornRam:
-            return ([ShipPart(ArtGeometry.closedSpline([SplinePoint(nose - 0.06, 0.5 - 0.045, sharp: true), SplinePoint(nose + 0.06, 0.5 - 0.02),
-                                                        SplinePoint(min(0.99, nose + 0.15), 0.5, sharp: true), SplinePoint(nose + 0.06, 0.5 + 0.02),
-                                                        SplinePoint(nose - 0.06, 0.5 + 0.045, sharp: true)]), .dark)], [])
-        case .raptorialArms: return (mirrored(raptorialArm(bp)), [])
+        case let .panelLines(n): return ([], [ShipPart(panelLines(n, bp: bp), .dark, solid: false, lineWidth: 0.004)])
+        case let .cargoModules(n): return cargoModules(n, bp: bp)
+        case let .armour(level): return armour(level, bp: bp)
+        case let .hardpoints(slots, installed): return (hardpoints(slots: slots, installed: installed, bp: bp), [])
+        case let .shieldEmitters(slots, installed): return ([], shieldEmitters(slots: slots, installed: installed, bp: bp))
+        case let .sensors(n): return ([], sensors(n, bp: bp))
+        case let .fuelTanks(n): return (fuelTanks(n, bp: bp), [])
+        case .navigationLights: return ([], [])
+        case let .liveryBands(n): return ([], [ShipPart(bands(n, bp: bp).intersection(hull), .accent, solid: false)])
+        case let .spine(n): return ([], spine(n, bp: bp))
+        case let .broadsides(n): return (broadsides(n, bp: bp), [])
+        case .shieldRing: return (shieldRing(bp), [])
         case let .tentacles(n): return (tentacles(n, bp: bp), [])
         case let .eyes(n): return ([], [ShipPart(eyes(n, bp: bp), .glow, solid: false)])
         case .bottle: return ([], [])
         case .cork:
-            let w = bp.halfWidth(at: nose) * 0.95
-            return ([ShipPart(Path(roundedRect: CGRect(x: nose - 0.01, y: 0.5 - w, width: 0.07, height: 2 * w), cornerRadius: 0.01), .cork)], [])
+            let w = bp.halfWidth(at: bp.noseX) * 0.95
+            return ([ShipPart(Path(roundedRect: CGRect(x: bp.noseX - 0.01, y: 0.5 - w, width: 0.07, height: 2 * w), cornerRadius: 0.01), .cork)], [])
         case .scroll:
-            let rect = CGRect(x: tail + 0.12, y: 0.42, width: (nose - tail) * 0.42, height: 0.16)
+            let rect = CGRect(x: bp.tailX + 0.12, y: 0.42, width: (bp.noseX - bp.tailX) * 0.42, height: 0.16)
             return ([], [ShipPart(Path(roundedRect: rect, cornerRadius: 0.03), .parchment, solid: false)])
-        case .skids: return (mirrored(skid(bp)), [])
-        case let .hardpoints(n): return (hardpoints(n, bp: bp), [])
-        case let .cargoPods(n): return (cargoPods(n, bp: bp), [])
-        case let .shieldFins(n): return (shieldFins(n, bp: bp), [])
         }
     }
 
-    /// Extra glow emitters (the Firefly's abdomen light, the monster's bioluminescence).
+    /// Extra glow emitters (the monster's bioluminescence).
     static func glows(_ bp: ShipBlueprint) -> [EngineMount] {
-        var out: [EngineMount] = []
-        if bp.features.contains(.abdomenLight) {
-            out.append(EngineMount(x: bp.tailX + 0.08, radius: 0.12))
-        }
-        if bp.organicSeed != nil { out.append(EngineMount(x: 0.62, radius: 0.2)) }
-        return out
+        bp.organicSeed != nil ? [EngineMount(x: 0.62, radius: 0.2)] : []
     }
 
-    private static func mirrored(_ path: Path, role: ShipPart.Role = .dark) -> [ShipPart] {
-        [ShipPart(path, role), ShipPart(ArtGeometry.mirrorY(path), role)]
+    /// ART-016: the red (port) and green (starboard) navigation lights at the widest station, and a white one at the tail.
+    static func navigationLights(_ bp: ShipBlueprint, bounds: CGRect) -> [ShipLight] {
+        guard bp.features.contains(.navigationLights) else { return [] }
+        let widest = bp.hull.max { $0.halfWidth < $1.halfWidth } ?? ProfilePoint(0.5, 0.1)
+        // On the wing tips when there are wings, else at the hull's widest station.
+        let tip = bp.wings.first
+        let x: Double = tip.map { $0.rootX - $0.sweep - $0.tipChord / 2 } ?? widest.x
+        let off: Double = (tip != nil ? 0.5 - Double(bounds.minY) : widest.halfWidth) - 0.008
+        return [ShipLight(position: CGPoint(x: x, y: 0.5 - off), kind: .port), ShipLight(position: CGPoint(x: x, y: 0.5 + off), kind: .starboard),
+                ShipLight(position: CGPoint(x: bp.tailX + 0.03, y: 0.5), kind: .tail)]
     }
 
-    private static func antenna(nose: Double, bp: ShipBlueprint) -> Path {
-        let w = bp.halfWidth(at: nose - 0.04)
-        let curve = ArtGeometry.openSpline([SplinePoint(nose - 0.05, 0.5 - w * 0.5), SplinePoint(nose + 0.04, 0.5 - w - 0.06),
-                                            SplinePoint(min(0.99, nose + 0.11), 0.5 - w - 0.16)])
-        return ArtGeometry.stroke(curve, width: 0.012)
+    private static func mirrored(_ path: Path, role: ShipPart.Role = .dark, solid: Bool = true) -> [ShipPart] {
+        [ShipPart(path, role, solid: solid), ShipPart(ArtGeometry.mirrorY(path), role, solid: solid)]
     }
 
-    private static func abdomen(_ bp: ShipBlueprint) -> Path {
-        let x = bp.tailX + 0.02, w = bp.halfWidth(at: bp.tailX + 0.1) * 0.8
-        return Path(ellipseIn: CGRect(x: x, y: 0.5 - w, width: 0.16, height: 2 * w))
-    }
+    // MARK: Plating and panels
 
-    private static func stripes(_ n: Int, bp: ShipBlueprint) -> Path {
+    /// Transverse seams at `n` stations and one seam along the keel.
+    static func panelLines(_ n: Int, bp: ShipBlueprint) -> Path {
         var p = Path()
         let len = bp.noseX - bp.tailX
-        for i in 0..<max(1, n) {
-            let x = bp.tailX + len * (0.22 + 0.16 * Double(i))
-            p.addRect(CGRect(x: x, y: 0, width: len * 0.07, height: 1))
-        }
-        return p
-    }
-
-    private static func segmentLines(_ n: Int, bp: ShipBlueprint) -> Path {
-        var p = Path()
-        let len = bp.noseX - bp.tailX
-        for i in 1..<max(2, n) {
-            let x = bp.tailX + len * Double(i) / Double(n)
-            let w = bp.halfWidth(at: x)
+        for i in 1...max(1, n) {
+            let x = bp.tailX + len * Double(i) / Double(n + 1)
+            let w = bp.halfWidth(at: x) * 0.96
+            guard w > 0.01 else { continue }
             p.move(to: CGPoint(x: x, y: 0.5 - w))
             p.addLine(to: CGPoint(x: x, y: 0.5 + w))
         }
+        p.move(to: CGPoint(x: bp.tailX + len * 0.08, y: 0.5))
+        p.addLine(to: CGPoint(x: bp.tailX + len * 0.62, y: 0.5))
         return p
     }
 
-    private static func mandible(nose: Double, bp: ShipBlueprint) -> Path {
-        let w = bp.halfWidth(at: nose - 0.01)
-        let curve = ArtGeometry.openSpline([SplinePoint(nose - 0.03, 0.5 - w * 0.8), SplinePoint(nose + 0.06, 0.5 - w - 0.02),
-                                            SplinePoint(min(0.99, nose + 0.11), 0.5 - w * 0.25)])
-        return ArtGeometry.stroke(curve, width: 0.028)
+    /// The armour belt of one side: a plate over the hull's edge amidships, thicker and longer with the level.
+    static func armourPlate(_ level: Int, bp: ShipBlueprint) -> CGRect {
+        let len = bp.noseX - bp.tailX
+        let x0 = bp.tailX + len * (0.34 - 0.03 * Double(level)), x1 = bp.tailX + len * (0.58 + 0.05 * Double(level))
+        let w = max(bp.halfWidth(at: x0), bp.halfWidth(at: x1), bp.halfWidth(at: (x0 + x1) / 2))
+        let thickness = 0.008 + 0.006 * Double(level)
+        return CGRect(x: x0, y: 0.5 - w - thickness, width: x1 - x0, height: thickness + 0.024)
     }
 
-    private static func rearLeg(_ bp: ShipBlueprint) -> Path {
-        let hip = CGPoint(x: 0.6, y: 0.5 - bp.halfWidth(at: 0.6) * 0.6)
-        var p = Path()
-        p.move(to: hip)
-        p.addLine(to: CGPoint(x: 0.72, y: 0.22))
-        p.addLine(to: CGPoint(x: 0.03, y: 0.15))
-        var leg = ArtGeometry.stroke(p, width: 0.03)
-        leg.addPath(ArtGeometry.capsule(from: CGPoint(x: 0.03, y: 0.15), to: CGPoint(x: 0.12, y: 0.15), radius: 0.025))
-        return leg
-    }
-
-    private static func pincer(nose: Double, bp: ShipBlueprint) -> Path {
-        let w = bp.halfWidth(at: nose - 0.12)
-        var arm = Path()
-        arm.move(to: CGPoint(x: nose - 0.14, y: 0.5 - w * 0.7))
-        arm.addLine(to: CGPoint(x: nose - 0.02, y: 0.24))
-        var p = ArtGeometry.stroke(arm, width: 0.035)
-        let claw = ArtGeometry.closedSpline([SplinePoint(nose - 0.04, 0.27, sharp: true), SplinePoint(nose + 0.04, 0.14),
-                                             SplinePoint(min(0.99, nose + 0.13), 0.2, sharp: true), SplinePoint(nose + 0.05, 0.21),
-                                             SplinePoint(min(0.97, nose + 0.11), 0.27, sharp: true), SplinePoint(nose + 0.03, 0.31)])
-        p.addPath(claw)
-        return p
-    }
-
-    private static func curledTail(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
-        let tail = bp.tailX
-        // Plan view: the tail leaves the hull aft, sweeps out to one side and curls forward over the hull.
-        var parts: [ShipPart] = []
-        let count = max(3, n)
-        var last = CGPoint(x: tail, y: 0.5)
-        for i in 0..<count {
-            let t = Double(i + 1) / Double(count)
-            let a = Double.pi * (1.05 + 1.0 * t)
-            let c = CGPoint(x: tail + 0.2 + cos(a) * 0.2, y: 0.42 + sin(a) * 0.34 * t)
-            let r = 0.05 - 0.022 * t
-            parts.append(ShipPart(ArtGeometry.capsule(from: last, to: c, radius: r * 0.7), .dark))
-            parts.append(ShipPart(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)), .primary))
-            last = c
+    static func armour(_ level: Int, bp: ShipBlueprint) -> Parts {
+        guard level > 0 else { return ([], []) }
+        let rect = armourPlate(level, bp: bp)
+        let plate = Path(roundedRect: rect, cornerRadius: 0.006)
+        var seams = Path()
+        for k in 1...level {
+            let x = rect.minX + rect.width * Double(k) / Double(level + 1)
+            seams.move(to: CGPoint(x: x, y: rect.minY))
+            seams.addLine(to: CGPoint(x: x, y: rect.maxY))
         }
-        let sting = ArtGeometry.polygon([CGPoint(x: last.x - 0.02, y: last.y - 0.015), CGPoint(x: last.x + 0.1, y: last.y + 0.03),
-                                         CGPoint(x: last.x - 0.01, y: last.y + 0.025)])
-        parts.append(ShipPart(sting, .accent))
+        return (mirrored(plate, role: .secondary), mirrored(seams, role: .dark, solid: false).map {
+            ShipPart($0.path, .dark, solid: false, lineWidth: 0.004)
+        })
+    }
+
+    // MARK: Cargo
+
+    /// The cargo containers: rows from the stern forward, each row a pair outside the hull; an odd module rides on the keel.
+    static func cargoRects(_ n: Int, bp: ShipBlueprint) -> (pairs: [CGRect], keel: CGRect?) {
+        guard n > 0 else { return ([], nil) }
+        let len = bp.noseX - bp.tailX
+        let rowLength = len * 0.17, gap = len * 0.015
+        var pairs: [CGRect] = []
+        for row in 0..<(n / 2) {
+            let x = bp.tailX + len * 0.1 + Double(row) * (rowLength + gap)
+            let off = max(bp.halfWidth(at: x), bp.halfWidth(at: x + rowLength)) - 0.012
+            let outer = max(off + 0.062, bp.cargoReach)
+            pairs.append(CGRect(x: x, y: 0.5 - outer, width: rowLength, height: outer - off))
+        }
+        var keel: CGRect?
+        if n % 2 == 1 {
+            let x = bp.tailX + len * 0.1 + Double(n / 2) * (rowLength + gap)
+            keel = CGRect(x: x, y: 0.5 - 0.036, width: rowLength, height: 0.072)
+        }
+        return (pairs, keel)
+    }
+
+    static func cargoModules(_ n: Int, bp: ShipBlueprint) -> Parts {
+        let rects = cargoRects(n, bp: bp)
+        var solid: [ShipPart] = [], detail: [ShipPart] = []
+        for r in rects.pairs {
+            solid += mirrored(Path(roundedRect: r, cornerRadius: 0.008), role: .secondary)
+            var ribs = Path()
+            for k in 1...3 {
+                let x = r.minX + r.width * Double(k) / 4
+                ribs.move(to: CGPoint(x: x, y: r.minY + 0.006))
+                ribs.addLine(to: CGPoint(x: x, y: r.maxY - 0.006))
+            }
+            detail += mirrored(ribs, solid: false).map { ShipPart($0.path, .dark, solid: false, lineWidth: 0.004) }
+        }
+        if let k = rects.keel {
+            detail.append(ShipPart(Path(roundedRect: k, cornerRadius: 0.008), .secondary, solid: false))
+            var ribs = Path()
+            for i in 1...3 {
+                let x = k.minX + k.width * Double(i) / 4
+                ribs.move(to: CGPoint(x: x, y: k.minY + 0.006))
+                ribs.addLine(to: CGPoint(x: x, y: k.maxY - 0.006))
+            }
+            detail.append(ShipPart(ribs, .dark, solid: false, lineWidth: 0.004))
+        }
+        return (solid, detail)
+    }
+
+    // MARK: Weapons, shields, sensors, tanks
+
+    /// The mount positions of `slots` hardpoints: pairs outboard from the nose aft, and a centreline mount when odd.
+    static func hardpointMounts(_ slots: Int, bp: ShipBlueprint) -> [CGPoint] {
+        var out: [CGPoint] = []
+        let lead = bp.noseX - 0.2
+        for tier in 0..<(slots / 2) {
+            let x = lead - Double(tier) * 0.11
+            let off = min(0.44, bp.halfWidth(at: x) + 0.02 + Double(tier) * 0.028)
+            out.append(CGPoint(x: x, y: 0.5 - off))
+            out.append(CGPoint(x: x, y: 0.5 + off))
+        }
+        if slots % 2 == 1 { out.append(CGPoint(x: bp.noseX - 0.1, y: 0.5)) }
+        return out
+    }
+
+    /// One block per slot; a barrel on each slot that holds a weapon, longer and thicker for the heavier types.
+    static func hardpoints(slots: Int, installed: [Int], bp: ShipBlueprint) -> [ShipPart] {
+        var parts: [ShipPart] = []
+        for (i, m) in hardpointMounts(min(6, max(0, slots)), bp: bp).enumerated() {
+            parts.append(ShipPart(Path(roundedRect: CGRect(x: m.x - 0.035, y: m.y - 0.014, width: 0.07, height: 0.028), cornerRadius: 0.006),
+                                  .secondary))
+            guard i < installed.count else { continue }
+            let weight = Double(min(5, max(0, installed[i])))
+            let tip = min(0.985, m.x + 0.07 + 0.012 * weight)
+            parts.append(ShipPart(ArtGeometry.capsule(from: CGPoint(x: m.x, y: m.y), to: CGPoint(x: tip, y: m.y), radius: 0.007 + 0.0012 * weight),
+                                  .dark))
+        }
         return parts
     }
 
-    private static func raptorialArm(_ bp: ShipBlueprint) -> Path {
-        let shoulder = CGPoint(x: 0.62, y: 0.5 - bp.halfWidth(at: 0.62) * 0.7)
-        var p = Path()
-        p.move(to: shoulder)
-        p.addLine(to: CGPoint(x: 0.8, y: 0.25))
-        p.addLine(to: CGPoint(x: 0.97, y: 0.4))
-        return ArtGeometry.stroke(p, width: 0.03)
+    static func shieldEmitters(slots: Int, installed: Int, bp: ShipBlueprint) -> [ShipPart] {
+        var parts: [ShipPart] = []
+        let len = bp.noseX - bp.tailX
+        for i in 0..<min(4, max(0, slots)) {
+            let x = bp.tailX + len * (0.3 + 0.13 * Double(i))
+            let r = min(0.02, bp.halfWidth(at: x) * 0.3)
+            guard r > 0.004 else { continue }
+            let ring = Path(ellipseIn: CGRect(x: x - r, y: 0.5 - r, width: 2 * r, height: 2 * r))
+            parts.append(ShipPart(ring, .dark, solid: false))
+            let core = Path(ellipseIn: CGRect(x: x - r * 0.55, y: 0.5 - r * 0.55, width: r * 1.1, height: r * 1.1))
+            parts.append(ShipPart(core, i < installed ? .glow : .secondary, solid: false))
+        }
+        return parts
     }
+
+    /// Sensor dishes set into the forward hull.
+    static func sensors(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
+        var parts: [ShipPart] = []
+        for i in 0..<max(0, n) {
+            let x = bp.noseX - 0.24 - 0.07 * Double(i / 2)
+            let side: Double = i.isMultiple(of: 2) ? -1 : 1
+            let off = bp.halfWidth(at: x) * 0.55
+            let r = min(0.014, off * 0.5)
+            guard r > 0.004 else { continue }
+            let c = CGPoint(x: x, y: 0.5 + side * off)
+            parts.append(ShipPart(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)), .accent, solid: false))
+            parts.append(ShipPart(Path(ellipseIn: CGRect(x: c.x - r * 0.3, y: c.y - r * 0.3, width: r * 0.6, height: r * 0.6)), .dark, solid: false))
+        }
+        return parts
+    }
+
+    /// Spherical tanks along the aft flanks.
+    static func fuelTanks(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
+        var parts: [ShipPart] = []
+        let len = bp.noseX - bp.tailX
+        for i in 0..<max(0, n) {
+            let x = bp.tailX + len * (0.66 + 0.075 * Double(i))
+            let r = 0.022
+            let off = bp.halfWidth(at: x) + r * 0.35
+            parts += mirrored(Path(ellipseIn: CGRect(x: x - r, y: 0.5 - off - r, width: 2 * r, height: 2 * r)), role: .accent)
+        }
+        return parts
+    }
+
+    private static func bands(_ n: Int, bp: ShipBlueprint) -> Path {
+        var p = Path()
+        let len = bp.noseX - bp.tailX
+        for i in 0..<max(1, n) {
+            let x = bp.tailX + len * (0.24 + 0.2 * Double(i))
+            p.addRect(CGRect(x: x, y: 0, width: len * 0.035, height: 1))
+        }
+        return p
+    }
+
+    // MARK: Capital-ship fittings (special designs)
+
+    /// A raised keel of `n` blocks along the centreline.
+    static func spine(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
+        var parts: [ShipPart] = []
+        let len = bp.noseX - bp.tailX
+        for i in 0..<max(1, n) {
+            let w = len * 0.6 / Double(max(1, n))
+            let x = bp.tailX + len * 0.14 + Double(i) * w
+            parts.append(ShipPart(Path(roundedRect: CGRect(x: x, y: 0.5 - 0.02, width: w * 0.86, height: 0.04), cornerRadius: 0.006), .secondary,
+                                  solid: false))
+        }
+        return parts
+    }
+
+    /// Gun sponsons along both flanks.
+    static func broadsides(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
+        var parts: [ShipPart] = []
+        let len = bp.noseX - bp.tailX
+        for i in 0..<max(1, n) {
+            let x = bp.tailX + len * (0.22 + 0.5 * Double(i) / Double(max(1, n)))
+            let off = bp.halfWidth(at: x + 0.03) - 0.008
+            parts += mirrored(Path(roundedRect: CGRect(x: x, y: 0.5 - off - 0.04, width: 0.075, height: 0.04), cornerRadius: 0.008), role: .secondary)
+            parts += mirrored(ArtGeometry.capsule(from: CGPoint(x: x + 0.04, y: 0.5 - off - 0.028), to: CGPoint(x: x + 0.11, y: 0.5 - off - 0.028),
+                                                  radius: 0.006))
+        }
+        return parts
+    }
+
+    /// A field ring carried around the hull on four struts.
+    static func shieldRing(_ bp: ShipBlueprint) -> [ShipPart] {
+        let c = CGPoint(x: bp.tailX + (bp.noseX - bp.tailX) * 0.46, y: 0.5)
+        let outer = 0.3, inner = 0.262
+        let ring = Path(ellipseIn: CGRect(x: c.x - outer * 0.62, y: c.y - outer, width: outer * 1.24, height: outer * 2))
+            .subtracting(Path(ellipseIn: CGRect(x: c.x - inner * 0.62, y: c.y - inner, width: inner * 1.24, height: inner * 2)))
+        var parts = [ShipPart(ring, .accent)]
+        for (dx, dy) in [(0.07, 1.0), (-0.07, 1.0), (0.07, -1.0), (-0.07, -1.0)] {
+            parts.append(ShipPart(ArtGeometry.capsule(from: CGPoint(x: c.x + dx * 0.4, y: c.y + dy * 0.02),
+                                                      to: CGPoint(x: c.x + dx, y: c.y + dy * (inner + 0.01)), radius: 0.007), .dark))
+        }
+        return parts
+    }
+
+    // MARK: The space monster
 
     private static func tentacles(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
         var rng = ArtRandom(seed: ArtSeed.mix(bp.organicSeed ?? 1, 0x5445_4E54))
@@ -185,65 +296,5 @@ enum ShipFeatures {
             p.addEllipse(in: CGRect(x: x - 0.022, y: y - 0.022, width: 0.044, height: 0.044))
         }
         return p
-    }
-
-    private static func skid(_ bp: ShipBlueprint) -> Path {
-        let x0 = bp.tailX + 0.05, x1 = bp.tailX + 0.3
-        let w = bp.halfWidth(at: (x0 + x1) / 2) + 0.06
-        var p = ArtGeometry.capsule(from: CGPoint(x: x0, y: 0.5 - w), to: CGPoint(x: x1, y: 0.5 - w), radius: 0.016)
-        p.addPath(ArtGeometry.capsule(from: CGPoint(x: (x0 + x1) / 2, y: 0.5 - w), to: CGPoint(x: (x0 + x1) / 2, y: 0.5 - w + 0.08),
-                                      radius: 0.01))
-        return p
-    }
-
-    private static func hardpoints(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
-        var parts: [ShipPart] = []
-        guard n > 0 else { return parts }
-        let x = min(0.97, bp.noseX - 0.06)
-        for tier in 0..<(n / 2) {
-            let along = x - 0.12 - Double(tier) * 0.1
-            let off = bp.halfWidth(at: along) + 0.025 + Double(tier) * 0.03
-            let barrel = ArtGeometry.capsule(from: CGPoint(x: along - 0.08, y: 0.5 - off), to: CGPoint(x: min(0.99, along + 0.1), y: 0.5 - off),
-                                             radius: 0.012)
-            parts += mirrored(barrel)
-        }
-        if n % 2 == 1 {
-            parts.append(ShipPart(ArtGeometry.capsule(from: CGPoint(x: bp.noseX - 0.06, y: 0.5), to: CGPoint(x: min(0.99, bp.noseX + 0.07), y: 0.5),
-                                                      radius: 0.011), .dark))
-        }
-        return parts
-    }
-
-    private static func cargoPods(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
-        var parts: [ShipPart] = []
-        guard n > 0 else { return parts }
-        let len = bp.noseX - bp.tailX
-        let pairs = max(1, n / 2)
-        for slot in 0..<(n / 2) {
-            let x = bp.tailX + len * (0.16 + 0.62 * Double(slot) / Double(pairs))
-            let w = len * 0.58 / Double(pairs)
-            let off = bp.halfWidth(at: x + w / 2) + 0.005
-            let pod = Path(roundedRect: CGRect(x: x, y: 0.5 - off - 0.07, width: w * 0.88, height: 0.07), cornerRadius: 0.015)
-            parts += mirrored(pod, role: .secondary)
-        }
-        if n % 2 == 1 {
-            let w = len * 0.3
-            parts.append(ShipPart(Path(roundedRect: CGRect(x: bp.tailX - 0.01, y: 0.465, width: w, height: 0.07), cornerRadius: 0.02),
-                                  .secondary))
-        }
-        return parts
-    }
-
-    private static func shieldFins(_ n: Int, bp: ShipBlueprint) -> [ShipPart] {
-        var parts: [ShipPart] = []
-        guard n > 0 else { return parts }
-        for i in 0..<n {
-            let x = bp.tailX + 0.06 + 0.07 * Double(i)
-            let w = bp.halfWidth(at: x + 0.03)
-            let fin = ArtGeometry.polygon([CGPoint(x: x, y: 0.5 - w), CGPoint(x: x + 0.05, y: 0.5 - w),
-                                           CGPoint(x: x - 0.02, y: 0.5 - w - 0.07 - 0.01 * Double(i))])
-            parts += mirrored(fin, role: .accent)
-        }
-        return parts
     }
 }

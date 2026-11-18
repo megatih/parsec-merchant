@@ -70,7 +70,7 @@ public struct EngineMount: Sendable, Hashable {
 /// ART-009: the cockpit canopy.
 public struct Cockpit: Sendable, Hashable {
     public enum Style: Sendable, Hashable {
-        case bubble, slit, compound, none
+        case bubble, slit, none
     }
 
     /// The front of the canopy.
@@ -89,11 +89,22 @@ public struct Cockpit: Sendable, Hashable {
     public static let none = Cockpit(x: 0, length: 0, width: 0, style: .none)
 }
 
-/// ART-009: the closed set of ship features.
+/// ART-009: the closed set of ship fittings. All are built machinery, apart from the space monster's limbs and eyes
+/// and the bottle's cork and scroll.
 public enum ShipFeature: Sendable, Hashable {
-    case antennae, proboscis, abdomenLight, stripes(Int), elytraSeam, segments(Int), mandibles, stinger, waist, rearLegs,
-         pincers, curledTail(Int), hornRam, raptorialArms, tentacles(Int), eyes(Int), bottle, cork, scroll, skids,
-         hardpoints(Int), cargoPods(Int), shieldFins(Int)
+    case panelLines(Int), cargoModules(Int), armour(Int), hardpoints(slots: Int, installed: [Int]),
+         shieldEmitters(slots: Int, installed: Int), sensors(Int), fuelTanks(Int), navigationLights, liveryBands(Int),
+         spine(Int), broadsides(Int), shieldRing, tentacles(Int), eyes(Int), bottle, cork, scroll
+}
+
+/// ART-016: a navigation light in unit space.
+public struct ShipLight: Sendable, Hashable {
+    public enum Kind: Sendable, Hashable {
+        case port, starboard, tail
+    }
+
+    public var position: CGPoint
+    public var kind: Kind
 }
 
 /// ART-009: palette tokens of a livery.
@@ -123,6 +134,14 @@ public struct ShipBlueprint: Sendable, Hashable {
     public var symmetric: Bool
     /// Space monster: the hull is a seeded organic outline instead of the profile.
     public var organicSeed: UInt64?
+    /// What the generator built the hull for; nil for the special designs.
+    public var archetype: ShipArchetype?
+    /// 0 (blunt, boxy) … 1 (pointed, smooth).
+    public var sleekness = 0.5
+    /// The armour level, 0…5.
+    public var plating = 0
+    /// A spine freighter's containers reach this far from the centreline; 0 = containers sit against the hull.
+    public var cargoReach = 0.0
 
     public init(hull: [ProfilePoint], wings: [WingPair] = [], nacelles: [Nacelle] = [], engines: [EngineMount] = [],
                 cockpit: Cockpit = .none, features: [ShipFeature] = [], livery: Livery, symmetric: Bool = true,
@@ -153,12 +172,6 @@ public struct ShipBlueprint: Sendable, Hashable {
             return a.halfWidth + (b.halfWidth - a.halfWidth) * t
         }
         return 0
-    }
-
-    /// The narrowest interior station (the waist).
-    public var waistX: Double {
-        let inner = hull.filter { $0.x > tailX + 0.05 && $0.x < noseX - 0.05 }
-        return inner.min { $0.halfWidth < $1.halfWidth }?.x ?? (noseX + tailX) / 2
     }
 
     public var isGlassHull: Bool { features.contains(.bottle) }

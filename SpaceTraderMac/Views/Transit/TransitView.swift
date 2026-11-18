@@ -30,7 +30,7 @@ struct TransitView: View {
                     .scaledFont(.title2)
                 TransitArt(ship: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right),
                            progress: Double(flown) / Double(TransitPlayback.totalClicks), wormhole: playback.viaWormhole, seed: state.seed)
-                    .frame(maxWidth: 520, minHeight: 110, maxHeight: 130)
+                    .frame(maxWidth: 640, minHeight: ShipPanelSize.transit.lowerBound, maxHeight: ShipPanelSize.transit.upperBound)
             }
             TransitTrack(flown: flown)
                 .frame(maxWidth: 520)

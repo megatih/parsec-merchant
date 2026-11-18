@@ -128,26 +128,36 @@ public enum PlanetSphere {
 
     /// ART-072: a square premultiplied RGBA8 sRGB image of `pixelSize` pixels.
     public static func project(_ maps: PlanetMaps, uniforms: Uniforms, pixelSize: Int) -> CGImage? {
-        let bytes = pixels(maps, uniforms: uniforms, pixelSize: pixelSize)
-        guard pixelSize > 0, let provider = CGDataProvider(data: Data(bytes) as CFData),
+        project(maps, uniforms: uniforms, width: pixelSize, height: pixelSize)
+    }
+
+    /// A `width` × `height` window on the projection; `uniforms.viewport` places the disk, which may reach outside it
+    /// (the limb views of the endings, ART-084/085).
+    public static func project(_ maps: PlanetMaps, uniforms: Uniforms, width: Int, height: Int) -> CGImage? {
+        let bytes = pixels(maps, uniforms: uniforms, width: width, height: height)
+        guard width > 0, height > 0, let provider = CGDataProvider(data: Data(bytes) as CFData),
               let space = CGColorSpace(name: CGColorSpace.sRGB) else { return nil }
-        return CGImage(width: pixelSize, height: pixelSize, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: pixelSize * 4, space: space,
+        return CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: width * 4, space: space,
                        bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue), provider: provider, decode: nil,
                        shouldInterpolate: true, intent: .defaultIntent)
     }
 
     /// The projection as premultiplied RGBA8 bytes, rows top to bottom.
     public static func pixels(_ maps: PlanetMaps, uniforms u: Uniforms, pixelSize n: Int) -> [UInt8] {
-        guard n > 0 else { return [] }
-        var out = [UInt8](repeating: 0, count: n * n * 4)
+        pixels(maps, uniforms: u, width: n, height: n)
+    }
+
+    public static func pixels(_ maps: PlanetMaps, uniforms u: Uniforms, width w: Int, height h: Int) -> [UInt8] {
+        guard w > 0, h > 0 else { return [] }
+        var out = [UInt8](repeating: 0, count: w * h * 4)
         let sampler = Sampler(maps)
         out.withUnsafeMutableBufferPointer { buf in
             guard let address = buf.baseAddress else { return }
             let base = ParallelRows(address)
-            DispatchQueue.concurrentPerform(iterations: n) { y in
-                for x in 0..<n {
+            DispatchQueue.concurrentPerform(iterations: h) { y in
+                for x in 0..<w {
                     let c = shade(x: Float(x) + 0.5, y: Float(y) + 0.5, u: u, s: sampler)
-                    let i = (y * n + x) * 4
+                    let i = (y * w + x) * 4
                     base[i] = PlanetTextureBaker.byte(c.x)
                     base[i + 1] = PlanetTextureBaker.byte(c.y)
                     base[i + 2] = PlanetTextureBaker.byte(c.z)

@@ -33,7 +33,9 @@
 "Bought %lld %@ for %@ cr."  the goods name that follows is game data
 "Bought %lld %@ in orbit for %@ cr."  the goods name that follows is game data
 "Buy %lld fuel (%lld cr.)"  'fuel' is a mass noun; 'cr.' is an abbreviation
-"Buy as many as you can (%lld)"  the number follows its label (no noun follows it)
+"Buy Max (%lld)"  the number follows its label in parentheses (no noun follows it)
+"Dump All (%lld)"  the number follows its label in parentheses (no noun follows it)
+"Sell All (%lld)"  the number follows its label in parentheses (no noun follows it)
 "Caught littering. Police record score now %lld."  no noun follows the number
 "Charge %lld"  the number follows its label (no noun follows it)
 "Click %lld of %lld"  a count out of a total

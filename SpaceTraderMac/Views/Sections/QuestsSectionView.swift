@@ -110,6 +110,15 @@ private struct QuestCardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(.background.secondary, in: .rect(cornerRadius: 10))
+        .contextMenu {
+            // UI-PTR-005: the entry's visible action.
+            if let first = card.entry.systems.first {
+                Button("Show on Map") {
+                    if session.map.galaxyWindowOpen { openWindow(id: GalaxyWindowMetrics.id) }
+                    session.showOnMap(first)
+                }
+            }
+        }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(QuestText.title(for: card.entry.kind, state: state)))
         .accessibilityIdentifier(AXID.Quests.entry(card.index))

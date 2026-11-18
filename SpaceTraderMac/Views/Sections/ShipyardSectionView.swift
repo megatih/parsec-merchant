@@ -64,7 +64,8 @@ struct ShipyardSectionView: View {
                         .foregroundStyle(.readableSecondary)
                 }
                 if selection.isComparing {
-                    ShipCompareView(rows: ShipCompare.rows(model, selection: selection)) { selection.clear() }
+                    ShipCompareView(rows: ShipCompare.rows(model, selection: selection),
+                                    specs: Dictionary(model.cards.map { ($0.type, $0.spec) }, uniquingKeysWith: { a, _ in a })) { selection.clear() }
                 }
                 AccessibleLazyVGrid(label: "Ships", columns: [GridItem(.adaptive(minimum: 230), spacing: 12)], spacing: 12) {
                     ForEach(model.cards) { card in
@@ -76,7 +77,7 @@ struct ShipyardSectionView: View {
                     }
                 }
                 if !model.cards.isEmpty {
-                    Text("Click a ship to select it; ⌘-click two or more to compare them.")
+                    Text("Use Compare on two or more ships to see them side by side. Double-click a ship to review its purchase.")
                         .scaledFont(.footnote)
                         .foregroundStyle(.readableSecondary)
                 }
@@ -97,9 +98,11 @@ private struct ShipCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // D7: a full-width portrait banner.
+            ShipPortrait(input: ArtAdapters.specInput(card.type, spec: card.spec))
+                .frame(maxWidth: .infinity)
+                .frame(height: ShipPanelSize.cardBanner)
             HStack {
-                ShipPortrait(input: ArtAdapters.specInput(card.type, spec: card.spec))
-                    .frame(width: 66, height: 44)
                 VStack(alignment: .leading) {
                     Text(Names.ship(card.type)).scaledFont(.headline)
                     Text(Names.size(card.spec.size)).scaledFont(.callout).foregroundStyle(.readableSecondary)
@@ -128,10 +131,20 @@ private struct ShipCardView: View {
                     .scaledFont(.footnote)
                     .foregroundStyle(.signalOrange)
             }
-            if card.canOpenPurchase {
-                Button("Buy…", action: onBuy)
-                    .help(card.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Review the purchase."))
-                    .accessibilityIdentifier(AXID.Shipyard.buy(card.type))
+            HStack {
+                if card.canOpenPurchase {
+                    Button(action: onBuy) { Text("Buy…").pointerTarget() }
+                        .help(card.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Review the purchase."))
+                        .accessibilityIdentifier(AXID.Shipyard.buy(card.type))
+                }
+                Spacer(minLength: 0)
+                // UI-PTR-009: comparing needs no modifier key.
+                Toggle(isOn: Binding(get: { selected }, set: { _ in onCompare() })) {
+                    Text("Compare").pointerTarget()
+                }
+                .toggleStyle(.button)
+                .help(Text(selected ? "Remove this ship from the comparison." : "Add this ship to the comparison."))
+                .accessibilityIdentifier(AXID.Shipyard.compareToggle(card.type))
             }
         }
         .padding(12)
@@ -141,8 +154,18 @@ private struct ShipCardView: View {
             RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 2)
         }
+        .hoverHighlight(cornerRadius: 10)  // UI-PTR-003
         .contentShape(Rectangle())
+        // UI-PTR-006: double-click opens the purchase review; a click selects.
+        .onTapGesture(count: 2) { if card.canOpenPurchase { onBuy() } }
         .onTapGesture(perform: onTap)
+        .contextMenu {
+            // UI-PTR-005: the card's visible actions.
+            if card.canOpenPurchase {
+                Button("Buy…", action: onBuy)
+            }
+            Button(selected ? "Remove from Compare" : "Compare", action: onCompare)
+        }
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(selected ? .isSelected : [])
         .modifier(RowAccessibilityModifier(row: ShipCardAccessibility.make(card)) { kind in
@@ -166,6 +189,8 @@ private struct ShipCardView: View {
 /// The side-by-side compare table (UI-SHELL-070).
 private struct ShipCompareView: View {
     let rows: [ShipCompareRow]
+    /// The compared types' specs, for the header portraits.
+    var specs: [ShipType: ShipSpec] = [:]
     let onClear: () -> Void
 
     var body: some View {
@@ -181,7 +206,15 @@ private struct ShipCompareView: View {
                 GridRow {
                     Text(verbatim: "")
                     Text("Yours").bold()
-                    ForEach(rows.first?.cells ?? [], id: \.type) { Text(Names.ship($0.type)).bold() }
+                    ForEach(rows.first?.cells ?? [], id: \.type) { cell in
+                        VStack(alignment: .leading, spacing: 2) {
+                            if let spec = specs[cell.type] {
+                                ShipPortrait(input: ArtAdapters.specInput(cell.type, spec: spec))
+                                    .frame(width: ShipPanelSize.compare.width, height: ShipPanelSize.compare.height)
+                            }
+                            Text(Names.ship(cell.type)).bold()
+                        }
+                    }
                 }
                 ForEach(rows) { row in
                     GridRow {

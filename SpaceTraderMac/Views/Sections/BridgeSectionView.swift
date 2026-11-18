@@ -362,6 +362,21 @@ private struct TargetCard: View {
         } label: {
             Label("Target", systemImage: "scope")
         }
+        .contextMenu {
+            // UI-PTR-005: the card's visible actions.
+            if let model {
+                if model.showsTrack {
+                    Button(model.isTracked ? "Untrack" : "Track") { session.send(model.trackCommand) }
+                }
+                Button("Plot Route…") { session.plotRouteToTarget() }
+                    .disabled(!MenuRules.availability(of: .plotRoute, in: MenuContext.make(state: session.state, isModal: session.isModal)).isEnabled)
+                    .help(Text("Plan a multi-jump route to this system on the galaxy chart."))
+                Button("Show on Map") {
+                    if session.map.galaxyWindowOpen { openWindow(id: GalaxyWindowMetrics.id) }
+                    session.showOnMap(model.system.index)
+                }
+            }
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Bridge.targetCard)
     }

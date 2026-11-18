@@ -38,6 +38,10 @@ struct ShipPurchaseSheet: View {
 
     private func header(_ model: ShipPurchaseModel) -> some View {
         VStack(alignment: .leading, spacing: 4) {
+            // D7: the ship being bought, drawn from the statistics of the offer.
+            ShipPortrait(input: ArtAdapters.specInput(model.newSpec.type, spec: model.newSpec))
+                .frame(maxWidth: .infinity)
+                .frame(height: ShipPanelSize.purchaseHero)
             switch request {
             case let .ship(t):
                 Text("Buy a \(String(localized: Names.ship(t)))?").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)

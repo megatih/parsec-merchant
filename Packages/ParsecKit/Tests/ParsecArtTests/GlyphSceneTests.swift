@@ -125,16 +125,88 @@ struct GlyphSceneTests {
     @Test("ART-041 four endings that animate for at most 4 s, then hold; Reduce Motion shows the final frame")
     func endings() {
         #expect(GameEndArt.allCases.count == 4)
+        #expect(GameOverScene.duration == 4)
         #expect(GameOverScene.time(phase: 9, reduceMotion: false) == 4)
         #expect(GameOverScene.time(phase: 1, reduceMotion: true) == 4)
-        let size = CGSize(width: 160, height: 100)
+        let size = CGSize(width: 160, height: 90)
         for end in GameEndArt.allCases {
-            let held = ArtSnapshot.render(GameOverScene(end: end, phase: 4), size: size)
-            #expect(held == ArtSnapshot.render(GameOverScene(end: end, phase: 7), size: size), "\(end)")
+            let (held, again) = ArtSnapshot.twice(GameOverScene(end: end, phase: 4), size: size)
+            #expect(held == again, "\(end) is deterministic")
+            #expect(held.coverage() == 1 || held.coverage() > 0.97, "\(end) fills its card")
+            #expect(held == ArtSnapshot.render(GameOverScene(end: end, phase: 9), size: size), "\(end)")
             #expect(held != ArtSnapshot.render(GameOverScene(end: end, phase: 1), size: size), "\(end)")
-            #expect(held == ArtSnapshot.render(GameOverScene(end: end, phase: 1, accessibility: ArtAccessibility(reduceMotion: true)), size: size))
+            #expect(held == ArtSnapshot.render(GameOverScene(end: end, phase: 0, accessibility: ArtAccessibility(reduceMotion: true)), size: size))
         }
-        #expect(ArtSnapshot.render(GameOverScene(end: .boughtMoon), size: size) != ArtSnapshot.render(GameOverScene(end: .boughtMoonGirl), size: size))
+    }
+
+    /// Pixels that are nearly white (the sun's disc and glare), and small bright specks on a dark sky (stars).
+    static func bright(_ p: ArtPixels, rows: Range<Int>, over level: UInt8) -> Int {
+        var n = 0
+        for y in rows { for x in 0..<p.width where (0..<3).allSatisfy({ p.bytes[(y * p.width + x) * 4 + $0] >= level }) { n += 1 } }
+        return n
+    }
+
+    @Test("ART-084 retired: the sun sinks behind the limb, the stars come out, the planet fills the lower frame")
+    func retired() {
+        let size = CGSize(width: 320, height: 180)
+        let start = ArtSnapshot.render(GameOverScene(end: .retired, phase: 0), size: size)
+        let held = ArtSnapshot.render(GameOverScene(end: .retired, phase: 4), size: size)
+        let h = start.height
+        #expect(Self.bright(start, rows: 0..<h, over: 235) > 3 * max(1, Self.bright(held, rows: 0..<h, over: 235)), "the sun has set")
+        // Stars: lit pixels in the top fifth, far above the glow.
+        func stars(_ p: ArtPixels) -> Int {
+            var n = 0
+            for y in 0..<(h / 5) { for x in 0..<p.width where Int(p.bytes[(y * p.width + x) * 4]) + Int(p.bytes[(y * p.width + x) * 4 + 1]) > 120 { n += 1 } }
+            return n
+        }
+        #expect(stars(held) > stars(start))
+        // The lower third is the planet: the scene draws it through the sphere projector, so it differs from the sky above.
+        let recipe = EndingScenes.recipe(resource: 5, seed: 0x5245_5449)
+        #expect(recipe.planetClass == .terran)
+        var sky = 0, ground = 0
+        for x in 0..<held.width {
+            let top = (h / 10 * held.width + x) * 4, bottom = ((h - 4) * held.width + x) * 4
+            sky += Int(held.bytes[top]) + Int(held.bytes[top + 1]) + Int(held.bytes[top + 2])
+            ground += Int(start.bytes[bottom]) + Int(start.bytes[bottom + 1]) + Int(start.bytes[bottom + 2])
+        }
+        #expect(ground > 4 * sky, "at the start the day side fills the bottom of the frame")
+    }
+
+    @Test("ART-085 bought moon: a barren moon with a dome and the parent planet; the princess variant differs")
+    func moon() {
+        let size = CGSize(width: 320, height: 180)
+        #expect(EndingScenes.recipe(resource: 8, seed: 0x4D4F_4F4E, tech: 0).planetClass == .barren)
+        #expect(EndingScenes.recipe(resource: 4, seed: 0x5041_5245, size: 5).planetClass == .ocean)
+        let plain = ArtSnapshot.render(GameOverScene(end: .boughtMoon), size: size)
+        let princess = ArtSnapshot.render(GameOverScene(end: .boughtMoonGirl), size: size)
+        #expect(plain != princess)
+        // The difference is local (a second window and the docked ship), not another scene.
+        var differing = 0
+        for i in stride(from: 0, to: plain.bytes.count, by: 4) where plain.bytes[i] != princess.bytes[i] || plain.bytes[i + 1] != princess.bytes[i + 1] {
+            differing += 1
+        }
+        #expect(differing > 40 && differing < plain.width * plain.height / 8)
+        // The moon rises: the first frame has more sky.
+        #expect(ArtSnapshot.render(GameOverScene(end: .boughtMoon, phase: 0), size: size) != plain)
+    }
+
+    @Test("ART-086 killed: the player's own ship, scorched and tumbling, among twelve hull plates; no star shapes")
+    func killed() throws {
+        let size = CGSize(width: 320, height: 180)
+        #expect(EndingScenes.wreckHull == 0.25 && EndingScenes.tumblePeriod == 8 && EndingScenes.fragments == 12)
+        let plates = EndingScenes.plates(seed: ArtSeed.kind(.wasp))
+        #expect(plates.count == 12 && plates == EndingScenes.plates(seed: ArtSeed.kind(.wasp)) && Set(plates).count == 12)
+        let wasp = ArtSnapshot.render(GameOverScene(end: .killed, ship: .wasp), size: size)
+        let beetle = ArtSnapshot.render(GameOverScene(end: .killed, ship: .beetle), size: size)
+        #expect(wasp != beetle)
+        // The player's statistics, not just the kind, shape the wreck.
+        var stats = ShipArtStats.standard(.wasp)
+        stats.cargoBays = 70
+        stats.weaponSlots = 0
+        #expect(ArtSnapshot.render(GameOverScene(end: .killed, ship: .wasp, shipInput: ShipArtInput(kind: .wasp, stats: stats)), size: size) != wasp)
+        #expect(ArtSnapshot.render(GameOverScene(end: .killed, phase: 2, ship: .wasp), size: size) != wasp, "it tumbles")
+        let source = try String(contentsOf: ArtSnapshot.packageRoot.appendingPathComponent("Sources/ParsecArt/Scenes/Endings.swift"), encoding: .utf8)
+        #expect(!source.contains("ArtGeometry.star") && source.contains("sparks: false"))
     }
 
     @Test("ART-049 art views are decorative (accessibility hidden) unless they carry their own label")

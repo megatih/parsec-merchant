@@ -5,7 +5,7 @@ import SwiftUI
 public enum ShipScaleMode: Sendable, Hashable {
     /// The silhouette fills the frame (ship grid, inspector, designer).
     case fit
-    /// Scaled by `0.5 + 0.1 × sizeClass` around the frame centre (encounter panes, transit).
+    /// `0.5 + 0.1 × sizeClass` of the reference box fitted to the frame, around the frame centre (encounter panes, transit).
     case relative
 }
 
@@ -35,6 +35,8 @@ struct ShipArtModel: Sendable {
 public enum ShipArtLayout {
     /// Room left around the silhouette for the shield bubble (12% larger than the bounding box, plus the rim).
     public static let bubbleRoom = 1.16
+    /// ART-014: the envelope of every generated hull in unit space; `.relative` sizes ships against it.
+    public static let referenceBox = CGSize(width: 0.90, height: 0.56)
 
     public static func scale(bounds: CGRect, size: CGSize, mode: ShipScaleMode, sizeClass: Int) -> Double {
         switch mode {
@@ -42,7 +44,10 @@ public enum ShipArtLayout {
             guard bounds.width > 0, bounds.height > 0 else { return 1 }
             return min(size.width / (bounds.width * bubbleRoom), size.height / (bounds.height * bubbleRoom))
         case .relative:
-            return (0.5 + 0.1 * Double(min(5, max(0, sizeClass)))) * min(size.width, size.height) / bubbleRoom
+            // ART-014: k(sizeClass) of the reference box fitted on both axes, never larger than the ship's own fit.
+            let k = 0.5 + 0.1 * Double(min(5, max(0, sizeClass)))
+            let reference = min(size.width / (referenceBox.width * bubbleRoom), size.height / (referenceBox.height * bubbleRoom))
+            return min(k * reference, scale(bounds: bounds, size: size, mode: .fit, sizeClass: sizeClass))
         }
     }
 

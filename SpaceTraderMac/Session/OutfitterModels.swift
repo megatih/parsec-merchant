@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import CoreTransferable
 import Foundation
 import ParsecEngine
+import UniformTypeIdentifiers
 
 // Pure models of the Outfitter section (UI-SHELL-077/078), built from `GameState.equipmentMarket` (UI-SHELL-120).
 
@@ -182,5 +184,56 @@ nonisolated enum OutfitterSelection: Hashable, Sendable {
     var slot: Int? {
         if case let .installed(_, slot) = self { return slot }
         return nil
+    }
+}
+
+/// UI-PTR-010: what an Outfitter drag carries: an item for sale, or an installed item with its slot.
+nonisolated struct OutfitterDragItem: Codable, Hashable, Sendable, Transferable {
+    enum Source: Codable, Hashable, Sendable {
+        case offer
+        case installed(slot: Int)
+    }
+
+    var item: EquipmentItem
+    var source: Source
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .json)
+    }
+}
+
+/// UI-PTR-010: the pure drop rules. A drop does what the Buy or Sell button does, or nothing.
+nonisolated enum OutfitterDrop {
+    enum Target: Equatable, Sendable {
+        /// A slot tile of `group`; `free` when nothing is installed in it.
+        case slot(OutfitterGroup, free: Bool)
+        case sellWell
+    }
+
+    enum Action: Equatable, Sendable {
+        case buy(EquipmentItem)
+        case sell(EquipmentItem, slot: Int)
+        case none
+    }
+
+    static func group(of item: EquipmentItem) -> OutfitterGroup {
+        switch item {
+        case .weapon: .weapons
+        case .shield: .shields
+        case .gadget: .gadgets
+        }
+    }
+
+    /// An item for sale dropped on a free slot of its own group buys it (unless the buy check blocks it); an installed item
+    /// dropped on the sell well sells it. Everything else does nothing.
+    static func action(for drag: OutfitterDragItem, onto target: Target, buyBlocked: Bool) -> Action {
+        switch (drag.source, target) {
+        case let (.offer, .slot(group, free)):
+            return free && group == Self.group(of: drag.item) && !buyBlocked ? .buy(drag.item) : .none
+        case let (.installed(slot), .sellWell):
+            return .sell(drag.item, slot: slot)
+        case (.offer, .sellWell), (.installed, .slot):
+            return .none
+        }
     }
 }

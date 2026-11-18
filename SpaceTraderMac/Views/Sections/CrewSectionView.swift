@@ -88,6 +88,14 @@ private struct SeatCard: View {
         .frame(maxWidth: .infinity, minHeight: 90, alignment: .topLeading)
         .padding(12)
         .background(.background.secondary, in: .rect(cornerRadius: 10))
+        .contextMenu {
+            // UI-PTR-005: the seat's visible action.
+            if seat.canBeFired, let id = seat.crewID {
+                Button("Fire", role: .destructive) { fire(id) }
+                    .disabled(seat.fireBlocker != nil)
+                    .help(seat.fireBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Dismiss this crew member."))
+            }
+        }
         .accessibilityElement(children: .contain)
         .modifier(RowAccessibilityModifier(row: CrewRowAccessibility.make(seat)
                                            ?? RowAccessibility(label: String(localized: "Vacant"), value: "", actions: [])) { _ in
@@ -162,6 +170,12 @@ private struct HireCardView: View {
         }
         .padding(12)
         .background(.background.secondary, in: .rect(cornerRadius: 10))
+        .contextMenu {
+            // UI-PTR-005: the card's visible action.
+            Button("Hire", action: hire)
+                .disabled(card.blocker != nil)
+                .help(card.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Hire this mercenary."))
+        }
         .accessibilityElement(children: .contain)
         .modifier(RowAccessibilityModifier(row: CrewRowAccessibility.make(card)) { _ in if card.blocker == nil { hire() } })
     }

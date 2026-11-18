@@ -103,7 +103,7 @@ public enum AchievementEmblem: Hashable, Sendable {
 /// A ship silhouette in a unit square (for emblems).
 enum ShipArtEmblem {
     static func path(_ kind: ShipArtKind) -> Path {
-        let g = ShipGeometry.make(ShipBlueprints.blueprint(kind))
+        let g = ShipGeometry.make(ShipArtInput(kind: kind).blueprint)
         let b = g.bounds
         let s = 0.84 / max(b.width, b.height)
         return g.silhouette.applying(CGAffineTransform(a: s, b: 0, c: 0, d: s, tx: 0.5 - b.midX * s, ty: 0.5 - b.midY * s))

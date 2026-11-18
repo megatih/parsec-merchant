@@ -34,6 +34,8 @@ final class MapViewModel {
     var hoverHit: MapHit?
     /// The hit whose card is shown (after the 0.2 s rest).
     var cardHit: MapHit?
+    /// UI-PTR-011: the glyph whose selection card is pinned by a click or tap.
+    var pinnedHit: MapHit?
     var legendShown = false
     /// MAP-096: the heatmap mode and its commodity.
     var heatmapChoice = MapHeatmapChoice.none
@@ -85,6 +87,7 @@ final class MapViewModel {
     func closeCard() {
         hoverTask?.cancel()
         cardHit = nil
+        pinnedHit = nil
     }
 
     // MARK: Pulse (MAP-078)

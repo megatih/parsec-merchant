@@ -32,9 +32,11 @@ struct ShipInspectorView: View {
 
     private func header(_ m: InspectorModel, state: GameState) -> some View {
         SwiftUI.Section {
+            // D7: the ship is a full-width hero at the top of the inspector.
+            ShipPortrait(input: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right))
+                .frame(maxWidth: .infinity)
+                .frame(height: ShipPanelSize.inspectorHero)
             HStack(spacing: 12) {
-                ShipPortrait(input: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right))
-                    .frame(width: 72, height: 48)
                 VStack(alignment: .leading) {
                     Text(verbatim: m.commanderName).scaledFont(.headline)
                     Text("\(String(localized: Names.difficulty(m.difficulty))) · Day \(m.days)")

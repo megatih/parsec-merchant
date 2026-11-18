@@ -55,7 +55,7 @@ struct MapZoomHUD: View {
         Button(action: action) {
             Label { Text(title) } icon: { Image(systemName: symbol) }
                 .labelStyle(.iconOnly)
-                .frame(width: 24, height: 22)
+                .pointerTarget()  // UI-PTR-013
         }
         .help(Text(help))
         .accessibilityLabel(Text(title))
@@ -237,11 +237,10 @@ struct RoutePanelView: View {
                         Button {
                             session.setRouteObjective(objective)
                         } label: {
-                            Text(RouteObjectiveText.title(objective))
+                            Text(RouteObjectiveText.title(objective)).pointerTarget()
                         }
                         .buttonStyle(.bordered)
                         .tint(pr.objective == objective ? .accentColor : nil)
-                        .controlSize(.small)
                         .help(Text(RouteObjectiveText.help(objective)))
                         .accessibilityAddTraits(pr.objective == objective ? .isSelected : [])
                         .accessibilityIdentifier(ids.routeObjective(objective))
@@ -350,10 +349,9 @@ struct MapSearchView: View {
                         if on { ui.filters.insert(f) } else { ui.filters.remove(f) }
                         ui.suggestionsShown = true
                     }) {
-                        Text(title(f))
+                        Text(title(f)).pointerTarget()
                     }
                     .toggleStyle(.button)
-                    .controlSize(.small)
                     .help(Text(title(f)))
                     .accessibilityIdentifier(ids.searchFilter(f))
                 }
@@ -391,8 +389,8 @@ struct MapSearchView: View {
                                     .foregroundStyle(.readableSecondary)
                             }
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
                             .frame(width: 240)
+                            .frame(minHeight: PointerTarget.minimum)  // UI-PTR-013
                             .background(ui.highlightedSuggestion == i ? Color.accentColor.opacity(0.35) : .clear)
                             .contentShape(.rect)
                         }

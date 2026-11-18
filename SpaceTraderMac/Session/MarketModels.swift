@@ -42,6 +42,41 @@ enum TradeQuantity {
     static var current: EventModifiers { modifiers(from: NSEvent.modifierFlags) }
 }
 
+/// UI-PTR-008: a row's quantity chip: how much the Buy and Sell buttons trade.
+nonisolated enum TradeChip: Int, CaseIterable, Sendable, Hashable {
+    case one, five, twenty, max
+
+    /// 1, 5, 20 or `maximum`, clamped to `0...maximum`.
+    func quantity(maximum: Int) -> Int {
+        let maximum = Swift.max(0, maximum)
+        let requested: Int = switch self {
+        case .one: 1
+        case .five: 5
+        case .twenty: 20
+        case .max: maximum
+        }
+        return min(requested, maximum)
+    }
+
+    /// The identifier suffix (`market.row.<item>.chip.<suffix>`).
+    var idSuffix: String {
+        switch self {
+        case .one: "1"
+        case .five: "5"
+        case .twenty: "20"
+        case .max: "max"
+        }
+    }
+}
+
+extension TradeQuantity {
+    /// UI-PTR-008: a held modifier is an accelerator and overrides the chip; without one the chip decides.
+    static func resolve(chip: TradeChip, modifiers: EventModifiers, maximum: Int) -> Int {
+        let accelerators: EventModifiers = [.shift, .command, .option]
+        return modifiers.isDisjoint(with: accelerators) ? chip.quantity(maximum: maximum) : resolve(modifiers: modifiers, maximum: maximum)
+    }
+}
+
 /// The C# target-price columns for one item (Form_SpaceTrader.cs UpdateCargo): the target's standard price from
 /// what the player knows (the resource only once visited), and the difference to the buy price here.
 struct TargetQuote: Equatable, Sendable {
@@ -127,6 +162,15 @@ struct MarketRowModel: Identifiable, Equatable, Sendable {
 
     func sellCommand(modifiers: EventModifiers) -> Command? {
         sellCommand(requested: TradeQuantity.resolve(modifiers: modifiers, maximum: row.maxSell))
+    }
+
+    /// UI-PTR-007: the Buy and Sell buttons trade the row's chip quantity (a modifier is an accelerator).
+    func buyCommand(chip: TradeChip, modifiers: EventModifiers = []) -> Command? {
+        buyCommand(requested: TradeQuantity.resolve(chip: chip, modifiers: modifiers, maximum: row.maxBuy))
+    }
+
+    func sellCommand(chip: TradeChip, modifiers: EventModifiers = []) -> Command? {
+        sellCommand(requested: TradeQuantity.resolve(chip: chip, modifiers: modifiers, maximum: row.maxSell))
     }
 
     var buyMaxCommand: Command? { buyCommand(requested: row.maxBuy) }

@@ -183,6 +183,7 @@ private struct TribbleButton: View {
                 TribbleSprite(index: index, phase: wiggleStart.map { timeline.date.timeIntervalSince($0) } ?? -1, reduceMotion: reduceMotion)
             }
             .frame(width: 22, height: 22)
+            .pointerTarget()  // UI-PTR-015: the sprite keeps its size inside a 36 pt target
         }
         .buttonStyle(.plain)
         .task(id: wiggleStart) {

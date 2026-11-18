@@ -12,6 +12,18 @@ extension AXID {
         var map: String { "\(p).map" }
         func system(_ i: Int) -> String { "\(p).system.\(i)" }
         var hoverCard: String { "\(p).hoverCard" }
+        /// UI-PTR-011: the pinned selection card, its facts and its buttons.
+        var selectionCard: String { "\(p).selectionCard" }
+        var selectionFacts: String { "\(p).selectionCard.facts" }
+        func selection(_ kind: MapContextItem.Kind) -> String {
+            switch kind {
+            case .setTarget: "\(p).selection.setTarget"
+            case .track: "\(p).selection.track"
+            case .plotRoute: "\(p).selection.plotRoute"
+            case .useWormhole: "\(p).selection.useWormhole"
+            case .findPrices: "\(p).selection.findPrices"
+            }
+        }
         var legend: String { "\(p).legend" }
         var legendToggle: String { "\(p).legend.toggle" }
         var zoomIn: String { "\(p).zoomIn" }
@@ -58,7 +70,8 @@ extension AXID {
             var ids = [map, hoverCard, legend, legendToggle, zoomIn, zoomOut, fitRange, fitGalaxy, target, warp, jump, trackedRange,
                        wormholeLabel, contextSetTarget, contextTrack, contextPlotRoute, contextUseWormhole, searchField, routePanel,
                        routeObjective, routeClear, routeUnreachable, contextFindPrices, heatmap, heatmapCommodity,
-                       searchFilterSells]
+                       searchFilterSells, selectionCard, selectionFacts]
+            ids += [MapContextItem.Kind.setTarget, .track, .plotRoute, .useWormhole, .findPrices].map(selection)
             ids += (0..<systemCount).flatMap { [system($0), searchResult($0)] }
             ids += SystemSearchFilter.allCases.map(searchFilter)
             ids += RouteObjective.allCases.map(routeObjective)
@@ -72,6 +85,7 @@ extension AXID {
         static let windowRoot = "galaxyWindow.root"
         static let windowPlaceholder = "galaxyWindow.placeholder"
         static let miniChartMap = "bridge.miniChart.map"
+        static let miniChartOpen = "bridge.miniChart.open"
         static let bridgePlotRoute = "bridge.target.plotRoute"
         static let bridgeShowOnMap = "bridge.target.showOnMap"
         static func questShowOnMap(_ entry: Int) -> String { "quests.entry.\(entry).showOnMap" }
@@ -82,7 +96,7 @@ extension AXID {
         let count = RulesetID.allCases.map { Ruleset.named($0).tables.systemNames.count }.max() ?? 0
         // `bridge.miniChart.map` is the mini chart's `map` identifier; root identifiers are listed once.
         return MapScope.allCases.flatMap { Map($0).all(systemCount: count) }
-            + [Galaxy.windowRoot, Galaxy.windowPlaceholder, Galaxy.bridgePlotRoute, Galaxy.bridgeShowOnMap]
+            + [Galaxy.windowRoot, Galaxy.windowPlaceholder, Galaxy.bridgePlotRoute, Galaxy.bridgeShowOnMap, Galaxy.miniChartOpen]
             + (0..<4).map(Galaxy.questShowOnMap)
     }
 }

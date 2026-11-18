@@ -13,6 +13,16 @@ public struct CombatGeometry: Sendable, Hashable {
 
     public func rect(_ side: CombatSide) -> CGRect { side == .player ? player : opponent }
 
+    /// ART-083: a beam leaves the firing ship's nose (the edge of its box that faces the target) and ends at the centre of
+    /// the target's box; a miss passes above the target.
+    public func beamEndpoints(from: CombatSide, hit: Bool) -> (start: CGPoint, end: CGPoint) {
+        let src = rect(from), dst = rect(from.other)
+        let a = CGPoint(x: from == .player ? src.maxX : src.minX, y: src.midY)
+        var b = CGPoint(x: dst.midX, y: dst.midY)
+        if !hit { b = CGPoint(x: b.x + (b.x - a.x) * 0.25, y: dst.minY - dst.height * 0.1) }
+        return (a, b)
+    }
+
     /// Two panes side by side in a frame of `size` (the ship boxes take the middle of each half).
     public static func sideBySide(_ size: CGSize) -> CombatGeometry {
         let w = size.width / 2
@@ -108,10 +118,7 @@ enum CombatEffectRenderer {
     }
 
     static func beam(_ ctx: inout GraphicsContext, from: CombatSide, weapon: BeamKind, hit: Bool, u: Double, g: CombatGeometry) {
-        let src = g.rect(from), dst = g.rect(from.other)
-        let a = CGPoint(x: from == .player ? src.maxX : src.minX, y: src.midY)
-        var b = center(dst)
-        if !hit { b = CGPoint(x: b.x + (b.x - a.x) * 0.25, y: dst.minY - dst.height * 0.1) }
+        let (a, b) = g.beamEndpoints(from: from, hit: hit)
         let travel = min(1, u / (CombatTiming.land / CombatTiming.beam))
         let head = CGPoint(x: a.x + (b.x - a.x) * travel, y: a.y + (b.y - a.y) * travel)
         let fade = u < 0.6 ? 1 : max(0, 1 - (u - 0.6) / 0.4)

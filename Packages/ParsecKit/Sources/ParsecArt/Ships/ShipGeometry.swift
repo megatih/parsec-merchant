@@ -31,6 +31,8 @@ public struct ShipGeometry: Sendable {
     public var hull: Path
     /// Glow emitters: centre and radius in unit space.
     public var glows: [EngineMount]
+    /// ART-016: navigation lights.
+    public var lights: [ShipLight]
     public var bounds: CGRect
 
     /// Builds the parts in composition order: wings, nacelles, hull, features, cockpit, then livery details.
@@ -40,6 +42,13 @@ public struct ShipGeometry: Sendable {
         for n in bp.nacelles {
             for side in sides(n.yOffset) {
                 let y = 0.5 + side * n.yOffset
+                // A pylon ties the nacelle to the hull, so no pod floats beside the ship.
+                let mid = n.x - n.length / 2, edge = bp.halfWidth(at: mid) * 0.6
+                if n.yOffset > edge {
+                    parts.append(ShipPart(ArtGeometry.polygon([CGPoint(x: mid + 0.05, y: 0.5 + side * edge), CGPoint(x: mid + 0.03, y: y),
+                                                               CGPoint(x: mid - 0.04, y: y), CGPoint(x: mid - 0.06, y: 0.5 + side * edge)]),
+                                          .dark))
+                }
                 parts.append(ShipPart(ArtGeometry.capsule(from: CGPoint(x: n.x - n.radius, y: y),
                                                           to: CGPoint(x: n.x - n.length + n.radius, y: y), radius: n.radius),
                                       .secondary))
@@ -59,7 +68,9 @@ public struct ShipGeometry: Sendable {
         for p in parts where p.solid { silhouette = silhouette.isEmpty ? p.path : silhouette.union(p.path) }
         var glows = bp.engines.flatMap { e in sides(e.yOffset).map { EngineMount(x: e.x, yOffset: $0 * e.yOffset, radius: e.radius) } }
         glows += ShipFeatures.glows(bp)
-        return ShipGeometry(parts: parts, silhouette: silhouette, hull: hull, glows: glows, bounds: silhouette.boundingRect)
+        let bounds = silhouette.boundingRect
+        return ShipGeometry(parts: parts, silhouette: silhouette, hull: hull, glows: glows,
+                            lights: ShipFeatures.navigationLights(bp, bounds: bounds), bounds: bounds)
     }
 
     static func sides(_ offset: Double) -> [Double] { offset > 0 ? [-1, 1] : [1] }
@@ -106,7 +117,6 @@ public struct ShipGeometry: Sendable {
     }
 
     static func cockpitParts(_ c: Cockpit) -> [ShipPart] {
-        let cx = c.x - c.length / 2
         switch c.style {
         case .none:
             return []
@@ -114,15 +124,9 @@ public struct ShipGeometry: Sendable {
             return [ShipPart(Path(ellipseIn: CGRect(x: c.x - c.length, y: 0.5 - c.width / 2, width: c.length, height: c.width)),
                              .cockpit, solid: false)]
         case .slit:
-            return [ShipPart(ArtGeometry.capsule(from: CGPoint(x: c.x - c.width / 2, y: 0.5), to: CGPoint(x: c.x - c.length + c.width / 2, y: 0.5),
-                                                 radius: c.width / 2), .cockpit, solid: false)]
-        case .compound:
-            let r = c.width / 2
-            var p = Path()
-            for (dx, dy) in [(0.0, 0.0), (-0.6, -0.55), (-0.6, 0.55)] {
-                p.addEllipse(in: CGRect(x: cx + dx * r - r * 0.6, y: 0.5 + dy * r - r * 0.6, width: r * 1.2, height: r * 1.2))
-            }
-            return [ShipPart(p, .cockpit, solid: false)]
+            // A bridge: a window band across the beam.
+            return [ShipPart(Path(roundedRect: CGRect(x: c.x - c.length, y: 0.5 - c.width / 2, width: c.length, height: c.width),
+                                  cornerRadius: min(c.length, c.width) * 0.35), .cockpit, solid: false)]
         }
     }
 }

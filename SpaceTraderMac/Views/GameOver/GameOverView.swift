@@ -31,8 +31,11 @@ struct GameOverView: View {
 
     private func content(_ m: GameOverCardModel) -> some View {
         VStack(spacing: 18) {
+            // D8: a cinematic 16:9 scene as wide as the card.
             GameOverArt(end: m.end, ship: session.state?.commander.ship.type ?? .gnat)
-                .frame(width: 280, height: 150)
+                .aspectRatio(ShipPanelSize.endingAspect, contentMode: .fit)
+                .frame(maxWidth: 640)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(Names.ending(m.end)))
                 .accessibilityAddTraits(.isImage)

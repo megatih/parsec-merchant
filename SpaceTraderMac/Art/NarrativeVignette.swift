@@ -49,7 +49,7 @@ struct NarrativeVignetteView: View {
 
     var body: some View {
         Vignette(kind: NarrativeVignette.input(for: type, state: state), seed: state.seed)
-            .frame(width: 96, height: 72)
+            .frame(width: ShipPanelSize.vignette.width, height: ShipPanelSize.vignette.height)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(NarrativeVignette.kind(for: type).isShip ? Text("Ship") : Text("Illustration"))
             .accessibilityAddTraits(.isImage)

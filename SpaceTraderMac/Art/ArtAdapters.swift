@@ -45,28 +45,33 @@ nonisolated enum ArtAdapters {
         return ShieldDisplay(kind: shieldKind(strongest), fraction: power > 0 ? Double(ship.shieldCharge) / Double(power) : 0)
     }
 
-    /// ART-012: the custom-ship parameters of a spec (saved `Ship.customSpec` or the designer draft).
-    static func customParams(_ spec: ShipSpec, base: ShipType? = nil) -> CustomShipParams {
-        CustomShipParams(sizeClass: spec.size.rawValue, weaponSlots: spec.weaponSlots, shieldSlots: spec.shieldSlots,
-                         gadgetSlots: spec.gadgetSlots, crewQuarters: spec.crewQuarters, fuelTanks: spec.fuelTanks,
-                         cargoBays: spec.cargoBays, hullStrength: spec.hullStrength, base: base.map(shipKind))
+    /// ART-008: the tech tier of a ship: the level a shipyard needs to sell it, 7 for ships no shipyard sells.
+    static func techTier(_ level: TechLevel) -> Int {
+        min(7, max(0, level.rawValue))
     }
 
-    /// ART-008: the portrait input of an engine ship; sizes come from `ShipMath`'s spec (custom ships use `customSpec`).
+    /// ART-008: the statistics that shape a ship's picture, with the installed equipment when a ship instance is given.
+    static func shipStats(spec: ShipSpec, ship: Ship? = nil) -> ShipArtStats {
+        ShipArtStats(sizeClass: spec.size.rawValue, cargoBays: spec.cargoBays, weaponSlots: spec.weaponSlots, shieldSlots: spec.shieldSlots,
+                     gadgetSlots: spec.gadgetSlots, crewQuarters: spec.crewQuarters, fuelTanks: spec.fuelTanks, hullStrength: spec.hullStrength,
+                     priceTier: ShipArtStats.priceTier(price: spec.price), techTier: techTier(spec.minTechLevel),
+                     weapons: ship.map { $0.weapons.map(\.rawValue) }, shields: ship.map { $0.shields.map(\.type.rawValue) },
+                     gadgets: ship.map { $0.gadgets.map(\.rawValue) })
+    }
+
+    /// ART-008: the portrait input of an engine ship; statistics come from `ShipMath`'s spec (custom ships use `customSpec`).
     static func shipInput(_ ship: Ship, ruleset: Ruleset, facing: ShipFacing, disabled: Bool = false, cloaked: Bool = false,
                           phase: Double = 0, accessibility: ArtAccessibility = .standard) -> ShipArtInput {
         let spec = ship.spec(ruleset)
         let maxHull = max(1, ship.hullStrength(ruleset))
-        return ShipArtInput(kind: shipKind(ship.type), sizeClass: spec.size.rawValue, facing: facing,
+        return ShipArtInput(kind: shipKind(ship.type), stats: shipStats(spec: spec, ship: ship), facing: facing,
                             hullFraction: Double(max(0, ship.hull)) / Double(maxHull), shield: shield(ship, ruleset: ruleset),
-                            disabled: disabled, cloaked: cloaked, custom: ship.type == .custom ? customParams(spec) : nil, phase: phase,
-                            accessibility: accessibility)
+                            disabled: disabled, cloaked: cloaked, phase: phase, accessibility: accessibility)
     }
 
-    /// A pristine portrait of a ship type (shipyard cards, designer silhouettes).
-    static func typeInput(_ type: ShipType, ruleset: Ruleset, custom: ShipSpec? = nil, base: ShipType? = nil) -> ShipArtInput {
-        let spec = custom ?? ruleset.tables.ship(type)
-        return ShipArtInput(kind: shipKind(type), sizeClass: spec.size.rawValue, custom: type == .custom ? customParams(spec, base: base) : nil)
+    /// A pristine portrait of a ship type (narrative vignettes, endings).
+    static func typeInput(_ type: ShipType, ruleset: Ruleset, custom: ShipSpec? = nil) -> ShipArtInput {
+        specInput(type, spec: custom ?? ruleset.tables.ship(type))
     }
 
     // MARK: Planets (ART-020)
@@ -174,16 +179,18 @@ nonisolated enum ArtAdapters {
         ArtSeed.crew(galaxySeed: state.seed, crewID: crewID)
     }
 
-    /// A pristine portrait of a ship type with a known spec (shipyard cards).
+    /// A pristine portrait of a ship type with a known spec (shipyard cards, purchase sheet).
     static func specInput(_ type: ShipType, spec: ShipSpec) -> ShipArtInput {
-        ShipArtInput(kind: shipKind(type), sizeClass: spec.size.rawValue, custom: type == .custom ? customParams(spec) : nil)
+        ShipArtInput(kind: shipKind(type), stats: shipStats(spec: spec))
     }
 
-    /// ART-012: the designer draft's live preview (the silhouette picks the hull profile).
-    static func customParams(design: ShipDesign, base: ShipType) -> CustomShipParams {
-        CustomShipParams(sizeClass: design.size.rawValue, weaponSlots: design.weaponSlots, shieldSlots: design.shieldSlots,
-                         gadgetSlots: design.gadgetSlots, crewQuarters: design.crewQuarters, fuelTanks: design.fuelTanks,
-                         cargoBays: design.cargoBays, hullStrength: design.hull, base: shipKind(base))
+    /// ART-012: the designer draft's live preview: the draft's statistics shape the hull, the chosen hull style is the variant.
+    static func designInput(_ design: ShipDesign, style: ShipType, price: Int) -> ShipArtInput {
+        let stats = ShipArtStats(sizeClass: design.size.rawValue, cargoBays: design.cargoBays, weaponSlots: design.weaponSlots,
+                                 shieldSlots: design.shieldSlots, gadgetSlots: design.gadgetSlots, crewQuarters: design.crewQuarters,
+                                 fuelTanks: design.fuelTanks, hullStrength: design.hull, priceTier: ShipArtStats.priceTier(price: price),
+                                 techTier: 7)
+        return ShipArtInput(kind: .custom, stats: stats, variant: ArtSeed.kind(shipKind(style)))
     }
 }
 

@@ -75,7 +75,8 @@ public struct TransitScene: View {
         ship.phase = phase
         return GeometryReader { geo in
             let size = geo.size
-            let shipSize = CGSize(width: min(size.width * 0.3, size.height * 1.5), height: size.height * 0.8)
+            // D7: the stage is as tall as the strip; `.relative` then sizes the ship by its class within it.
+            let shipSize = CGSize(width: min(size.width * 0.42, size.height * 2.0), height: size.height * 0.94)
             let x = size.width * (0.12 + 0.76 * progress)
             ZStack(alignment: .topLeading) {
                 TransitBackdrop(seed: seed, phase: phase, wormhole: wormhole, accessibility: a11y)

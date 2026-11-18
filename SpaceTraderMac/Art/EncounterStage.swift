@@ -22,12 +22,23 @@ nonisolated struct EncounterMotion: Equatable, Sendable {
                                opponentVisible: CombatMotion.shipVisible(effects, side: .opponent, at: t))
     }
 
-    /// The effect boxes over two panes of `size` (the portrait sits under the pane title).
-    static func geometry(_ size: CGSize) -> CombatGeometry {
-        let half = (size.width - 24) / 2
-        let top = 40.0, height = min(110, max(40, size.height - 90))
-        return CombatGeometry(player: CGRect(x: 12 + half * 0.2, y: top + height * 0.15, width: half * 0.6, height: height * 0.7),
-                              opponent: CGRect(x: half + 36 + half * 0.2, y: top + height * 0.15, width: half * 0.6, height: height * 0.7))
+    /// ART-083: the effect boxes are the ships' own bounding boxes: `ShipArtLayout.frame` inside each pane's portrait
+    /// rectangle (in the stage's coordinates). Nothing here is a constant, so the effects follow any pane size.
+    @MainActor
+    static func geometry(playerArt: CGRect, opponentArt: CGRect, player: ShipArtInput, opponent: ShipArtInput) -> CombatGeometry {
+        func box(_ input: ShipArtInput, in art: CGRect) -> CGRect {
+            ShipArtLayout.frame(input, mode: .relative, in: art.size).offsetBy(dx: art.minX, dy: art.minY)
+        }
+        return CombatGeometry(player: box(player, in: playerArt), opponent: box(opponent, in: opponentArt))
+    }
+
+    /// The portrait rectangles of two panes laid out side by side in a stage of `size` (the stage's own layout: 24 pt between
+    /// the panes, 12 pt of padding, the title above and the two bars below). Used before the first layout pass and by tests.
+    static func portraitRects(stage size: CGSize) -> (player: CGRect, opponent: CGRect) {
+        let pane = (size.width - 24) / 2
+        let height = min(ShipPanelSize.encounterPane.upperBound, max(ShipPanelSize.encounterPane.lowerBound, size.height - 100))
+        let rect = CGRect(x: 12, y: 40, width: max(1, pane - 24), height: height)
+        return (rect, rect.offsetBy(dx: pane + 24, dy: 0))
     }
 }
 
@@ -58,8 +69,18 @@ struct EncounterStage: View {
             }
             .offset(motion.shake)
             .overlay {
+                Color.clear
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
+            .overlayPreferenceValue(ShipPaneArtKey.self) { anchors in
                 GeometryReader { geo in
-                    CombatEffectsLayer(effects: motion.effects, phase: t, geometry: EncounterMotion.geometry(geo.size))
+                    let fallback = EncounterMotion.portraitRects(stage: geo.size)
+                    let playerArt = anchors[AXID.Encounter.player].map { geo[$0] } ?? fallback.player
+                    let opponentArt = anchors[AXID.Encounter.opponent].map { geo[$0] } ?? fallback.opponent
+                    CombatEffectsLayer(effects: motion.effects, phase: t,
+                                       geometry: EncounterMotion.geometry(playerArt: playerArt, opponentArt: opponentArt,
+                                                                          player: player.art, opponent: opponent.art))
                 }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)

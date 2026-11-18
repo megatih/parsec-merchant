@@ -2,11 +2,11 @@
 import Dispatch
 import Foundation
 
-/// ART-070: the three map sizes.
+/// ART-070: the map sizes. `cinema` is for the endings' limb views, where the surface is magnified many times.
 public enum PlanetLOD: Int, CaseIterable, Sendable, Hashable {
-    case mini = 0, still, hero
+    case mini = 0, still, hero, cinema
 
-    public var width: Int { [64, 128, 512][rawValue] }
+    public var width: Int { [64, 128, 512, 1024][rawValue] }
     public var height: Int { width / 2 }
 
     /// The LOD for a disk of `pixels` across.

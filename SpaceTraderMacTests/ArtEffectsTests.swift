@@ -122,8 +122,40 @@ struct ArtEffectsTests {
             let moving = EncounterMotion.make(plan: plan, reduceMotion: false, at: t)
             if k == 2 { #expect(moving.playerOffset != 0 || moving.shake != .zero) }
         }
-        let g = EncounterMotion.geometry(CGSize(width: 600, height: 200))
-        #expect(g.player.maxX < g.opponent.minX)
+    }
+
+    @Test("ART-083 the effects geometry is the ships' own boxes at any stage size; beams run nose to target")
+    func effectsFollowLayout() {
+        let player = ShipArtInput(kind: .gnat, facing: .right), opponent = ShipArtInput(kind: .wasp, facing: .left)
+        var boxes: [CGRect] = []
+        for stage in [CGSize(width: 520, height: 160), CGSize(width: 900, height: 240), CGSize(width: 1400, height: 240)] {
+            let art = EncounterMotion.portraitRects(stage: stage)
+            #expect(art.player.maxX < art.opponent.minX && art.player.width == art.opponent.width)
+            #expect(ShipPanelSize.encounterPane.contains(art.player.height))
+            let g = EncounterMotion.geometry(playerArt: art.player, opponentArt: art.opponent, player: player, opponent: opponent)
+            // Each box is exactly where ShipArt draws the silhouette inside its pane.
+            #expect(g.player == ShipArtLayout.frame(player, mode: .relative, in: art.player.size).offsetBy(dx: art.player.minX, dy: art.player.minY))
+            #expect(g.opponent == ShipArtLayout.frame(opponent, mode: .relative, in: art.opponent.size)
+                .offsetBy(dx: art.opponent.minX, dy: art.opponent.minY))
+            #expect(art.player.contains(g.player) && art.opponent.contains(g.opponent))
+            for (from, source, target) in [(CombatSide.player, g.player, g.opponent), (.opponent, g.opponent, g.player)] {
+                let beam = g.beamEndpoints(from: from, hit: true)
+                #expect(source.insetBy(dx: -2, dy: -2).contains(beam.start), "the beam starts on the firing ship")
+                #expect(abs(beam.start.x - (from == .player ? source.maxX : source.minX)) < 1e-9, "at its nose")
+                #expect(target.contains(beam.end), "and ends on the target")
+                let miss = g.beamEndpoints(from: from, hit: false)
+                #expect(!target.contains(miss.end))
+            }
+            boxes.append(g.player)
+        }
+        #expect(boxes[1].width > boxes[0].width, "a taller pane shows a larger ship")
+        // A small ship is smaller than a large one in the same pane.
+        let art = EncounterMotion.portraitRects(stage: CGSize(width: 900, height: 240))
+        let g = EncounterMotion.geometry(playerArt: art.player, opponentArt: art.opponent, player: player, opponent: opponent)
+        #expect(g.opponent.height > 0 && g.player.width < g.opponent.width)
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("SpaceTraderMac")
+        let stage = (try? String(contentsOf: root.appendingPathComponent("Art/EncounterStage.swift"), encoding: .utf8)) ?? ""
+        #expect(stage.contains("overlayPreferenceValue(ShipPaneArtKey.self)") && stage.contains("ShipArtLayout.frame(input, mode: .relative"))
     }
 
     @Test("ART-052 fast scenes use a 30 fps TimelineView; the Bridge planet uses no TimelineView; map vortices keep the ambient clock while in view")

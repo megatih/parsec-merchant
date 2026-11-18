@@ -213,12 +213,22 @@ struct MapDrawingTests {
         #expect(MapHitTester.hit(at: w, snapshot: s, projection: p, metrics: m, viewSize: size) == .wormhole(2))
     }
 
-    @Test("MAP-020 hit radii")
+    @Test("MAP-020 UI-PTR-013 hit radii: the glyph plus a margin, never under 18 pt, so every glyph is a 36 pt target")
     func hitRadii() {
+        #expect(GlyphMetrics.minimumHitRadius == 18)
+        for zoom in [1.0, 2, 4, 8] {
+            let m = GlyphMetrics(zoom: zoom)
+            for size in SystemSize.allCases {
+                #expect(m.systemHitRadius(size) == max(m.radius(size) + 4, 18))
+                #expect(m.systemHitRadius(size) >= 18)
+            }
+            #expect(m.wormholeHitRadius == max(m.wormholeRadius + 3, 18))
+        }
         let m = GlyphMetrics(zoom: 1)
-        #expect(m.systemHitRadius(.tiny) == 8 && m.systemHitRadius(.huge) == 8.5)
-        #expect(m.wormholeHitRadius == 6.5)
-        #expect(GlyphMetrics(zoom: 4).systemHitRadius(.huge) == 13)
+        #expect(m.systemHitRadius(.tiny) == 18 && m.wormholeHitRadius == 18)
+        // A glyph larger than the minimum keeps its own margin.
+        let big = GlyphMetrics(zoom: 8)
+        if big.radius(.huge) + 4 > 18 { #expect(big.systemHitRadius(.huge) == big.radius(.huge) + 4) }
     }
 
     @Test("MAP-021 property: every system and wormhole centre hits itself at Fit Galaxy", arguments: RulesetID.allCases)

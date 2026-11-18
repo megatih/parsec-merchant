@@ -38,7 +38,7 @@ struct TipsTests {
             #expect(!String(localized: id.title).isEmpty && !String(localized: id.message).isEmpty && !id.systemImage.isEmpty)
             #expect(AXID.all.contains(id.identifier) && AXID.all.contains(id.closeIdentifier))
         }
-        #expect(String(localized: TipID.galaxy.message) == "Click to target, ⌥-click to track, right-click to plot a route.")
+        #expect(String(localized: TipID.galaxy.message) == "Click a system to target it. Its card has Track and Plot Route.")
         #expect(MarketTip().id == "tip.market" && GalaxyTip().id == "tip.galaxy" && WarpTip().id == "tip.warp")
         #expect(MarketTip().actions.map(\.id) == [TipID.learnMoreActionID])
         #expect(String(localized: TipID.learnMoreTitle) == "Learn More")

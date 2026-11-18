@@ -124,3 +124,20 @@ nonisolated enum MapRange {
         return Double(max(0, s.distanceRule.maxSquaredDistance(withinRange: s.fuelCapacity))).squareRoot()
     }
 }
+
+/// UI-PTR-012, MAP-014: what a scroll event does to the map. Pure.
+nonisolated enum MapScroll {
+    enum Action: Equatable, Sendable {
+        /// Zoom by `wheelZoomStep ^ steps` about the pointer.
+        case zoom(steps: Double)
+        case pan(CGSize)
+    }
+
+    /// A mouse wheel (non-precise deltas) zooms one step per notch; two-finger trackpad scrolling (precise deltas) pans,
+    /// unless ⌘ is held, which zooms at a tenth of a step per point.
+    static func action(deltaX: Double, deltaY: Double, precise: Bool, command: Bool) -> Action {
+        if !precise { return .zoom(steps: deltaY) }
+        if command { return .zoom(steps: deltaY / 10) }
+        return .pan(CGSize(width: deltaX, height: deltaY))
+    }
+}

@@ -57,9 +57,13 @@ struct GalaxyMapView: View {
             ZStack(alignment: .topLeading) {
                 mapCanvas(snapshot, projected: projected)
                 overlayCanvas(snapshot, projected: projected)
-                if let hit = ui.cardHit {
-                    hoverCard(hit, snapshot: snapshot, projected: projected, size: size)
+                // UI-PTR-011: a click pins the selection card (with buttons); hovering only previews.
+                if let hit = ui.pinnedHit {
+                    hoverCard(hit, snapshot: snapshot, projected: projected, size: size, pinned: true)
+                } else if let hit = ui.cardHit {
+                    hoverCard(hit, snapshot: snapshot, projected: projected, size: size, pinned: false)
                 }
+                if scope == .miniChart { miniChartOpenButton }
                 if scope.hasHUD {
                     hud(snapshot, size: size)
                         .environment(\.layoutDirection, layoutDirection)
@@ -93,7 +97,8 @@ struct GalaxyMapView: View {
         }
         // UI-KEYS-017 levels 3 and 4, run by the main window's Esc router.
         .escapeHandler(.clearField, active: searchFocused && !ui.searchText.isEmpty) { ui.searchText = "" }
-        .escapeHandler(.closeMapOverlay, active: ui.cardHit != nil || ui.legendShown || suggestionsVisible(snapshot)) { dismissOverlays() }
+        .escapeHandler(.closeMapOverlay,
+                       active: ui.cardHit != nil || ui.pinnedHit != nil || ui.legendShown || suggestionsVisible(snapshot)) { dismissOverlays() }
     }
 
     // MARK: Canvas
@@ -254,8 +259,11 @@ struct GalaxyMapView: View {
         if scope.hasHUD { canvasFocused = true }
         guard let hit = hit(at: location, snapshot: snapshot, projected: projected) else {
             ui.lastClick = nil
+            // UI-PTR-011: a tap on the mini chart's empty space opens the Galaxy section.
+            if scope == .miniChart { session.selectedSection = .galaxy }
             return
         }
+        if scope.hasHUD { ui.pinnedHit = hit }
         let now = Date.now
         let gesture: MapGesture
         if NSEvent.modifierFlags.contains(.option) {
@@ -389,20 +397,19 @@ struct GalaxyMapView: View {
         }
     }
 
-    /// Wheel / two-finger scroll pans; ⌘ + wheel zooms ×1.1 per step at the pointer. Returns whether it was handled.
+    /// UI-PTR-012, MAP-014: a plain mouse wheel zooms ×1.1 per step at the pointer; two-finger scrolling pans (⌘ makes it
+    /// zoom). Returns whether it was handled.
     private static func scroll(ui: MapViewModel, session: GameSession, command: Bool, precise: Bool, dx: Double, dy: Double) -> Bool {
         guard let location = ui.hoverLocation, let snapshot = session.mapSnapshot else { return false }
         let v = ui.viewport(session: session, snapshot: snapshot)
         let bounds = MapBounds(snapshot)
         ui.closeCard()
-        if command {
-            let steps = dy / (precise ? 10 : 1)
+        switch MapScroll.action(deltaX: dx, deltaY: dy, precise: precise, command: command) {
+        case let .zoom(steps):
             ui.setViewport(v.zoomed(by: pow(MapViewport.wheelZoomStep, steps), anchor: location, viewSize: ui.viewSize, bounds: bounds),
                            session: session, snapshot: snapshot)
-        } else {
-            let k: Double = precise ? 1 : 10
-            ui.setViewport(v.panned(byViewDelta: CGSize(width: dx * k, height: dy * k), viewSize: ui.viewSize, bounds: bounds),
-                           session: session, snapshot: snapshot)
+        case let .pan(delta):
+            ui.setViewport(v.panned(byViewDelta: delta, viewSize: ui.viewSize, bounds: bounds), session: session, snapshot: snapshot)
         }
         return true
     }
@@ -450,7 +457,7 @@ struct GalaxyMapView: View {
 
     // MARK: Hover card (MAP-044…046)
 
-    private func hoverCard(_ hit: MapHit, snapshot: MapSnapshot, projected: ProjectedMap, size: CGSize) -> some View {
+    private func hoverCard(_ hit: MapHit, snapshot: MapSnapshot, projected: ProjectedMap, size: CGSize, pinned: Bool) -> some View {
         let model: HoverCardModel
         switch hit {
         case let .system(i):
@@ -470,16 +477,59 @@ struct GalaxyMapView: View {
             model = HoverCardModel.make(wormhole: w, snapshot: snapshot, tax: session.state.map { $0.wormholeTaxPerJump } ?? 0)
         }
         let (c, _) = glyph(hit, snapshot: snapshot, projected: projected)
-        let cardSize = CGSize(width: 250, height: 30 + Double(model.rows.count) * 16 + (model.tags.isEmpty ? 0 : 20))
+        let items = pinned ? MapContextMenu.items(for: hit, snapshot: snapshot, isModal: session.isInputLocked) : []
+        let buttonRows = Double((items.count + 1) / 2)
+        let cardSize = CGSize(width: pinned ? 280 : 250,
+                              height: 30 + Double(model.rows.count) * 16 + (model.tags.isEmpty ? 0 : 20) + buttonRows * (PointerTarget.minimum + 6))
         let frame = HoverCardPlacement.frame(anchor: c, cardSize: cardSize, bounds: CGRect(origin: .zero, size: size))
-        return HoverCardView(model: model)
-            .environment(\.layoutDirection, layoutDirection)
-            .frame(width: cardSize.width, alignment: .leading)
-            .fixedSize(horizontal: false, vertical: true)
-            .offset(x: frame.minX, y: frame.minY)
-            .allowsHitTesting(false)
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier(ids.hoverCard)
+        return VStack(alignment: .leading, spacing: 6) {
+            HoverCardView(model: model)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier(pinned ? ids.selectionFacts : ids.hoverCard)
+            if pinned {
+                // The card's buttons are the context menu's items (MAP-053): one rule for both.
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 6) {
+                    ForEach(items) { item in
+                        Button {
+                            if let command = item.command { sendFromMap(command) }
+                            if item.kind == .plotRoute, let d = item.destination { session.planRoute(to: d) }
+                            if item.kind == .findPrices, let d = item.destination { ui.intelSheet = SystemIntelRequest(id: d) }
+                        } label: {
+                            Text(verbatim: item.title).lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).pointerTarget()
+                        }
+                        .disabled(!item.isEnabled)
+                        .help(item.reason.map { Text(verbatim: $0) } ?? Text(verbatim: item.title))
+                        .accessibilityIdentifier(ids.selection(item.kind))
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.bottom, 8)
+            }
+        }
+        .environment(\.layoutDirection, layoutDirection)
+        .frame(width: cardSize.width, alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
+        .background(pinned ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(.clear), in: RoundedRectangle(cornerRadius: 10))
+        .offset(x: frame.minX, y: frame.minY)
+        .allowsHitTesting(pinned)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(pinned ? ids.selectionCard : ids.hoverCard + ".container")
+    }
+
+    /// UI-PTR-011: the Bridge mini chart opens the Galaxy section.
+    private var miniChartOpenButton: some View {
+        Button {
+            session.selectedSection = .galaxy
+        } label: {
+            Label("Open Galaxy Chart", systemImage: "arrow.up.left.and.arrow.down.right").labelStyle(.iconOnly).pointerTarget()
+        }
+        .buttonStyle(.borderless)
+        .background(.regularMaterial, in: Circle())
+        .help(Text("Open the Galaxy chart"))
+        .accessibilityLabel(Text("Open Galaxy Chart"))
+        .accessibilityIdentifier(AXID.Galaxy.miniChartOpen)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+        .padding(6)
     }
 
     // MARK: HUD (MAP-016, MAP-027)

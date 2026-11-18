@@ -25,8 +25,10 @@ nonisolated struct GlyphMetrics: Sendable, Equatable, Hashable {
     var wormholeRadius: Double { 3.5 * multiplier }
 
     /// MAP-020 hit radii.
-    func systemHitRadius(_ size: SystemSize) -> Double { max(radius(size) + 4, 8) }
-    var wormholeHitRadius: Double { max(wormholeRadius + 3, 6) }
+    /// UI-PTR-013, MAP-020: every glyph is at least a 36 pt target.
+    static let minimumHitRadius = 18.0
+    func systemHitRadius(_ size: SystemSize) -> Double { max(radius(size) + 4, Self.minimumHitRadius) }
+    var wormholeHitRadius: Double { max(wormholeRadius + 3, Self.minimumHitRadius) }
 
     /// MAP-037: the vortex sits `glyphRadius + 6` pt to the right of its system.
     func wormholeOffset(_ size: SystemSize) -> Double { radius(size) + 6 }

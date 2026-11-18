@@ -26,7 +26,7 @@ nonisolated enum TipID: String, CaseIterable, Sendable {
         switch self {
         case .market:
             "Target shows what each item is estimated to fetch at your target system. The strip above the table suggests the best trades."
-        case .galaxy: "Click to target, ⌥-click to track, right-click to plot a route."
+        case .galaxy: "Click a system to target it. Its card has Track and Plot Route."
         case .warp: "Warp (⌘J) flies to the target in one go. Its help tag lists the fuel and costs of the trip."
         }
     }
@@ -245,7 +245,7 @@ struct ParsecTipViewStyle: TipViewStyle {
             Button {
                 configuration.tip.invalidate(reason: .tipClosed)
             } label: {
-                Image(systemName: "xmark")
+                Image(systemName: "xmark").pointerTarget()  // UI-PTR-015
             }
             .buttonStyle(.borderless)
             .help(Text("Close this tip"))

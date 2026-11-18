@@ -44,17 +44,30 @@ struct ArtIntegrationTests {
         for t in ShipType.allCases { #expect(ArtAdapters.shipKind(t).rawValue == t.rawValue) }
     }
 
-    @Test("ART-008 the size class is the ruleset's ShipSpec.size in every ruleset; custom ships use their saved spec")
+    @Test("ART-008 ART-088 the adapter passes every statistic of the ruleset's ShipSpec, the tiers and the installed equipment")
     func shipInputs() throws {
         for id in RulesetID.allCases {
             let ruleset = Ruleset.named(id)
             for t in ShipType.allCases where t != .custom {
-                var ship = Ship(type: t, spec: ruleset.tables.ship(t))
+                let spec = ruleset.tables.ship(t)
+                var ship = Ship(type: t, spec: spec)
                 ship.hull /= 2
                 let input = ArtAdapters.shipInput(ship, ruleset: ruleset, facing: .left)
-                #expect(input.sizeClass == ship.spec(ruleset).size.rawValue, "\(id) \(t)")
+                let s = input.stats
+                #expect(input.sizeClass == spec.size.rawValue && s.sizeClass == spec.size.rawValue, "\(id) \(t)")
+                #expect(s.cargoBays == spec.cargoBays && s.weaponSlots == spec.weaponSlots && s.shieldSlots == spec.shieldSlots
+                    && s.gadgetSlots == spec.gadgetSlots && s.crewQuarters == spec.crewQuarters && s.fuelTanks == spec.fuelTanks
+                    && s.hullStrength == spec.hullStrength, "\(id) \(t)")
+                #expect(s.priceTier == [5000, 20000, 50000, 90000, 200_000].filter { spec.price >= $0 }.count)
+                #expect(s.techTier == min(7, spec.minTechLevel.rawValue))
+                #expect(s.weapons == [] && s.shields == [] && s.gadgets == [], "a bare ship has nothing installed")
                 #expect(input.kind.rawValue == t.rawValue && input.facing == .left)
                 #expect(abs(input.hullFraction - Double(ship.hull) / Double(ship.hullStrength(ruleset))) < 1e-9)
+                // A type portrait has no ship instance: the equipment is unknown, so every slot is drawn filled.
+                let pristine = ArtAdapters.specInput(t, spec: spec).stats
+                #expect(pristine.weapons == nil && pristine.cargoBays == spec.cargoBays)
+                // ART-088: the art's reference table is the Windows 2.01 table.
+                if id == .windows201 { #expect(pristine == ShipArtStats.standard(ArtAdapters.shipKind(t)), "\(t)") }
             }
         }
         let ruleset = Ruleset.named(.modern)
@@ -63,8 +76,25 @@ struct ArtIntegrationTests {
         spec.weaponSlots = 4
         var custom = Ship(type: .custom, spec: spec)
         custom.customSpec = spec
+        custom.weapons = [.pulseLaser, .militaryLaser]
+        custom.gadgets = [.navigatingSystem]
         let input = ArtAdapters.shipInput(custom, ruleset: ruleset, facing: .right)
-        #expect(input.sizeClass == 0 && input.custom?.weaponSlots == 4)
+        #expect(input.sizeClass == 0 && input.stats.weaponSlots == 4)
+        #expect(input.stats.weapons == [WeaponType.pulseLaser.rawValue, WeaponType.militaryLaser.rawValue])
+        #expect(input.stats.gadgets == [GadgetType.navigatingSystem.rawValue] && input.stats.shields == [])
+        // The installed weapons show: two barrels on four mounts, and arming a third changes the picture.
+        var armed = custom
+        armed.weapons.append(.beamLaser)
+        #expect(ArtAdapters.shipInput(armed, ruleset: ruleset, facing: .right).blueprint != input.blueprint)
+        // ART-012: the designer preview follows the draft's statistics; the hull style is only a variant.
+        let design = ShipDesign(name: "T", size: .medium, cargoBays: 30, fuelTanks: 14, hull: 120, weaponSlots: 2, shieldSlots: 1, gadgetSlots: 1,
+                                crewQuarters: 2)
+        let preview = ArtAdapters.designInput(design, style: .hornet, price: 60000)
+        #expect(preview.kind == .custom && preview.stats.cargoBays == 30 && preview.stats.priceTier == 3 && preview.variant == ArtSeed.kind(.hornet))
+        #expect(preview.blueprint.livery.primary == .brass)
+        var bigger = design
+        bigger.cargoBays = 60
+        #expect(ArtAdapters.designInput(bigger, style: .hornet, price: 60000).blueprint != preview.blueprint)
         var shielded = Ship(type: .gnat, spec: ruleset.tables.ship(.gnat))
         shielded.shields = [EffectFx.shield(.energy, charge: 10), EffectFx.shield(.reflective, charge: 50)]
         let shield = try #require(ArtAdapters.shield(shielded, ruleset: ruleset))

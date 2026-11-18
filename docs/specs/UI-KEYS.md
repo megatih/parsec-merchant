@@ -85,7 +85,7 @@
 | Event feed overlay (`status.feed`) | ⎋ | close the overlay | LOG (feed links) |
 | Any focused control (Full Keyboard Access) | ⇥ / ⇧⇥, Space, ⌃⇥ | next / previous control, press, leave a text view | system (UI-KEYS-024) |
 
-Mouse modifiers (not keys): Market `+`/`−` click 1, ⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all (UI-SHELL-062); map ⌥-click track, ⌘-scroll zoom, double-click target and focus Warp (MAP-014, MAP-051); Shipyard ⌘-click compare (UI-SHELL-070).
+Mouse modifiers are accelerators only; each has a visible control that does the same without a modifier (UI-PTR-004): Market Buy/Sell with ⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all override the row's quantity chip (UI-SHELL-062); map ⌥-click tracks like the selection card's Track button; ⌘-scroll zooms like the plain wheel and pinch; double-click targets and focuses Warp (MAP-014, MAP-051); Shipyard ⌘-click compares like the card's Compare toggle (UI-SHELL-070).
 
 ### 2.3 Sheets and dialogs (Return = `.defaultAction`, Esc and ⌘. = `.cancelAction`)
 

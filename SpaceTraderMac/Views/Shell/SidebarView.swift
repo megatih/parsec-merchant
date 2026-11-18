@@ -66,13 +66,6 @@ private struct SidebarRow: View {
                     .fixedSize()
                     .accessibilityLabel(Text(badge.accessibilityLabel))
             }
-            if showsHint {
-                Text(verbatim: "⌘\(section.shortcutDigit)")
-                    .scaledFont(.caption)
-                    .foregroundStyle(.readableSecondary)
-                    .fixedSize()
-                    .accessibilityHidden(true)
-            }
         }
     }
 

@@ -41,7 +41,9 @@ struct ShipPaneView: View {
                         .offset(x: offset * geo.size.width)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 90, maxHeight: 120)
+            .frame(maxWidth: .infinity, minHeight: ShipPanelSize.encounterPane.lowerBound, maxHeight: ShipPanelSize.encounterPane.upperBound)
+            // ART-083: the stage reads where the portrait really is, so the effects land on the ships.
+            .anchorPreference(key: ShipPaneArtKey.self, value: .bounds) { [identifiers.pane: $0] }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(verbatim: model.accessibilityLabel))
             .accessibilityAddTraits(.isImage)
@@ -124,5 +126,14 @@ struct BarStripes: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+/// ART-083: the portrait rectangles of the two ship panes, by pane identifier.
+struct ShipPaneArtKey: PreferenceKey {
+    static let defaultValue: [String: Anchor<CGRect>] = [:]
+
+    static func reduce(value: inout [String: Anchor<CGRect>], nextValue: () -> [String: Anchor<CGRect>]) {
+        value.merge(nextValue()) { $1 }
     }
 }

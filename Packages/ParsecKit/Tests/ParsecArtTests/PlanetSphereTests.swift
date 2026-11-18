@@ -136,7 +136,8 @@ struct PlanetSphereTests {
 
     @Test("ART-070 the baker is deterministic, the same on any thread, and its LODs sample one field")
     func baker() async {
-        #expect(PlanetLOD.allCases.map(\.width) == [64, 128, 512] && PlanetLOD.allCases.map(\.height) == [32, 64, 256])
+        #expect(PlanetLOD.allCases.map(\.width) == [64, 128, 512, 1024] && PlanetLOD.allCases.map(\.height) == [32, 64, 256, 512])
+        #expect(PlanetLOD.forDiameter(2000) == .hero, "cinema maps are asked for by name only")
         for cls in [PlanetClass.terran, .gasGiant, .barren] {
             let rc = Self.recipes(cls, count: 1)[0]
             let a = PlanetTextureBaker.bake(rc, lod: .still)
@@ -144,7 +145,7 @@ struct PlanetSphereTests {
             #expect(a.albedo.count == 128 * 64 * 4 && a.aux.count == a.albedo.count)
             let background = await Task.detached { PlanetTextureBaker.bake(rc, lod: .still) }.value
             #expect(background == a)
-            let stats = PlanetLOD.allCases.map { MapStats(PlanetTextureBaker.bake(rc, lod: $0)) }
+            let stats = [PlanetLOD.mini, .still, .hero].map { MapStats(PlanetTextureBaker.bake(rc, lod: $0)) }
             for s in stats.dropFirst() {
                 #expect(abs(s.water - stats[0].water) < 0.04, "\(cls) water")
                 #expect(abs(s.mean.r - stats[0].mean.r) < 0.04 && abs(s.mean.g - stats[0].mean.g) < 0.04 && abs(s.mean.b - stats[0].mean.b) < 0.04,

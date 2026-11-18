@@ -41,10 +41,9 @@ struct StatusBarView: View {
                     Button {
                         session.selectedSection = .bridge
                     } label: {
-                        Label("Arrival report", systemImage: "flag.checkered")
+                        Label("Arrival report", systemImage: "flag.checkered").pointerTarget()
                     }
                     .buttonStyle(.bordered)
-                    .controlSize(.small)
                     .help(Text("Show the arrival report on Bridge."))
                     .accessibilityIdentifier(AXID.Arrival.statusChip)
                 }

@@ -21,6 +21,7 @@ struct OutfitterSectionView: View {
                                     .foregroundStyle(.readableSecondary)
                             }
                             ForEach(model.groups) { group($0) }
+                            if model.groups.contains(where: { g in g.tiles.contains { $0.installed != nil } }) { sellWell(model) }
                         }
                         .padding()
                     }
@@ -69,11 +70,12 @@ struct OutfitterSectionView: View {
                 if let charge = t.charge {
                     Text("Charge \(charge)").scaledFont(.caption).monospacedDigit().foregroundStyle(.readableSecondary)
                 }
-                Button("Sell for \(item.sellPrice.formatted()) cr.") {
+                Button {
                     selection = nil
                     session.send(item.sellCommand)
+                } label: {
+                    Text("Sell for \(item.sellPrice.formatted()) cr.").pointerTarget()
                 }
-                .controlSize(.small)
                 .disabled(item.sellBlocker != nil)
                 .help(item.sellBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Sell this item."))
                 .accessibilityIdentifier(AXID.Outfitter.sell(group, slot: t.slot))
@@ -87,8 +89,26 @@ struct OutfitterSectionView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 8).strokeBorder(isSelected ? Color.accentColor : Color.secondary.opacity(0.3))
         }
+        .hoverHighlight(isEnabled: t.installed != nil)  // UI-PTR-003
         .contentShape(Rectangle())
         .onTapGesture { if let item = t.installed { selection = .installed(item.item, slot: t.slot) } }
+        // UI-PTR-010: an installed item drags to the sell well; a free slot takes an item for sale of its kind.
+        .modifier(SlotDragDrop(tile: t, group: group) { drag in
+            guard case let .buy(item) = OutfitterDrop.action(for: drag, onto: .slot(group, free: t.installed == nil),
+                                                             buyBlocked: session.state?.equipmentBuyBlocker(drag.item) != nil) else { return false }
+            session.send(item.buyCommand)
+            return true
+        })
+        .contextMenu {
+            if let item = t.installed {
+                Button("Sell for \(item.sellPrice.formatted()) cr.") {
+                    selection = nil
+                    session.send(item.sellCommand)
+                }
+                .disabled(item.sellBlocker != nil)
+                .help(item.sellBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Sell this item."))
+            }
+        }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(t.installed.map { Text(EquipmentText.name($0.item)) } ?? Text("Free slot"))  // A11Y-003
         .accessibilityIdentifier(AXID.Outfitter.slot(group, slot: t.slot))
@@ -99,7 +119,7 @@ struct OutfitterSectionView: View {
             Text(EquipmentText.name(o.item))
             Spacer()
             Text("\(o.buyPrice.formatted()) cr.").monospacedDigit()
-            Button("Buy") { session.send(o.item.buyCommand) }
+            Button { session.send(o.item.buyCommand) } label: { Text("Buy").pointerTarget() }
                 .disabled(o.buyBlocker != nil)
                 .help(o.buyBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Buy this item."))
                 .accessibilityIdentifier(AXID.Outfitter.buy(o.item))
@@ -107,10 +127,37 @@ struct OutfitterSectionView: View {
         .padding(.vertical, 4)
         .padding(.horizontal, 6)
         .background(selection == .offer(o.item) ? Color.accentColor.opacity(0.15) : Color.clear, in: RoundedRectangle(cornerRadius: 6))
+        .hoverHighlight(cornerRadius: 6)  // UI-PTR-003
         .contentShape(Rectangle())
+        // UI-PTR-006: double-click is the row's primary action, the same as its Buy button.
+        .onTapGesture(count: 2) { if o.buyBlocker == nil { session.send(o.item.buyCommand) } }
         .onTapGesture { selection = .offer(o.item) }
+        .draggable(OutfitterDragItem(item: o.item, source: .offer))
+        .contextMenu {
+            Button("Buy for \(o.buyPrice.formatted()) cr.") { session.send(o.item.buyCommand) }
+                .disabled(o.buyBlocker != nil)
+                .help(o.buyBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Buy this item."))
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Outfitter.offer(o.item))
+    }
+
+    /// UI-PTR-010: the sell well: drop an installed item here to sell it (the tile's Sell button is the tap path).
+    private func sellWell(_ model: OutfitterModel) -> some View {
+        Label("Drag an installed item here to sell it", systemImage: "arrow.down.to.line")
+            .foregroundStyle(.readableSecondary)
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .background(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.secondary.opacity(0.5), style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])))
+            .dropDestination(for: OutfitterDragItem.self) { drags, _ in
+                guard let drag = drags.first, case let .sell(item, slot) = OutfitterDrop.action(for: drag, onto: .sellWell, buyBlocked: false),
+                      let tile = model.groups.first(where: { $0.group == OutfitterDrop.group(of: item) })?.tiles.first(where: { $0.slot == slot }),
+                      let installed = tile.installed, installed.item == item, installed.sellBlocker == nil else { return false }
+                selection = nil
+                session.send(installed.sellCommand)
+                return true
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier(AXID.Outfitter.sellWell)
     }
 
     // MARK: Detail pane (UI-SHELL-078)
@@ -177,4 +224,21 @@ struct OutfitterSectionView: View {
         }
     }
 
+}
+
+/// UI-PTR-010: a slot tile's drag source (installed item) and drop target (free slot).
+private struct SlotDragDrop: ViewModifier {
+    let tile: SlotTile
+    let group: OutfitterGroup
+    let onDrop: (OutfitterDragItem) -> Bool
+
+    func body(content: Content) -> some View {
+        if let installed = tile.installed {
+            content.draggable(OutfitterDragItem(item: installed.item, source: .installed(slot: tile.slot)))
+        } else {
+            content.dropDestination(for: OutfitterDragItem.self) { drags, _ in
+                return drags.first.map(onDrop) ?? false
+            }
+        }
+    }
 }

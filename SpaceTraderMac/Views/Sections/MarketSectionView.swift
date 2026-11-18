@@ -12,6 +12,8 @@ struct MarketSectionView: View {
     @State private var filter = ""
     @State private var quantities: [TradeItemType: String] = [:]
     @State private var disposal: CargoDisposal?
+    /// UI-PTR-007: each row's selected quantity chip (1 by default), kept while the window lives.
+    @State private var chips: [TradeItemType: TradeChip] = [:]
     @Environment(\.textScale) private var textScale
     @FocusState private var focusedField: Field?
     @Namespace private var rotorNamespace
@@ -160,37 +162,82 @@ struct MarketSectionView: View {
         .help(advice.flatMap { a in
             session.state.map { st in IntelText.sellAdvice(a, systemName: { Names.system($0, in: st) }, today: st.commander.days) }
         } ?? "")
-        .contextMenu {
-            if let j = CargoDisposal.jettison(r) {
-                Button("Jettison…") { disposal = j }
-                    .accessibilityIdentifier(AXID.Market.jettison(r.item))
-            }
-            if let d = CargoDisposal.dump(r) {
-                Button("Dump…") { disposal = d }
-                    .accessibilityIdentifier(AXID.Market.dump(r.item))
-            }
-        }
+        .contextMenu { rowMenu(r) }
     }
 
+    /// UI-PTR-005: every action of the row, for right-click and touch and hold. Each mirrors a visible control.
+    @ViewBuilder
+    private func rowMenu(_ r: MarketRowModel) -> some View {
+        ForEach(TradeChip.allCases, id: \.self) { chip in
+            Button(MarketText.menuBuy(chip, maximum: r.row.maxBuy)) {
+                if let c = r.buyCommand(chip: chip) { session.send(c) }
+            }
+            .disabled(r.buyCommand(chip: chip) == nil)
+            .help(r.buyBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text(MarketText.chipHelp(chip)))
+            .accessibilityIdentifier(AXID.Market.menu(r.item, "buy.\(chip.idSuffix)"))
+        }
+        Divider()
+        ForEach(TradeChip.allCases, id: \.self) { chip in
+            Button(MarketText.menuSell(chip, maximum: r.row.maxSell, dump: r.isDumpMode)) {
+                if let c = r.sellCommand(chip: chip) { session.send(c) }
+            }
+            .disabled(r.sellCommand(chip: chip) == nil)
+            .help(r.sellBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text(MarketText.chipHelp(chip)))
+            .accessibilityIdentifier(AXID.Market.menu(r.item, "sell.\(chip.idSuffix)"))
+        }
+        Divider()
+        if let j = CargoDisposal.jettison(r) {
+            Button("Jettison…") { disposal = j }
+                .accessibilityIdentifier(AXID.Market.jettison(r.item))
+        }
+        if let d = CargoDisposal.dump(r) {
+            Button("Dump…") { disposal = d }
+                .accessibilityIdentifier(AXID.Market.dump(r.item))
+        }
+        Button("Why This Price?") { session.marketSelection = r.item }
+            .accessibilityIdentifier(AXID.Market.menu(r.item, "why"))
+    }
+
+    /// UI-PTR-007: quantity chips, explicit Sell and Buy, the typed amount with the same buttons as its submit, and a
+    /// visible Jettison or Dump. Modifier keys stay as accelerators of Sell and Buy.
     private func actionsCell(_ r: MarketRowModel) -> some View {
         let buyReason = r.buyBlocker.map { ReasonText.string(for: $0) }
         let sellReason = r.sellBlocker.map { ReasonText.string(for: $0) }
-        return HStack(spacing: 6) {
+        let chip = chips[r.item] ?? .one
+        let typed = (quantities[r.item] ?? "").trimmingCharacters(in: .whitespaces)
+        return HStack(spacing: 4) {
+            HStack(spacing: 0) {
+                ForEach(TradeChip.allCases, id: \.self) { c in
+                    Button {
+                        chips[r.item] = c
+                    } label: {
+                        Text(MarketText.chip(c))
+                            .scaledFont(.callout, weight: c == chip ? .bold : .regular)
+                            .monospacedDigit()
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(c == chip ? Color.accentColor.opacity(0.22) : Color.secondary.opacity(0.10), in: Capsule())
+                            .pointerTarget()
+                    }
+                    .buttonStyle(.plain)
+                    .help(Text(MarketText.chipHelp(c)))
+                    .accessibilityLabel(Text(MarketText.chipHelp(c)))
+                    .accessibilityAddTraits(c == chip ? .isSelected : [])
+                    .accessibilityIdentifier(AXID.Market.chip(r.item, c))
+                }
+            }
             Button {
-                let modifiers = TradeQuantity.current
-                if TradeQuantity.snaps(modifiers: modifiers, maximum: r.row.maxSell) { session.performHaptic(.quantitySnap) }
-                if let c = r.sellCommand(modifiers: modifiers) { session.send(c) }
+                trade(r, sell: true, chip: chip, typed: typed)
             } label: {
-                if r.isDumpMode { Text("Dump") } else { Image(systemName: "minus") }
+                Text(r.isDumpMode ? "Dump" : "Sell").pointerTarget()
             }
             .disabled(r.sellBlocker != nil)
-            .help(sellReason ?? String(localized: r.isDumpMode
-                ? "Dump 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)" : "Sell 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)"))
+            .help(sellReason ?? MarketText.tradeHelp(sell: true, dump: r.isDumpMode))
             .accessibilityLabel(Text(r.isDumpMode ? "Dump" : "Sell"))
             .accessibilityHint(Text(AccessibilityHints.tradeModifiers))  // A11Y-005
             .accessibilityIdentifier(AXID.Market.sell(r.item))
             TextField(text: quantityBinding(r.item)) { Text("Qty") }
-                .frame(width: 48)
+                .frame(width: 46)
                 .monospacedDigit()
                 .focused($focusedField, equals: .quantity(r.item))
                 .onSubmit { submitField(r, sell: false) }
@@ -199,38 +246,44 @@ struct MarketSectionView: View {
                     submitField(r, sell: true)
                     return .handled
                 }
-                .help(Text("Return buys this many, ⇧Return sells them."))
+                .help(Text("Type an amount, then choose Buy or Sell."))
                 .accessibilityLabel(Text("Quantity of \(Names.item(r.item))"))  // A11Y-003
                 .accessibilityIdentifier(AXID.Market.quantity(r.item))
             Button {
-                let modifiers = TradeQuantity.current
-                if TradeQuantity.snaps(modifiers: modifiers, maximum: r.row.maxBuy) { session.performHaptic(.quantitySnap) }
-                if let c = r.buyCommand(modifiers: modifiers) { session.send(c) }
+                trade(r, sell: false, chip: chip, typed: typed)
             } label: {
-                Image(systemName: "plus")
+                Text("Buy").pointerTarget()
             }
             .disabled(r.buyBlocker != nil)
-            .help(buyReason ?? String(localized: "Buy 1 (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ max)"))
+            .help(buyReason ?? MarketText.tradeHelp(sell: false, dump: false))
             .accessibilityLabel(Text("Buy"))
             .accessibilityHint(Text(AccessibilityHints.tradeModifiers))  // A11Y-005
             .accessibilityIdentifier(AXID.Market.buy(r.item))
-            Button("Max") {
-                if let c = r.buyMaxCommand { session.send(c) }
+            if let disposal = CargoDisposal.jettison(r) ?? CargoDisposal.dump(r) {
+                Button {
+                    self.disposal = disposal
+                } label: {
+                    Image(systemName: "trash").pointerTarget()
+                }
+                .help(Text(disposal.kind == .jettison ? "Jettison cargo…" : "Dump cargo…"))
+                .accessibilityLabel(Text(disposal.kind == .jettison ? "Jettison" : "Dump"))
+                .accessibilityIdentifier(AXID.Market.menu(r.item, "disposal"))
             }
-            .disabled(r.buyBlocker != nil)
-            .help(buyReason ?? String(localized: "Buy as many as you can (\(r.row.maxBuy))"))
-            .accessibilityLabel(Text("Buy Max"))
-            .accessibilityIdentifier(AXID.Market.buyMax(r.item))
-            Button(r.isDumpMode ? "Dump All" : "All") {
-                if let c = r.sellAllCommand { session.send(c) }
-            }
-            .disabled(r.sellBlocker != nil)
-            .help(sellReason ?? String(localized: r.isDumpMode ? "Dump all \(r.row.maxSell)" : "Sell all \(r.row.maxSell)"))
-            .accessibilityLabel(Text(r.isDumpMode ? "Dump All" : "Sell All"))
-            .accessibilityIdentifier(AXID.Market.sellAll(r.item))
         }
         .buttonStyle(.bordered)
-        .controlSize(.small)
+    }
+
+    /// The Sell and Buy buttons: the typed amount when there is one, else the chip (a held modifier overrides the chip).
+    private func trade(_ r: MarketRowModel, sell: Bool, chip: TradeChip, typed: String) {
+        if !typed.isEmpty {
+            submitField(r, sell: sell)
+            return
+        }
+        let modifiers = TradeQuantity.current
+        let maximum = sell ? r.row.maxSell : r.row.maxBuy
+        let requested = TradeQuantity.resolve(chip: chip, modifiers: modifiers, maximum: .max)
+        if HapticMap.quantitySnaps(requested: requested, maximum: maximum) { session.performHaptic(.quantitySnap) }
+        if let c = sell ? r.sellCommand(chip: chip, modifiers: modifiers) : r.buyCommand(chip: chip, modifiers: modifiers) { session.send(c) }
     }
 
     /// A11Y-007: a row's custom action. Trades from assistive actions announce their result (A11Y-012).
@@ -386,6 +439,7 @@ private struct DisposalSheet: View {
             }
             .accessibilityLabel(Text("Quantity"))
             .accessibilityValue(Text(verbatim: AccessibilityText.units(quantity)))
+            QuantityChips(value: $quantity, range: 1...max(1, disposal.maximum), idPrefix: AXID.Market.disposalQuantity)
             .accessibilityIdentifier(AXID.Market.disposalQuantity)
             HStack {
                 Spacer()
