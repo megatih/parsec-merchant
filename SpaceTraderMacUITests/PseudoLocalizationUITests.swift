@@ -13,7 +13,8 @@ final class PseudoLocalizationUITests: ParsecUITestCase {
             switch self {
             case .double: ["-NSDoubleLocalizedStrings", "YES"]
             case .bounded: ["-NSAccentuateLocalizedStrings", "YES", "-NSSurroundLocalizedStrings", "YES"]
-            case .rtl: ["-NSForceRightToLeftWritingDirection", "YES"]
+            // Xcode's Right-to-Left Pseudolanguage: right-to-left writing direction and a mirrored layout.
+            case .rtl: ["-NSForceRightToLeftWritingDirection", "YES", "-AppleTextDirection", "YES"]
             }
         }
     }
@@ -46,6 +47,7 @@ final class PseudoLocalizationUITests: ParsecUITestCase {
         var offenders: [String] = []
         walk(.shell, extra: mode.arguments) { visited in
             let window = windowElement(containing: visited.root)
+            parkPointer(settle: 1.2)  // A11Y-042: no help tag over the reviewed screenshot
             let shot = XCTAttachment(screenshot: window.screenshot())
             shot.name = "qa-pseudo-\(mode.rawValue)-\(visited.surface.name)"
             shot.lifetime = .keepAlways

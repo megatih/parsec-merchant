@@ -19,7 +19,7 @@ struct ArrivalCardView: View {
                         Label {
                             Text(verbatim: report.summary).scaledFont(.headline)
                         } icon: {
-                            Image(systemName: expanded ? "chevron.down" : "chevron.right")
+                            Image(systemName: expanded ? "chevron.down" : "chevron.forward")
                         }
                     }
                     .buttonStyle(.plain)

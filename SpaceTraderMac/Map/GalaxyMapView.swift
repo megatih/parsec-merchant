@@ -15,6 +15,9 @@ struct GalaxyMapView: View {
     private var differentiateWithoutColor: Bool { a11yPrefs.differentiateWithoutColor }
     private var reduceTransparency: Bool { a11yPrefs.reduceTransparency }
     @Environment(\.appearsActive) private var appearsActive
+    /// A11Y-042: the window's writing direction. The map itself is never mirrored (it is a chart of fixed positions);
+    /// its HUD and the hover card's text follow this direction.
+    @Environment(\.layoutDirection) private var layoutDirection
     @State private var ui: MapViewModel
     @FocusState private var canvasFocused: Bool
     @FocusState private var searchFocused: Bool
@@ -58,8 +61,11 @@ struct GalaxyMapView: View {
                 }
                 if scope.hasHUD {
                     hud(snapshot, size: size)
+                        .environment(\.layoutDirection, layoutDirection)
                 }
             }
+            // A11Y-042: canvas, glyph hit testing, accessibility children and hover card positions are left to right.
+            .environment(\.layoutDirection, .leftToRight)
             .onAppear { ui.viewSize = size }
             .onChange(of: size) { _, new in ui.viewSize = new }
         }
@@ -452,6 +458,7 @@ struct GalaxyMapView: View {
         let cardSize = CGSize(width: 250, height: 30 + Double(model.rows.count) * 16 + (model.tags.isEmpty ? 0 : 20))
         let frame = HoverCardPlacement.frame(anchor: c, cardSize: cardSize, bounds: CGRect(origin: .zero, size: size))
         return HoverCardView(model: model)
+            .environment(\.layoutDirection, layoutDirection)
             .frame(width: cardSize.width, alignment: .leading)
             .fixedSize(horizontal: false, vertical: true)
             .offset(x: frame.minX, y: frame.minY)
@@ -463,25 +470,18 @@ struct GalaxyMapView: View {
     // MARK: HUD (MAP-016, MAP-027)
 
     private func hud(_ snapshot: MapSnapshot, size: CGSize) -> some View {
-        ZStack {
-            VStack(alignment: .leading) {
+        // A11Y-026: the HUD panels share the space instead of overlapping: the search panel takes the width the
+        // trailing column (zoom, heatmap, legend) leaves and wraps its filters, and the target strip is centred in the
+        // space beside the route panel.
+        VStack(spacing: 8) {
+            HStack(alignment: .top, spacing: 8) {
                 MapSearchView(ui: ui, snapshot: snapshot, ids: ids, searchFocused: $searchFocused, center: { i in
                     let v = ui.viewport(session: session, snapshot: snapshot)
                     ui.animateViewport(to: v.centered(on: i, snapshot: snapshot), session: session, snapshot: snapshot,
                                        reduceMotion: viewportJumps)
                 }, send: sendFromMap)
-                Spacer()
-                HStack(alignment: .bottom) {
-                    if session.plannedRoute != nil {
-                        RoutePanelView(ids: ids, snapshot: snapshot)
-                    }
-                    Spacer()
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            VStack {
-                HStack {
-                    Spacer()
+                Spacer(minLength: 0)
+                VStack(alignment: .trailing, spacing: 8) {
                     MapZoomHUD(ids: ids, viewport: ui.viewport(session: session, snapshot: snapshot), legendShown: $ui.legendShown,
                                zoomIn: { zoom(MapViewport.zoomStep, snapshot: snapshot) },
                                zoomOut: { zoom(1 / MapViewport.zoomStep, snapshot: snapshot) },
@@ -490,23 +490,25 @@ struct GalaxyMapView: View {
                                                       snapshot: snapshot, reduceMotion: viewportJumps)
                                },
                                fitGalaxy: { fitGalaxy(snapshot) })
-                }
-                HStack {
-                    Spacer()
                     HeatmapHUDView(ids: ids, choice: $ui.heatmapChoice, item: $ui.heatmapItem,
                                    result: session.heatmap(ui.heatmapChoice.mode(item: ui.heatmapItem)))
-                }
-                if ui.legendShown {
-                    HStack {
-                        Spacer()
+                    if ui.legendShown {
                         MapLegendView(ids: ids)
                     }
                 }
-                Spacer()
-                TargetStripView(ids: ids, snapshot: snapshot, warpFocused: $warpFocused)
+                .fixedSize()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Spacer(minLength: 0)
+            HStack(alignment: .bottom, spacing: 8) {
+                if session.plannedRoute != nil {
+                    RoutePanelView(ids: ids, snapshot: snapshot)
+                }
+                Spacer(minLength: 0)
+                TargetStripView(ids: ids, snapshot: snapshot, warpFocused: $warpFocused)
+                Spacer(minLength: 0)
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(12)
     }
 }

@@ -318,7 +318,7 @@ private struct TargetCard: View {
                     Button {
                         session.send(.selectNextTarget(forward: false))
                     } label: {
-                        Image(systemName: "chevron.left")
+                        Image(systemName: "chevron.backward")  // A11Y-042: points the other way in right-to-left
                     }
                     .disabled(!(model?.canCycle ?? canCycle))
                     .help(Text("Previous system in range"))
@@ -327,7 +327,7 @@ private struct TargetCard: View {
                     Button {
                         session.send(.selectNextTarget(forward: true))
                     } label: {
-                        Image(systemName: "chevron.right")
+                        Image(systemName: "chevron.forward")
                     }
                     .disabled(!(model?.canCycle ?? canCycle))
                     .help(Text("Next system in range"))

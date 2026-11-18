@@ -118,7 +118,7 @@ private struct QuestCardView: View {
     private func stepsView(_ steps: [QuestsModel.Step]) -> some View {
         HStack(spacing: 6) {
             ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
-                if i > 0 { Image(systemName: "arrow.right").foregroundStyle(.readableSecondary).accessibilityHidden(true) }
+                if i > 0 { Image(systemName: "arrow.forward").foregroundStyle(.readableSecondary).accessibilityHidden(true) }
                 Label {
                     Text(verbatim: Names.system(step.system, in: state))
                 } icon: {
