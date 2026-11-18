@@ -12,6 +12,7 @@ struct MarketSectionView: View {
     @State private var filter = ""
     @State private var quantities: [TradeItemType: String] = [:]
     @State private var disposal: CargoDisposal?
+    @Environment(\.textScale) private var textScale
     @FocusState private var focusedField: Field?
     @Namespace private var rotorNamespace
 
@@ -36,32 +37,32 @@ struct MarketSectionView: View {
                         ItemCell(row: r) { kind in performRowAction(kind, r) }
                             .accessibilityRotorEntry(id: r.item, in: rotorNamespace)
                     }
-                        .width(min: 120, ideal: 130)
+                        .width(min: itemColumnWidth, ideal: itemColumnWidth + 10)
                     TableColumn("Buy") { (r: MarketRowModel) in
                         PriceCell(price: r.buyPrice).accessibilityIdentifier(AXID.Market.buyPrice(r.item))
                     }
-                        .width(min: 56, ideal: 60)
+                        .width(min: fit(56, "Buy"), ideal: fit(60, "Buy"))
                     TableColumn("Sell") { (r: MarketRowModel) in SellCell(row: r) }
-                        .width(min: 66, ideal: 72)
+                        .width(min: fit(66, "Sell"), ideal: fit(72, "Sell"))
                     TableColumn("Stock") { (r: MarketRowModel) in
                         Text(verbatim: r.row.stock.formatted()).fontWeight(.medium).monospacedDigit()
                     }
-                    .width(min: 44, ideal: 50)
+                    .width(min: fit(44, "Stock"), ideal: fit(50, "Stock"))
                     TableColumn("Held") { (r: MarketRowModel) in heldCell(r) }
-                        .width(min: 70, ideal: 80)
+                        .width(min: fit(70, "Held"), ideal: fit(80, "Held"))
                     TableColumn("P/L") { (r: MarketRowModel) in ProfitCell(value: r.profitPerUnit) }
-                        .width(min: 56, ideal: 60)
+                        .width(min: fit(56, "P/L"), ideal: fit(60, "P/L"))
                     TableColumn("Target") { (r: MarketRowModel) in
                         let i = intel?.row(r.item)
                         IntelTargetCell(item: r.item, quote: i?.targetQuote, buyHere: r.buyPrice, profitPerBay: i?.profitPerBay)
                     }
-                    .width(min: 110, ideal: 130)
+                    .width(min: fit(110, "Target"), ideal: fit(130, "Target"))
                     TableColumn("History") { (r: MarketRowModel) in
                         PriceSparkline(item: r.item, series: intel?.row(r.item)?.history ?? [])
                     }
-                    .width(min: 64, ideal: 70)
+                    .width(min: fit(64, "History"), ideal: fit(70, "History"))
                     TableColumn("Actions") { (r: MarketRowModel) in actionsCell(r) }
-                        .width(min: 240, ideal: 250)
+                        .width(min: fit(240, "Actions"), ideal: fit(250, "Actions"))
                 }
                 // A11Y-026: at large Text Sizes cell text shrinks to fit its column instead of truncating prices and names.
                 .minimumScaleFactor(0.5)
@@ -94,6 +95,23 @@ struct MarketSectionView: View {
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(AXID.SectionRoot.root(.market))
         }
+    }
+
+    // MARK: Column widths (A11Y-026)
+
+    /// A column at least as wide as its localized header at the current Text Size.
+    private func fit(_ base: CGFloat, _ header: LocalizedStringResource) -> CGFloat {
+        ColumnFit.minimum(base, header: String(localized: header), scale: textScale)
+    }
+
+    /// The Item column fits the longest item name with its symbol and the illegal badge.
+    private var itemColumnWidth: CGFloat {
+        let longest = TradeItemType.allCases.map { ColumnFit.textWidth(String(localized: Names.item($0)), scale: textScale) }.max() ?? 0
+        let badge = textScale > 1.3
+            ? ColumnFit.textWidth("⚠", style: .caption2, scale: textScale) + 12
+            : ColumnFit.textWidth(String(localized: "Illegal"), style: .caption2, scale: textScale, weight: .bold) + 12
+        let symbol = AppFontMetrics.pointSize(.body) * textScale + 6
+        return max(fit(120, "Item"), (symbol + longest + 6 + badge + 20).rounded(.up))
     }
 
     // MARK: Filter (UI-SHELL-067)

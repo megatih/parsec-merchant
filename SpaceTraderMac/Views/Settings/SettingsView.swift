@@ -115,6 +115,7 @@ struct AdvancedSettingsView: View {
                 ForEach(RulesetID.allCases, id: \.self) { r in
                     LabeledContent {
                         Button("Clear…", role: .destructive) { pendingClear = r }
+                            .fixedSize()  // A11Y-026: the button keeps its title; the row label wraps
                             .accessibilityIdentifier(AXID.Settings.clearHighScores(r))
                     } label: {
                         Text("\(String(localized: Names.ruleset(r))) high scores")
@@ -126,6 +127,7 @@ struct AdvancedSettingsView: View {
             SwiftUI.Section {
                 LabeledContent {
                     Button("Reset Achievements…", role: .destructive) { pendingReset = true }
+                        .fixedSize()  // A11Y-026: the button keeps its title; the row label wraps
                         .accessibilityIdentifier(AXID.IntelSettings.resetAchievements)
                 } label: {
                     Text("Achievements")
@@ -140,6 +142,7 @@ struct AdvancedSettingsView: View {
                         TipTriggers.requestReset(defaults: session.defaults)
                         tipsResetRequested = true
                     }
+                    .fixedSize()  // A11Y-026: the button keeps its title; the row label wraps
                     .accessibilityIdentifier(AXID.Tips.resetTips)
                 } label: {
                     Text("Tips")

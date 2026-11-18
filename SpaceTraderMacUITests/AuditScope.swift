@@ -93,11 +93,16 @@ extension ParsecUITestCase {
     /// pointer outside the window, so no help tag covers the content being measured.
     func prepareForAudit() {
         if app.state != .runningForeground { app.activate() }  // activating again would make the main window key
+        parkPointer()
+    }
+
+    /// Moves the pointer just outside the main window's top-left corner, over the desktop, where nothing shows a help
+    /// tag, and waits for a help tag already shown to close (before audits and review screenshots).
+    func parkPointer(settle: TimeInterval = 0.4) {
         let window = mainWindow.exists ? mainWindow : app.windows.firstMatch
         if window.exists {
-            // Just outside the window's top-left corner: over the desktop, where nothing shows a help tag.
             window.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0)).withOffset(CGVector(dx: -12, dy: -12)).hover()
         }
-        RunLoop.current.run(until: Date().addingTimeInterval(0.4))
+        RunLoop.current.run(until: Date().addingTimeInterval(settle))
     }
 }

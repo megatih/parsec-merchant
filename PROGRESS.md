@@ -5,7 +5,7 @@
 ## Status
 - **Current milestone:** M13 (in progress)
 - **Next step:** M13: (1) merge the a11y agent's light-mode contrast fixes (verify --ui must pass at the 1920×1080 1x display; run gates under `caffeinate -dimsu`); (2) run app tests for the UI-KEYS-035 help-tag audit + Settings tab memory (uncommitted) and commit; (3) manual QA pass (menus, Liquid Glass, window/full screen, keyboard-only, CPU, Dock, icon) with screenshots; owner-only items (VoiceOver passes, listening, keyboard layouts) → attempt automation, else BLOCKED; (4) remaining QA rows; (5) release.sh --publish; (6) verify --ui on HEAD, tag m13-done, push, final-check.sh. Done so far: release.sh, clean-clone build (QA row), LLM-031 test, MAP-044 race fix, no DEVELOPMENT_TEAM.
-- **Last gate result:** verify.sh --ui GATES FAILED @ f35091c (4: MAP-044 timing race, fixed in 51eb651; 8: 105 light-mode contrast issues, flow-7 transit-view recipe, wizard pages 5/6) — verify --quick PASS @ 51eb651
+- **Last gate result:** verify.sh --ui ALL GATES PASSED @ edfcd7e (2026-11-18, display at 3360×1890 for the whole run; the first run hit an intermittent MAP-044 hoverDelay unit-test failure, which passed 3/3 on rerun)
 - **Blockers:** none
 
 ## Milestones
@@ -53,6 +53,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-18: A11Y-027/042 screenshot review and fixes (sidebar, wizard header/footer, Market columns, Shipyard strip, Galaxy HUD layout, crew header/skills, Settings/Options buttons, feed overlay); the RTL pseudo run passes -AppleTextDirection YES and now mirrors; the galaxy map stays left to right. QA and README screenshots re-exported. Notes in A11Y.md §12a.
 - 2026-11-17: M11 exit. Notes: ImageRenderer.cgImage is not byte-deterministic — art tests/pmart render into a fixed RGBA sRGB CGContext; pmart icon works from the command line (no PM_ICON_OUT fallback needed). Open QA rows needing the owner at M13: AUD-052 (2-min listening + device switch), ART screenshot rows. Audio CombatTracker duplicates CombatEffectPlanner timing (unify in M12).
 - 2026-11-17: M10 exit: INT/LOG/STAT/ACH/LLM (197 IDs). ADR-0003 journal saved beside state. ART/AUD specs for M11 written ahead. Insights coverage 99%. UI suite now launches with -PMFlavor template.
 - 2026-11-17: M9 exit: UI-ENC (106 IDs) built by 5 worktree agents; pirateAmbush scenario seed 292 → target 46, 6 attacks; flows found 2 bugs (no report after loading mid-encounter; unidentified Bridge sliders). Duplicate auto Window-menu items removed with .commandsRemoved().

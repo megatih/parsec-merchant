@@ -212,7 +212,8 @@ private struct EscapePodStripView: View {
     let strip: EscapePodStrip
 
     var body: some View {
-        HStack(spacing: 16) {
+        // A11Y-026: the strip wraps at large Text Sizes, so the button keeps its whole title.
+        WrappingHStack(spacing: 16, lineSpacing: 8, leading: true) {
             if strip.installed {
                 Label("Escape pod installed", systemImage: "lifepreserver")
             } else {
@@ -224,14 +225,14 @@ private struct EscapePodStripView: View {
                     Text(ReasonText.text(for: blocker)).scaledFont(.footnote).foregroundStyle(.readableSecondary)
                 }
             }
-            Divider().frame(height: 20)
+            Rectangle().fill(.separator).frame(width: 1, height: 20).accessibilityHidden(true)
             Text(strip.insured ? "Insured" : "Not insured")
                 .foregroundStyle(.readableSecondary)
             Button("Insurance in Bank…") { session.selectedSection = .bank }
                 .buttonStyle(.link)
                 .accessibilityIdentifier(AXID.Shipyard.insuranceBank)
-            Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
     }

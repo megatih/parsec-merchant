@@ -40,6 +40,7 @@ final class LargestTextSizeUITests: ParsecUITestCase {
                 XCTAssertLessThanOrEqual(size.width, 1101, "-PMWindowSize min opens the main window at 1100 wide (got \(size))")
             }
             let window = windowElement(containing: visited.root)
+            parkPointer(settle: 1.2)  // A11Y-027: no help tag over the reviewed screenshot
             let shot = XCTAttachment(screenshot: window.screenshot())
             shot.name = "qa-textsize-\(visited.surface.name)"
             shot.lifetime = .keepAlways

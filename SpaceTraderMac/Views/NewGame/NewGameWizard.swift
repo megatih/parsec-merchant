@@ -48,35 +48,72 @@ struct NewGameWizard: View {
     // MARK: Header and footer
 
     private var header: some View {
-        HStack(spacing: 6) {
+        // A11Y-026: the steps wrap onto further lines at large Text Sizes (and with long translations) instead of
+        // breaking words; the chevrons point forward in either writing direction.
+        WrappingHStack(spacing: 6, lineSpacing: 4, leading: true) {
             ForEach(NewGameDraft.Step.allCases, id: \.self) { s in
-                Text(s.title)
-                    .scaledFont(.callout, weight: s == step ? .bold : .medium)
-                    // A11Y-029: the other steps in the readable secondary colour (the system one is too light).
-                    .foregroundStyle(s == step ? AnyShapeStyle(.tint) : AnyShapeStyle(.readableSecondary))
-                if s != .summary {
-                    Image(systemName: "chevron.right").scaledFont(.caption2).foregroundStyle(.readableSecondary).accessibilityHidden(true)
+                HStack(spacing: 6) {
+                    Text(s.title)
+                        .scaledFont(.callout, weight: s == step ? .bold : .medium)
+                        // A11Y-029: the other steps in the readable secondary colour (the system one is too light).
+                        .foregroundStyle(s == step ? AnyShapeStyle(.tint) : AnyShapeStyle(.readableSecondary))
+                    if s != .summary {
+                        Image(systemName: "chevron.forward").scaledFont(.caption2).foregroundStyle(.readableSecondary)
+                            .accessibilityHidden(true)
+                    }
                 }
+                .fixedSize()
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Step \(step.rawValue + 1) of \(NewGameDraft.Step.allCases.count): \(String(localized: step.title))"))
     }
 
     private func footer(_ d: NewGameDraft) -> some View {
+        // A11Y-026: when the message does not fit beside the buttons, it moves onto its own line above them.
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                cancelButton
+                Spacer()
+                footerMessages(d).fixedSize()
+                navigationButtons(d)
+            }
+            VStack(alignment: .trailing, spacing: 8) {
+                footerMessages(d)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    cancelButton
+                    Spacer()
+                    navigationButtons(d)
+                }
+            }
+        }
+        .padding(16)
+    }
+
+    private var cancelButton: some View {
+        Button("Cancel", role: .cancel) { session.cancel() }
+            .keyboardShortcut(.cancelAction)
+            .accessibilityIdentifier(AXID.NewGame.cancel)
+    }
+
+    @ViewBuilder
+    private func footerMessages(_ d: NewGameDraft) -> some View {
+        if let reason = d.canAdvance(from: step).reason {
+            Text(reason).scaledFont(.callout).foregroundStyle(.readableSecondary)
+        }
+        if let startError {
+            Text(ReasonText.text(for: startError)).scaledFont(.callout).foregroundStyle(.signalRed)
+        }
+    }
+
+    @ViewBuilder
+    private func navigationButtons(_ d: NewGameDraft) -> some View {
         let availability = d.canAdvance(from: step)
-        return HStack {
-            Button("Cancel", role: .cancel) { session.cancel() }
-                .keyboardShortcut(.cancelAction)
-                .accessibilityIdentifier(AXID.NewGame.cancel)
-            Spacer()
-            if let reason = availability.reason {
-                Text(reason).scaledFont(.callout).foregroundStyle(.readableSecondary)
-            }
-            if let startError {
-                Text(ReasonText.text(for: startError)).scaledFont(.callout).foregroundStyle(.signalRed)
-            }
+        HStack {
             Button("Back") { if let prev = NewGameDraft.Step(rawValue: step.rawValue - 1) { step = prev } }
                 .disabled(step == .commander)
                 .accessibilityIdentifier(AXID.NewGame.back)
@@ -94,7 +131,6 @@ struct NewGameWizard: View {
                     .accessibilityIdentifier(AXID.NewGame.next)
             }
         }
-        .padding(16)
     }
 
     private func start(_ d: NewGameDraft) {
