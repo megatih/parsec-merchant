@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M13 done (all milestones complete)
-- **Next step:** run `scripts/final-check.sh` on HEAD (display at 3360×1890) and show its full output. First run on d6ad647: 7/8, check 1 failed on a timing flake in UI-ENC-096 (the 1.2 s transit raced the snapshot); fixed with the Debug-only `-PMSlowTravel 20` (CHEAT-050). Owner hand checks (a)–(e) passed 2026-11-18 (docs/QA-HANDCHECKS.md).
+- **Next step:** none — project complete. `scripts/final-check.sh` FINAL CHECK 8/8 PASS, EXIT=0 on 43f0d38 (2026-11-18, display 3360×1890). An earlier run on d6ad647 scored 7/8 (UI-ENC-096 transit-snapshot timing flake, fixed in 43f0d38 with the Debug-only `-PMSlowTravel`, CHEAT-050). Owner hand checks (a)–(e) passed 2026-11-18 (docs/QA-HANDCHECKS.md).
 - **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, after the Documents access was allowed; UI-KEYS-029 fixes and QA rows); verify --ui ALL GATES PASSED @ 4da1c04 (display 3360×1890, 8-ui-tests 3130s); idle-cpu 4.40%; bench-map and pmsim bench PASS
 - **Blockers:** none
 
