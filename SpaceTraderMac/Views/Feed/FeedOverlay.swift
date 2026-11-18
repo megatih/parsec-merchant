@@ -12,6 +12,7 @@ struct FeedOverlay: View {
     var showLogbook: () -> Void = {}
     let dismiss: () -> Void
     @Environment(\.accessibilityPreferences) private var a11yPrefs
+    @Environment(\.textScale) private var textScale
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -53,7 +54,7 @@ struct FeedOverlay: View {
                 .padding(10)
             }
         }
-        .frame(width: 480, height: 280)
+        .frame(width: 480 * min(max(textScale, 1), 1.3), height: 280)  // A11Y-026: wider at large Text Sizes
         // A11Y-019/029: opaque, so the Bridge art behind the list never shows through its lines. The shadow belongs to
         // the card's shape only: on the whole view it would put a dark halo around every line of text.
         .background {
@@ -69,6 +70,7 @@ struct FeedOverlay: View {
 
 /// One feed line with its category symbol; warnings add a symbol, critical rows are bold with an exclamation symbol.
 struct FeedRow: View {
+    @Environment(\.textScale) private var textScale
     let entry: FeedItem.Entry
     let state: GameState
 
@@ -77,7 +79,7 @@ struct FeedRow: View {
         HStack(alignment: .firstTextBaseline, spacing: 14) {  // room between the symbol and the text (A11Y-029)
             Image(systemName: style.symbol)
                 .foregroundStyle(.readableSecondary)
-                .frame(width: 16)
+                .frame(width: 16 * textScale)  // A11Y-026: the symbol grows with the text
                 .accessibilityHidden(true)
             if let badge = style.severity.badgeSymbol {
                 Image(systemName: badge)
@@ -93,6 +95,7 @@ struct FeedRow: View {
 
 /// Consecutive combat rounds of one encounter: "N rounds against the <ship>", expandable (UI-ENC-065).
 private struct RoundsRow: View {
+    @Environment(\.textScale) private var textScale
     let items: [FeedItem]
     let opponent: ShipType?
     let state: GameState
@@ -105,7 +108,7 @@ private struct RoundsRow: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(.readableSecondary).frame(width: 16)
+                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(.readableSecondary).frame(width: 16 * textScale)  // A11Y-026: the symbol grows with the text
                 if let opponent {
                     Text("\(items.count) rounds against the \(String(localized: Names.ship(opponent)))")
                 } else {

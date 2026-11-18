@@ -64,18 +64,21 @@ struct GameOptionsSheet: View {
                 .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
                 .frame(minHeight: 420)
             }
-            HStack {
-                Button("Save as Defaults") { draft?.saveAsDefaults(session.defaults) }
-                    .accessibilityIdentifier(AXID.Options.saveDefaults)
-                Button("Load from Defaults") { draft?.loadDefaults(session.defaults) }
-                    .accessibilityIdentifier(AXID.Options.loadDefaults)
-                Spacer()
-                Button("Cancel", role: .cancel) { session.dismissPresentation() }
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier(AXID.Options.cancel)
-                Button("OK") { commit() }
-                    .keyboardShortcut(.defaultAction)
-                    .accessibilityIdentifier(AXID.Options.ok)
+            // A11Y-026: the defaults buttons move onto their own line when the row does not fit (long translations,
+            // large Text Sizes), so no button title is truncated.
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    defaultsButtons
+                    Spacer()
+                    commitButtons
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack { defaultsButtons }
+                    HStack {
+                        Spacer()
+                        commitButtons
+                    }
+                }
             }
         }
         .padding(20)
@@ -87,6 +90,28 @@ struct GameOptionsSheet: View {
                 draft = OptionsDraft(options: state.options, ruleset: state.rulesetID)
             }
         }
+    }
+
+    @ViewBuilder
+    private var defaultsButtons: some View {
+        Button("Save as Defaults") { draft?.saveAsDefaults(session.defaults) }
+            .fixedSize()
+            .accessibilityIdentifier(AXID.Options.saveDefaults)
+        Button("Load from Defaults") { draft?.loadDefaults(session.defaults) }
+            .fixedSize()
+            .accessibilityIdentifier(AXID.Options.loadDefaults)
+    }
+
+    @ViewBuilder
+    private var commitButtons: some View {
+        Button("Cancel", role: .cancel) { session.dismissPresentation() }
+            .keyboardShortcut(.cancelAction)
+            .fixedSize()
+            .accessibilityIdentifier(AXID.Options.cancel)
+        Button("OK") { commit() }
+            .keyboardShortcut(.defaultAction)
+            .fixedSize()
+            .accessibilityIdentifier(AXID.Options.ok)
     }
 
     @ViewBuilder

@@ -231,7 +231,8 @@ struct RoutePanelView: View {
         if let pr = session.plannedRoute {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Route to \(snapshot.systems[pr.destination].name)").scaledFont(.headline)
-                HStack(spacing: 4) {
+                // A11Y-026: the objectives wrap rather than truncate their titles.
+                WrappingHStack(spacing: 4, lineSpacing: 4, leading: true) {
                     ForEach(RouteObjective.allCases, id: \.self) { objective in
                         Button {
                             session.setRouteObjective(objective)
@@ -255,6 +256,7 @@ struct RoutePanelView: View {
                     Divider()
                     Text("\(route.totalJumps) jumps · \(route.totalParsecs) parsecs · \(route.estimatedCredits) cr. (Estimate)")
                         .scaledFont(.caption)
+                        .fixedSize(horizontal: false, vertical: true)  // A11Y-026: wraps rather than truncating
                 } else if pr.isPlanning {
                     ProgressView().controlSize(.small)
                 } else {
@@ -341,7 +343,8 @@ struct MapSearchView: View {
                 .help(Text("Type a system name; Return selects it."))
                 .accessibilityLabel(Text("Search systems"))  // A11Y-003
                 .accessibilityIdentifier(ids.searchField)
-            HStack(spacing: 4) {
+            // A11Y-026: the filters wrap rather than run under the zoom and heatmap controls.
+            WrappingHStack(spacing: 4, lineSpacing: 4, leading: true) {
                 ForEach(SystemSearchFilter.offered(snapshot), id: \.self) { f in
                     Toggle(isOn: Binding { ui.filters.contains(f) } set: { on in
                         if on { ui.filters.insert(f) } else { ui.filters.remove(f) }

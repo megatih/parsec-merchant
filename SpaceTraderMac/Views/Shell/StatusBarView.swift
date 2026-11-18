@@ -63,7 +63,8 @@ struct StatusBarView: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .help(Text("Show recent events."))
+                // A11Y-026: the latest event may be truncated; its help tag carries the whole text.
+                .help(model.latestFeed.map { Text(verbatim: FeedText.text(for: $0.entry, state: state)) } ?? Text("Show recent events."))
                 .accessibilityIdentifier(AXID.Status.feed)
                 Spacer()
             }

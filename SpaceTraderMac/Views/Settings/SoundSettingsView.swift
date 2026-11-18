@@ -3,6 +3,7 @@ import SwiftUI
 
 /// AUD-042: Settings › Sound. Every control writes its `UserDefaults` key; `AudioService` applies changes live.
 struct SoundSettingsView: View {
+    @Environment(\.textScale) private var textScale
     @Environment(GameSession.self) private var session
     @AppStorage(SoundSettingsKey.muted) private var muted = SoundSettings.standard.muted
     @AppStorage(SoundSettingsKey.overall) private var overall = SoundSettings.standard.overall
@@ -85,7 +86,8 @@ struct SoundSettingsView: View {
                 Text(SoundSettingsModel.percent(value.wrappedValue))
                     .fontWeight(.medium)
                     .monospacedDigit()
-                    .frame(width: 44, alignment: .trailing)
+                    .fixedSize()  // A11Y-026: "100%" never wraps at large Text Sizes
+                    .frame(minWidth: 44 * textScale, alignment: .trailing)
             }
         } label: {
             title

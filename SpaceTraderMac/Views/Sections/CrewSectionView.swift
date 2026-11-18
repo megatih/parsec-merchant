@@ -97,18 +97,32 @@ private struct SeatCard: View {
     }
 
     private func header(_ name: String, badge: LocalizedStringResource?, crewID: Int) -> some View {
-        HStack {
-            CrewAvatarView(crewID: crewID)
-            Text(verbatim: name).scaledFont(.headline)
-            Spacer()
-            if let badge {
-                Text(badge)
-                    .scaledFont(.caption, weight: .bold)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.tint.opacity(0.2), in: .capsule)
+        // A11Y-026: when name and badge do not fit on one line, the badge moves under the name (neither breaks mid-word).
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                CrewAvatarView(crewID: crewID)
+                Text(verbatim: name).scaledFont(.headline).fixedSize()
+                Spacer(minLength: 4)
+                if let badge { badgeView(badge) }
+            }
+            HStack(alignment: .top) {
+                CrewAvatarView(crewID: crewID)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(verbatim: name).scaledFont(.headline).fixedSize(horizontal: false, vertical: true)
+                    if let badge { badgeView(badge) }
+                }
+                Spacer(minLength: 0)
             }
         }
+    }
+
+    private func badgeView(_ badge: LocalizedStringResource) -> some View {
+        Text(badge)
+            .scaledFont(.caption, weight: .bold)
+            .fixedSize()
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(.tint.opacity(0.2), in: .capsule)
     }
 
     private var standingLines: some View {
@@ -182,34 +196,10 @@ private struct EffectiveSkillsPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Effective Skills").scaledFont(.title3, weight: .bold).accessibilityAddTraits(.isHeader)
-            Grid(alignment: .trailing, horizontalSpacing: 16, verticalSpacing: 6) {
-                GridRow {
-                    Text("Skill").gridColumnAlignment(.leading)
-                    Text("Best crew")
-                    Text("Gadgets")
-                    Text("Haggling")
-                    Text("Difficulty")
-                    Text("Effective")
-                }
-                .scaledFont(.caption, weight: .bold)
-                .foregroundStyle(.readableSecondary)
-                Divider()
-                ForEach(model.skills) { row in
-                    GridRow {
-                        Text(Names.skill(row.skill))
-                        Text(verbatim: row.crewMaximum.formatted())
-                        Text(verbatim: signed(row.gadgetBonus))
-                        if row.skill == .trader {
-                            Text(verbatim: signed(row.hagglingBonus))
-                        } else {
-                            // A11Y-029: a symbol, not a dash glyph too thin to measure.
-                            Image(systemName: "minus").accessibilityLabel(Text("Not applicable"))
-                        }
-                        Text(verbatim: signed(row.difficultyAdjustment))
-                        Text(verbatim: row.effective.formatted()).bold()
-                    }
-                    .monospacedDigit()
-                }
+            // A11Y-026: the headers never break mid-word; a table too wide for the pane scrolls horizontally.
+            ViewThatFits(in: .horizontal) {
+                skillsGrid
+                ScrollView(.horizontal) { skillsGrid }
             }
             HStack(spacing: 24) {
                 Text("Free quarters: \(model.freeQuarters)")
@@ -222,6 +212,39 @@ private struct EffectiveSkillsPanel: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Crew.effectiveSkills)
         .help(Text("Each skill is the best value in your crew, plus gadget and haggling bonuses, adjusted for difficulty."))
+    }
+
+    private var skillsGrid: some View {
+        Grid(alignment: .trailing, horizontalSpacing: 16, verticalSpacing: 6) {
+            GridRow {
+                Text("Skill").gridColumnAlignment(.leading)
+                Text("Best crew")
+                Text("Gadgets")
+                Text("Haggling")
+                Text("Difficulty")
+                Text("Effective")
+            }
+            .scaledFont(.caption, weight: .bold)
+            .foregroundStyle(.readableSecondary)
+            .fixedSize()
+            Divider()
+            ForEach(model.skills) { row in
+                GridRow {
+                    Text(Names.skill(row.skill))
+                    Text(verbatim: row.crewMaximum.formatted())
+                    Text(verbatim: signed(row.gadgetBonus))
+                    if row.skill == .trader {
+                        Text(verbatim: signed(row.hagglingBonus))
+                    } else {
+                        // A11Y-029: a symbol, not a dash glyph too thin to measure.
+                        Image(systemName: "minus").accessibilityLabel(Text("Not applicable"))
+                    }
+                    Text(verbatim: signed(row.difficultyAdjustment))
+                    Text(verbatim: row.effective.formatted()).bold()
+                }
+                .monospacedDigit()
+            }
+        }
     }
 
     private func signed(_ v: Int) -> String { v > 0 ? "+\(v)" : v.formatted() }

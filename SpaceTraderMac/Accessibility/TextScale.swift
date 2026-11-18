@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import AppKit
 import SwiftUI
 
 /// A11Y-024 fallback. `.dynamicTypeSize` does not change text on macOS (the guard test renders the same height at `.large`
@@ -74,5 +75,20 @@ extension View {
     /// A text style that follows the app's Text Size setting (use instead of `.font(.<style>)`, A11Y-024).
     func scaledFont(_ style: Font.TextStyle, weight: Font.Weight? = nil, design: Font.Design? = nil) -> some View {
         modifier(ScaledFont(style: style, weight: weight, design: design))
+    }
+}
+
+/// A11Y-026: table column widths that grow with the Text Size and the localized header, so headers and names are not
+/// truncated (a column past the table's right edge scrolls horizontally instead).
+enum ColumnFit {
+    /// The width of `text` set in the app's `style` at `scale`.
+    static func textWidth(_ text: String, style: Font.TextStyle = .body, scale: CGFloat, weight: NSFont.Weight = .regular) -> CGFloat {
+        let font = NSFont.systemFont(ofSize: (AppFontMetrics.pointSize(style) * scale).rounded(), weight: weight)
+        return ((text as NSString).size(withAttributes: [.font: font]).width).rounded(.up)
+    }
+
+    /// A column's minimum width: `base`, but never narrower than its header.
+    static func minimum(_ base: CGFloat, header: String, scale: CGFloat) -> CGFloat {
+        max(base, textWidth(header, scale: scale, weight: .semibold) + 20)
     }
 }

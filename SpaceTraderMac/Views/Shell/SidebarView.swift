@@ -15,6 +15,8 @@ struct SidebarView: View {
                 Text(label)
                     .scaledFont(.caption, weight: .bold)
                     .foregroundStyle(.readableSecondary)
+                    .lineLimit(nil)  // A11Y-026: wraps rather than truncating (sidebar rows default to one line)
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier(AXID.Transit.sidebarPhaseLabel)
             }
             ForEach(Section.allCases) { section in
@@ -43,19 +45,34 @@ private struct SidebarRow: View {
     let badge: SidebarBadges.Badge?
 
     var body: some View {
+        // A11Y-026: when the title, badge and ⌘-digit hint do not fit (large Text Size, long translations), the hint
+        // goes first, so the title is never truncated; a title that still does not fit wraps.
+        ViewThatFits(in: .horizontal) {
+            row(showsHint: true)
+            row(showsHint: false)
+        }
+    }
+
+    private func row(showsHint: Bool) -> some View {
         HStack {
             // A11Y-029: the icon is its own (hidden) image, so the title is measured on its own for contrast.
             Image(systemName: section.systemImage).foregroundStyle(.tint).frame(width: 20).accessibilityHidden(true)
             Text(section.title)
-            Spacer()
+                .lineLimit(showsHint ? 1 : nil)  // the sidebar's rows default to one line
+                .fixedSize(horizontal: showsHint, vertical: true)
+            Spacer(minLength: 4)
             if let badge {
                 badgeView(badge)
+                    .fixedSize()
                     .accessibilityLabel(Text(badge.accessibilityLabel))
             }
-            Text(verbatim: "⌘\(section.shortcutDigit)")
-                .scaledFont(.caption)
-                .foregroundStyle(.readableSecondary)
-                .accessibilityHidden(true)
+            if showsHint {
+                Text(verbatim: "⌘\(section.shortcutDigit)")
+                    .scaledFont(.caption)
+                    .foregroundStyle(.readableSecondary)
+                    .fixedSize()
+                    .accessibilityHidden(true)
+            }
         }
     }
 
