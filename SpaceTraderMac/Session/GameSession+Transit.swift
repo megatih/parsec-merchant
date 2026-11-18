@@ -36,10 +36,11 @@ extension GameSession {
         audio.transit(.started)
         dock.setProgress(DockTileProgress.fraction(playback: playback, tick: 0))
         guard let clock = playbackClock else { return }
+        let interval = TransitPlayback.tickInterval * launchOptions.slowTravel
         playbackTask = Task { [weak self] in
             while !Task.isCancelled {
                 do {
-                    try await clock.sleep(for: TransitPlayback.tickInterval)
+                    try await clock.sleep(for: interval)
                 } catch {
                     return
                 }

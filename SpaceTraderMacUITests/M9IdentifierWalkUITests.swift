@@ -74,11 +74,11 @@ final class M9IdentifierWalkUITests: ParsecUITestCase {
     @MainActor
     func testEveryInteractiveElementOfTheFixtureSheetsHasASchemeIdentifier() throws {
         // covers: UI-ENC-096
-        // An uneventful warp of the flow seed without fast travel plays 20 clicks (about a second): retry until a
-        // snapshot of the playback is taken.
+        // An uneventful warp of the flow seed without fast travel plays 20 clicks; -PMSlowTravel 20 stretches it from
+        // 1.2 s to 24 s so the snapshot does not race the playback (CHEAT-050). Retry in case the launch is slow.
         var transit: XCUIElementSnapshot?
         for _ in 0..<3 where transit == nil {
-            relaunch(UITestFixtures.playbackArguments)
+            relaunch(UITestFixtures.playbackArguments + ["-PMSlowTravel", "20"])
             click(AXID.Welcome.quickStart)
             expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
             type("1")

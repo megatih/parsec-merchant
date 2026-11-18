@@ -31,6 +31,8 @@ struct LaunchOptions: Equatable, Sendable {
     var flavorTemplate = false
     /// `-PMFastTravel`: instant transit animation (CHEAT-050, used from M9).
     var fastTravel = false
+    /// `-PMSlowTravel <factor>`: multiplies the transit tick interval, clamped to 1…50 (CHEAT-050, UI-ENC-096).
+    var slowTravel = 1
     /// `-PMAudio off`: no audio or haptics output (CHEAT-050, used from M11).
     var audioOff = false
     /// `-PMResetState`: wipe the Debug build's Application Support folder and defaults before anything is read (CHEAT-051).
@@ -88,6 +90,8 @@ struct LaunchOptions: Equatable, Sendable {
                     o.fastTravel = ["YES", "1", "true"].contains(v)
                     i += 1
                 }
+            case "-PMSlowTravel":
+                if let v = value(after: i), let n = Int(v) { o.slowTravel = min(max(n, 1), 50); i += 1 }
             case "-PMResetState":
                 o.resetState = true
                 if let v = value(after: i), ["YES", "NO", "1", "0", "true", "false"].contains(v) {

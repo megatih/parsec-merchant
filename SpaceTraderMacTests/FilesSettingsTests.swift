@@ -399,10 +399,16 @@ struct FilesSettingsTests {
         #expect(windows.submitFind("Timewarp") == .search("Timewarp"))
     }
 
-    @Test("CHEAT-050 -PMFastTravel / -PMAudio off / -PMFlavor template change no game state")
+    @Test("CHEAT-050 -PMFastTravel / -PMAudio off / -PMFlavor template / -PMSlowTravel change no game state")
     func launchFlagsInert() throws {
+        #expect(LaunchOptions.parse(["-PMSlowTravel", "20"], isDebug: true).slowTravel == 20)
+        #expect(LaunchOptions.parse(["-PMSlowTravel", "500"], isDebug: true).slowTravel == 50)
+        #expect(LaunchOptions.parse(["-PMSlowTravel", "0"], isDebug: true).slowTravel == 1)
+        #expect(LaunchOptions.parse(["-PMSlowTravel", "20"], isDebug: false).slowTravel == 1)
+        #expect(LaunchOptions().slowTravel == 1)
         var flags = LaunchOptions()
         flags.seed = 9
+        flags.slowTravel = 20
         flags.fastTravel = true
         flags.audioOff = true
         flags.flavorTemplate = true
