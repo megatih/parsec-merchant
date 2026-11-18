@@ -8,6 +8,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let launchOptions: LaunchOptions
     let session: GameSession
     let helpRouter = HelpRouter()
+    #if DEBUG
+    /// Keeps App Nap off while this process hosts unit tests: with the screen locked, a napping host stretched the
+    /// tests' 20 ms clock sleeps into hours (a 5-hour `verify.sh` step 4).
+    private var hostedTestActivity: NSObjectProtocol?
+    #endif
 
     override init() {
         // UI-SHELL-013: bare debug flags (`-PMResetState -PMSeed 11`) make NSUserDefaults read the next flag as the
@@ -27,6 +32,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
+            hostedTestActivity = ProcessInfo.processInfo.beginActivity(options: [.userInitiated, .latencyCritical],
+                                                                       reason: "Hosting unit tests")
+        }
+        #endif
         // A11Y-002: -PMAppearance forces the app appearance before any window is drawn.
         if let appearance = launchOptions.appearance {
             NSApp.appearance = NSAppearance(named: appearance == .dark ? .darkAqua : .aqua)

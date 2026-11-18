@@ -58,13 +58,15 @@ struct SourceAuditTests {
             "Views/Shell/SidebarView.swift": "the sidebar shows the In transit / In encounter label",
             "Views/NewGame/NewGameWizard.swift": "skill steppers stop at a visible bound; the step names the failing field",
             "Views/Designer/DesignerView.swift": "steppers stop at a visible bound",
+            "Views/Encounter/EncounterMenuItems.swift": "a menu item: macOS menus show no help tags",
         ]
         let lines = try Self.lines()
         var checked = 0
         for (i, l) in lines.enumerated() where l.file.hasPrefix("Views/") && l.code.contains(".disabled(") {
             guard inlineReason[l.file] == nil else { continue }
             checked += 1
-            let window = lines[max(0, i - 8)...min(lines.count - 1, i + 8)].filter { $0.file == l.file }
+            // The help tag sits in the same modifier chain or on an enclosing stack, which closes a few lines later.
+            let window = lines[max(0, i - 8)...min(lines.count - 1, i + 20)].filter { $0.file == l.file }
             #expect(window.contains { $0.code.contains(".help(") }, "\(l.file):\(l.number) is disabled without a help tag")
         }
         #expect(checked > 10, "the audit finds the disabled controls")
