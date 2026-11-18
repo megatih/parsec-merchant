@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M13 done (M14 in progress)
-- **Next step:** M14 look review: `PM_EXPORT_SCREENSHOTS=1 scripts/export-screenshots.sh`, read the Bridge/Galaxy screenshots and `build/qa/planets.png` against PRD-1.1 §6 M14 look criteria, fix, add the QA-REPORT row; then exit checks (verify --ui, bench-map ≤ 8 ms, idle-cpu ≤ 5%, largest-text + pseudo-loc at 1100×720), flip to M14 done, tag m14-done, push.
-- **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, M14 planets: baker, projector, Metal view, hero, sprites); idle-cpu 2.3–2.5% on the Release build
+- **Current milestone:** M14 done (M15 in progress)
+- **Next step:** M15 specs (PRD-1.1 §6 M15): rewrite ART.md conventions line 11, ART-008…014/016/039…041/053, add stat-to-geometry, hardpoint, layout and ending IDs; amend UX-VISION §7/§5.5, UI-ENC-018/098/101, UI-SHELL-047/068/074. Then tests, then ShipArtStats + ShipHullGenerator + ShipSpecials (drafts of the generator and features exist only in the session scratchpad; rewrite from the spec if lost).
+- **Last gate result:** verify.sh --ui ALL GATES PASSED on dab4ba2 (2026-11-18, 8-ui-tests 3153 s, 47 tests, 0 failures); bench-map zoom 4 median 0.25 ms; idle-cpu 2.60%/2.60%
 - **Blockers:** none
 
 ## Milestones
@@ -23,7 +23,7 @@
 - [x] M11 Art, icon, audio, haptics (2026-11-17, tag m11-done; ParsecArt (17 ships, planets, glyphs, effects, scenes) + Liquid Glass .icon via make-icon.sh (actool clean, step 7b); ParsecAudio synth (allocation-free render), 30 cues with visual twins, music off by default, haptics, Sound settings)
 - [x] M12 Polish, accessibility, localization, screenshots (2026-11-17, tag m12-done; UI-KEYS binding table + conflict audit + Esc router, A11Y (VoiceOver model, rotors, display settings, Text Size fallback, TipKit), flows 6/7 green, localization (2,221 keys, l10n-check in step 4, pseudo-localization), combat timing unified, AUD-049 release budget)
 - [x] M13 Final QA and GitHub release v1.0.0 (2026-11-18, tag m13-done; v1.0.0 published with zip + .sha256; verify --ui green; QA-REPORT all ✓ incl. owner hand checks; idle CPU 4.4%; final-check.sh)
-- [ ] M14 Planets and space (docs/PRD-1.1.md)
+- [x] M14 Planets and space (2026-11-18, tag m14-done; 10 planet classes baked from seeded noise and sphere-projected, live Metal Bridge planet at 30 fps (ADR-0004), hero stage with star glow, cached map sprites; ART-068…080; idle CPU 2.6%)
 - [ ] M15 Ships, sizing, endings and icon
 - [ ] M16 Pointer and touch first
 - [ ] M17 Polish and release 1.1.0
@@ -35,8 +35,8 @@
 - [x] Tests rewritten/added (PlanetSpaceTests, ArtCoreTests budgets, ArtEffectsTests, Metal parity)
 - [x] ParsecArt: PlanetNoise, PlanetClass, PlanetTextureBaker, PlanetSphere, recipe/art rewrite, StarGlow
 - [x] App: PlanetMetalView + shader, PlanetPortrait, Bridge hero, map sprites
-- [ ] pmart planet sheet; look review; QA-REPORT row
-- [ ] Exit: verify --ui, bench-map ≤ 8 ms, idle-cpu ≤ 5%, largest-text + pseudo-loc review at 1100×720, tag m14-done
+- [x] pmart planet sheet; look review; QA-REPORT row
+- [x] Exit: verify --ui, bench-map ≤ 8 ms, idle-cpu ≤ 5%, largest-text + pseudo-loc review at 1100×720, tag m14-done
 
 ## M0 checklist
 - [x] .gitignore before first push
@@ -70,6 +70,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-18: M14 exit. Note for M17: the README Bridge screenshot is scrolled because the test clicks Target Next, which now sits lower on the taller page; fix the test's scroll position when re-exporting.
 - 2026-11-18: M14 planets built: PlanetNoise/PlanetClass/PlanetTextureBaker/PlanetSphere/PlanetCache in ParsecArt (10 classes, rings, CPU projector), PlanetMetalView + shader string (GPU/CPU mean abs diff ≤ 0.011/255), PlanetHero stage with StarGlow, cached map sprites, mini chart vortices still. ART-068…080 traced.
 - 2026-11-18: 1.1 work started (docs/PRD-1.1.md, M14–M17). Setup: spec-trace threshold 13 → 17 with PM_TRACE_MILESTONE preview; final-check/release retargeted to v1.1.0 and 18 milestones; marketing version 1.1.0.
 - 2026-11-18: A11Y-027/042 screenshot review and fixes (sidebar, wizard header/footer, Market columns, Shipyard strip, Galaxy HUD layout, crew header/skills, Settings/Options buttons, feed overlay); the RTL pseudo run passes -AppleTextDirection YES and now mirrors; the galaxy map stays left to right. QA and README screenshots re-exported. Notes in A11Y.md §12a.
