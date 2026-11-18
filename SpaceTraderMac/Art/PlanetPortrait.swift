@@ -18,7 +18,9 @@ struct PlanetPortrait: View {
             if mode == .live, let renderer, let maps = heroMaps {
                 ZStack {
                     PlanetOverlayArt(Self.with(input, a11y), part: .behind)
+                    // The layer fills its view, so the view is the centred square the projection covers (PlanetRenderer.Frame).
                     PlanetMetalView(renderer: renderer, recipe: recipe, maps: maps, accessibility: a11y, appearsActive: appearsActive)
+                        .aspectRatio(1, contentMode: .fit)
                         .allowsHitTesting(false)
                     PlanetOverlayArt(Self.with(input, a11y), part: .front)
                 }

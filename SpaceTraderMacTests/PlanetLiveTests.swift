@@ -55,6 +55,10 @@ struct PlanetLiveTests {
         #expect(PlanetLiveSupport.mode(reduceMotion: true, deviceAvailable: true, pipelineReady: true) == .still)
         #expect(PlanetLiveSupport.mode(reduceMotion: false, deviceAvailable: false, pipelineReady: false) == .still)
         #expect(PlanetLiveSupport.mode(reduceMotion: false, deviceAvailable: true, pipelineReady: false) == .still)
+        // The live layer fills its view, so the view must be the square the projection covers, also in the wide stage.
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("SpaceTraderMac")
+        let portrait = try String(contentsOf: root.appendingPathComponent("Art/PlanetPortrait.swift"), encoding: .utf8)
+        #expect(portrait.contains(".aspectRatio(1, contentMode: .fit)"))
         // The still is the CPU projection at phase 0, with or without the hero maps.
         let input = PlanetArtInput(seed: 31, sizeClass: 3, tech: 5, resource: 5, phase: 123)
         #expect(PlanetPortrait.with(input, ArtAccessibility(reduceMotion: true)).phase == 0)

@@ -231,9 +231,9 @@ final class PlanetMetalNSView: NSView {
         super.layout()
         let scale = window?.backingScaleFactor ?? 2
         metalLayer.contentsScale = scale
+        // The host keeps this view square (PlanetPortrait), so the square drawable is never stretched.
         let side = (min(bounds.width, bounds.height) * scale).rounded()
         metalLayer.drawableSize = CGSize(width: side, height: side)
-        metalLayer.frame = CGRect(x: bounds.midX - side / scale / 2, y: bounds.midY - side / scale / 2, width: side / scale, height: side / scale)
     }
 
     @objc private func tick(_ link: CADisplayLink) {
