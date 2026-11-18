@@ -4,7 +4,7 @@
 
 ## Status
 - **Current milestone:** M13 done (M14 in progress)
-- **Next step:** M14 spike (PRD-1.1 §6): CAMetalLayer sphere on the Bridge on a throwaway branch, Release build, `scripts/idle-cpu.sh` ≤ 5% (else walk the D2 ladder, ADR); confirm CGImage-in-Canvas renders byte-identically twice through `ArtSnapshot`. Then ART.md spec rewrites. v1.0 was complete at 43f0d38 (final-check 8/8).
+- **Next step:** M14 specs: rewrite ART-006/021…026/029/052/061, add ART-068… (taxonomy, resource table, baker, projector, uniforms, parity, fallback, display-link pause, hero size, star glow), amend UI-SHELL-054 and MAP-095; then tests, then ParsecArt planet code (PlanetNoise, PlanetClass, PlanetTextureBaker, PlanetSphere).
 - **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, M14 setup on top of e08f1ff)
 - **Blockers:** none
 
@@ -30,7 +30,7 @@
 
 ## M14 checklist
 - [x] Setup: PRD-1.1 committed, D10 spec-trace threshold 17 + PM_TRACE_MILESTONE, final-check/release/marketing version 1.1.0, PRD.md/CLAUDE.md folded
-- [ ] Spike: Metal layer idle CPU; CGImage-in-Canvas determinism
+- [x] Spike: Metal layer idle CPU; CGImage-in-Canvas determinism (ADR-0004: Metal 30 fps ≈ +0.3% CPU, go; mini chart vortices still)
 - [ ] Specs: ART.md rewrites + new IDs from ART-068; UI-SHELL-054; MAP-095
 - [ ] Tests rewritten/added (PlanetSpaceTests, ArtCoreTests budgets, ArtEffectsTests, Metal parity)
 - [ ] ParsecArt: PlanetNoise, PlanetClass, PlanetTextureBaker, PlanetSphere, recipe/art rewrite, StarGlow
@@ -54,6 +54,7 @@
 - [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-18: ADR-0004. Spike: idle floor 0.2–0.4%; the map's 5 fps vortex TimelineView alone costs ~4.5% (whole-window pass), the Metal planet at 30 fps ~0.3%. Decision: D2 rung 1 (Metal, 30 fps); the Bridge mini chart draws vortices still, the Galaxy section keeps AmbientSchedule and pauses it when no wormhole is in view. Idle-CPU readings are noisy while the App Store daemon is installing updates; re-measure on a quiet machine.
 - 2026-11-17: Encounter API decisions: auto-repeat = .encounter(.autoRepeat), interrupt = .encounter(.stop), .encounter(.resolve) = attack + forceContinuous; rounds emit combatRound (no shotFired); stance changes emit encounterChanged; no encounterEnded event; nothing-illegal prompts are submitWithNothingIllegal (attack/bribe) and fleeInspection (flee); takeMarieCargo removed. Specs aligned to these names.
 - 2026-11-17: coverage-gate.sh merges all profraws and exports across every per-target .xctest (SwiftPM's codecov JSON covers only one bundle in Swift 6.4). Thresholds unchanged.
 - 2026-11-17: ALR.md {M2} Swift names aligned to the implemented ECO/SHP/BNK/CRW vocabulary.
