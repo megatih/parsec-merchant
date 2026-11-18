@@ -28,8 +28,12 @@ struct MapInteractionTests {
         let start = ContinuousClock.now
         ui.hover(at: CGPoint(x: 1, y: 1), hit: .system(2))
         #expect(ui.cardHit == nil)
-        while ui.cardHit == nil, ContinuousClock.now - start < .seconds(10) { try await Task.sleep(for: .milliseconds(20)) }
-        #expect(ui.cardHit == .system(2) && ContinuousClock.now - start >= MapViewModel.hoverDelay)
+        // Await the rest timer itself rather than polling against a deadline: under a busy main actor the polling loop could
+        // time out before the timer task got its turn.
+        let rest = try #require(ui.hoverTask)
+        await rest.value
+        #expect(ui.cardHit == .system(2))
+        #expect(ContinuousClock.now - start >= MapViewModel.hoverDelay)
         ui.closeCard()
         #expect(ui.cardHit == nil)
         ui.hover(at: nil, hit: nil)

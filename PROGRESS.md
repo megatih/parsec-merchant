@@ -4,9 +4,9 @@
 
 ## Status
 - **Current milestone:** M13 (in progress)
-- **Next step:** M13: (1) merge the a11y agent's light-mode contrast fixes (verify --ui must pass at the 1920×1080 1x display; run gates under `caffeinate -dimsu`); (2) run app tests for the UI-KEYS-035 help-tag audit + Settings tab memory (uncommitted) and commit; (3) manual QA pass (menus, Liquid Glass, window/full screen, keyboard-only, CPU, Dock, icon) with screenshots; owner-only items (VoiceOver passes, listening, keyboard layouts) → attempt automation, else BLOCKED; (4) remaining QA rows; (5) release.sh --publish; (6) verify --ui on HEAD, tag m13-done, push, final-check.sh. Done so far: release.sh, clean-clone build (QA row), LLM-031 test, MAP-044 race fix, no DEVELOPMENT_TEAM.
-- **Last gate result:** verify.sh --ui ALL GATES PASSED @ edfcd7e (2026-11-18, display at 3360×1890 for the whole run; the first run hit an intermittent MAP-044 hoverDelay unit-test failure, which passed 3/3 on rerun)
-- **Blockers:** none
+- **Next step:** M13: (1) `PM_EXPORT_SCREENSHOTS=1 scripts/export-screenshots.sh --manual` (display at 2x, caffeinate) and review qa-manual-* → rows UI-KEYS-011/032/035 window, A11Y-020/022; (2) manual checks ART-052 CPU, UI-ENC-010/011 Dock, UI-KEYS-029 keyboard-only, UI-KEYS-016 layouts, UI-KEYS-035 rows, ART-058, MAP-091; add "Smallest window" and "Release smoke test" ✓ rows; (3) release.sh --publish; (4) verify --ui on HEAD, tag m13-done, push, final-check.sh. Done: Text Size/RTL fixes merged, Text Size, Accessibility audit and Pseudo-localization rows ✓, MAP-044 hover test awaits the timer task (no deadline flake).
+- **Last gate result:** verify.sh ALL GATES PASSED @ merge of the Text Size/RTL branch + MAP-044 test fix (2026-11-18); verify --ui ALL GATES PASSED @ edfcd7e (display 3360×1890)
+- **Blockers:** (owner hand checks, PRD §10 QA rows; everything else continues) (a) A11Y-013/A11Y-015 VoiceOver focus and rotor passes need a person using VoiceOver (the agent can't enable VoiceOver AppleScript control); (b) AUD-052 listening: every cue audible and matching its twin, and an output-device switch during play; (c) the contrast audit (flow 6) is valid only at 3360×1890 (2x), so keep the display at 2x during `verify.sh --ui`.
 
 ## Milestones
 - [x] M0 Tooling, project setup, specs, Palm source, GitHub repo (2026-11-17, tag m0-done)
