@@ -3,10 +3,10 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M13 (in progress)
-- **Next step:** M13: (1) done — verify --ui ALL GATES PASSED @ 4da1c04; (2) dry run of final-check 2–8 (2026-11-18): 3–8 PASS, 2 FAIL only on the owner blockers; check 2 now counts distinct milestones (it had counted the "M0 exit" checklist item); (3) with the owner hand checks confirmed, mark M13 [x], tag m13-done, push, run `scripts/final-check.sh`. Done: v1.0.0 published (target main @ f307bbb, zip + .sha256); the downloaded zip verifies and launches; pmsim bench within budget; UI-KEYS-029 keyboard suite 13/13 with Full Keyboard Access.
+- **Current milestone:** M13 done (all milestones complete)
+- **Next step:** run `scripts/final-check.sh` on HEAD (display at 3360×1890) and show its full output. Owner hand checks (a)–(e) passed 2026-11-18 (docs/QA-HANDCHECKS.md); QA-REPORT rows ✓.
 - **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, after the Documents access was allowed; UI-KEYS-029 fixes and QA rows); verify --ui ALL GATES PASSED @ 4da1c04 (display 3360×1890, 8-ui-tests 3130s); idle-cpu 4.40%; bench-map and pmsim bench PASS
-- **Blockers:** Owner hand checks (PRD §10 QA rows; everything else continues): (a) A11Y-013/A11Y-015 VoiceOver focus and rotor passes (the agent cannot drive VoiceOver); (b) AUD-052 listening and an output-device switch during play; (c) UI-KEYS-016 German and French input sources (switching system input sources is the owner's call); (d) ART-058 Dock/Finder icon with the Dark, Tinted and Clear icon styles; (e) LLM-031 the "Apple Intelligence off" step; (f) keep the display at 3360×1890 (2x) during `verify.sh --ui` (the contrast audit misreads plain text at 1x). Owner: do (a)–(e) per docs/QA-HANDCHECKS.md (step-by-step) and tell the agent the result.
+- **Blockers:** none
 
 ## Milestones
 - [x] M0 Tooling, project setup, specs, Palm source, GitHub repo (2026-11-17, tag m0-done)
@@ -22,7 +22,7 @@
 - [x] M10 Trade intelligence, log, stats, achievements, flavor (2026-11-17, tag m10-done; journal beside state (ADR-0003), trade intel (fair), Logbook ⌘9, 36 achievements, career stats, template + Foundation Models flavor with -PMFlavor template)
 - [x] M11 Art, icon, audio, haptics (2026-11-17, tag m11-done; ParsecArt (17 ships, planets, glyphs, effects, scenes) + Liquid Glass .icon via make-icon.sh (actool clean, step 7b); ParsecAudio synth (allocation-free render), 30 cues with visual twins, music off by default, haptics, Sound settings)
 - [x] M12 Polish, accessibility, localization, screenshots (2026-11-17, tag m12-done; UI-KEYS binding table + conflict audit + Esc router, A11Y (VoiceOver model, rotors, display settings, Text Size fallback, TipKit), flows 6/7 green, localization (2,221 keys, l10n-check in step 4, pseudo-localization), combat timing unified, AUD-049 release budget)
-- [ ] M13 Final QA and GitHub release v1.0.0
+- [x] M13 Final QA and GitHub release v1.0.0 (2026-11-18, tag m13-done; v1.0.0 published with zip + .sha256; verify --ui green; QA-REPORT all ✓ incl. owner hand checks; idle CPU 4.4%; final-check.sh)
 
 ## M0 checklist
 - [x] .gitignore before first push
