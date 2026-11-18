@@ -11,6 +11,8 @@ nonisolated enum ShipPanelSize {
     static let compare = CGSize(width: 96, height: 56)
     static let vignette = CGSize(width: 160, height: 120)
     static let encounterPane: ClosedRange<CGFloat> = 160...240
+    /// The panes give height back when the window is small or the Text Size large, so the action bar stays on screen.
+    static let encounterPaneFloor: CGFloat = 96
     static let transit: ClosedRange<CGFloat> = 150...180
     /// The ending scene is a cinematic 16:9 card as wide as the game-over card.
     static let endingAspect: CGFloat = 16.0 / 9

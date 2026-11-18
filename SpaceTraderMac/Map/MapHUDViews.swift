@@ -46,7 +46,8 @@ struct MapZoomHUD: View {
             button("Legend", "info.circle", ids.legendToggle, help: "Show or hide the legend") { legendShown.toggle() }
         }
         .buttonStyle(.borderless)
-        .padding(6)
+        // The 36 pt targets fill the capsule's height, so the HUD column keeps its height at the largest Text Size (A11Y-026).
+        .padding(.horizontal, 6)
         .glassEffect(in: .capsule)
     }
 
@@ -241,6 +242,7 @@ struct RoutePanelView: View {
                         }
                         // UI-PTR-002: the scene's push-button style: a regular bezel inside a 36 pt target.
                         .buttonStyle(PointerButtonStyle())
+                        .controlSize(.small)  // the bezel stays compact; the target is still 36 pt
                         .tint(pr.objective == objective ? .accentColor : nil)
                         .help(Text(RouteObjectiveText.help(objective)))
                         .accessibilityAddTraits(pr.objective == objective ? .isSelected : [])
@@ -266,6 +268,7 @@ struct RoutePanelView: View {
                         .accessibilityIdentifier(ids.routeUnreachable)
                 }
                 Button("Clear") { session.clearRoute() }
+                    .controlSize(.small)  // route Clear: compact bezel, 36 pt target
                     .help(Text("Forget this route."))
                     .accessibilityIdentifier(ids.routeClear)
             }

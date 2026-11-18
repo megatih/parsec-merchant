@@ -15,10 +15,17 @@ struct EncounterView: View {
         Group {
             if let engine = session.engine, let preview = engine.encounterPreview,
                let opponent = ShipPaneModel.opponent(state: engine.state, preview: preview) {
-                // A11Y-025: at large Text Sizes the view scrolls instead of growing past the window.
+                // A11Y-025: at large Text Sizes the view scrolls instead of growing past the window. UI-PTR-015: the
+                // actions stay on screen below the scrolling part, so they never need a scroll to reach.
                 ViewThatFits(in: .vertical) {
-                    content(engine: engine, preview: preview, opponent: opponent)
-                    ScrollView { content(engine: engine, preview: preview, opponent: opponent).frame(minHeight: 0) }
+                    VStack(spacing: 16) {
+                        content(engine: engine, preview: preview, opponent: opponent)
+                        actions(engine: engine, preview: preview)
+                    }
+                    VStack(spacing: 16) {
+                        ScrollView { content(engine: engine, preview: preview, opponent: opponent).frame(minHeight: 0) }
+                        actions(engine: engine, preview: preview)
+                    }
                 }
             } else {
                 Text("Encounter").foregroundStyle(.readableSecondary)
@@ -53,14 +60,18 @@ struct EncounterView: View {
                                      metBefore: TacticalText.metBefore(MetBefore.make(opponent: readout.opponentType, journal: session.journal)))
             }
             EncounterLogView(lines: session.encounterUI.log)
-            if let resume = session.encounterResumePresentation {
-                Button("Continue Decision") { session.present(resume) }
-                    .keyboardShortcut(.defaultAction)
-                    .controlSize(.large)
-                    .accessibilityIdentifier(AXID.Encounter.resumeDecision)
-            } else if let menu = EncounterMenuState.make(engine: engine, autoRepeatOn: session.encounterUI.autoRepeatEnabled) {
-                EncounterActionBar(model: .make(preview: preview, menu: menu, inputLocked: session.isInputLocked))
-            }
+        }
+    }
+
+    @ViewBuilder
+    private func actions(engine: GameEngine, preview: EncounterPreview) -> some View {
+        if let resume = session.encounterResumePresentation {
+            Button("Continue Decision") { session.present(resume) }
+                .keyboardShortcut(.defaultAction)
+                .controlSize(.large)
+                .accessibilityIdentifier(AXID.Encounter.resumeDecision)
+        } else if let menu = EncounterMenuState.make(engine: engine, autoRepeatOn: session.encounterUI.autoRepeatEnabled) {
+            EncounterActionBar(model: .make(preview: preview, menu: menu, inputLocked: session.isInputLocked))
         }
     }
 

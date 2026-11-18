@@ -41,7 +41,8 @@ struct ShipPaneView: View {
                         .offset(x: offset * geo.size.width)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: ShipPanelSize.encounterPane.lowerBound, maxHeight: ShipPanelSize.encounterPane.upperBound)
+            .frame(maxWidth: .infinity, minHeight: ShipPanelSize.encounterPaneFloor, idealHeight: ShipPanelSize.encounterPane.lowerBound,
+                   maxHeight: ShipPanelSize.encounterPane.upperBound)
             // ART-083: the stage reads where the portrait really is, so the effects land on the ships.
             .anchorPreference(key: ShipPaneArtKey.self, value: .bounds) { [identifiers.pane: $0] }
             .accessibilityElement(children: .ignore)
