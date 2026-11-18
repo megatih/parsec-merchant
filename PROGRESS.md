@@ -3,8 +3,8 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M15 done (M16 in progress)
-- **Next step:** M16 exit (same green run covers it): flip to M16 done, tag m16-done. Then M17: `pmsim bench`, CHANGELOG/README final pass, `scripts/release.sh --publish`, QA-REPORT release rows, tags m17-done and v1.1.0, `scripts/final-check.sh` from this folder (see Blockers).
+- **Current milestone:** M16 done (M17 in progress)
+- **Next step:** M17: `pmsim bench`, CHANGELOG/README/Help final pass, TipKit texts check, `scripts/release.sh --publish` for v1.1.0, QA-REPORT release rows, flip to M17 done, tags m17-done and v1.1.0, push, then `scripts/final-check.sh` from this folder (see Blockers).
 - **Last gate result:** mirror, 2026-11-19 05:2x–06:4x on d355f44: `verify.sh --ui` ALL GATES PASSED (516 app tests; 52 UI tests, 6 skipped, 0 failures, 3484 s); `bench-map.sh` zoom 4 median 0.253 ms (budget 8 ms). Repo folder: `idle-cpu.sh` 3.20% / 3.00% (budget 5%, Release build), `make-icon.sh --check` OK.
 - **Blockers:** OWNER ACTION (needed only for the last step, `scripts/final-check.sh` from this folder): the Debug test host needs Documents access. If macOS asks "“Parsec Merchant” would like to access files in your Documents folder.", click **Allow** (or enable it in System Settings › Privacy & Security › Files and Folders › Parsec Merchant). The agent does not answer privacy prompts. Until then all gates run on a mirror at `~/Library/Caches/ParsecMerchantMirror`. (UI automation and hosted tests work again since 2026-11-19 02:37.)
 
@@ -25,7 +25,7 @@
 - [x] M13 Final QA and GitHub release v1.0.0 (2026-11-18, tag m13-done; v1.0.0 published with zip + .sha256; verify --ui green; QA-REPORT all ✓ incl. owner hand checks; idle CPU 4.4%; final-check.sh)
 - [x] M14 Planets and space (2026-11-18, tag m14-done; 10 planet classes baked from seeded noise and sphere-projected, live Metal Bridge planet at 30 fps (ADR-0004), hero stage with star glow, cached map sprites; ART-068…080; idle CPU 2.6%)
 - [x] M15 Ships, sizing, endings and icon (2026-11-19, tag m15-done; stat-driven hull generator with archetypes and specials, no insect anatomy, D7 layout in every panel, lit ending scenes on a 16:9 card, icon hauler = generated freighter; verify --ui green in the mirror on d355f44, make-icon --check OK, idle CPU 3.2%/3.0%; QA-REPORT M15 visual review row)
-- [ ] M16 Pointer and touch first
+- [x] M16 Pointer and touch first (2026-11-19, tag m16-done; UI-POINTER spec, 36 pt targets with unchanged density (PointerButtonStyle, pointerTarget), hover feedback, Market chips with Buy/Sell and a row that fits the default window, Shipyard Compare toggle and double-click, Outfitter drag and drop with a sell well, pinned map selection card, wheel zoom, context menus, sheet quantity chips; PointerTargetUITests and PointerOnlyScenarioUITests; verify --ui green in the mirror on d355f44; QA-REPORT M16 review and touch-checklist rows, hands-on touch part is owner hand check (h))
 - [ ] M17 Polish and release 1.1.0
 
 ## M14 checklist
