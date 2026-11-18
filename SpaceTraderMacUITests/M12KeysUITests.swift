@@ -25,7 +25,12 @@ final class M12KeysUITests: ParsecUITestCase {
     private func pause(_ seconds: TimeInterval = 0.6) { RunLoop.current.run(until: Date().addingTimeInterval(seconds)) }
 
     /// The identifier of the element with keyboard focus ("" when none reports it).
+    /// Text fields whose focus is checked directly: while one is being edited, the focus query finds the enclosing section
+    /// container (the field editor inside has no identifier), so the field itself is asked first.
+    private let textFieldIDs = ["market.filter", "logbook.search"]
+
     private func focusedIdentifier() -> String {
+        if let field = textFieldIDs.first(where: { hasFocus($0) }) { return field }
         let focused = app.descendants(matching: .any).matching(NSPredicate(format: "hasKeyboardFocus == true")).firstMatch
         return focused.exists ? focused.identifier : ""
     }
@@ -338,6 +343,9 @@ final class M12KeysUITests: ParsecUITestCase {
         quickStart()
         type("1")
         waitFor(AXID.Bridge.targetCard)
+        // Choose a target so the card's Warp button is enabled (a disabled control is rightly outside the key loop).
+        type("]")
+        expect("⌘] chose a target") { self.element(AXID.Bridge.targetWarp).isEnabled }
         let bridgeOrder = tabCycle()
         try XCTSkipIf(bridgeOrder.count <= 1, """
             Full Keyboard Access is off on this Mac (Tab only reaches \(bridgeOrder)); turn on System Settings › Keyboard › \

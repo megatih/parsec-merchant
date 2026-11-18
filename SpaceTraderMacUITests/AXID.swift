@@ -47,6 +47,7 @@ enum AXID {
     enum Bridge {
         static let targetNext = "bridge.target.next"
         static let targetCard = "bridge.target"
+        static let targetWarp = "bridge.target.warp"
     }
 
     enum Market {
