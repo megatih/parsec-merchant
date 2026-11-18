@@ -61,7 +61,7 @@ Buy low, sell high, dodge pirates and police, take on quests, and earn enough to
 |:---:|:---:|
 | ![The Market: prices here and at the target, with profit per bay](docs/screenshots/readme-market.png)<br>**Market** | ![The zoomable galaxy chart with a route and hover card](docs/screenshots/readme-galaxy.png)<br>**Galaxy chart** |
 | ![A pirate encounter with hull and shield bars and the combat log](docs/screenshots/readme-encounter.png)<br>**Encounter** | ![The styled newspaper page](docs/screenshots/readme-newspaper.png)<br>**Newspaper** |
-| ![The Shipyard with the ship designer](docs/screenshots/readme-shipyard-designer.png)<br>**Shipyard and designer** | ![The Logbook statistics view](docs/screenshots/readme-logbook-statistics.png)<br>**Logbook statistics** |
+| ![The Shipyard: ships for sale, each drawn from its statistics](docs/screenshots/readme-shipyard-designer.png)<br>**Shipyard** | ![The Logbook statistics view](docs/screenshots/readme-logbook-statistics.png)<br>**Logbook statistics** |
 | ![The arrival report](docs/screenshots/readme-arrival.png)<br>**Arrival report** | ![Achievements](docs/screenshots/readme-achievements.png)<br>**Achievements** |
 
 ## Install

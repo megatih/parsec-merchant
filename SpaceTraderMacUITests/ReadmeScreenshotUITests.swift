@@ -41,16 +41,28 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
             if water.waitForExistence(timeout: 2) { water.click() } else { type(XCUIKeyboardKey.escape.rawValue, []) }
         }
         shoot("readme-galaxy")
-        type("3")
-        let designer = element("shipyard.designer")
-        if designer.waitForExistence(timeout: 3) { designer.click() }
-        shoot("readme-shipyard-designer")
         type("9")
         selectLogbookTab("Statistics")
         shoot("readme-logbook-statistics")
         selectLogbookTab("Achievements")
         shoot("readme-achievements")
         selectLogbookTab("Captain's Log")
+
+        // The Shipyard picture needs a system that sells ships; the first Quick Start seed that has some is used.
+        for seed in [UITestFixtures.mapFlowSeed, 1, 2, 3, 4, 5, 6] {
+            relaunch(UITestFixtures.launchArguments(seed: seed) + ["-PMAppearance", "light"])
+            click(AXID.Welcome.quickStart)
+            expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
+            if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
+            type("3")
+            waitFor("shipyard.root")
+            let offers = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "identifier BEGINSWITH 'shipyard.ship.' AND identifier ENDSWITH '.buy'"))
+            if offers.count >= 3 { break }
+        }
+        let designer = element("shipyard.designer")
+        if designer.waitForExistence(timeout: 3) { designer.click() }
+        shoot("readme-shipyard-designer")
 
         relaunch(UITestFixtures.ambushLaunchArguments + ["-PMAppearance", "light"])
         waitFor(AXID.Encounter.view)
