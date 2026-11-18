@@ -33,14 +33,15 @@ Buy low, sell high, dodge pirates and police, take on quests, and earn enough to
 
 - **The original rules, three ways.** Pick a ruleset when you start a new game (see [Rulesets](#rulesets)).
 - **One window instead of dozens of screens.** A sidebar takes you to Bridge, Market, Shipyard, Outfitter, Crew, Bank, Galaxy, Quests and the Logbook. A ship-status inspector stays on the right.
-- **A trade table that does the arithmetic.** It shows the price here and at your target, the difference and the profit per cargo bay. Modifier keys set the quantity.
-- **A zoomable galaxy chart** with price and danger heatmaps, hover cards, a route planner, search and a detachable window.
-- **Encounters you can see.** Vector ships with hull and shield bars, an animated combat log and one-key actions. Each arrival gathers everything that happened into a single report instead of a chain of alerts, and the newspaper is a styled page.
+- **A trade table that does the arithmetic.** It shows the price here and at your target, the difference and the profit per cargo bay. Quantity chips (1, 5, 20, Max) and Buy and Sell buttons on every row do the trading.
+- **Made for the pointer and for touch.** Every action is a visible button, chip or menu item with a 36-point target: nothing needs a modifier key, a hover or the keyboard. Context menus, drag and drop in the Outfitter and double-click on cards are there too, and the keyboard remains a complete second path.
+- **A zoomable galaxy chart** with price and danger heatmaps, a route planner, search and a detachable window. Click a system for its card with Set Target, Track and Plot Route; pinch or turn the wheel to zoom.
+- **Encounters you can see.** Ships drawn from their statistics and equipment, hull and shield bars, an animated combat log and large action buttons (each with a single key). Each arrival gathers everything that happened into a single report instead of a chain of alerts, and the newspaper is a styled page.
 - **Trade intelligence, Captain's Log, career statistics and 36 achievements.** Everything is stored locally.
 - **Optional on-device log entries** written by Apple's Foundation Models when Apple Intelligence is available. A deterministic template fallback covers every other case.
-- **New art and sound, all made in code.** Procedural planets, 17 vector ships, a Liquid Glass app icon, synthesized audio and haptics.
+- **New art and sound, all made in code.** Sphere-projected planets in ten classes (terran, ocean, desert, ice, jungle, rocky, barren, volcanic, toxic and gas giants, some ringed) that turn live on the Bridge; 17 ships generated from their statistics, so a freighter looks like a freighter and a warship like a warship; cinematic endings; a Liquid Glass app icon; synthesized audio and haptics.
 - **Built for every Mac user:**
-  - a full keyboard map;
+  - pointer, trackpad and touch first, with a full keyboard map;
   - VoiceOver labels, announcements and custom rotors;
   - Text Size;
   - Reduce Motion, Increase Contrast, Reduce Transparency and Differentiate Without Color.
@@ -80,6 +81,8 @@ Requires **macOS 27** or later on a Mac with Apple silicon.
 After that, the app opens normally. If you'd rather not do this, [build it from source](#build-from-source).
 
 ### Keyboard at a glance
+
+Everything can be done with clicks or taps; these shortcuts are the fast lane.
 
 | Keys | Action |
 |---|---|

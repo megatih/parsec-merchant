@@ -20,7 +20,7 @@ struct PointerTests {
         // Key hints are not in primary UI: no ⌘-digit in sidebar rows, no key cap in encounter button labels.
         #expect(!(try Self.source("Views/Shell/SidebarView.swift")).contains("shortcutDigit)\")"))
         let bar = try Self.source("Views/Encounter/EncounterActionBar.swift")
-        #expect(!bar.contains("button.keyCap") && bar.contains(".controlSize(.large)"))
+        #expect(!bar.contains("button.keyCap") && bar.contains("Text(verbatim: button.label).pointerTarget()"))
     }
 
     @Test("UI-PTR-002 UI-PTR-003 the shared modifiers: a 36 pt minimum target and a hover tint that changes no layout")
@@ -49,7 +49,8 @@ struct PointerTests {
         }
         #expect(files.count > 100)
         var taps = 0
-        for f in files where f.text.contains(".onTapGesture") {
+        // PointerTarget.swift defines the modifiers; its own tap is the push-button target, not a card.
+        for f in files where f.text.contains(".onTapGesture") && f.name != "Accessibility/PointerTarget.swift" {
             taps += 1
             #expect(f.text.contains(".hoverHighlight("), "\(f.name) takes taps without hover feedback")
         }
@@ -111,10 +112,10 @@ struct PointerTests {
         for (file, needles) in [
             ("Views/Sections/MarketSectionView.swift", ["Button(\"Why This Price?\")", "Button(\"Jettison…\")"]),
             ("Views/Sections/ShipyardSectionView.swift", [".contextMenu {", "\"Remove from Compare\"",
-                                                          ".onTapGesture(count: 2) { if card.canOpenPurchase { onBuy() } }",
+                                                          ".simultaneousGesture(TapGesture(count: 2).onEnded { if card.canOpenPurchase { onBuy() } })",
                                                           "AXID.Shipyard.compareToggle(card.type)", ".toggleStyle(.button)"]),
             ("Views/Sections/OutfitterSectionView.swift", [".contextMenu {",
-                                                           ".onTapGesture(count: 2) { if o.buyBlocker == nil { session.send(o.item.buyCommand) } }"]),
+                                                           ".simultaneousGesture(TapGesture(count: 2).onEnded { if o.buyBlocker == nil {"]),
             ("Views/Sections/CrewSectionView.swift", [".contextMenu {", "Button(\"Hire\", action: hire)"]),
             ("Views/Sections/QuestsSectionView.swift", [".contextMenu {"]),
             ("Views/Sections/BridgeSectionView.swift", [".contextMenu {", "Button(\"Plot Route…\") { session.plotRouteToTarget() }"]),
@@ -163,8 +164,10 @@ struct PointerTests {
         #expect(MapScroll.action(deltaX: 3, deltaY: 20, precise: true, command: true) == .zoom(steps: 2))
         let ui = MapViewModel(scope: .galaxy)
         ui.pinnedHit = .system(3)
+        ui.closeHoverCard()
+        #expect(ui.pinnedHit == .system(3), "the card survives its own commands (a state change without a warp)")
         ui.closeCard()
-        #expect(ui.pinnedHit == nil, "pan, zoom, Esc and a new state unpin the card")
+        #expect(ui.pinnedHit == nil, "pan, zoom, Esc and a warp unpin the card")
         let ids = AXID.Map(.galaxy)
         #expect(ids.selectionCard == "galaxy.selectionCard" && ids.selection(.setTarget) == "galaxy.selection.setTarget"
             && ids.selection(.track) == "galaxy.selection.track" && ids.selection(.plotRoute) == "galaxy.selection.plotRoute"
@@ -188,7 +191,8 @@ struct PointerTests {
         #expect(SheetChip.allCases.map { $0.quantity(in: 2...2) } == [2, 2, 2])
         #expect(AXID.quantityChip("decision.trade.quantity", .all) == "decision.trade.quantity.chip.all")
         let sheets = try Self.source("Views/Encounter/EncounterSheets.swift")
-        #expect(sheets.components(separatedBy: "QuantityChips(").count - 1 == 3, "plunder, trade in orbit and make room")
+        #expect(sheets.components(separatedBy: "QuantityChips(").count - 1 == 2, "trade in orbit and make room; plunder rows have Take All")
+        #expect(sheets.contains("AXID.Decision.plunderTakeAll(") || sheets.contains("Take All"))
         #expect((try Self.source("Views/Sections/MarketSectionView.swift")).contains("QuantityChips(value: $quantity"))
         #expect([0, 50, 100, 101, 1000, 1001, 25000, 100_000, 1_000_000].map(BankSlider.step(limit:)) == [1, 1, 1, 10, 10, 10, 1000, 1000, 10000])
         for limit in [7, 480, 12_345, 987_654] {
@@ -223,5 +227,16 @@ struct PointerTests {
         // A disabled control's reason is in its help tag (hover) and in its accessibility hint or on-screen text (tap, VoiceOver).
         let crew = try Self.source("Views/Sections/CrewSectionView.swift")
         #expect(crew.contains("Text(ReasonText.text(for: blocker)).scaledFont(.caption)"))
+    }
+}
+
+extension PointerTests {
+    @Test("UI-PTR-007 the chip store: 1 until chosen, per item, observable")
+    func chipStore() {
+        let store = TradeChipStore()
+        #expect(store.chip(for: .water) == .one)
+        store.select(.twenty, for: .water)
+        store.select(.max, for: .ore)
+        #expect(store.chip(for: .water) == .twenty && store.chip(for: .ore) == .max && store.chip(for: .furs) == .one)
     }
 }

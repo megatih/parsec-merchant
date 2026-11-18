@@ -120,6 +120,7 @@ struct AboutView: View {
         .accessibilityIdentifier(AXID.About.window)
         .sheet(isPresented: $showsLicense) {
             LicenseSheet()
+                .buttonStyle(PointerButtonStyle())  // UI-PTR-002
         }
         .modifier(AppTextSize())
     }

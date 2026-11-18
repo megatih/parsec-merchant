@@ -194,7 +194,7 @@ final class M12KeysUITests: ParsecUITestCase {
             waitFor("shipyard.root")
             pause()
             cards = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'shipyard.ship.'"))
-                .allElementsBoundByIndex.filter { !$0.identifier.hasSuffix(".buy") }
+                .allElementsBoundByIndex.filter { !$0.identifier.hasSuffix(".buy") && !$0.identifier.hasSuffix(".compare") }
             if cards.count >= 2 { break }
         }
         XCTAssertGreaterThanOrEqual(cards.count, 2, "a Quick Start system with a ship for sale")

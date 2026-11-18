@@ -54,10 +54,9 @@ struct HighScoresWindowView: View {
                 Button {
                     selected = r
                 } label: {
-                    Text(Names.ruleset(r)).frame(maxWidth: .infinity)
+                    Text(Names.ruleset(r)).frame(maxWidth: .infinity).pointerTarget()  // UI-PTR-002
                 }
                 .buttonStyle(.borderless)
-                .padding(.vertical, 5)
                 .background(r == selected ? AnyShapeStyle(.tint.opacity(0.25)) : AnyShapeStyle(.clear),
                             in: RoundedRectangle(cornerRadius: 6))
                 .accessibilityAddTraits(r == selected ? .isSelected : [])

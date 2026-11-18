@@ -33,6 +33,7 @@ struct EncounterView: View {
         .sheet(item: makeRoomBinding) { request in
             EncounterMakeRoomSheet(item: request.item)
                 .environment(session)
+                .buttonStyle(PointerButtonStyle())  // UI-PTR-002
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Encounter.view)

@@ -85,9 +85,14 @@ final class MapViewModel {
 
     /// Closes the hover card (exit, scroll, zoom, click, Esc, generation change).
     func closeCard() {
+        closeHoverCard()
+        pinnedHit = nil
+    }
+
+    /// Closes the hover preview only (a state change that keeps the ship where it is).
+    func closeHoverCard() {
         hoverTask?.cancel()
         cardHit = nil
-        pinnedHit = nil
     }
 
     // MARK: Pulse (MAP-078)

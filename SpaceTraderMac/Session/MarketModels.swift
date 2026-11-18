@@ -69,6 +69,16 @@ nonisolated enum TradeChip: Int, CaseIterable, Sendable, Hashable {
     }
 }
 
+/// UI-PTR-007: each row's selected chip (1 until chosen). Observable, so a table cell redraws when its chip changes.
+@Observable
+final class TradeChipStore {
+    private var chips: [TradeItemType: TradeChip] = [:]
+
+    func chip(for item: TradeItemType) -> TradeChip { chips[item] ?? .one }
+
+    func select(_ chip: TradeChip, for item: TradeItemType) { chips[item] = chip }
+}
+
 extension TradeQuantity {
     /// UI-PTR-008: a held modifier is an accelerator and overrides the chip; without one the chip decides.
     static func resolve(chip: TradeChip, modifiers: EventModifiers, maximum: Int) -> Int {

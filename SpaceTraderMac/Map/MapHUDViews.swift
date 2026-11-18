@@ -237,9 +237,10 @@ struct RoutePanelView: View {
                         Button {
                             session.setRouteObjective(objective)
                         } label: {
-                            Text(RouteObjectiveText.title(objective)).pointerTarget()
+                            Text(RouteObjectiveText.title(objective))
                         }
-                        .buttonStyle(.bordered)
+                        // UI-PTR-002: the scene's push-button style: a regular bezel inside a 36 pt target.
+                        .buttonStyle(PointerButtonStyle())
                         .tint(pr.objective == objective ? .accentColor : nil)
                         .help(Text(RouteObjectiveText.help(objective)))
                         .accessibilityAddTraits(pr.objective == objective ? .isSelected : [])
@@ -349,7 +350,7 @@ struct MapSearchView: View {
                         if on { ui.filters.insert(f) } else { ui.filters.remove(f) }
                         ui.suggestionsShown = true
                     }) {
-                        Text(title(f)).pointerTarget()
+                        Text(title(f))
                     }
                     .toggleStyle(.button)
                     .help(Text(title(f)))

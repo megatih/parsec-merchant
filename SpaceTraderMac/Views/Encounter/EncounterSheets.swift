@@ -67,7 +67,6 @@ struct PlunderSheet: View {
             .accessibilityLabel(Text("Quantity of \(Names.item(item))"))  // A11Y-003
             .accessibilityValue(Text(verbatim: AccessibilityText.units(value.wrappedValue)))  // A11Y-004
             .accessibilityIdentifier(AXID.Decision.plunderQuantity(item))
-            QuantityChips(value: value, range: 1...max(1, row.maxTake), idPrefix: AXID.Decision.plunderQuantity(item), isEnabled: row.canTake)
             Button("Take") { session.send(row.takeCommand(value.wrappedValue)) }
                 .disabled(!row.canTake)
                 .help(blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Take the chosen amount."))

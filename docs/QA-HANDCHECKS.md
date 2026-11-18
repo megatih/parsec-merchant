@@ -34,3 +34,30 @@ Use the published v1.0.0 app (`gh release download v1.0.0 --repo megatih/parsec-
 5. Turn Apple Intelligence back on if you wish.
 
 Report pass/fail per letter (with a note or screenshot for any failure) to the agent.
+
+# Owner hand checks (1.1.0, M17)
+
+These rows cannot be judged by the agent: they are about how the app looks and feels in use, and about touch hardware.
+They do not block the 1.1.0 release (`docs/PRD-1.1.md` §7). Use the published v1.1.0 app, or run the Debug build from Xcode.
+
+## (f) Look of planets, ships and endings (PRD-1.1 §1, §6 M14/M15)
+1. Bridge: the planet is a lit sphere in front of its star; within two seconds the surface and the clouds visibly turn. Warp a few times: the worlds differ (seas, deserts, ice, jungle, rock, lava, gas giants, rings), and a visited system's picture matches its special resource.
+2. System Settings › Accessibility › Display › Reduce Motion: the planet is a still picture; turn it off again.
+3. Shipyard, inspector, designer, an encounter and a warp: no ship looks like an insect; a freighter (Beetle, Termite) is visibly a freighter and a three-weapon ship (Hornet, Wasp) a warship; the ships fill their panels; beams start and end on the ships.
+4. Endings: retire (Game › Retire…), buy the moon, or lose a ship without an escape pod: the scene is lit by a sun and has depth, not flat shapes.
+
+## (g) ART-058 icon at 16 px (the hauler is the generated freighter now)
+1. Finder list view or the Dock at its smallest size: the ring and the freighter are still recognisable, in the Default, Dark, Tinted and Clear icon styles.
+
+## (h) UI-PTR-018 touch (a touch-display Mac, or an iPad through Sidecar)
+1. Start a game with taps only: Quick Start; Market: a quantity chip, then Buy.
+2. Galaxy: tap a system; its card appears with Set Target, Track and Plot Route; tap Warp.
+3. An encounter: its buttons are easy to hit; play it to the end by touch.
+4. Market: the Max chip, then Sell.
+5. Touch and hold a Market row and a map system: the context menu opens with the same actions.
+6. Pinch zooms the map and a one-finger slide pans it; lists scroll with a slide.
+7. Outfitter: touch and hold an item, then drag it onto a free slot; drag an installed item onto the sell well.
+8. Nothing was too small to hit and nothing needed the keyboard or a hover.
+
+## (i) Idle CPU on a quiet machine (ART-052)
+1. `scripts/release.sh` then `scripts/idle-cpu.sh`: both samples are at most 5% (2.3–2.6% were measured on 2026-11-18 while the machine was busy installing updates).

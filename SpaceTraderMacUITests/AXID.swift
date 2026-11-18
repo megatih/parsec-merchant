@@ -58,6 +58,8 @@ enum AXID {
         static func held(_ item: String) -> String { "market.row.\(item).held" }
         static func buyPrice(_ item: String) -> String { "market.row.\(item).buyPrice" }
         static func sell(_ item: String) -> String { "market.row.\(item).sell" }
+        /// UI-PTR-007: the quantity chips ("1", "5", "20", "max").
+        static func chip(_ item: String, _ chip: String) -> String { "market.row.\(item).chip.\(chip)" }
     }
 
     enum Files {
@@ -174,6 +176,12 @@ enum AXID {
         var map: String { "\(p).map" }
         func system(_ i: Int) -> String { "\(p).system.\(i)" }
         var hoverCard: String { "\(p).hoverCard" }
+        /// UI-PTR-011: the pinned selection card and its buttons.
+        var selectionCard: String { "\(p).selectionCard" }
+        var warp: String { "\(p).warp" }
+        var selectionSetTarget: String { "\(p).selection.setTarget" }
+        var selectionTrack: String { "\(p).selection.track" }
+        var selectionPlotRoute: String { "\(p).selection.plotRoute" }
         var legend: String { "\(p).legend" }
         var legendToggle: String { "\(p).legend.toggle" }
         var zoomIn: String { "\(p).zoomIn" }

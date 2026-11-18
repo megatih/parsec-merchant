@@ -28,6 +28,7 @@ struct PresentationHost: ViewModifier {
             .sheet(item: sheetBinding) { item in
                 SheetRouteView(route: item.route)
                     .environment(session)
+                    .buttonStyle(PointerButtonStyle())  // UI-PTR-002: sheets do not inherit the window's style
             }
             .confirmationDialog(Text(verbatim: dialog?.content.title ?? ""), isPresented: dialogBinding(dialog),
                                 titleVisibility: .visible, presenting: dialog) { item in

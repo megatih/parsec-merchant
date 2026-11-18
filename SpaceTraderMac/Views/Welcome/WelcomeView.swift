@@ -54,7 +54,8 @@ struct WelcomeView: View {
             }
             .controlSize(.large)
             .frame(width: 240)
-            .buttonStyle(.bordered)
+            // UI-PTR-002: the scene's push-button style gives these their 36 pt targets around the large bezels.
+            .buttonStyle(PointerButtonStyle())
             .padding(.top, 12)
         }
         .padding(40)

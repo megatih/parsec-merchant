@@ -41,6 +41,39 @@ nonisolated enum HoverHighlight {
     static let opacity = 0.12
 }
 
+/// UI-PTR-002: the app's push-button style: the system's button, unchanged in looks and layout, inside a 36 pt target.
+/// The bezel keeps its regular size ("make tap targets bigger, not the controls themselves"); the target, which is also the
+/// accessibility frame, reaches 36 pt and a tap anywhere in it presses the button.
+struct PointerButtonStyle: PrimitiveButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        PointerButtonBody(configuration: configuration)
+    }
+}
+
+private struct PointerButtonBody: View {
+    let configuration: PrimitiveButtonStyleConfiguration
+    @Environment(\.isEnabled) private var isEnabled
+
+    var body: some View {
+        Button(configuration)
+            .buttonStyle(.automatic)
+            // The visible button is the picture; the target below is the element people and tools press.
+            .accessibilityHidden(true)
+            .overlay {
+                GeometryReader { geo in
+                    let width = max(geo.size.width, PointerTarget.minimum), height = max(geo.size.height, PointerTarget.minimum)
+                    // Centred on the bezel and allowed to reach past it, so rows keep their height.
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture { if isEnabled { configuration.trigger() } }
+                        .accessibilityRepresentation { Button(configuration).buttonStyle(.automatic) }
+                        .frame(width: width, height: height)
+                        .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                }
+            }
+    }
+}
+
 extension View {
     /// UI-PTR-002: gives a custom interactive element a real frame of at least `minimum` points on each axis; the visible
     /// chrome keeps its size inside it. Put it inside a button's label, so the whole frame presses the button.

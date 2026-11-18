@@ -85,6 +85,8 @@ struct SceneAccessibility: ViewModifier {
         content
             .modifier(AccessibilityPreferencesRoot())
             .modifier(AppTextSize())
+            // UI-PTR-002: every push button of the scene is a 36 pt target with its regular bezel.
+            .buttonStyle(PointerButtonStyle())
             // A11Y-029: no soft fade over the last rows of scroll views (it dims text below 4.5:1); the top edge keeps
             // the system effect under the toolbar.
             .scrollEdgeEffectHidden(true, for: .bottom)

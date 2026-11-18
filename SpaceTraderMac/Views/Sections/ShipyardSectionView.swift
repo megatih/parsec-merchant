@@ -133,14 +133,14 @@ private struct ShipCardView: View {
             }
             HStack {
                 if card.canOpenPurchase {
-                    Button(action: onBuy) { Text("Buy…").pointerTarget() }
+                    Button("Buy…", action: onBuy)
                         .help(card.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Review the purchase."))
                         .accessibilityIdentifier(AXID.Shipyard.buy(card.type))
                 }
                 Spacer(minLength: 0)
                 // UI-PTR-009: comparing needs no modifier key.
                 Toggle(isOn: Binding(get: { selected }, set: { _ in onCompare() })) {
-                    Text("Compare").pointerTarget()
+                    Text("Compare")
                 }
                 .toggleStyle(.button)
                 .help(Text(selected ? "Remove this ship from the comparison." : "Add this ship to the comparison."))
@@ -156,9 +156,10 @@ private struct ShipCardView: View {
         }
         .hoverHighlight(cornerRadius: 10)  // UI-PTR-003
         .contentShape(Rectangle())
-        // UI-PTR-006: double-click opens the purchase review; a click selects.
-        .onTapGesture(count: 2) { if card.canOpenPurchase { onBuy() } }
+        // UI-PTR-006: a click selects at once (it reads the held modifier, so it must not wait for a second click);
+        // a double-click also opens the purchase review.
         .onTapGesture(perform: onTap)
+        .simultaneousGesture(TapGesture(count: 2).onEnded { if card.canOpenPurchase { onBuy() } })
         .contextMenu {
             // UI-PTR-005: the card's visible actions.
             if card.canOpenPurchase {

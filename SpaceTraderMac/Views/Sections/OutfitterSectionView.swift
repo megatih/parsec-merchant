@@ -74,7 +74,7 @@ struct OutfitterSectionView: View {
                     selection = nil
                     session.send(item.sellCommand)
                 } label: {
-                    Text("Sell for \(item.sellPrice.formatted()) cr.").pointerTarget()
+                    Text("Sell for \(item.sellPrice.formatted()) cr.")
                 }
                 .disabled(item.sellBlocker != nil)
                 .help(item.sellBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Sell this item."))
@@ -119,7 +119,7 @@ struct OutfitterSectionView: View {
             Text(EquipmentText.name(o.item))
             Spacer()
             Text("\(o.buyPrice.formatted()) cr.").monospacedDigit()
-            Button { session.send(o.item.buyCommand) } label: { Text("Buy").pointerTarget() }
+            Button("Buy") { session.send(o.item.buyCommand) }
                 .disabled(o.buyBlocker != nil)
                 .help(o.buyBlocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Buy this item."))
                 .accessibilityIdentifier(AXID.Outfitter.buy(o.item))
@@ -130,8 +130,8 @@ struct OutfitterSectionView: View {
         .hoverHighlight(cornerRadius: 6)  // UI-PTR-003
         .contentShape(Rectangle())
         // UI-PTR-006: double-click is the row's primary action, the same as its Buy button.
-        .onTapGesture(count: 2) { if o.buyBlocker == nil { session.send(o.item.buyCommand) } }
         .onTapGesture { selection = .offer(o.item) }
+        .simultaneousGesture(TapGesture(count: 2).onEnded { if o.buyBlocker == nil { session.send(o.item.buyCommand) } })
         .draggable(OutfitterDragItem(item: o.item, source: .offer))
         .contextMenu {
             Button("Buy for \(o.buyPrice.formatted()) cr.") { session.send(o.item.buyCommand) }

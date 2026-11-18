@@ -50,18 +50,24 @@ struct StatusBarView: View {
                 Button {
                     showFeed.toggle()
                 } label: {
-                    if let latest = model.latestFeed {
-                        HStack(spacing: 4) {
-                            Image(systemName: FeedStyle.classify(latest.entry).symbol)
-                            Text(verbatim: FeedText.text(for: latest.entry, state: state))
-                                .lineLimit(1)
-                                .truncationMode(.tail)
+                    // UI-PTR-002: the status line is a 36 pt target.
+                    Group {
+                        if let latest = model.latestFeed {
+                            HStack(spacing: 4) {
+                                Image(systemName: FeedStyle.classify(latest.entry).symbol)
+                                Text(verbatim: FeedText.text(for: latest.entry, state: state))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                            }
+                        } else {
+                            Text("No events yet.")
                         }
-                    } else {
-                        Text("No events yet.")
                     }
+                    .pointerTarget()
                 }
                 .buttonStyle(.plain)
+                // The 36 pt target reaches past the status bar's edges, so the bar keeps its height (A11Y-026).
+                .padding(.vertical, -(PointerTarget.minimum - 20) / 2)
                 // A11Y-026: the latest event may be truncated; its help tag carries the whole text.
                 .help(model.latestFeed.map { Text(verbatim: FeedText.text(for: $0.entry, state: state)) } ?? Text("Show recent events."))
                 .accessibilityIdentifier(AXID.Status.feed)

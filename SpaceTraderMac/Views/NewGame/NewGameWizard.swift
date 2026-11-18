@@ -322,7 +322,7 @@ struct NewGameWizard: View {
                     Text(detail).scaledFont(.callout).foregroundStyle(.readableSecondary)
                 }
             }
-            .contentShape(Rectangle())
+            .pointerTarget()  // UI-PTR-002
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])

@@ -43,7 +43,10 @@ struct GalaxyMapView: View {
     var body: some View {
         if let snapshot = session.mapSnapshot {
             content(snapshot)
-                .onChange(of: snapshot.generation) { ui.closeCard() }
+                // The hover card closes with any state change; the pinned card survives its own commands (Set Target, Track)
+                // and goes when the ship moves.
+                .onChange(of: snapshot.generation) { ui.closeHoverCard() }
+                .onChange(of: snapshot.currentSystem) { ui.closeCard() }
         }
     }
 
@@ -81,6 +84,7 @@ struct GalaxyMapView: View {
         .sheet(item: $ui.intelSheet) { request in
             SystemIntelSheet(system: request.id) { ui.intelSheet = nil }
                 .environment(session)
+                .buttonStyle(PointerButtonStyle())  // UI-PTR-002
         }
         .focusedSceneValue(\.contextSearch, scope.hasHUD ? ContextSearchAction { searchFocused = true } : nil)
         // UI-KEYS-027: the Galaxy section opens with the canvas focused, so the arrows pan at once.

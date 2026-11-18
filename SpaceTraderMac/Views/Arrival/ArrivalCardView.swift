@@ -21,6 +21,7 @@ struct ArrivalCardView: View {
                         } icon: {
                             Image(systemName: expanded ? "chevron.down" : "chevron.forward")
                         }
+                        .pointerTarget()  // UI-PTR-002
                     }
                     .buttonStyle(.plain)
                     .help(expanded ? Text("Hide the arrival report.") : Text("Show the arrival report."))

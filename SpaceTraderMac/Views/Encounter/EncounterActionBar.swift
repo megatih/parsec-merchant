@@ -55,7 +55,6 @@ private struct ActionButton: View {
             // UI-PTR-014: the action name on a large button; the key is in the help tag.
             Text(verbatim: button.label).pointerTarget()
         }
-        .controlSize(.large)
         .disabled(!button.isEnabled)
         .help(Text(verbatim: button.help))
         .accessibilityLabel(Text(verbatim: button.label))

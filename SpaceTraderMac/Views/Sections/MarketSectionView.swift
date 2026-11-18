@@ -13,7 +13,7 @@ struct MarketSectionView: View {
     @State private var quantities: [TradeItemType: String] = [:]
     @State private var disposal: CargoDisposal?
     /// UI-PTR-007: each row's selected quantity chip (1 by default), kept while the window lives.
-    @State private var chips: [TradeItemType: TradeChip] = [:]
+    @State private var chips = TradeChipStore()
     @Environment(\.textScale) private var textScale
     @FocusState private var focusedField: Field?
     @Namespace private var rotorNamespace
@@ -58,13 +58,14 @@ struct MarketSectionView: View {
                         let i = intel?.row(r.item)
                         IntelTargetCell(item: r.item, quote: i?.targetQuote, buyHere: r.buyPrice, profitPerBay: i?.profitPerBay)
                     }
-                    .width(min: fit(110, "Target"), ideal: fit(130, "Target"))
+                    .width(min: fit(104, "Target"), ideal: fit(118, "Target"))
                     TableColumn("History") { (r: MarketRowModel) in
                         PriceSparkline(item: r.item, series: intel?.row(r.item)?.history ?? [])
                     }
-                    .width(min: fit(64, "History"), ideal: fit(70, "History"))
+                    .width(min: fit(56, "History"), ideal: fit(60, "History"))
                     TableColumn("Actions") { (r: MarketRowModel) in actionsCell(r) }
-                        .width(min: fit(240, "Actions"), ideal: fit(250, "Actions"))
+                        // UI-PTR-007: four 36 pt chips, Sell, the amount field, Buy and the disposal button.
+                        .width(min: fit(310, "Actions"), ideal: fit(310, "Actions"))
                 }
                 // A11Y-026: at large Text Sizes cell text shrinks to fit its column instead of truncating prices and names.
                 .minimumScaleFactor(0.5)
@@ -93,6 +94,7 @@ struct MarketSectionView: View {
                     disposal = nil
                     if let command { self.session.send(command) }
                 }
+                .buttonStyle(PointerButtonStyle())  // UI-PTR-002
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(AXID.SectionRoot.root(.market))
@@ -203,13 +205,13 @@ struct MarketSectionView: View {
     private func actionsCell(_ r: MarketRowModel) -> some View {
         let buyReason = r.buyBlocker.map { ReasonText.string(for: $0) }
         let sellReason = r.sellBlocker.map { ReasonText.string(for: $0) }
-        let chip = chips[r.item] ?? .one
+        let chip = chips.chip(for: r.item)
         let typed = (quantities[r.item] ?? "").trimmingCharacters(in: .whitespaces)
         return HStack(spacing: 4) {
             HStack(spacing: 0) {
                 ForEach(TradeChip.allCases, id: \.self) { c in
                     Button {
-                        chips[r.item] = c
+                        chips.select(c, for: r.item)
                     } label: {
                         Text(MarketText.chip(c))
                             .scaledFont(.callout, weight: c == chip ? .bold : .regular)
@@ -229,7 +231,7 @@ struct MarketSectionView: View {
             Button {
                 trade(r, sell: true, chip: chip, typed: typed)
             } label: {
-                Text(r.isDumpMode ? "Dump" : "Sell").pointerTarget()
+                Text(r.isDumpMode ? "Dump" : "Sell")
             }
             .disabled(r.sellBlocker != nil)
             .help(sellReason ?? MarketText.tradeHelp(sell: true, dump: r.isDumpMode))
@@ -237,7 +239,7 @@ struct MarketSectionView: View {
             .accessibilityHint(Text(AccessibilityHints.tradeModifiers))  // A11Y-005
             .accessibilityIdentifier(AXID.Market.sell(r.item))
             TextField(text: quantityBinding(r.item)) { Text("Qty") }
-                .frame(width: 46)
+                .frame(width: 40)
                 .monospacedDigit()
                 .focused($focusedField, equals: .quantity(r.item))
                 .onSubmit { submitField(r, sell: false) }
@@ -252,7 +254,7 @@ struct MarketSectionView: View {
             Button {
                 trade(r, sell: false, chip: chip, typed: typed)
             } label: {
-                Text("Buy").pointerTarget()
+                Text("Buy")
             }
             .disabled(r.buyBlocker != nil)
             .help(buyReason ?? MarketText.tradeHelp(sell: false, dump: false))
@@ -263,14 +265,13 @@ struct MarketSectionView: View {
                 Button {
                     self.disposal = disposal
                 } label: {
-                    Image(systemName: "trash").pointerTarget()
+                    Image(systemName: "trash")
                 }
                 .help(Text(disposal.kind == .jettison ? "Jettison cargo…" : "Dump cargo…"))
                 .accessibilityLabel(Text(disposal.kind == .jettison ? "Jettison" : "Dump"))
                 .accessibilityIdentifier(AXID.Market.menu(r.item, "disposal"))
             }
         }
-        .buttonStyle(.bordered)
     }
 
     /// The Sell and Buy buttons: the typed amount when there is one, else the chip (a held modifier overrides the chip).
