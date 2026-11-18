@@ -28,7 +28,8 @@ c1() { scripts/verify.sh --ui | tee /dev/stderr | tail -2 | /usr/bin/grep -q "AL
 
 c2() {
   local n
-  n=$(/usr/bin/grep -cE '^- \[x\] M([0-9]|1[0-3]) ' PROGRESS.md)
+  # Count distinct milestones: checklist items such as "- [x] M0 exit: …" must not stand in for an unchecked milestone.
+  n=$(/usr/bin/grep -oE '^- \[x\] M([0-9]|1[0-3]) ' PROGRESS.md | sort -u | wc -l | tr -d ' ')
   echo "milestones checked: $n/14"
   [ "$n" -eq 14 ] || return 1
   /usr/bin/python3 -I - <<'PY'
