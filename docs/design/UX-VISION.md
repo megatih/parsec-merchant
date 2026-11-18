@@ -216,9 +216,11 @@ A **narrative sheet** with title, illustration (procedural vignette: planet or s
 
 ### 5.5 Game over
 A full-window cinematic card for each ending:
-- Destroyed: wreck animation.
-- Retired: sunset over a planet.
-- Moon: a moon with a villa.
+- Destroyed: the player's own ship, scorched and tumbling among hull-plate debris.
+- Retired: an orbital sunset: the sun sinking behind a planet's limb through layered atmosphere.
+- Moon: a cratered moon lit by a low sun, with a glass dome habitat and the parent planet in the sky.
+
+Each is a 16:9 scene lit by a sun, with depth and atmosphere, built from the same planet and ship art as the rest of the game.
 - Moon-girl, a cosmetic variant in Modern only, when retiring to the moon after completing the Princess quest (PRD §4.3).
 
 It shows the score breakdown, the high-score result (with Ironman and ↺ markers), a career summary card that can be shared with `ShareLink` as an image, and actions New Game and Main Menu.
@@ -249,7 +251,7 @@ M0 produces `docs/specs/ALR.md`, mapping **every** AlertType by name. A test ass
 - **Typography:** SF Pro text styles. Numbers use `.monospacedDigit()`. Newspaper headlines use New York (serif). The title wordmark is drawn in code.
 - **Iconography:** SF Symbols for UI chrome. Custom vector glyphs (SwiftUI `Shape`s) for the 10 commodities, the equipment types and the encounter badges.
 - **Art (ParsecArt):**
-  - **Ships** are parametric vector silhouettes, one parameter set per ship type: hull outline (Bézier), wing, engine and cockpit placement, livery colors. Each has engine glow, a shield bubble and a scorch mask.
+  - **Ships** are generated from their statistics: cargo bays, weapon, shield and gadget slots, crew quarters, fuel tanks, hull strength, price and tech level decide the hull's archetype (hauler, courier, interceptor, gunship, cruiser), beam, cargo modules, hardpoints, plating and engines, so a freighter looks like a freighter and a warship like a warship. They are sleek, realistic top-down machines, never insects: the ship names are game data and do not shape the art. Each is shaded under one light with plating, panel lines, engine plumes, cockpit glass and navigation lights, and has a shield bubble and a scorch mask. Ship pictures use the space their panel gives them.
   - **Planets** have a procedural gradient, bands or craters, clouds and atmosphere rim, seeded per system id, with styles by tech level (pre-agricultural: earthy; hi-tech: city lights on the night side).
   - **App icon:** a brass-rimmed parsec ring around a cargo-hauler silhouette on deep indigo, rendered from code with `ImageRenderer` at all sizes, including the macOS 27 glass/clear icon variants where supported [verify].
 - **Liquid Glass:** system glass on the toolbar, sidebar and inspector only. Custom `.glassEffect` is limited to two floating elements: the Galaxy map HUD (zoom and heatmap controls) and the Encounter action bar. Content areas (tables, cards) use standard backgrounds. The system adapts glass automatically for Reduce Transparency. Verify this; don't hand-roll it.
