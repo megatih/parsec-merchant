@@ -48,6 +48,11 @@ struct PlanetSpaceTests {
             let lights = PlanetLayers.lightPoints(rc, night: night, c: c, r: r)
             #expect(!lights.isEmpty)
             #expect(lights.allSatisfy { night.contains($0) })
+            // ART-052: the cached night layer (computed once, not per frame) equals the direct computation, also on a hit.
+            for _ in 0..<2 {
+                let layer = PlanetRenderer.nightLayer(rc, c: c, r: r)
+                #expect(layer.lights == lights && layer.path == night)
+            }
         }
         let renders = (0..<8).map { Self.render(PlanetArtInput(seed: 5, tech: $0)) }
         #expect(Set(renders.map(\.fingerprint)).count == 8, "\(renders.map { $0.fingerprint.prefix(6) })")

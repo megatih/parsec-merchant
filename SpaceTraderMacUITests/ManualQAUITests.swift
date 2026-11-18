@@ -57,17 +57,18 @@ final class ManualQAUITests: ParsecUITestCase {
         shoot("qa-manual-window-minimum", mainWindow)
 
         // Full Screen keeps the sidebar, the toolbar and the inspector.
-        type("f", [.command, .control])
+        // The window's green button (⌃⌘F is not delivered to the app by XCUITest's synthesized keys).
+        let fullScreenButton = mainWindow.buttons[XCUIIdentifierFullScreenWindow]
+        XCTAssertTrue(fullScreenButton.waitForExistence(timeout: timeout), "the window has a full-screen button")
+        fullScreenButton.click()
         expect("the window enters Full Screen") { self.mainWindow.frame.width > frame.width + 50 }
         RunLoop.current.run(until: Date().addingTimeInterval(1.5))
         XCTAssertTrue(element(AXID.Sidebar.list).exists, "Full Screen keeps the sidebar")
         XCTAssertTrue(element(AXID.Toolbar.warp).exists, "Full Screen keeps the toolbar")
         XCTAssertTrue(element(AXID.Inspector.root).exists, "Full Screen keeps the inspector")
         shoot("qa-manual-window-fullscreen", nil)
-        type("f", [.command, .control])
-        RunLoop.current.run(until: Date().addingTimeInterval(1.5))
 
-        // ⌘W closes the window and the app keeps running (UI-SHELL-015).
+        // ⌘W closes the window (still in Full Screen) and the app keeps running (UI-SHELL-015).
         type("w")
         expect("⌘W closes the main window") { !self.mainWindow.exists }
         XCTAssertNotEqual(app.state, .notRunning, "UI-SHELL-015: the app keeps running after ⌘W")
@@ -128,7 +129,13 @@ final class ManualQAUITests: ParsecUITestCase {
             guard !title.isEmpty else { continue }
             item.click()
             RunLoop.current.run(until: Date().addingTimeInterval(0.5))
-            shoot("qa-manual-menu-\(suffix)-\(Self.slug(title))", nil)
+            // Only the open menu, so the capture holds no other app or desktop content.
+            let menu = item.menus.firstMatch
+            if menu.waitForExistence(timeout: 2) {
+                shoot("qa-manual-menu-\(suffix)-\(Self.slug(title))", menu)
+            } else {
+                XCTFail("UI-KEYS-011: the \(title) menu opens")
+            }
             type(XCUIKeyboardKey.escape.rawValue, [])
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
         }
@@ -138,7 +145,7 @@ final class ManualQAUITests: ParsecUITestCase {
         s.lowercased().map { $0.isLetter || $0.isNumber ? $0 : "-" }.reduce(into: "") { $0.append($1) }
     }
 
-    /// A screenshot of `element`, or of the whole screen (menus and Full Screen) when nil.
+    /// A screenshot of `element`, or of the whole screen (Full Screen, where only the app shows) when nil.
     private func shoot(_ name: String, _ element: XCUIElement?) {
         RunLoop.current.run(until: Date().addingTimeInterval(0.6))
         let shot = element?.screenshot() ?? XCUIScreen.main.screenshot()

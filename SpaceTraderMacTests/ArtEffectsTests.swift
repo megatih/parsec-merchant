@@ -3,6 +3,7 @@ import CoreGraphics
 import Foundation
 import ParsecArt
 import ParsecEngine
+import SwiftUI
 import Testing
 @testable import ParsecMerchant
 
@@ -125,15 +126,32 @@ struct ArtEffectsTests {
         #expect(g.player.maxX < g.opponent.minX)
     }
 
-    @Test("ART-052 animated art surfaces use one 30 fps TimelineView each, paused when the window is inactive")
+    @Test("ART-052 fast scenes use a 30 fps TimelineView; the Bridge planet and map vortices share the ambient clock; paused when inactive")
     func timelines() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("SpaceTraderMac")
+        func source(_ file: String) throws -> String { try String(contentsOf: root.appendingPathComponent(file), encoding: .utf8) }
+        // The game-over scene lives in ArtViews.swift next to the planet portrait.
         for file in ["Art/EncounterStage.swift", "Art/ArtViews.swift", "Art/AchievementArt.swift", "Views/Transit/TransitView.swift"] {
-            let text = try String(contentsOf: root.appendingPathComponent(file), encoding: .utf8)
-            #expect(text.contains("TimelineView(.animation(minimumInterval: 1.0 / 30"), "\(file)")
+            #expect(try source(file).contains("TimelineView(.animation(minimumInterval: 1.0 / 30"), "\(file)")
         }
-        let portraits = try String(contentsOf: root.appendingPathComponent("Art/ArtViews.swift"), encoding: .utf8)
-        #expect(portraits.contains("paused: !appearsActive") && portraits.contains("a11y.reduceMotion"))
+        let portraits = try source("Art/ArtViews.swift")
+        #expect(portraits.contains("TimelineView(AmbientSchedule(paused: !appearsActive))") && portraits.contains("a11y.reduceMotion"))
+        let map = try source("Map/GalaxyMapView.swift")
+        #expect(map.contains("TimelineView(AmbientSchedule(paused: !swirl || reduceMotion))"))
+        #expect(map.contains("vorticesInOverlay: !reduceMotion && appearsActive"))
+    }
+
+    @Test("ART-052 AmbientSchedule: 5 fps on whole multiples of 1/5 s, the same dates for every surface; one still frame when paused")
+    func ambientSchedule() {
+        #expect(AmbientSchedule.interval == 0.2)
+        let a = Date(timeIntervalSinceReferenceDate: 1000.03), b = Date(timeIntervalSinceReferenceDate: 1000.11)
+        let fromA = Array(AmbientSchedule(paused: false).entries(from: a, mode: .normal).prefix(4))
+        let fromB = Array(AmbientSchedule(paused: false).entries(from: b, mode: .normal).prefix(4))
+        #expect(fromA == fromB, "two surfaces started at different times tick on the same dates")
+        #expect(abs((fromA.first?.timeIntervalSinceReferenceDate ?? 0) - 1000.2) < 1e-9)
+        for (x, y) in zip(fromA, fromA.dropFirst()) { #expect(abs(y.timeIntervalSince(x) - 0.2) < 1e-9) }
+        #expect(Array(AmbientSchedule(paused: true).entries(from: a, mode: .normal).prefix(3)) == [a])
+        #expect(Array(AmbientSchedule(paused: false).entries(from: a, mode: .lowFrequency).prefix(3)) == [a])
     }
 
     @Test("ART-057 the built app carries the icon: AppIcon.icns, Assets.car and CFBundleIconName = AppIcon")

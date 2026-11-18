@@ -85,6 +85,20 @@ struct SourceAuditTests {
         }
     }
 
+    @Test("UI-KEYS-035 chrome uses SF Symbols: no image assets or bundled images by name")
+    func chromeUsesSymbols() throws {
+        let lines = try Self.lines()
+        var symbols = 0
+        for l in lines {
+            // Game-data glyphs are drawn in code (ParsecArt); everything else is an SF Symbol.
+            #expect(!l.code.contains("Image(\""), "\(l.file):\(l.number) loads an image asset by name")
+            #expect(!l.code.contains("NSImage(named"), "\(l.file):\(l.number) loads a bundled image by name")
+            #expect(!l.code.contains("Image(decorative"), "\(l.file):\(l.number) loads an image asset by name")
+            if l.code.contains("systemImage:") || l.code.contains("systemName:") { symbols += 1 }
+        }
+        #expect(symbols > 40, "the audit finds the SF Symbols in the chrome")
+    }
+
     @Test("UI-KEYS-018 UI-KEYS-019 the main window keeps one Esc router and Bridge › Warp has no Return")
     func windowKeys() throws {
         let lines = try Self.lines()

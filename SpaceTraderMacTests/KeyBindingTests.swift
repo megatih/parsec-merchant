@@ -376,4 +376,16 @@ struct KeyBindingTests {
             #expect(title.hasSuffix("…") == expected.contains(id), "\(id) \(title)")
         }
     }
+
+    @Test("UI-KEYS-035 menu titles use Title Case: every word capitalized except short articles, conjunctions and prepositions")
+    func menuTitleCase() {
+        let minor: Set<String> = ["a", "an", "the", "and", "but", "or", "nor", "for", "to", "of", "in", "on", "at", "by", "as", "via"]
+        for id in MenuItemID.allCases {
+            let title = String(localized: MenuCatalog.entry(for: id).titleKey)
+            let words = title.split(separator: " ").map { $0.trimmingCharacters(in: CharacterSet.letters.inverted) }.filter { !$0.isEmpty }
+            for (i, word) in words.enumerated() where i == 0 || i == words.count - 1 || !minor.contains(word.lowercased()) {
+                #expect(word.first?.isUppercase == true || word.first?.isNumber == true, "\(id) “\(title)”: “\(word)” is not capitalized")
+            }
+        }
+    }
 }

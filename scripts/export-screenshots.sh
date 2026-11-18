@@ -101,3 +101,8 @@ PY
 if [ "$MODE" = "qa" ] || [ "$MODE" = "manual" ]; then
   for f in "$DEST"/qa-*.png; do sips -Z 1320 "$f" > /dev/null; done
 fi
+if [ "$MODE" = "manual" ]; then
+  # Privacy: the system Window menu lists a Continuity item "Move to <the owner's device name>". Black out that row in
+  # qa-manual-menu-*-window.png (the band 615–700 px from the top at 1320 px wide) before committing.
+  echo "export-screenshots: mask the device-name row in $DEST/qa-manual-menu-*-window.png before committing" >&2
+fi

@@ -147,30 +147,44 @@ struct GalaxyMapView: View {
     /// The light overlay canvas: hover highlight and Show on Map pulse (MAP-089). Never takes hit testing.
     private func overlayCanvas(_ snapshot: MapSnapshot, projected: ProjectedMap) -> some View {
         let swirl = mapArt?.vorticesInOverlay == true && !snapshot.wormholes.isEmpty
-        return TimelineView(.animation(minimumInterval: 1.0 / 30, paused: (ui.pulseSystem == nil && !swirl) || reduceMotion)) { timeline in
-            Canvas { ctx, _ in
-                if swirl {
-                    // MAP-095 / ART-030: the wormhole vortices turn here so the main canvas stays static.
-                    let phase = timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: WormholeVortex.period * 100)
-                    for w in snapshot.wormholes where projected.visible.contains(w) {
-                        GalaxyMapRenderer.drawVortex(&ctx, center: MapGeometry.wormholeGlyphCenter(w, snapshot: snapshot, projection: projected.projection,
-                                                                                                    metrics: projected.metrics),
-                                                     radius: projected.metrics.wormholeRadius, phase: phase)
-                    }
+        // ART-052: the vortices share the ambient clock with the Bridge planet; the Show on Map pulse runs at 30 fps.
+        return Group {
+            if ui.pulseSystem != nil && !reduceMotion {
+                TimelineView(.animation(minimumInterval: 1.0 / 30)) { timeline in
+                    overlayFrame(snapshot, projected: projected, swirl: swirl, date: timeline.date)
                 }
-                if let hit = ui.hoverHit {
-                    let (c, r) = glyph(hit, snapshot: snapshot, projected: projected)
-                    let name: String? = if case let .system(i) = hit, !projected.labels.contains(where: { $0.system == i }) {
-                        snapshot.systems[i].name
-                    } else { nil }
-                    GalaxyMapRenderer.drawHighlight(&ctx, center: c, radius: r, pulse: 0, name: name)
+            } else {
+                TimelineView(AmbientSchedule(paused: !swirl || reduceMotion)) { timeline in
+                    overlayFrame(snapshot, projected: projected, swirl: swirl, date: timeline.date)
                 }
-                if let p = ui.pulseSystem, snapshot.systems.indices.contains(p) {
-                    let t = timeline.date.timeIntervalSince(ui.pulseStart)
-                    let phase = reduceMotion ? 0 : (sin(t * 2 * .pi * 1.5) + 1) / 2
-                    GalaxyMapRenderer.drawHighlight(&ctx, center: projected.centers[p],
-                                                    radius: projected.metrics.radius(snapshot.systems[p].size) + 4, pulse: phase, name: nil)
+            }
+        }
+    }
+
+    /// One frame of the overlay canvas at `date`.
+    private func overlayFrame(_ snapshot: MapSnapshot, projected: ProjectedMap, swirl: Bool, date: Date) -> some View {
+        Canvas { ctx, _ in
+            if swirl {
+                // MAP-095 / ART-030: the wormhole vortices turn here so the main canvas stays static.
+                let phase = date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: WormholeVortex.period * 100)
+                for w in snapshot.wormholes where projected.visible.contains(w) {
+                    GalaxyMapRenderer.drawVortex(&ctx, center: MapGeometry.wormholeGlyphCenter(w, snapshot: snapshot, projection: projected.projection,
+                                                                                                metrics: projected.metrics),
+                                                 radius: projected.metrics.wormholeRadius, phase: phase)
                 }
+            }
+            if let hit = ui.hoverHit {
+                let (c, r) = glyph(hit, snapshot: snapshot, projected: projected)
+                let name: String? = if case let .system(i) = hit, !projected.labels.contains(where: { $0.system == i }) {
+                    snapshot.systems[i].name
+                } else { nil }
+                GalaxyMapRenderer.drawHighlight(&ctx, center: c, radius: r, pulse: 0, name: name)
+            }
+            if let p = ui.pulseSystem, snapshot.systems.indices.contains(p) {
+                let t = date.timeIntervalSince(ui.pulseStart)
+                let phase = reduceMotion ? 0 : (sin(t * 2 * .pi * 1.5) + 1) / 2
+                GalaxyMapRenderer.drawHighlight(&ctx, center: projected.centers[p],
+                                                radius: projected.metrics.radius(snapshot.systems[p].size) + 4, pulse: phase, name: nil)
             }
         }
         .allowsHitTesting(false)

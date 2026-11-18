@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import Synchronization
 import SwiftUI
 
 /// ART-020…026: a procedural planet portrait.
@@ -79,10 +80,11 @@ public enum PlanetRenderer {
             ctx.stroke(disk, with: .color(ink.rgb(rc.rim).opacity(0.7).color), lineWidth: max(0.6, r * 0.06) * a11y.outlineScale)
             return
         }
-        let night = nightPath(c: c, r: r)
+        let layer = nightLayer(rc, c: c, r: r)
+        let night = layer.path
         ctx.fill(night, with: .color(.black.opacity(0.55)))
         if detail == .full {
-            PlanetLayers.nightSide(&ctx, rc: rc, night: night, c: c, r: r, ink: ink)
+            PlanetLayers.nightSide(&ctx, rc: rc, night: night, lights: layer.lights, c: c, r: r, ink: ink)
             PlanetLayers.haze(&ctx, rc: rc, disk: disk, ink: ink)
             PlanetLayers.pressure(&ctx, rc: rc, disk: disk, c: c, r: r, rawPhase: rawPhase, a11y: a11y, ink: ink)
         }
@@ -107,6 +109,35 @@ public enum PlanetRenderer {
             }
         }
         return land
+    }
+
+    /// The night side's terminator path and its city lights.
+    struct NightLayer: Sendable {
+        var path: Path
+        var lights: [CGPoint]
+    }
+
+    private struct NightKey: Hashable, Sendable {
+        var recipe: PlanetRecipe
+        var x: Double
+        var y: Double
+        var r: Double
+    }
+
+    private static let nightCache = Mutex<[NightKey: NightLayer]>([:])
+
+    /// ART-052: the night layer does not depend on the rotation phase, so the path subtraction and the light hit tests run
+    /// once per recipe, centre and radius instead of on every animation frame. The result equals the uncached computation.
+    static func nightLayer(_ rc: PlanetRecipe, c: CGPoint, r: Double) -> NightLayer {
+        let key = NightKey(recipe: rc, x: c.x, y: c.y, r: r)
+        if let hit = nightCache.withLock({ $0[key] }) { return hit }
+        let path = nightPath(c: c, r: r)
+        let layer = NightLayer(path: path, lights: PlanetLayers.lightPoints(rc, night: path, c: c, r: r))
+        nightCache.withLock { cache in
+            if cache.count >= 64 { cache.removeAll() }
+            cache[key] = layer
+        }
+        return layer
     }
 
     static func nightPath(c: CGPoint, r: Double) -> Path {

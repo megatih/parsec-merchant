@@ -25,13 +25,17 @@ mkdir -p build/release "$DIST"
 xcodebuild -project SpaceTraderMac.xcodeproj -scheme SpaceTraderMac -configuration Release \
   -destination 'platform=macOS' -derivedDataPath "$DD" \
   CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= \
-  ENABLE_HARDENED_RUNTIME=YES MARKETING_VERSION="$VERSION" \
+  ENABLE_HARDENED_RUNTIME=YES MARKETING_VERSION="$VERSION" CLANG_COVERAGE_MAPPING=NO \
   build > build/release/build.log 2>&1 || { tail -30 build/release/build.log; echo "RELEASE FAIL (build)"; exit 1; }
 if /usr/bin/grep -E ': warning: ' build/release/build.log | /usr/bin/grep -v appintentsmetadataprocessor; then
   echo "RELEASE FAIL (warnings)"; exit 1
 fi
 APP="$DD/Build/Products/Release/$APPNAME.app"
 [ -d "$APP" ] || { echo "RELEASE FAIL (no app at $APP)"; exit 1; }
+# The scheme gathers coverage when testing; a release binary must carry no profiling counters.
+if otool -l "$APP/Contents/MacOS/$APPNAME" | /usr/bin/grep -q "__llvm_prf"; then
+  echo "RELEASE FAIL (the binary is instrumented for code coverage)"; exit 1
+fi
 
 echo "== Signature"
 codesign --verify --strict --verbose=2 "$APP"

@@ -22,8 +22,8 @@ struct ShipPortrait: View {
     }
 }
 
-/// ART-026, ART-052: the Bridge planet portrait; it turns slowly through one `TimelineView`, paused when the window is
-/// inactive and replaced by a still frame under Reduce Motion.
+/// ART-026, ART-052: the Bridge planet portrait; it turns slowly through one `TimelineView` on the shared `AmbientSchedule`,
+/// paused when the window is inactive and replaced by a still frame under Reduce Motion.
 struct PlanetPortrait: View {
     let input: PlanetArtInput
     @Environment(\.appearsActive) private var appearsActive
@@ -33,7 +33,7 @@ struct PlanetPortrait: View {
             if a11y.reduceMotion {
                 PlanetArt(Self.with(input, a11y, phase: 0))
             } else {
-                TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !appearsActive)) { timeline in
+                TimelineView(AmbientSchedule(paused: !appearsActive)) { timeline in
                     PlanetArt(Self.with(input, a11y, phase: timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 600)))
                 }
             }

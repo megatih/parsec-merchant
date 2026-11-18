@@ -112,7 +112,7 @@ enum PlanetLayers {
 
     // MARK: Night side, haze, pressure
 
-    static func nightSide(_ ctx: inout GraphicsContext, rc: PlanetRecipe, night: Path, c: CGPoint, r: Double, ink: ArtInk) {
+    static func nightSide(_ ctx: inout GraphicsContext, rc: PlanetRecipe, night: Path, lights: [CGPoint], c: CGPoint, r: Double, ink: ArtInk) {
         var n = ctx
         n.clip(to: night)
         if rc.motif == .grid {
@@ -126,7 +126,6 @@ enum PlanetLayers {
             }
             n.stroke(g, with: .color(ink.rgb(.visited).opacity(0.55).color), lineWidth: max(0.5, r * 0.01))
         }
-        let lights = lightPoints(rc, night: night, c: c, r: r)
         guard !lights.isEmpty else { return }
         if rc.style == .hiTech {
             var net = Path()
