@@ -22,32 +22,6 @@ struct ShipPortrait: View {
     }
 }
 
-/// ART-026, ART-052: the Bridge planet portrait; it turns slowly through one `TimelineView` on the shared `AmbientSchedule`,
-/// paused when the window is inactive and replaced by a still frame under Reduce Motion.
-struct PlanetPortrait: View {
-    let input: PlanetArtInput
-    @Environment(\.appearsActive) private var appearsActive
-
-    var body: some View {
-        ArtAccessibilityReader { a11y in
-            if a11y.reduceMotion {
-                PlanetArt(Self.with(input, a11y, phase: 0))
-            } else {
-                TimelineView(AmbientSchedule(paused: !appearsActive)) { timeline in
-                    PlanetArt(Self.with(input, a11y, phase: timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 600)))
-                }
-            }
-        }
-    }
-
-    static func with(_ input: PlanetArtInput, _ a11y: ArtAccessibility, phase: Double) -> PlanetArtInput {
-        var i = input
-        i.accessibility = a11y
-        i.phase = phase
-        return i
-    }
-}
-
 /// ART-034: a crew member's avatar (special passengers have a fixed one).
 struct CrewAvatarView: View {
     let crewID: Int

@@ -32,10 +32,11 @@ struct GalaxyMapView: View {
     private var scope: MapScope { ui.scope }
 
     /// MAP-095: the art options (galaxy-seeded starfield, nebula and mini-planets; vortices swirl in the overlay unless Reduce
-    /// Motion is on or the window is inactive).
+    /// Motion is on or the window is inactive). ART-052, ADR-0004: the Bridge mini chart keeps its vortices still, so an
+    /// idle Bridge pays for no ambient clock.
     private var mapArt: MapArt? {
         guard let seed = session.state?.seed else { return nil }
-        return MapArt(galaxySeed: seed, reduceTransparency: reduceTransparency, vorticesInOverlay: !reduceMotion && appearsActive)
+        return MapArt(galaxySeed: seed, reduceTransparency: reduceTransparency, vorticesInOverlay: !reduceMotion && appearsActive && scope.hasHUD)
     }
     private var ids: AXID.Map { AXID.Map(scope) }
 
@@ -146,8 +147,8 @@ struct GalaxyMapView: View {
 
     /// The light overlay canvas: hover highlight and Show on Map pulse (MAP-089). Never takes hit testing.
     private func overlayCanvas(_ snapshot: MapSnapshot, projected: ProjectedMap) -> some View {
-        let swirl = mapArt?.vorticesInOverlay == true && !snapshot.wormholes.isEmpty
-        // ART-052: the vortices share the ambient clock with the Bridge planet; the Show on Map pulse runs at 30 fps.
+        // ART-052: the ambient clock runs only while a wormhole is inside the viewport; the Show on Map pulse runs at 30 fps.
+        let swirl = mapArt?.vorticesInOverlay == true && snapshot.wormholes.contains { projected.visible.contains($0) }
         return Group {
             if ui.pulseSystem != nil && !reduceMotion {
                 TimelineView(.animation(minimumInterval: 1.0 / 30)) { timeline in

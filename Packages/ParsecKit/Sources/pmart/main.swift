@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // pmart: renders ParsecArt to PNG files (ART-054).
 //   pmart icon --out <dir> [--check <dir>]   AppIcon.icon/{icon.json,Assets/*.png} and Assets.xcassets/AppIcon.appiconset/*.png
-//   pmart sheet --out <file.png>             a contact sheet of ships, planets and glyphs (development aid)
+//   pmart sheet --out <file.png> [--page planets]   a contact sheet (development aid); pages: planets (ART-079)
 import Foundation
 import ParsecArt
 import SwiftUI
@@ -35,16 +35,16 @@ let code: Int32 = MainActor.assumeIsolated {
             fail("\(error)")
         }
     case "sheet":
-        guard let out = value("--out") else { fail("usage: pmart sheet --out <file.png>") }
+        guard let out = value("--out") else { fail("usage: pmart sheet --out <file.png> [--page planets]") }
         do {
-            try ContactSheet.write(to: URL(fileURLWithPath: out))
+            try ContactSheet.write(to: URL(fileURLWithPath: out), page: value("--page"))
             print("pmart: wrote \(out)")
             return 0
         } catch {
             fail("\(error)")
         }
     default:
-        print("usage: pmart icon --out <dir> [--check <dir>] | pmart sheet --out <file.png>")
+        print("usage: pmart icon --out <dir> [--check <dir>] | pmart sheet --out <file.png> [--page planets]")
         return 2
     }
 }

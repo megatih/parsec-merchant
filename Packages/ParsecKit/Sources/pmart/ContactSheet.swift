@@ -6,8 +6,13 @@ import SwiftUI
 /// A development contact sheet of the art (not shipped).
 @MainActor
 enum ContactSheet {
-    static func write(to url: URL) throws {
-        let image = IconExport.render(sheet.background(Color(white: 0.85)), pixels: 1600)
+    static func write(to url: URL, page: String? = nil) throws {
+        let image: CGImage
+        switch page {
+        case nil: image = IconExport.render(sheet.background(Color(white: 0.85)), pixels: 1600)
+        case "planets": image = IconExport.render(PlanetSheet.sheet, pixels: 1600)
+        default: fail("unknown page \(page ?? "")")
+        }
         try IconExport.writePNG(image, to: url)
     }
 

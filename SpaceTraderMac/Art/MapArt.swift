@@ -41,10 +41,13 @@ enum MapArtRenderer {
                        pressure: nil)
     }
 
-    /// A mini-planet with the M8 glyph kept as an outline ring: solid for visited, dashed for unvisited (the shape twin).
+    /// The pixel scale of mini-planet sprites: sharp on 2x displays, and one projection per system and radius.
+    static let spriteScale = 2.0
+
+    /// ART-029: a mini-planet sprite (projected once, cached) with the M8 glyph kept as an outline ring: solid for visited,
+    /// dashed for unvisited (the shape twin).
     static func drawPlanet(_ ctx: inout GraphicsContext, system: MapSystem, center c: CGPoint, radius r: Double, filled: Bool, art: MapArt) {
-        let recipe = PlanetRenderer.recipe(planetInput(system, galaxySeed: art.galaxySeed))
-        PlanetRenderer.draw(&ctx, recipe: recipe, center: c, radius: r, phase: 0, accessibility: .standard, ink: ink, detail: .mini)
+        PlanetRenderer.drawSprite(&ctx, input: planetInput(system, galaxySeed: art.galaxySeed), center: c, radius: r, scale: spriteScale)
         let ring = Path(ellipseIn: CGRect(x: c.x - r - 1.5, y: c.y - r - 1.5, width: 2 * r + 3, height: 2 * r + 3))
         if filled {
             ctx.stroke(ring, with: .color(MapStyle.visited), lineWidth: 1.4)

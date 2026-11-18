@@ -6,6 +6,12 @@ let strict: [SwiftSetting] = [
     .treatAllWarnings(as: .error),
 ]
 
+// ParsecArt bakes and projects planet maps per pixel (ART-070, ART-072). Unoptimised, that code is 20–30 times slower, which
+// makes Debug builds of the app and the UI tests stall on every new planet, so the art target is optimised in Debug too.
+let artOptimised: [SwiftSetting] = [
+    .unsafeFlags(["-O"], .when(configuration: .debug)),
+]
+
 let package = Package(
     name: "ParsecKit",
     platforms: [.macOS("27.0")],
@@ -22,7 +28,7 @@ let package = Package(
         .target(name: "ParsecEngine", swiftSettings: strict),
         .target(name: "ParsecPersistence", dependencies: ["ParsecEngine", "ParsecInsights"], swiftSettings: strict),
         .target(name: "ParsecInsights", dependencies: ["ParsecEngine"], swiftSettings: strict),
-        .target(name: "ParsecArt", swiftSettings: strict),
+        .target(name: "ParsecArt", swiftSettings: strict + artOptimised),
         .target(name: "ParsecAudio", swiftSettings: strict),
         .executableTarget(name: "pmsim", dependencies: ["ParsecEngine", "ParsecPersistence", "ParsecInsights"], swiftSettings: strict),
         .executableTarget(name: "pmart", dependencies: ["ParsecArt"], swiftSettings: strict),

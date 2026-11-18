@@ -84,6 +84,7 @@ enum ArtSnapshot {
         let content = view
             .frame(width: size.width, height: size.height)
             .environment(\.colorScheme, scheme)
+            .environment(\.displayScale, scale)
         let renderer = ImageRenderer(content: content)
         renderer.proposedSize = ProposedViewSize(size)
         let w = Int((size.width * scale).rounded()), h = Int((size.height * scale).rounded())

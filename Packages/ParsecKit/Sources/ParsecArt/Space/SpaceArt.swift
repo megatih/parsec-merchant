@@ -235,3 +235,86 @@ public struct WormholeVortexView: View {
         .accessibilityHidden(true)
     }
 }
+
+/// ART-078: the system's sun as a soft glow with a bright core and faint rays, placed towards the upper-left corner along
+/// the projection of `PlanetSphere.lightDirection`, so the glow and the planet's terminator agree.
+public enum StarGlow {
+    /// The glow's centre in a frame of `size`.
+    public static func center(in size: CGSize) -> CGPoint {
+        let l = PlanetSphere.lightDirection
+        let len = Double((l.x * l.x + l.y * l.y).squareRoot())
+        let side = min(size.width, size.height)
+        return CGPoint(x: size.width / 2 + Double(l.x) / len * side * 0.60, y: size.height / 2 - Double(l.y) / len * side * 0.60)
+    }
+
+    /// The star's colour: one of four temperatures by seed.
+    public static func tint(seed: UInt64) -> ArtRGB {
+        let tints = [ArtRGB(1.0, 0.96, 0.86), ArtRGB(1.0, 0.86, 0.62), ArtRGB(0.84, 0.92, 1.0), ArtRGB(1.0, 0.74, 0.52)]
+        return tints[Int(ArtSeed.mix(seed, 0x5354_4152) % 4)]
+    }
+
+    public static func draw(_ ctx: inout GraphicsContext, size: CGSize, seed: UInt64, accessibility: ArtAccessibility) {
+        let c = center(in: size), side = min(size.width, size.height), tint = tint(seed: seed)
+        let core = side * 0.035
+        if accessibility.reduceTransparency {
+            ctx.fill(Path(ellipseIn: CGRect(x: c.x - core * 1.6, y: c.y - core * 1.6, width: core * 3.2, height: core * 3.2)),
+                     with: .color(tint.color))
+            return
+        }
+        let r = side * 0.62
+        ctx.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)),
+                 with: .radialGradient(Gradient(stops: [.init(color: tint.opacity(0.55).color, location: 0),
+                                                        .init(color: tint.opacity(0.16).color, location: 0.22),
+                                                        .init(color: tint.opacity(0.04).color, location: 0.6),
+                                                        .init(color: tint.opacity(0).color, location: 1)]),
+                                       center: c, startRadius: 0, endRadius: r))
+        var rng = ArtRandom(seed: ArtSeed.mix(seed, 0x5241_5953))
+        for k in 0..<6 {
+            let a = Double(k) * .pi / 3 + rng.range(0...0.4), len = side * rng.range(0.16...0.32), w = core * 0.22
+            var ray = Path()
+            ray.move(to: ArtGeometry.polar(c, w, a + .pi / 2))
+            ray.addLine(to: ArtGeometry.polar(c, len, a))
+            ray.addLine(to: ArtGeometry.polar(c, w, a - .pi / 2))
+            ray.addLine(to: ArtGeometry.polar(c, len, a + .pi))
+            ray.closeSubpath()
+            ctx.fill(ray, with: .radialGradient(Gradient(colors: [tint.opacity(0.5).color, tint.opacity(0).color]), center: c, startRadius: 0,
+                                                endRadius: len))
+        }
+        ctx.fill(Path(ellipseIn: CGRect(x: c.x - core * 2.4, y: c.y - core * 2.4, width: core * 4.8, height: core * 4.8)),
+                 with: .radialGradient(Gradient(colors: [Color.white, tint.opacity(0.9).color, tint.opacity(0).color]), center: c,
+                                       startRadius: core * 0.5, endRadius: core * 2.4))
+    }
+}
+
+/// ART-078: the stage behind the Bridge's hero planet: deep space, a faint nebula, the densest starfield at half scale
+/// (four times the stars per area) and the system's star glow, clipped to a rounded rectangle.
+public struct HeroBackdrop: View {
+    public var seed: UInt64
+    public var accessibility: ArtAccessibility
+    public static let cornerRadius = 14.0
+    /// The starfield is drawn at this scale, so it is denser than ART-027's maximum per area.
+    public static let starScale = 0.5
+
+    public init(seed: UInt64, accessibility: ArtAccessibility = .standard) {
+        self.seed = seed
+        self.accessibility = accessibility
+    }
+
+    public var body: some View {
+        let seed = seed, a11y = accessibility
+        // Space is dark in both appearances.
+        let ink = ArtInk(scheme: .dark, contrast: accessibility.increaseContrast)
+        Canvas { ctx, size in
+            let frame = CGRect(origin: .zero, size: size)
+            ctx.clip(to: Path(roundedRect: frame, cornerRadius: Self.cornerRadius))
+            ctx.fill(Path(frame), with: .linearGradient(Gradient(colors: [ink(.spaceTop), ink(.spaceBottom)]), startPoint: .zero,
+                                                        endPoint: CGPoint(x: size.width, y: size.height)))
+            Nebula(seed: seed).draw(&ctx, size: size, accessibility: a11y, ink: ink)
+            var stars = ctx
+            stars.scaleBy(x: Self.starScale, y: Self.starScale)
+            Starfield(seed: seed, density: 1).draw(&stars, size: CGSize(width: size.width / Self.starScale, height: size.height / Self.starScale))
+            StarGlow.draw(&ctx, size: size, seed: seed, accessibility: a11y)
+        }
+        .accessibilityHidden(true)
+    }
+}

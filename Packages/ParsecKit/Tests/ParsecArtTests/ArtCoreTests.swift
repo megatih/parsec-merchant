@@ -107,8 +107,8 @@ struct ArtCoreTests {
     }
 
     @MainActor
-    @Test("ART-006 budgets: ship 240×160 and planet 160 pt render within 4 ms (median, warm); ArtCache is a 512-entry LRU")
-    func budgets() {
+    @Test("ART-006 budgets: ship 240×160 and a warm planet still at 160 pt within 4 ms; a cold hero bake within 80 ms; ArtCache is a 512-entry LRU")
+    func budgets() async {
         let cache = ArtCache()
         for i in 0..<600 { _ = cache.value(i) { i * 2 } }
         #expect(cache.count == ArtCache.capacity)
@@ -126,11 +126,24 @@ struct ArtCoreTests {
         }
         let ship = median { _ = ArtSnapshot.render(ShipArt(ShipArtInput(kind: .wasp, hullFraction: 0.6, shield: ShieldDisplay(kind: .energy, fraction: 0.5))),
                                                     size: CGSize(width: 240, height: 160), scale: 1) }
+        // Warm: `median` renders once before timing, so the projected image is in PlanetCache.
         let planet = median { _ = ArtSnapshot.render(PlanetArt(PlanetArtInput(seed: 4, tech: 7, government: 0, pressure: 1)),
                                                       size: CGSize(width: 160, height: 160), scale: 1) }
-        print("ART-006 ship \(ship) ms, planet \(planet) ms (ImageRenderer + decode)")
+        // Cold: every bake below is a different recipe, timed off the main actor.
+        let bakes: [Double] = await Task.detached {
+            (0..<5).map { k in
+                let recipe = PlanetRecipe.make(PlanetArtInput(seed: 9000 + UInt64(k), sizeClass: 4, tech: 6))
+                let start = DispatchTime.now().uptimeNanoseconds
+                let maps = PlanetTextureBaker.bake(recipe, lod: .hero)
+                precondition(maps.width == 512)
+                return Double(DispatchTime.now().uptimeNanoseconds - start) / 1e6
+            }
+        }.value
+        let bake = bakes.sorted()[bakes.count / 2]
+        print("ART-006 ship \(ship) ms, warm planet \(planet) ms (ImageRenderer + decode), cold hero bake \(bake) ms")
         #expect(ship <= 4 * Self.debugFactor)
         #expect(planet <= 4 * Self.debugFactor)
+        #expect(bake <= 80 * Self.debugFactor)
     }
 
     /// Debug builds run unoptimised; the budget is checked against release-like code with this allowance.

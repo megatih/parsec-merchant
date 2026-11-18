@@ -1,164 +1,157 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-import Synchronization
 import SwiftUI
 
-/// ART-020…026: a procedural planet portrait.
+/// ART-020…026, ART-072: a planet portrait: the sphere projection of the baked maps with the vector overlays (orbital
+/// ring, satellites, government motif) around it. This is the path of stills, Reduce Motion, vignettes and tests.
 public struct PlanetArt: View {
     public var input: PlanetArtInput
-    /// `true`: the disk fills the frame (map mini-planets); `false`: the portrait size rule of ART-023.
+    /// `true`: the disk fills the frame and draws no ring or overlays (map mini-planets); `false`: the portrait size rule.
     public var fillsFrame: Bool
+    /// The map size to project from; nil picks it from the disk's size on screen.
+    public var lod: PlanetLOD?
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.displayScale) private var displayScale
 
-    public init(_ input: PlanetArtInput, fillsFrame: Bool = false) {
+    public init(_ input: PlanetArtInput, fillsFrame: Bool = false, lod: PlanetLOD? = nil) {
         self.input = input
         self.fillsFrame = fillsFrame
+        self.lod = lod
     }
 
     public var body: some View {
         let recipe = PlanetRenderer.recipe(input)
-        let input = input, fills = fillsFrame, ink = ArtInk(scheme: scheme, contrast: input.accessibility.increaseContrast)
+        let input = input, fills = fillsFrame, scale = displayScale, lod = lod
+        let ink = ArtInk(scheme: scheme, contrast: input.accessibility.increaseContrast)
         Canvas { ctx, size in
-            let half = min(size.width, size.height) / 2
-            let r = fills ? half : half * recipe.radiusFraction
-            let c = CGPoint(x: size.width / 2, y: size.height / 2)
-            PlanetRenderer.draw(&ctx, recipe: recipe, center: c, radius: r, phase: input.phase, accessibility: input.accessibility,
-                                ink: ink, detail: fills ? .mini : .full)
+            let frame = PlanetRenderer.Frame(size: size, recipe: recipe, fills: fills)
+            if !fills { PlanetLayers.behind(&ctx, rc: recipe, c: frame.center, r: frame.radius, ink: ink) }
+            let px = max(1, Int((frame.side * scale).rounded()))
+            if let image = PlanetRenderer.image(recipe: recipe, phase: input.phase, accessibility: input.accessibility, pixelSize: px,
+                                                radius: frame.radius * scale, ring: !fills, lod: lod) {
+                ctx.draw(Image(decorative: image.cgImage, scale: scale), in: frame.square)
+            }
+            if !fills {
+                PlanetLayers.front(&ctx, rc: recipe, c: frame.center, r: frame.radius, phase: input.accessibility.ambientPhase(input.phase),
+                                   a11y: input.accessibility, ink: ink)
+            }
         }
         .accessibilityHidden(true)
     }
 }
 
-/// The drawing code of planets, shared with the map (which draws many mini-planets into one Canvas).
-public enum PlanetRenderer {
-    public enum Detail: Sendable {
-        case full, mini
+/// The vector overlays alone, for the live view: the app draws `.behind`, then its Metal layer, then `.front` (ART-075).
+public struct PlanetOverlayArt: View {
+    public enum Part: Sendable {
+        case behind, front
     }
 
-    private struct Key: Hashable {
+    public var input: PlanetArtInput
+    public var part: Part
+    @Environment(\.colorScheme) private var scheme
+
+    public init(_ input: PlanetArtInput, part: Part) {
+        self.input = input
+        self.part = part
+    }
+
+    public var body: some View {
+        let recipe = PlanetRenderer.recipe(input)
+        let input = input, part = part
+        let ink = ArtInk(scheme: scheme, contrast: input.accessibility.increaseContrast)
+        Canvas { ctx, size in
+            let frame = PlanetRenderer.Frame(size: size, recipe: recipe, fills: false)
+            switch part {
+            case .behind: PlanetLayers.behind(&ctx, rc: recipe, c: frame.center, r: frame.radius, ink: ink)
+            case .front:
+                PlanetLayers.front(&ctx, rc: recipe, c: frame.center, r: frame.radius, phase: 0, a11y: input.accessibility, ink: ink)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// Recipes, maps and projected images of planets, shared with the map and the app's live view.
+public enum PlanetRenderer {
+    /// ART-023: where the disk sits in a frame.
+    public struct Frame: Sendable {
+        public var center: CGPoint
+        /// The side of the centred square the projection covers, in points.
+        public var side: Double
+        /// The disk radius in points.
+        public var radius: Double
+
+        public init(size: CGSize, recipe: PlanetRecipe, fills: Bool) {
+            side = min(size.width, size.height)
+            center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let half = side / 2
+            radius = fills ? half : half * min(recipe.radiusFraction, 0.98 / recipe.extent)
+        }
+
+        public var square: CGRect { CGRect(x: center.x - side / 2, y: center.y - side / 2, width: side, height: side) }
+    }
+
+    private struct RecipeKey: Hashable {
         var input: PlanetArtInput
     }
 
-    /// The recipe, cached per input (phase excluded).
+    /// The recipe, cached per input (phase and accessibility excluded).
     @MainActor
     public static func recipe(_ input: PlanetArtInput) -> PlanetRecipe {
         var key = input
         key.phase = 0
-        return ArtCache.shared.value(Key(input: key)) { PlanetRecipe.make(key) }
+        key.accessibility = .standard
+        return ArtCache.shared.value(RecipeKey(input: key)) { PlanetRecipe.make(key) }
     }
 
-    /// ART-026: one surface turn per 60 s of phase.
-    public static let rotationPeriod = 60.0
-
-    public static func draw(_ ctx: inout GraphicsContext, recipe rc: PlanetRecipe, center c: CGPoint, radius r: Double, phase rawPhase: Double,
-                            accessibility a11y: ArtAccessibility, ink: ArtInk, detail: Detail = .full) {
-        let phase = a11y.ambientPhase(rawPhase)
-        let disk = Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r))
-        if detail == .full { drawBehind(&ctx, rc: rc, c: c, r: r, phase: phase, ink: ink) }
-        var surf = ctx
-        surf.clip(to: disk)
-        let deep = ink.rgb(rc.ocean == .landGrey ? .landGrey : .oceanDeep)
-        surf.fill(disk, with: .radialGradient(Gradient(colors: [ink.rgb(rc.ocean).shade(1.15).color, deep.color]),
-                                              center: CGPoint(x: c.x - r * 0.3, y: c.y - r * 0.3), startRadius: 0, endRadius: r * 1.6))
-        // Tilted, rotating surface.
-        surf.translateBy(x: c.x, y: c.y)
-        surf.rotate(by: .degrees(rc.tilt))
-        surf.translateBy(x: -c.x, y: -c.y)
-        let shift = (phase / rotationPeriod).truncatingRemainder(dividingBy: 1) * 2
-        let land = landPath(rc, c: c, r: r, shift: shift)
-        var landColor = ink.rgb(rc.land)
-        if rc.pressure == .drought { landColor = landColor.saturation(0.45).shade(1.1) }
-        surf.fill(land, with: .color(landColor.color))
-        if detail == .full {
-            PlanetLayers.surfaceDetails(&surf, rc: rc, land: land, c: c, r: r, shift: shift, ink: ink)
-            PlanetLayers.iceCaps(&surf, rc: rc, c: c, r: r, ink: ink)
-            PlanetLayers.clouds(&surf, rc: rc, c: c, r: r, phase: phase, a11y: a11y, ink: ink)
-        }
-        // Night side (light from the top left). Mini-planets use a cheap gradient instead of the terminator path.
-        guard detail == .full else {
-            ctx.fill(disk, with: .linearGradient(Gradient(colors: [.black.opacity(0), .black.opacity(0.55)]),
-                                                 startPoint: CGPoint(x: c.x - r * 0.2, y: c.y - r * 0.2), endPoint: CGPoint(x: c.x + r, y: c.y + r)))
-            ctx.stroke(disk, with: .color(ink.rgb(rc.rim).opacity(0.7).color), lineWidth: max(0.6, r * 0.06) * a11y.outlineScale)
-            return
-        }
-        let layer = nightLayer(rc, c: c, r: r)
-        let night = layer.path
-        ctx.fill(night, with: .color(.black.opacity(0.55)))
-        if detail == .full {
-            PlanetLayers.nightSide(&ctx, rc: rc, night: night, lights: layer.lights, c: c, r: r, ink: ink)
-            PlanetLayers.haze(&ctx, rc: rc, disk: disk, ink: ink)
-            PlanetLayers.pressure(&ctx, rc: rc, disk: disk, c: c, r: r, rawPhase: rawPhase, a11y: a11y, ink: ink)
-        }
-        let rimWidth = max(0.8, r * 0.05) * a11y.outlineScale
-        ctx.stroke(disk, with: .color(ink.rgb(rc.rim).opacity(a11y.increaseContrast ? 1 : 0.7).color), lineWidth: rimWidth)
-        if a11y.increaseContrast { ctx.stroke(night, with: .color(.black.opacity(0.6)), lineWidth: 1) }
-        if detail == .full { drawFront(&ctx, rc: rc, c: c, r: r, phase: phase, a11y: a11y, ink: ink) }
-    }
-
-    /// The continents at the current rotation (each blob drawn where it is visible on the disk).
-    static func landPath(_ rc: PlanetRecipe, c: CGPoint, r: Double, shift: Double) -> Path {
-        var land = Path()
-        if rc.look == .lifeless { return Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)) }
-        for blob in rc.continents {
-            var u = (blob.u - shift).truncatingRemainder(dividingBy: 2)
-            if u < 0 { u += 2 }
-            for wrap in [u, u - 2] where wrap > -0.35 && wrap < 1.35 {
-                var rng = ArtRandom(seed: blob.seed)
-                let center = CGPoint(x: c.x - r + wrap * 2 * r, y: c.y - r + blob.v * 2 * r)
-                land.addPath(ArtGeometry.blob(center: center, radius: blob.radius * r * 1.6, lobes: 9, jitter: 0.32, rng: &rng,
-                                              aspect: blob.aspect))
-            }
-        }
-        return land
-    }
-
-    /// The night side's terminator path and its city lights.
-    struct NightLayer: Sendable {
-        var path: Path
-        var lights: [CGPoint]
-    }
-
-    private struct NightKey: Hashable, Sendable {
+    private struct MapsKey: Hashable, Sendable {
         var recipe: PlanetRecipe
-        var x: Double
-        var y: Double
-        var r: Double
+        var lod: PlanetLOD
     }
 
-    private static let nightCache = Mutex<[NightKey: NightLayer]>([:])
-
-    /// ART-052: the night layer does not depend on the rotation phase, so the path subtraction and the light hit tests run
-    /// once per recipe, centre and radius instead of on every animation frame. The result equals the uncached computation.
-    static func nightLayer(_ rc: PlanetRecipe, c: CGPoint, r: Double) -> NightLayer {
-        let key = NightKey(recipe: rc, x: c.x, y: c.y, r: r)
-        if let hit = nightCache.withLock({ $0[key] }) { return hit }
-        let path = nightPath(c: c, r: r)
-        let layer = NightLayer(path: path, lights: PlanetLayers.lightPoints(rc, night: path, c: c, r: r))
-        nightCache.withLock { cache in
-            if cache.count >= 64 { cache.removeAll() }
-            cache[key] = layer
-        }
-        return layer
+    /// The baked maps, cached (ART-080). Safe from any thread; a cold hero bake belongs off the main actor (ART-006).
+    public static func maps(_ recipe: PlanetRecipe, lod: PlanetLOD) -> PlanetMaps {
+        PlanetCache.shared.value(MapsKey(recipe: recipe, lod: lod), bytes: { $0.byteCount }, make: { PlanetTextureBaker.bake(recipe, lod: lod) })
     }
 
-    static func nightPath(c: CGPoint, r: Double) -> Path {
-        let disk = Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r))
-        let lit = Path(ellipseIn: CGRect(x: c.x - r * 1.5, y: c.y - r * 1.4, width: 2.3 * r, height: 2.3 * r))
-        return disk.subtracting(lit)
+    /// The maps if they are already baked.
+    public static func cachedMaps(_ recipe: PlanetRecipe, lod: PlanetLOD) -> PlanetMaps? {
+        PlanetCache.shared.peek(MapsKey(recipe: recipe, lod: lod))
     }
 
-    private static func drawBehind(_ ctx: inout GraphicsContext, rc: PlanetRecipe, c: CGPoint, r: Double, phase: Double, ink: ArtInk) {
-        if rc.motif == .halo {
-            ctx.fill(Path(ellipseIn: CGRect(x: c.x - r * 1.25, y: c.y - r * 1.25, width: 2.5 * r, height: 2.5 * r)),
-                     with: .radialGradient(Gradient(colors: [ink.rgb(.brass).opacity(0.55).color, ink.rgb(.brass).opacity(0).color]),
-                                           center: c, startRadius: r * 0.95, endRadius: r * 1.25))
-        }
-        PlanetLayers.ring(&ctx, rc: rc, c: c, r: r, front: false, ink: ink)
+    private struct ImageKey: Hashable, Sendable {
+        var recipe: PlanetRecipe
+        var uniforms: PlanetSphere.Uniforms
+        var pixelSize: Int
+        var lod: PlanetLOD
     }
 
-    private static func drawFront(_ ctx: inout GraphicsContext, rc: PlanetRecipe, c: CGPoint, r: Double, phase: Double,
-                                  a11y: ArtAccessibility, ink: ArtInk) {
-        PlanetLayers.ring(&ctx, rc: rc, c: c, r: r, front: true, ink: ink)
-        PlanetLayers.satellites(&ctx, rc: rc, c: c, r: r, phase: phase, ink: ink)
-        PlanetLayers.motif(&ctx, rc: rc, c: c, r: r, phase: phase, a11y: a11y, ink: ink)
+    /// The projected image, cached per recipe, uniforms and size.
+    public static func image(recipe: PlanetRecipe, phase: Double, accessibility: ArtAccessibility, pixelSize: Int, radius: Double,
+                             ring: Bool, lod: PlanetLOD? = nil) -> PlanetImage? {
+        let lod = lod ?? PlanetLOD.forDiameter(Int((radius * 2).rounded()))
+        let uniforms = PlanetSphere.uniforms(recipe: recipe, phase: phase, accessibility: accessibility, pixelSize: pixelSize,
+                                             radius: radius, mapWidth: lod.width, ring: ring)
+        let key = ImageKey(recipe: recipe, uniforms: uniforms, pixelSize: pixelSize, lod: lod)
+        if let hit: PlanetImage = PlanetCache.shared.peek(key) { return hit }
+        guard let cg = PlanetSphere.project(maps(recipe, lod: lod), uniforms: uniforms, pixelSize: pixelSize) else { return nil }
+        let image = PlanetImage(cg)
+        PlanetCache.shared.insert(key, image, bytes: image.byteCount)
+        return image
+    }
+
+    /// ART-029: draws a mini-planet sprite of radius `r` points at `c`, projected once per input and pixel size and cached.
+    /// `scale` is the sprite's pixels per point.
+    @MainActor
+    public static func drawSprite(_ ctx: inout GraphicsContext, input: PlanetArtInput, center c: CGPoint, radius r: Double, scale: Double) {
+        let pixels = max(4, Int((2 * r * scale).rounded()))
+        guard let sprite = sprite(input, pixelDiameter: pixels) else { return }
+        ctx.draw(Image(decorative: sprite.cgImage, scale: scale), in: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r))
+    }
+
+    /// ART-029: a mini-planet sprite of `pixelDiameter` pixels: the disk fills the image, `phase = 0`, no ring.
+    @MainActor
+    public static func sprite(_ input: PlanetArtInput, pixelDiameter: Int) -> PlanetImage? {
+        image(recipe: recipe(input), phase: 0, accessibility: .standard, pixelSize: pixelDiameter, radius: Double(pixelDiameter) / 2,
+              ring: false)
     }
 }

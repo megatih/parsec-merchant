@@ -76,20 +76,17 @@ private struct SystemCard: View {
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 14) {
-                    PlanetPortrait(input: planet)
-                        .frame(width: 72, height: 72)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(Text(SystemText.planetLabel(model)))
-                        .accessibilityAddTraits(.isImage)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(verbatim: model.name).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
-                        if let pressure = model.pressure, let tag = SystemText.pressure(pressure) {
-                            PressureTag(text: tag, description: SystemText.pressureDescription(pressure))
-                        }
+                // ART-077: the hero stage sits beside the facts when the card is wide enough, above them otherwise.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: PlanetHero.spacing) {
+                        hero.frame(width: PlanetHero.besideSide, height: PlanetHero.besideSide)
+                        facts.frame(minWidth: PlanetHero.factsMinWidth, alignment: .leading)
+                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        hero.frame(maxWidth: .infinity).frame(height: PlanetHero.stackedHeight)
+                        facts
                     }
                 }
-                SystemFacts(model: model)
                 Divider()
                 HStack {
                     LabeledContent("Galaxy code") {
@@ -111,6 +108,23 @@ private struct SystemCard: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Bridge.systemCard)
+    }
+
+    private var hero: some View {
+        PlanetHero(input: planet)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(SystemText.planetLabel(model)))
+            .accessibilityAddTraits(.isImage)
+    }
+
+    private var facts: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(verbatim: model.name).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            if let pressure = model.pressure, let tag = SystemText.pressure(pressure) {
+                PressureTag(text: tag, description: SystemText.pressureDescription(pressure))
+            }
+            SystemFacts(model: model)
+        }
     }
 }
 

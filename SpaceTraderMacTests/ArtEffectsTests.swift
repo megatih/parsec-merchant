@@ -126,19 +126,28 @@ struct ArtEffectsTests {
         #expect(g.player.maxX < g.opponent.minX)
     }
 
-    @Test("ART-052 fast scenes use a 30 fps TimelineView; the Bridge planet and map vortices share the ambient clock; paused when inactive")
+    @Test("ART-052 fast scenes use a 30 fps TimelineView; the Bridge planet uses no TimelineView; map vortices keep the ambient clock while in view")
     func timelines() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("SpaceTraderMac")
         func source(_ file: String) throws -> String { try String(contentsOf: root.appendingPathComponent(file), encoding: .utf8) }
-        // The game-over scene lives in ArtViews.swift next to the planet portrait.
         for file in ["Art/EncounterStage.swift", "Art/ArtViews.swift", "Art/AchievementArt.swift", "Views/Transit/TransitView.swift"] {
             #expect(try source(file).contains("TimelineView(.animation(minimumInterval: 1.0 / 30"), "\(file)")
         }
-        let portraits = try source("Art/ArtViews.swift")
-        #expect(portraits.contains("TimelineView(AmbientSchedule(paused: !appearsActive))") && portraits.contains("a11y.reduceMotion"))
+        // The planet is driven by a display link outside SwiftUI's update cycle (ART-076), never by a timeline.
+        for file in ["Art/PlanetPortrait.swift", "Art/PlanetMetalView.swift"] {
+            let text = try source(file)
+            #expect(!text.contains("TimelineView(") && !text.contains("AmbientSchedule("), "\(file)")
+        }
+        #expect(try source("Art/PlanetPortrait.swift").contains("a11y.reduceMotion"))
+        let metal = try source("Art/PlanetMetalView.swift")
+        #expect(metal.contains("displayLink(target: self, selector: #selector(tick(_:)))") && metal.contains("link?.isPaused = PlanetLiveSupport.isPaused("))
+        #expect(!(try source("Views/Sections/BridgeSectionView.swift")).contains("TimelineView("))
         let map = try source("Map/GalaxyMapView.swift")
         #expect(map.contains("TimelineView(AmbientSchedule(paused: !swirl || reduceMotion))"))
-        #expect(map.contains("vorticesInOverlay: !reduceMotion && appearsActive"))
+        // ADR-0004: the Bridge mini chart (no HUD) keeps its vortices still; elsewhere the clock runs only with a wormhole in view.
+        #expect(map.contains("vorticesInOverlay: !reduceMotion && appearsActive && scope.hasHUD"))
+        #expect(map.contains("let swirl = mapArt?.vorticesInOverlay == true && snapshot.wormholes.contains { projected.visible.contains($0) }"))
+        #expect(!MapScope.miniChart.hasHUD && MapScope.galaxy.hasHUD && MapScope.galaxyWindow.hasHUD)
     }
 
     @Test("ART-052 AmbientSchedule: 5 fps on whole multiples of 1/5 s, the same dates for every surface; one still frame when paused")

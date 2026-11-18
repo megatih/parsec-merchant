@@ -4,8 +4,8 @@
 
 ## Status
 - **Current milestone:** M13 done (M14 in progress)
-- **Next step:** M14 specs: rewrite ART-006/021…026/029/052/061, add ART-068… (taxonomy, resource table, baker, projector, uniforms, parity, fallback, display-link pause, hero size, star glow), amend UI-SHELL-054 and MAP-095; then tests, then ParsecArt planet code (PlanetNoise, PlanetClass, PlanetTextureBaker, PlanetSphere).
-- **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, M14 setup on top of e08f1ff)
+- **Next step:** M14 look review: `PM_EXPORT_SCREENSHOTS=1 scripts/export-screenshots.sh`, read the Bridge/Galaxy screenshots and `build/qa/planets.png` against PRD-1.1 §6 M14 look criteria, fix, add the QA-REPORT row; then exit checks (verify --ui, bench-map ≤ 8 ms, idle-cpu ≤ 5%, largest-text + pseudo-loc at 1100×720), flip to M14 done, tag m14-done, push.
+- **Last gate result:** verify.sh ALL GATES PASSED (2026-11-18, M14 planets: baker, projector, Metal view, hero, sprites); idle-cpu 2.3–2.5% on the Release build
 - **Blockers:** none
 
 ## Milestones
@@ -31,10 +31,10 @@
 ## M14 checklist
 - [x] Setup: PRD-1.1 committed, D10 spec-trace threshold 17 + PM_TRACE_MILESTONE, final-check/release/marketing version 1.1.0, PRD.md/CLAUDE.md folded
 - [x] Spike: Metal layer idle CPU; CGImage-in-Canvas determinism (ADR-0004: Metal 30 fps ≈ +0.3% CPU, go; mini chart vortices still)
-- [ ] Specs: ART.md rewrites + new IDs from ART-068; UI-SHELL-054; MAP-095
-- [ ] Tests rewritten/added (PlanetSpaceTests, ArtCoreTests budgets, ArtEffectsTests, Metal parity)
-- [ ] ParsecArt: PlanetNoise, PlanetClass, PlanetTextureBaker, PlanetSphere, recipe/art rewrite, StarGlow
-- [ ] App: PlanetMetalView + shader, PlanetPortrait, Bridge hero, map sprites
+- [x] Specs: ART.md rewrites + new IDs from ART-068; UI-SHELL-054; MAP-095
+- [x] Tests rewritten/added (PlanetSpaceTests, ArtCoreTests budgets, ArtEffectsTests, Metal parity)
+- [x] ParsecArt: PlanetNoise, PlanetClass, PlanetTextureBaker, PlanetSphere, recipe/art rewrite, StarGlow
+- [x] App: PlanetMetalView + shader, PlanetPortrait, Bridge hero, map sprites
 - [ ] pmart planet sheet; look review; QA-REPORT row
 - [ ] Exit: verify --ui, bench-map ≤ 8 ms, idle-cpu ≤ 5%, largest-text + pseudo-loc review at 1100×720, tag m14-done
 
@@ -54,7 +54,9 @@
 - [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
-- 2026-11-18: ADR-0004. Spike: idle floor 0.2–0.4%; the map's 5 fps vortex TimelineView alone costs ~4.5% (whole-window pass), the Metal planet at 30 fps ~0.3%. Decision: D2 rung 1 (Metal, 30 fps); the Bridge mini chart draws vortices still, the Galaxy section keeps AmbientSchedule and pauses it when no wormhole is in view. Idle-CPU readings are noisy while the App Store daemon is installing updates; re-measure on a quiet machine.
+- 2026-11-18: ParsecArt is compiled with -O in Debug too (Package.swift `artOptimised`): unoptimised per-pixel baking/projection is 20–30× slower (hero bake 136–220 ms vs 9 ms) and would stall the Debug app and UI tests. Budgets and debugFactor unchanged.
+- 2026-11-18: SourceAuditTests UI-KEYS-035 forbids `Image(decorative` in app code, so the map's sprite draw lives in ParsecArt (`PlanetRenderer.drawSprite`).
+- 2026-11-18: ADR-0004. Spike: idle floor 0.2–0.4%; the map's 5 fps vortex TimelineView alone costs ~4.5% (whole-window pass). The spike's Metal figure (~0.3%) was invalid (its shader did not compile, found by the ART-074 parity test); the working Metal planet at 30 fps measures 2.3–2.5% total idle. Decision: D2 rung 1 (Metal, 30 fps); the Bridge mini chart draws vortices still, the Galaxy section keeps AmbientSchedule and pauses it when no wormhole is in view. Idle-CPU readings are noisy while the App Store daemon is installing updates; re-measure on a quiet machine.
 - 2026-11-17: Encounter API decisions: auto-repeat = .encounter(.autoRepeat), interrupt = .encounter(.stop), .encounter(.resolve) = attack + forceContinuous; rounds emit combatRound (no shotFired); stance changes emit encounterChanged; no encounterEnded event; nothing-illegal prompts are submitWithNothingIllegal (attack/bribe) and fleeInspection (flee); takeMarieCargo removed. Specs aligned to these names.
 - 2026-11-17: coverage-gate.sh merges all profraws and exports across every per-target .xctest (SwiftPM's codecov JSON covers only one bundle in Swift 6.4). Thresholds unchanged.
 - 2026-11-17: ALR.md {M2} Swift names aligned to the implemented ECO/SHP/BNK/CRW vocabulary.
@@ -68,6 +70,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-18: M14 planets built: PlanetNoise/PlanetClass/PlanetTextureBaker/PlanetSphere/PlanetCache in ParsecArt (10 classes, rings, CPU projector), PlanetMetalView + shader string (GPU/CPU mean abs diff ≤ 0.011/255), PlanetHero stage with StarGlow, cached map sprites, mini chart vortices still. ART-068…080 traced.
 - 2026-11-18: 1.1 work started (docs/PRD-1.1.md, M14–M17). Setup: spec-trace threshold 13 → 17 with PM_TRACE_MILESTONE preview; final-check/release retargeted to v1.1.0 and 18 milestones; marketing version 1.1.0.
 - 2026-11-18: A11Y-027/042 screenshot review and fixes (sidebar, wizard header/footer, Market columns, Shipyard strip, Galaxy HUD layout, crew header/skills, Settings/Options buttons, feed overlay); the RTL pseudo run passes -AppleTextDirection YES and now mirrors; the galaxy map stays left to right. QA and README screenshots re-exported. Notes in A11Y.md §12a.
 - 2026-11-17: M11 exit. Notes: ImageRenderer.cgImage is not byte-deterministic — art tests/pmart render into a fixed RGBA sRGB CGContext; pmart icon works from the command line (no PM_ICON_OUT fallback needed). Open QA rows needing the owner at M13: AUD-052 (2-min listening + device switch), ART screenshot rows. Audio CombatTracker duplicates CombatEffectPlanner timing (unify in M12).
