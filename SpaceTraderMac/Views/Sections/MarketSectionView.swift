@@ -14,6 +14,7 @@ struct MarketSectionView: View {
     @State private var disposal: CargoDisposal?
     /// UI-PTR-007: each row's selected quantity chip (1 by default), kept while the window lives.
     @State private var chips = TradeChipStore()
+    @State private var tableWidth: CGFloat = 0
     @Environment(\.textScale) private var textScale
     @FocusState private var focusedField: Field?
     @Namespace private var rotorNamespace
@@ -39,36 +40,47 @@ struct MarketSectionView: View {
                         ItemCell(row: r) { kind in performRowAction(kind, r) }
                             .accessibilityRotorEntry(id: r.item, in: rotorNamespace)
                     }
-                        .width(min: itemColumnWidth, ideal: itemColumnWidth + 10)
+                        .width(min: itemColumnWidth, ideal: itemColumnWidth + (compact ? 0 : 10), max: compact ? itemColumnWidth : nil)
                     TableColumn("Buy") { (r: MarketRowModel) in
-                        PriceCell(price: r.buyPrice).accessibilityIdentifier(AXID.Market.buyPrice(r.item))
+                        VStack(alignment: .leading, spacing: 0) {
+                            PriceCell(price: r.buyPrice).accessibilityIdentifier(AXID.Market.buyPrice(r.item))
+                            if compact, r.row.stock > 0 {
+                                Text("\(r.row.stock.formatted()) in stock").scaledFont(.caption).foregroundStyle(.readableSecondary)
+                                    .monospacedDigit()
+                            }
+                        }
                     }
-                        .width(min: fit(56, "Buy"), ideal: fit(60, "Buy"))
+                        .width(min: fit(compact ? 70 : 56, "Buy"), ideal: fit(compact ? 70 : 60, "Buy"), max: compact ? fit(70, "Buy") : nil)
                     TableColumn("Sell") { (r: MarketRowModel) in SellCell(row: r) }
-                        .width(min: fit(66, "Sell"), ideal: fit(72, "Sell"))
-                    TableColumn("Stock") { (r: MarketRowModel) in
-                        Text(verbatim: r.row.stock.formatted()).fontWeight(.medium).monospacedDigit()
+                        .width(min: fit(compact ? 60 : 66, "Sell"), ideal: fit(compact ? 60 : 72, "Sell"), max: compact ? fit(60, "Sell") : nil)
+                    if !compact {
+                        TableColumn("Stock") { (r: MarketRowModel) in
+                            Text(verbatim: r.row.stock.formatted()).fontWeight(.medium).monospacedDigit()
+                        }
+                        .width(min: fit(44, "Stock"), ideal: fit(50, "Stock"))
                     }
-                    .width(min: fit(44, "Stock"), ideal: fit(50, "Stock"))
                     TableColumn("Held") { (r: MarketRowModel) in heldCell(r) }
-                        .width(min: fit(70, "Held"), ideal: fit(80, "Held"))
-                    TableColumn("P/L") { (r: MarketRowModel) in ProfitCell(value: r.profitPerUnit) }
-                        .width(min: fit(56, "P/L"), ideal: fit(60, "P/L"))
+                        .width(min: fit(compact ? 66 : 70, "Held"), ideal: fit(compact ? 66 : 80, "Held"), max: compact ? fit(66, "Held") : nil)
+                    if !compact {
+                        TableColumn("P/L") { (r: MarketRowModel) in ProfitCell(value: r.profitPerUnit) }
+                            .width(min: fit(56, "P/L"), ideal: fit(60, "P/L"))
+                    }
                     TableColumn("Target") { (r: MarketRowModel) in
                         let i = intel?.row(r.item)
                         IntelTargetCell(item: r.item, quote: i?.targetQuote, buyHere: r.buyPrice, profitPerBay: i?.profitPerBay)
                     }
-                    .width(min: fit(104, "Target"), ideal: fit(118, "Target"))
+                    .width(min: fit(104, "Target"), ideal: fit(compact ? 104 : 118, "Target"), max: compact ? fit(104, "Target") : nil)
                     TableColumn("History") { (r: MarketRowModel) in
                         PriceSparkline(item: r.item, series: intel?.row(r.item)?.history ?? [])
                     }
-                    .width(min: fit(56, "History"), ideal: fit(60, "History"))
+                    .width(min: fit(56, "History"), ideal: fit(compact ? 56 : 60, "History"), max: compact ? fit(56, "History") : nil)
                     TableColumn("Actions") { (r: MarketRowModel) in actionsCell(r) }
                         // UI-PTR-007: four 36 pt chips, Sell, the amount field, Buy and the disposal button.
-                        .width(min: fit(310, "Actions"), ideal: fit(310, "Actions"))
+                        .width(min: fit(Self.actionsWidth, "Actions"), ideal: fit(Self.actionsWidth, "Actions"))
                 }
                 // A11Y-026: at large Text Sizes cell text shrinks to fit its column instead of truncating prices and names.
                 .minimumScaleFactor(0.5)
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { tableWidth = $0 }
                 .onKeyPress(phases: .down) { press in handleKey(press, rows: rows) }
                 .accessibilityLabel(Text("Market"))
                 .modifier(MarketRotorsModifier(rows: rows, intel: intel, namespace: rotorNamespace))
@@ -102,6 +114,16 @@ struct MarketSectionView: View {
     }
 
     // MARK: Column widths (A11Y-026)
+
+    /// UI-SHELL-061: when the nine columns do not fit the table (the default window with the inspector open), Stock
+    /// moves under the buy price and P/L under the held count, so the row's actions stay on screen without a scroll.
+    private var compact: Bool {
+        let columns = itemColumnWidth + 10 + fit(60, "Buy") + fit(72, "Sell") + fit(50, "Stock") + fit(80, "Held") + fit(60, "P/L")
+            + fit(118, "Target") + fit(60, "History") + fit(Self.actionsWidth, "Actions")
+        return tableWidth < columns + 9 * 18
+    }
+
+    private static let actionsWidth: CGFloat = 310
 
     /// A column at least as wide as its localized header at the current Text Size.
     private func fit(_ base: CGFloat, _ header: LocalizedStringResource) -> CGFloat {
@@ -154,6 +176,9 @@ struct MarketSectionView: View {
         return VStack(alignment: .leading, spacing: 0) {
             Text(verbatim: r.row.held.formatted()).fontWeight(.medium).monospacedDigit()
                 .accessibilityIdentifier(AXID.Market.held(r.item))
+            if compact, r.row.held > 0, r.profitPerUnit != nil {
+                ProfitCell(value: r.profitPerUnit).scaledFont(.caption)
+            }
             if r.row.held > 0 {
                 Text("avg \(r.row.costBasisPerUnit.formatted()) cr.").scaledFont(.caption).foregroundStyle(.readableSecondary).monospacedDigit()
             }

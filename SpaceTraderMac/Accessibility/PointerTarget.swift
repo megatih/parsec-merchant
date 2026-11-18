@@ -132,9 +132,16 @@ struct QuantityChips: View {
                 Button {
                     value = chip.quantity(in: range)
                 } label: {
-                    Text(Self.title(chip)).monospacedDigit().pointerTarget()
+                    // The Market chips' look: primary text on a quiet capsule, which keeps its contrast in a sheet (A11Y-029).
+                    Text(Self.title(chip))
+                        .monospacedDigit()
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.secondary.opacity(0.14), in: Capsule())
+                        .pointerTarget()
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.plain)
                 .disabled(!isEnabled)
                 .help(Text(Self.help(chip)))
                 .accessibilityLabel(Text(Self.help(chip)))

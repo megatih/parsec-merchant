@@ -35,6 +35,12 @@ final class PointerOnlyScenarioUITests: ParsecUITestCase {
         click(AXID.Market.chip("water", "1"))
         click(AXID.Market.buy("water"))
         expect("6 units of water are held (held: \(held("water")))") { held("water") == 6 }
+        // UI-PTR-007: at the default window size the whole row of actions is on screen, with room after Buy for the
+        // disposal button (36 pt and its gap) that a row shows when its cargo can be jettisoned or dumped.
+        let buy = element(AXID.Market.buy("water")), table = element(AXID.Market.table)
+        expect("Buy and a disposal button fit inside the table (\(buy.frame) in \(table.frame))") {
+            buy.frame.minX >= table.frame.minX && buy.frame.maxX + 40 <= table.frame.maxX
+        }
 
         // 3. Pick a target on the map: a click pins the selection card, whose buttons need no modifier.
         clickSidebar(AXID.Galaxy.sidebarRow, root: AXID.Galaxy.root)

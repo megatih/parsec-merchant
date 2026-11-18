@@ -195,8 +195,7 @@ struct PointerTests {
         #expect(SheetChip.allCases.map { $0.quantity(in: 2...2) } == [2, 2, 2])
         #expect(AXID.quantityChip("decision.trade.quantity", .all) == "decision.trade.quantity.chip.all")
         let sheets = try Self.source("Views/Encounter/EncounterSheets.swift")
-        #expect(sheets.components(separatedBy: "QuantityChips(").count - 1 == 2, "trade in orbit and make room; plunder rows have Take All")
-        #expect(sheets.contains("AXID.Decision.plunderTakeAll(") || sheets.contains("Take All"))
+        #expect(sheets.components(separatedBy: "QuantityChips(").count - 1 == 3, "plunder, trade in orbit and make room")
         #expect((try Self.source("Views/Sections/MarketSectionView.swift")).contains("QuantityChips(value: $quantity"))
         #expect([0, 50, 100, 101, 1000, 1001, 25000, 100_000, 1_000_000].map(BankSlider.step(limit:)) == [1, 1, 1, 10, 10, 10, 1000, 1000, 10000])
         for limit in [7, 480, 12_345, 987_654] {

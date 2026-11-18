@@ -23,6 +23,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
         type("1")
         click(AXID.Bridge.targetNext)
+        element("bridge.root").scroll(byDeltaX: 0, deltaY: 2000)  // the click scrolled the page; show it from the top
         shoot("readme-bridge")
         type("2")
         waitFor(AXID.Market.table)
@@ -83,6 +84,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
         type("1")
         click(AXID.Bridge.targetNext)
+        element("bridge.root").scroll(byDeltaX: 0, deltaY: 2000)  // the click scrolled the page; show it from the top
         shoot("readme-bridge-dark")
     }
 
