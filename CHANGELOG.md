@@ -2,7 +2,7 @@
 
 All notable changes to Parsec Merchant are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/) and versions follow [Semantic Versioning](https://semver.org/).
 
-## [1.1.0] - 2026-11-18
+## [1.1.0] - 2026-11-19
 Realistic art and a pointer- and touch-first interface. The rules, saves and scores are unchanged.
 
 ### Changed
@@ -14,7 +14,7 @@ Realistic art and a pointer- and touch-first interface. The rules, saves and sco
 - **Endings** are scenes lit by a sun: an orbital sunset for retirement, a cratered moon with a glass dome, and your own ship tumbling among hull plates.
 - **The app icon's** freighter is the generated one.
 - **Pointer and touch first.** Every action is discoverable and quick with a pointer or a finger; the keyboard is still a complete second path and no shortcut changed.
-  - Market: quantity chips (1, 5, 20, Max) with Buy and Sell on every row, a visible Jettison or Dump button and a full context menu.
+  - Market: quantity chips (1, 5, 20, Max) with Buy and Sell on every row, a visible Jettison or Dump button and a full context menu. In a narrow table Stock and P/L move under the buy price and the held count, so the actions stay on screen.
   - Shipyard: a Compare toggle on each card; double-click opens the purchase review.
   - Outfitter: drag an item onto a free slot to buy it, or an installed item onto the sell well.
   - Galaxy chart: a click pins a card with Set Target, Track and Plot Route; a plain mouse wheel zooms, two fingers pan, pinch zooms; larger hit areas.
