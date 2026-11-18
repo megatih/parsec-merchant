@@ -108,7 +108,7 @@ private struct RoundsRow: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(.readableSecondary).frame(width: 16 * textScale)  // A11Y-026: the symbol grows with the text
+                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(.readableSecondary).frame(width: 16 * textScale)
                 if let opponent {
                     Text("\(items.count) rounds against the \(String(localized: Names.ship(opponent)))")
                 } else {
