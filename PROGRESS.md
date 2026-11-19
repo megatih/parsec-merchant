@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M27 done; working on M28 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
-- **Next step:** M28: README screenshots re-exported, QA-REPORT release rows, `scripts/release.sh`, `gh release create v2.0.0`, `scripts/final-check.sh`.
-- **Last gate result:** 2026-11-20: `verify.sh --ui` from the mirror: every step PASS except one UI test of 56 (the accented pseudo-language start check, a test helper that read an English word); fixed and that test re-run green. `verify.sh` ALL GATES PASSED on the commit.
+- **Current milestone:** M28 done (release 2.0.0 published). The first number is the last finished milestone (spec-trace reads it).
+- **Next step:** none. Release 2.0.0 is complete; `scripts/final-check.sh` is the completion check.
+- **Last gate result:** 2026-11-20: M28: `verify.sh` ALL GATES PASSED on the release commit; `release.sh` RELEASE PASS; `final-check.sh` runs `verify.sh --ui` on HEAD.
 - **Blockers:** none
 
 ## Milestones
@@ -37,7 +37,7 @@
 - [x] M25 Encounter, transit, interruptions (2026-11-20, tag m25-done; two ship panels, role badge, action bar with key caps, sheets rebuilt from components, no glass)
 - [x] M26 Endings, welcome, new game, game over, icon (2026-11-20, tag m26-done; four ending scenes redrawn with the player's ship, Welcome and Game Over in the console palette)
 - [x] M27 Keyboard, menus, accessibility, words, help (2026-11-20, tag m27-done; Trade menu, keyboard-only loop, design and help-tag audits, vocabulary, help pages rewritten)
-- [ ] M28 Release 2.0.0
+- [x] M28 Release 2.0.0 (2026-11-20, tags m28-done and v2.0.0; CHANGELOG, README with re-exported screenshots, help pages, QA-REPORT 2.0 rows, release zip with SHA-256 published, `final-check.sh`)
 
 ## M18 checklist
 - [x] PRD, audit and research committed
