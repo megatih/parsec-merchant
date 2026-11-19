@@ -65,7 +65,7 @@ private struct PointerButtonBody: View {
                     // Centred on the bezel and allowed to reach past it, so rows keep their height.
                     Color.clear
                         .contentShape(Rectangle())
-                        .onTapGesture { if isEnabled { configuration.trigger() } }
+                        .gesture(TapGesture().onEnded { if isEnabled { configuration.trigger() } })
                         .accessibilityRepresentation { Button(configuration).buttonStyle(.automatic) }
                         .frame(width: width, height: height)
                         .position(x: geo.size.width / 2, y: geo.size.height / 2)

@@ -242,7 +242,6 @@ struct RoutePanelView: View {
                         }
                         // UI-PTR-002: the scene's push-button style: a regular bezel inside a 36 pt target.
                         .buttonStyle(PointerButtonStyle())
-                        .controlSize(.small)  // the bezel stays compact; the target is still 36 pt
                         .tint(pr.objective == objective ? .accentColor : nil)
                         .help(Text(RouteObjectiveText.help(objective)))
                         .accessibilityAddTraits(pr.objective == objective ? .isSelected : [])
@@ -268,11 +267,11 @@ struct RoutePanelView: View {
                         .accessibilityIdentifier(ids.routeUnreachable)
                 }
                 Button("Clear") { session.clearRoute() }
-                    .controlSize(.small)  // route Clear: compact bezel, 36 pt target
                     .help(Text("Forget this route."))
                     .accessibilityIdentifier(ids.routeClear)
             }
-            .padding(10)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)  // A11Y-026: the panel and the HUD column fit the minimum window at the largest Text Size
             .frame(width: 300, alignment: .leading)
             .overlayBackground(cornerRadius: 10)  // A11Y-019
             .accessibilityElement(children: .contain)

@@ -49,21 +49,16 @@ struct PointerTests {
         }
         #expect(files.count > 100)
         var taps = 0
-        // PointerTarget.swift defines the modifiers; its own tap is the push-button target, not a card.
-        for f in files where f.text.contains(".onTapGesture") && f.name != "Accessibility/PointerTarget.swift" {
+        for f in files where f.text.contains(".onTapGesture") {
             taps += 1
             #expect(f.text.contains(".hoverHighlight("), "\(f.name) takes taps without hover feedback")
         }
         #expect(taps >= 2)
-        // Small and mini control sizes shrink targets. The documented exceptions (UI-PTR-004): a progress spinner, and the
-        // route panel's push buttons, whose bezels stay compact so the panel fits at the largest Text Size (A11Y-026)
-        // while PointerButtonStyle keeps their targets at 36 pt (measured by PointerTargetUITests).
-        let allowed = ["Map/MapHUDViews.swift": ["ProgressView().controlSize(.small)",
-                                                 ".controlSize(.small)  // the bezel stays compact; the target is still 36 pt",
-                                                 ".controlSize(.small)  // route Clear: compact bezel, 36 pt target"]]
+        // Small and mini control sizes shrink targets; the only ones left are not buttons.
+        let allowed = ["Map/MapHUDViews.swift": "ProgressView().controlSize(.small)"]
         for f in files {
             for line in f.text.components(separatedBy: "\n") where line.contains(".controlSize(.small)") || line.contains(".controlSize(.mini)") {
-                #expect(allowed[f.name]?.contains(where: line.contains) == true, "\(f.name): \(line.trimmingCharacters(in: .whitespaces))")
+                #expect(allowed[f.name].map(line.contains) == true, "\(f.name): \(line.trimmingCharacters(in: .whitespaces))")
             }
         }
         // Every place that reads the held modifiers sits beside a visible control that does the same without them.
