@@ -24,7 +24,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         click(AXID.Bridge.targetNext)
         shoot("readme-bridge")
         openPage("crew")
-        waitFor("page.crew")
+        waitFor("crew.root")
         shoot("readme-personnel")
         openPage("galaxy")
         let g = AXID.Galaxy.section
