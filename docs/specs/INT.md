@@ -70,7 +70,7 @@
 ## 8. Galaxy chart and system intel (app)
 
 - **INT-036** {M10} [UI] [M][W][P] Hover card intel rows (MAP-047): up to 3 held-or-target-relevant items with their quote (value plus age or "estimate"), chosen as the held items with the highest quote `sell`, else the 3 highest quotes overall; then "Best profit for your hold: +N" from `holdValue(at:)`. Identifiers are not needed (the card is not interactive). (source: UX-VISION §4.7 "hover shows … known prices and best profit"; MAP-047)
-- **INT-037** {M10} [UI] [M][W][P] Find Prices (`<scope>.context.findPrices`, MAP-053) opens the System Intel sheet (`systemIntel.sheet`) for the clicked system: a table of the ten items with sell and buy quotes, source and age (`systemIntel.row.<item>`), the known resource or "Special resources unknown", the pressure hint if any, the last visit ("Day N", "date unknown" or "never"), and Done (`systemIntel.done`). (source: UX-VISION §4.7 "right-click opens a context menu: … Find Prices"; Palm: Src/Traveler.c:779-782 "Special resources unknown")
+- **INT-037** {M10} [UI] [M][W][P] The Selected System panel of the Galactic Chart (`<scope>.selectionCard`, UI-PG-060) shows, for the selected system, the ten goods with the best known price each (`systemIntel.row.<item>`): a remembered quote with its age, or the average-price estimate marked "est.", or a dash where the good is not traded. It reads `SystemIntelModel` only, so it shows nothing the game does not already expose (UI-PG-063). The System Intel sheet and the Find Prices context item of 1.1 are gone. (rewritten for release 2.0)
 
 ## 9. Settings, readout and integration
 

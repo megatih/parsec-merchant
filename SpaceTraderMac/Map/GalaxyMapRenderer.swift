@@ -207,7 +207,7 @@ enum GalaxyMapRenderer {
             ctx.fill(p, with: .color(MapStyle.tracked))
             if let label, let tip = tri.first {
                 // The name and distance sit beside the arrow, pulled inside the chart's edges.
-                let text = ctx.resolve(Text(verbatim: label).font(.system(size: 10, weight: .semibold)).foregroundStyle(MapStyle.label))
+                let text = ctx.resolve(Text(verbatim: label).font(MapStyle.font(10, .semibold)).foregroundStyle(MapStyle.label))
                 let size = text.measure(in: CGSize(width: 400, height: 40))
                 let x = min(max(tip.x, size.width / 2 + 6), pm.key.width - size.width / 2 - 6)
                 let y = min(max(tip.y + (tip.y < pm.key.height / 2 ? 16 : -16), size.height / 2 + 4), pm.key.height - size.height / 2 - 4)
@@ -258,7 +258,7 @@ enum GalaxyMapRenderer {
                 crosshair(&ctx, at: c, radius: r, color: bridge == nil ? MapStyle.target : MapStyle.brass)
                 if let bridge {
                     // UI-BRG-010: the reticle and the word, never the colour alone.
-                    ctx.draw(Text(verbatim: bridge.targetLabel).font(.system(size: 9, weight: .bold)).foregroundStyle(MapStyle.brass),
+                    ctx.draw(Text(verbatim: bridge.targetLabel).font(MapStyle.font(9, .bold)).foregroundStyle(MapStyle.brass),
                              at: CGPoint(x: c.x, y: c.y - r - 14))
                 }
             }
@@ -329,17 +329,17 @@ enum GalaxyMapRenderer {
         let rect = CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)
         ctx.fill(Path(ellipseIn: rect), with: .color(MapStyle.route))
         if emphasised { ctx.stroke(Path(ellipseIn: rect.insetBy(dx: -1.5, dy: -1.5)), with: .color(.white), lineWidth: 1 * strokeScale) }
-        ctx.draw(Text(verbatim: "\(number)").font(.system(size: 8, weight: .bold)).foregroundStyle(.black), at: c)
+        ctx.draw(Text(verbatim: "\(number)").font(MapStyle.font(8, .bold)).foregroundStyle(.black), at: c)
     }
 
     // MARK: Labels
 
     private static func drawLabel(_ ctx: inout GraphicsContext, _ label: MapLabel) {
-        ctx.draw(Text(verbatim: label.name).font(.system(size: 10, weight: .medium)).foregroundStyle(MapStyle.label),
+        ctx.draw(Text(verbatim: label.name).font(MapStyle.font(10, .medium)).foregroundStyle(MapStyle.label),
                  at: label.rect.origin, anchor: .topLeading)
         if let cap = label.caption {
             let text = Text("\(SystemText.techLevel(cap.techLevel)) · \(SystemText.government(cap.politics))")
-            ctx.draw(text.font(.system(size: 9)).foregroundStyle(MapStyle.caption),
+            ctx.draw(text.font(MapStyle.font(9)).foregroundStyle(MapStyle.caption),
                      at: CGPoint(x: label.rect.minX, y: label.rect.minY + MapLabelPolicy.nameHeight), anchor: .topLeading)
         }
     }
@@ -350,7 +350,7 @@ enum GalaxyMapRenderer {
         ctx.stroke(Path(ellipseIn: CGRect(x: c.x - rr, y: c.y - rr, width: 2 * rr, height: 2 * rr)),
                    with: .color(MapStyle.highlight.opacity(0.9 - 0.4 * pulse)), lineWidth: 2 * strokeScale)
         if let name {
-            ctx.draw(Text(verbatim: name).font(.system(size: 10, weight: .semibold)).foregroundStyle(MapStyle.label),
+            ctx.draw(Text(verbatim: name).font(MapStyle.font(10, .semibold)).foregroundStyle(MapStyle.label),
                      at: CGPoint(x: c.x + r + 4, y: c.y - MapLabelPolicy.nameHeight / 2), anchor: .topLeading)
         }
     }

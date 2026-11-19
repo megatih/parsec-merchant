@@ -88,7 +88,7 @@ enum MarketRowAccessibility {
         let actions = [
             RowAction(kind: .buyOne, name: String(localized: "Buy 1")),
             RowAction(kind: .sellOne, name: String(localized: "Sell 1")),
-            RowAction(kind: .buyMax, name: String(localized: "Buy Max")),
+            RowAction(kind: .buyMax, name: String(localized: "Buy Maximum")),
             RowAction(kind: .sellAll, name: String(localized: "Sell All")),
             RowAction(kind: .whyThisPrice, name: String(localized: "Why This Price")),
         ]

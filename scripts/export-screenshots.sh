@@ -28,7 +28,7 @@ if [ "$MODE" = "readme" ]; then
   RESULT="build/results/screenshots.xcresult"
   PREFIX="readme-"
   DEST="docs/screenshots"
-  EXPECTED="readme-welcome readme-bridge readme-market readme-galaxy readme-shipyard-designer readme-logbook-statistics
+  EXPECTED="readme-welcome readme-bridge readme-personnel readme-galaxy readme-shipyard-designer readme-logbook-statistics
             readme-achievements readme-encounter readme-arrival readme-newspaper readme-gameover readme-bridge-dark"
   rm -rf "$RESULT"
   mkdir -p build/logs

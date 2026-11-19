@@ -9,16 +9,16 @@ struct HoverCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(verbatim: model.title).scaledFont(.headline)
+            Text(verbatim: model.title).pmFont(.valueLarge)
             ForEach(Array(model.rows.enumerated()), id: \.offset) { _, row in
-                Text(verbatim: row).scaledFont(.caption).foregroundStyle(.readableSecondary)
+                Text(verbatim: row).pmFont(.caption).foregroundStyle(PMColor.textSecondary)
             }
             if !model.tags.isEmpty {
-                Text(verbatim: model.tags.joined(separator: " · ")).scaledFont(.caption, weight: .bold).foregroundStyle(.signalOrange)
+                Text(verbatim: model.tags.joined(separator: " · ")).pmFont(.caption).foregroundStyle(PMColor.caution)
             }
         }
-        .padding(10)
-        .overlayBackground(cornerRadius: 10)  // A11Y-019
+        .padding(PMSpace.m)
+        .overlayBackground(cornerRadius: PMRadius.panel)  // A11Y-019
         .compositingGroup()  // one shadow for the card, not a halo around each text
         .shadow(radius: 4)
     }
@@ -40,15 +40,17 @@ struct MapZoomHUD: View {
                 .disabled(viewport.isAtMaxZoom)
             button("Zoom Out", "minus.magnifyingglass", ids.zoomOut, help: "Zoom out (⌘−)", action: zoomOut)
                 .disabled(viewport.isAtMinZoom)
-            button("Fit Range", "scope", ids.fitRange, help: "Show the systems in range", action: fitRange)
-            button("Fit Galaxy", "arrow.up.left.and.down.right.magnifyingglass", ids.fitGalaxy, help: "Show the whole galaxy (⌘0)",
+            button("Fit Range", "scope", ids.fitRange, help: "Show the systems in range (⌘0)", action: fitRange)
+            button("Fit Galaxy", "arrow.up.left.and.down.right.magnifyingglass", ids.fitGalaxy, help: "Show the whole galaxy",
                    action: fitGalaxy)
             button("Legend", "info.circle", ids.legendToggle, help: "Show or hide the legend") { legendShown.toggle() }
         }
         .buttonStyle(.borderless)
         // The 36 pt targets fill the capsule's height, so the HUD column keeps its height at the largest Text Size (A11Y-026).
-        .padding(.horizontal, 6)
-        .glassEffect(in: .capsule)
+        .padding(.horizontal, PMSpace.s)
+        // UI-DS-024: a solid panel fill; the game area uses no glass.
+        .background(PMColor.panel, in: Capsule())
+        .overlay { Capsule().strokeBorder(PMColor.hairline) }
     }
 
     private func button(_ title: LocalizedStringResource, _ symbol: String, _ id: String, help: LocalizedStringResource,
@@ -78,14 +80,14 @@ struct MapLegendView: View {
                 HStack(spacing: 12) {  // room between a swatch and its text (A11Y-029 contrast sampling)
                     Canvas { ctx, size in draw(symbol, in: &ctx, center: CGPoint(x: size.width / 2, y: size.height / 2)) }
                         .frame(width: 26, height: 18)
-                        .background(MapStyle.spaceBottom, in: .rect(cornerRadius: 3))
+                        .background(MapStyle.spaceBottom, in: .rect(cornerRadius: PMRadius.control))
                         .accessibilityHidden(true)
-                    Text(title(symbol)).scaledFont(.caption)
+                    Text(title(symbol)).pmFont(.caption)
                 }
             }
         }
-        .padding(10)
-        .overlayBackground(cornerRadius: 10)  // A11Y-019
+        .padding(PMSpace.m)
+        .overlayBackground(cornerRadius: PMRadius.panel)  // A11Y-019
         // A11Y-029: a labelled container; each meaning is its own text (a combined element would be measured over the
         // dark symbol swatches).
         .accessibilityElement(children: .contain)
@@ -162,7 +164,7 @@ struct MapLegendView: View {
             p.addLine(to: CGPoint(x: c.x + 3, y: c.y))
             ctx.stroke(p, with: .color(MapStyle.route), lineWidth: 2.5)
             ctx.fill(Path(ellipseIn: CGRect(x: c.x + 2, y: c.y - 6, width: 12, height: 12)), with: .color(MapStyle.route))
-            ctx.draw(Text(verbatim: "1").font(.system(size: 8, weight: .bold)).foregroundStyle(.black), at: CGPoint(x: c.x + 8, y: c.y))
+            ctx.draw(Text(verbatim: "1").font(MapStyle.font(8, .bold)).foregroundStyle(.black), at: CGPoint(x: c.x + 8, y: c.y))
         }
     }
 }
@@ -185,16 +187,16 @@ struct TargetStripView: View {
                         Text("No target selected")
                     }
                 }
-                .scaledFont(.callout, weight: .bold)
+                .pmFont(.body)
                 .accessibilityIdentifier(ids.target)
                 if let state = session.state, snapshot.hasTarget, state.warpTargetPreview(snapshot.warpSystem).viaWormhole {
                     Text("Wormhole to \(snapshot.systems[snapshot.warpSystem].name)")
-                        .scaledFont(.caption)
+                        .pmFont(.caption)
                         .accessibilityIdentifier(ids.wormholeLabel)
                 }
                 if snapshot.showTrackedRange, let t = snapshot.trackedSystem, t != snapshot.currentSystem {
                     Text("\(MapText.parsecs(snapshot.systems[t].distance)) to \(snapshot.systems[t].name).")
-                        .scaledFont(.caption)
+                        .pmFont(.caption)
                         .accessibilityIdentifier(ids.trackedRange)
                 }
             }
@@ -211,13 +213,13 @@ struct TargetStripView: View {
             if let state = session.state, state.quests.canSuperWarp {
                 Button("Use Singularity") { session.send(.jump) }
                     .disabled(!state.jumpPreview.available || session.isInputLocked)
-                    .help(Text("Jump with the portable singularity."))
+                    .help(Text("Jump with the portable singularity"))
                     .accessibilityIdentifier(ids.jump)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .overlayBackground(cornerRadius: 18)  // A11Y-019/029: legible over the dark map in the light appearance
+        .padding(.horizontal, PMSpace.l)
+        .padding(.vertical, PMSpace.s)
+        .overlayBackground(cornerRadius: PMRadius.panel)  // A11Y-019/029: legible over the dark map in the light appearance
         .accessibilityElement(children: .contain)
     }
 }
@@ -231,7 +233,7 @@ struct RoutePanelView: View {
     var body: some View {
         if let pr = session.plannedRoute {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Route to \(snapshot.systems[pr.destination].name)").scaledFont(.headline)
+                Text("Route to \(snapshot.systems[pr.destination].name)").pmFont(.valueLarge)
                 // A11Y-026: the objectives wrap rather than truncate their titles.
                 WrappingHStack(spacing: 4, lineSpacing: 4, leading: true) {
                     ForEach(RouteObjective.allCases, id: \.self) { objective in
@@ -240,9 +242,8 @@ struct RoutePanelView: View {
                         } label: {
                             Text(RouteObjectiveText.title(objective))
                         }
-                        // UI-PTR-002: the scene's push-button style: a regular bezel inside a 36 pt target.
-                        .buttonStyle(PointerButtonStyle())
-                        .tint(pr.objective == objective ? .accentColor : nil)
+                        // UI-PTR-002: the component's 36 pt target; the chosen objective is the primary one.
+                        .buttonStyle(PMButtonStyle(kind: pr.objective == objective ? .primary : .standard))
                         .help(Text(RouteObjectiveText.help(objective)))
                         .accessibilityAddTraits(pr.objective == objective ? .isSelected : [])
                         .accessibilityIdentifier(ids.routeObjective(objective))
@@ -256,24 +257,24 @@ struct RoutePanelView: View {
                     }
                     Divider()
                     Text("\(route.totalJumps) jumps · \(route.totalParsecs) parsecs · \(route.estimatedCredits) cr. (Estimate)")
-                        .scaledFont(.caption)
+                        .pmFont(.caption)
                         .fixedSize(horizontal: false, vertical: true)  // A11Y-026: wraps rather than truncating
                 } else if pr.isPlanning {
                     ProgressView().controlSize(.small)
                 } else {
                     Text("\(snapshot.systems[pr.destination].name) can't be reached with a full tank (\(snapshot.fuelCapacity) parsecs per jump).")
-                        .scaledFont(.caption)
-                        .foregroundStyle(.signalRed)
+                        .pmFont(.caption)
+                        .foregroundStyle(PMColor.loss)
                         .accessibilityIdentifier(ids.routeUnreachable)
                 }
                 Button("Clear") { session.clearRoute() }
-                    .help(Text("Forget this route."))
+                    .help(Text("Forget this route"))
                     .accessibilityIdentifier(ids.routeClear)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)  // A11Y-026: the panel and the HUD column fit the minimum window at the largest Text Size
+            .padding(.horizontal, PMSpace.m)
+            .padding(.vertical, PMSpace.s)  // A11Y-026: the panel and the HUD column fit the minimum window at the largest Text Size
             .frame(width: 300, alignment: .leading)
-            .overlayBackground(cornerRadius: 10)  // A11Y-019
+            .overlayBackground(cornerRadius: PMRadius.panel)  // A11Y-019
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(ids.routePanel)
         }
@@ -289,160 +290,20 @@ struct RoutePanelView: View {
 
     private func hopRow(_ n: Int, _ hop: RouteHop) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(verbatim: "\(n). \(snapshot.systems[hop.from].name) → \(snapshot.systems[hop.to].name)").scaledFont(.caption, weight: .bold)
+            Text(verbatim: "\(n). \(snapshot.systems[hop.from].name) → \(snapshot.systems[hop.to].name)").pmFont(.caption)
             HStack {
                 Text(hop.viaWormhole ? String(localized: "Wormhole") : MapText.parsecs(hop.distance))
                 if hop.refuelUnits > 0 { Text("Buy \(hop.refuelUnits) fuel (\(hop.refuelCost) cr.)") }
                 Spacer()
                 Text("\(hop.cost) cr.")
             }
-            .scaledFont(.caption2)
-            .foregroundStyle(.readableSecondary)
+            .pmFont(.caption)
+            .foregroundStyle(PMColor.textSecondary)
         }
         // A11Y-029: a labelled container, so each line is measured in its own colour.
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(verbatim: hopLabel(n, hop)))
         .accessibilityIdentifier(ids.routeHop(n))
-    }
-}
-
-/// The inline map search with filters and suggestions (MAP-070…073).
-struct MapSearchView: View {
-    @Environment(GameSession.self) private var session
-    @Bindable var ui: MapViewModel
-    let snapshot: MapSnapshot
-    let ids: AXID.Map
-    var searchFocused: FocusState<Bool>.Binding
-    let center: (Int) -> Void
-    let send: (Command) -> Void
-
-    var body: some View {
-        let sells = session.sellsMatches(ui.sellsItem)
-        let suggestions = ui.suggestions(snapshot, sells: sells)
-        VStack(alignment: .leading, spacing: 6) {
-            TextField("Find a system", text: $ui.searchText)
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 240)
-                .focused(searchFocused)
-                .onChange(of: ui.searchText) {
-                    ui.searchMessage = nil
-                    ui.highlightedSuggestion = nil
-                    ui.suggestionsShown = true
-                }
-                .onKeyPress(.downArrow) {
-                    ui.moveHighlight(by: 1, in: suggestions)
-                    return .handled
-                }
-                .onKeyPress(.upArrow) {
-                    ui.moveHighlight(by: -1, in: suggestions)
-                    return .handled
-                }
-                .onKeyPress(.escape) {
-                    ui.suggestionsShown = false
-                    return .handled
-                }
-                .onSubmit { submit(suggestions) }
-                .help(Text("Type a system name; Return selects it."))
-                .accessibilityLabel(Text("Search systems"))  // A11Y-003
-                .accessibilityIdentifier(ids.searchField)
-            // A11Y-026: the filters wrap rather than run under the zoom and heatmap controls.
-            WrappingHStack(spacing: 4, lineSpacing: 4, leading: true) {
-                ForEach(SystemSearchFilter.offered(snapshot), id: \.self) { f in
-                    Toggle(isOn: Binding { ui.filters.contains(f) } set: { on in
-                        if on { ui.filters.insert(f) } else { ui.filters.remove(f) }
-                        ui.suggestionsShown = true
-                    }) {
-                        Text(title(f))
-                    }
-                    .toggleStyle(.button)
-                    .help(Text(title(f)))
-                    .accessibilityIdentifier(ids.searchFilter(f))
-                }
-                // INT-028: "sells <item>" from intel only (estimates marked in the rows).
-                // A11Y-029: an AppKit pull-down (SwiftUI's Menu has no press action for VoiceOver on macOS 27).
-                PopUpMenuButton(title: ui.sellsItem.map { String(localized: "Sells \(String(localized: Names.item($0)))") }
-                                    ?? String(localized: "Sells…"),
-                                items: [PopUpMenuButton.Item(title: String(localized: "Any commodity"), isOn: ui.sellsItem == nil) {
-                                    ui.sellsItem = nil
-                                }] + TradeItemType.allCases.map { item in
-                                    PopUpMenuButton.Item(title: String(localized: Names.item(item)), isOn: ui.sellsItem == item) {
-                                        ui.sellsItem = item
-                                        ui.suggestionsShown = true
-                                    }
-                                },
-                                accessibilityLabel: String(localized: "Sells commodity"), identifier: ids.searchFilterSells,
-                                controlSize: .small)
-            }
-            if let message = ui.searchMessage {
-                Text(verbatim: message).scaledFont(.caption).foregroundStyle(.signalRed)
-            }
-            if ui.suggestionsShown, !suggestions.isEmpty {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(suggestions, id: \.self) { i in
-                        Button {
-                            choose(i)
-                        } label: {
-                            HStack {
-                                Text(verbatim: snapshot.systems[i].name)
-                                if let sells, sells.indices.contains(i), sells[i] == .estimate {
-                                    Text("estimate").scaledFont(.caption2).foregroundStyle(.readableSecondary)
-                                }
-                                Spacer()
-                                Text(i == snapshot.currentSystem ? String(localized: "Here") : MapText.parsecs(snapshot.systems[i].distance))
-                                    .foregroundStyle(.readableSecondary)
-                            }
-                            .padding(.horizontal, 8)
-                            .frame(width: 240)
-                            .frame(minHeight: PointerTarget.minimum)  // UI-PTR-013
-                            .background(ui.highlightedSuggestion == i ? Color.accentColor.opacity(0.35) : .clear)
-                            .contentShape(.rect)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(Text(verbatim: snapshot.systems[i].name))
-                        .accessibilityValue(Text(verbatim: MapAccessibility.value(for: i, snapshot: snapshot)))
-                        .accessibilityIdentifier(ids.searchResult(i))
-                    }
-                }
-                .padding(.vertical, 4)
-                .overlayBackground(cornerRadius: 8)  // A11Y-019
-            }
-        }
-        .padding(8)
-        .overlayBackground(cornerRadius: 10)  // A11Y-019
-    }
-
-    private func title(_ f: SystemSearchFilter) -> LocalizedStringResource {
-        switch f {
-        case .visited: "Visited"
-        case .unvisited: "Unvisited"
-        case .inRange: "In range"
-        case .questHere: "Quest here"
-        case .hasShipyard: "Has shipyard"
-        case .wormhole: "Wormhole"
-        }
-    }
-
-    /// MAP-073: centre, target and clear.
-    private func choose(_ i: Int) {
-        center(i)
-        send(.selectTarget(i))
-        ui.clearSearch()
-    }
-
-    /// Return: the highlighted suggestion, else `FindInput.parse` as the Find System sheet does.
-    private func submit(_ suggestions: [Int]) {
-        if let h = ui.highlightedSuggestion, suggestions.contains(h) { return choose(h) }
-        guard let state = session.state else { return }
-        let outcome = FindSystemModel.resolve(ui.searchText, track: false, state: state)
-        switch outcome {
-        case .noMatch:
-            ui.searchMessage = String(localized: "No system found.")
-        case let .select(system, _):
-            choose(system)
-        default:
-            session.performFind(outcome)
-            ui.clearSearch()
-        }
     }
 }
 

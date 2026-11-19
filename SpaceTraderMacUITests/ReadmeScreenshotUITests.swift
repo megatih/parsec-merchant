@@ -23,8 +23,9 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         openPage("bridge")
         click(AXID.Bridge.targetNext)
         shoot("readme-bridge")
-        click(AXID.Cargo.buy("water"))
-        shoot("readme-market")
+        openPage("crew")
+        waitFor("page.crew")
+        shoot("readme-personnel")
         openPage("galaxy")
         let g = AXID.Galaxy.section
         if !element(g.legend).exists { click(g.legendToggle) }

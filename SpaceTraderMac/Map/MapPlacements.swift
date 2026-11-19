@@ -1,17 +1,33 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+import ParsecEngine
 import ParsecInsights
 import SwiftUI
 
-/// Galaxy (⌘7, MAP-075): the map filling the detail area.
+/// Galactic Chart (⌘8, MAP-075, PRD §4.11): the page frame with Find… and the chart with its Selected System panel.
 struct GalaxySectionView: View {
+    @Environment(GameSession.self) private var session
+    @Environment(\.pmScale) private var scale
+
     var body: some View {
-        VStack(spacing: 0) {
-            InlineTipView(tip: GalaxyTip(), id: .galaxy, margin: 12)  // A11Y-043, MAP-098
-            GalaxyMapView(scope: .galaxy)
+        GamePage(section: .galaxy) {
+            PMButton(title: "Find…", systemImage: "magnifyingglass", key: "⌘F", help: "Find a system by name",
+                     disabledReason: session.isInputLocked ? String(localized: ReasonText.text(for: .pendingDecisionFirst)) : nil,
+                     identifier: AXID.Galaxy.find) {
+                session.showFindSystem()
+            }
+            .fixedSize()
+        } content: {
+            VStack(spacing: PMSpace.xs * scale) {
+                InlineTipView(tip: GalaxyTip(), id: .galaxy, margin: 6)  // A11Y-043, MAP-098
+                GalaxyMapView(scope: .galaxy)
+            }
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(AXID.SectionRoot.root(.galaxy))
     }
+}
+
+/// Measures of the Galactic Chart's layout, in design points.
+nonisolated enum ChartMetrics {
+    static let selectionWidth: CGFloat = 300
 }
 
 /// The Galaxy Chart window's content (MAP-076).
@@ -29,16 +45,19 @@ struct GalaxyChartWindowView: View {
                 GalaxyMapView(scope: .galaxyWindow)
             } else {
                 Text("No game loaded")
-                    .scaledFont(.title3)
-                    .foregroundStyle(.readableSecondary)
+                    .pmFont(.title)
+                    .foregroundStyle(PMColor.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .accessibilityIdentifier(AXID.Galaxy.windowPlaceholder)
             }
         }
         .frame(minWidth: GalaxyWindowMetrics.minimumSize.width, minHeight: GalaxyWindowMetrics.minimumSize.height)
+        // UI-NAV-008: the same console as the page, in both appearances.
+        .environment(\.colorScheme, .dark)
+        .background(PMColor.space)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Galaxy.windowRoot)
-        .navigationTitle(Text("Galaxy Chart"))
+        .navigationTitle(Text("Galactic Chart"))
         .onAppear {
             session.map.galaxyWindowOpen = true
             restoreViewport()

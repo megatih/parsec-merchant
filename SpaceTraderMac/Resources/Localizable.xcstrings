@@ -245,6 +245,16 @@
     "%@ is looking for work." : {
 
     },
+    "%@ of at most %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ of at most %2$@"
+          }
+        }
+      }
+    },
     "%@ to %@." : {
       "localizations" : {
         "en" : {
@@ -521,6 +531,9 @@
           }
         }
       }
+    },
+    "%lld aboard" : {
+
     },
     "%lld at %@ cr." : {
       "localizations" : {
@@ -845,6 +858,9 @@
         }
       }
     },
+    "%lld in your hold" : {
+
+    },
     "%lld installed" : {
 
     },
@@ -985,6 +1001,9 @@
           }
         }
       }
+    },
+    "%lld offered" : {
+
     },
     "%lld parsecs" : {
       "localizations" : {
@@ -1257,7 +1276,7 @@
     "A free slot: buy an item of this kind to fill it" : {
 
     },
-    "A friend who enters this code plays the same galaxy." : {
+    "A friend who enters this code plays the same galaxy" : {
 
     },
     "A hacker conveys to you that he has cracked the passwords to the galaxy-wide police computer network, and that he can erase your police record for the sum of 5000 credits. Do you want him to do that?" : {
@@ -1489,9 +1508,6 @@
 
     },
     "An empty crew quarter." : {
-
-    },
-    "An estimate from public information: the opponent's class, visible equipment and your flee odds." : {
 
     },
     "An experimental shield of unmatched strength. It can't be bought anywhere." : {
@@ -1857,6 +1873,9 @@
     "Average price at the target. Estimates carry no guarantee" : {
 
     },
+    "Average prices" : {
+
+    },
     "Back" : {
 
     },
@@ -1977,6 +1996,9 @@
 
     },
     "Best trade" : {
+
+    },
+    "Best value in your crew plus gadget bonuses, adjusted for difficulty" : {
 
     },
     "Better prices for goods and equipment." : {
@@ -2220,9 +2242,6 @@
     "Buy Insurance" : {
 
     },
-    "Buy Max" : {
-
-    },
     "Buy Maximum" : {
 
     },
@@ -2301,7 +2320,13 @@
     "Captain" : {
 
     },
+    "Captain Ahab" : {
+
+    },
     "Captain Ahab hails you" : {
+
+    },
+    "Captain Conrad" : {
 
     },
     "Captain Conrad Comes Under Attack By Criminal!" : {
@@ -2311,6 +2336,9 @@
 
     },
     "Captain Conrad's Ship Destroyed by Villain!" : {
+
+    },
+    "Captain Huie" : {
 
     },
     "Captain Huie hails you" : {
@@ -2334,7 +2362,13 @@
     "Cargo For Sale" : {
 
     },
+    "Cargo Rows" : {
+
+    },
     "Cargo and Special Cargo" : {
+
+    },
+    "Cargo and Trading" : {
 
     },
     "Cargo bays" : {
@@ -2518,6 +2552,19 @@
     "Closed: %@" : {
 
     },
+    "Cmdr. %@" : {
+
+    },
+    "Cmdr. %@ · “%@”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cmdr. %1$@ · “%2$@”"
+          }
+        }
+      }
+    },
     "Code" : {
 
     },
@@ -2580,6 +2627,9 @@
 
     },
     "Compare" : {
+
+    },
+    "Compare the hold's value here and at the target (estimates, no guarantee)" : {
 
     },
     "Competent" : {
@@ -2688,7 +2738,7 @@
     "Credits & License" : {
 
     },
-    "Credits on hand." : {
+    "Credits on hand" : {
 
     },
     "Credits on hand. Borrow or repay at the Bank" : {
@@ -2787,29 +2837,6 @@
     "Day" : {
 
     },
-    "Day %@ · %@ · Credits %@ · Debt %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day %1$@ · %2$@ · Credits %3$@ · Debt %4$@"
-          }
-        }
-      }
-    },
-    "Day %@ · Game over" : {
-
-    },
-    "Day %@ · In transit to %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day %1$@ · In transit to %2$@"
-          }
-        }
-      }
-    },
     "Day %lld · %@" : {
       "localizations" : {
         "en" : {
@@ -2836,16 +2863,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Day %1$lld · %2$@ · Worth %3$@ cr. · %4$@"
-          }
-        }
-      }
-    },
-    "Day %lld: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day %1$lld: %2$@"
           }
         }
       }
@@ -3000,6 +3017,9 @@
     "Difficulty" : {
 
     },
+    "Dim every system that is not: %@" : {
+
+    },
     "Diplomatic Courier" : {
 
     },
@@ -3107,9 +3127,6 @@
 
     },
     "Each day without a claim adds 1% discount, up to 90%" : {
-
-    },
-    "Each skill is the best value in your crew, plus gadget and haggling bonuses, adjusted for difficulty." : {
 
     },
     "Each warp costs 10%% interest: %@ cr." : {
@@ -3247,6 +3264,9 @@
     "Estimate from the Average Price List (not visited or never seen)." : {
 
     },
+    "Estimate the opponent from public facts: class, equipment and flee odds" : {
+
+    },
     "Evidence Suggests %@ in the %@ System." : {
       "localizations" : {
         "en" : {
@@ -3266,7 +3286,7 @@
     "Explorer" : {
 
     },
-    "Export the log as a Markdown file." : {
+    "Export the log as a Markdown file" : {
 
     },
     "Export…" : {
@@ -3332,9 +3352,6 @@
     "Figures" : {
 
     },
-    "Fill Fuel" : {
-
-    },
     "Fill Tank" : {
 
     },
@@ -3345,6 +3362,9 @@
 
     },
     "Filter (on)" : {
+
+    },
+    "Filters" : {
 
     },
     "Final cost" : {
@@ -3359,16 +3379,13 @@
     "Find" : {
 
     },
-    "Find Prices" : {
-
-    },
     "Find System" : {
 
     },
     "Find System…" : {
 
     },
-    "Find a system" : {
+    "Find a system by name" : {
 
     },
     "Find a system by name (⌥⌘F)" : {
@@ -3485,7 +3502,7 @@
     "Foreign Sabotage Suspected." : {
 
     },
-    "Forget this route." : {
+    "Forget this route" : {
 
     },
     "Forgiving encounters and generous skills while you learn the ropes." : {
@@ -3564,13 +3581,13 @@
     "Galactic Chart" : {
 
     },
+    "Galactic Chart Window" : {
+
+    },
     "Galactic criminal Henry Morgan wants this illegal ion reactor delivered to Nix. It's a very dangerous mission! The reactor and its fuel are bulky, taking up 15 bays. Worse, it's not stable -- its resonant energy will weaken your shields and hull strength while it's aboard your ship. Are you willing to deliver it?" : {
 
     },
     "Galaxy & Extras" : {
-
-    },
-    "Galaxy Chart" : {
 
     },
     "Galaxy and extras" : {
@@ -3601,6 +3618,9 @@
 
     },
     "Game" : {
+
+    },
+    "Game Over" : {
 
     },
     "Game exported." : {
@@ -3744,9 +3764,6 @@
     "Henry Morgan's custom laser. It can't be bought anywhere." : {
 
     },
-    "Here" : {
-
-    },
     "Hero" : {
 
     },
@@ -3845,10 +3862,10 @@
     "How Prices Work" : {
 
     },
-    "How dangerous other pilots think you are." : {
+    "How dangerous other pilots think you are" : {
 
     },
-    "How the police see you." : {
+    "How the police see you" : {
 
     },
     "Huge" : {
@@ -3882,7 +3899,7 @@
     "Hull strength" : {
 
     },
-    "Hull strength as a percentage of the maximum." : {
+    "Hull strength as a percentage of the maximum" : {
 
     },
     "Hull strength. Repair on the Bridge" : {
@@ -3928,6 +3945,9 @@
 
     },
     "In Range" : {
+
+    },
+    "In Transit" : {
 
     },
     "In encounter" : {
@@ -4045,9 +4065,6 @@
     "It ignores you." : {
 
     },
-    "Item" : {
-
-    },
     "Item (0–9)" : {
 
     },
@@ -4073,6 +4090,12 @@
 
     },
     "Jettison Everything?" : {
+
+    },
+    "Jettison every unit of this good" : {
+
+    },
+    "Jettison the quantity you typed" : {
 
     },
     "Jettisoned %lld %@." : {
@@ -4121,7 +4144,7 @@
     "Jump with the portable singularity" : {
 
     },
-    "Jump with the portable singularity." : {
+    "Jump…" : {
 
     },
     "Just as you approach the docking bay, the reactor explodes into a huge radioactive fireball!" : {
@@ -4179,15 +4202,6 @@
 
     },
     "Last Human Judge Retires." : {
-
-    },
-    "Last visit: Day %lld" : {
-
-    },
-    "Last visit: date unknown" : {
-
-    },
-    "Last visit: never" : {
 
     },
     "Last visited" : {
@@ -4359,7 +4373,7 @@
     "Market quantity: sell the typed quantity" : {
 
     },
-    "Market: Buy Max" : {
+    "Market: Buy Maximum" : {
 
     },
     "Market: Sell All" : {
@@ -4780,7 +4794,7 @@
     "No shields" : {
 
     },
-    "No ships for sale here." : {
+    "No ships for sale in this system" : {
 
     },
     "No slot: lost" : {
@@ -4892,6 +4906,9 @@
 
     },
     "Not sold here." : {
+
+    },
+    "Not traded there" : {
 
     },
     "Not visited" : {
@@ -5031,9 +5048,6 @@
     "Out of range." : {
 
     },
-    "Outfitter" : {
-
-    },
     "Over 100% of the maximum units." : {
 
     },
@@ -5054,19 +5068,6 @@
     },
     "Parsec Merchant — %@" : {
 
-    },
-    "Parsec Merchant — Cmdr. %@" : {
-
-    },
-    "Parsec Merchant — Cmdr. %@ · “%@”" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parsec Merchant — Cmdr. %1$@ · “%2$@”"
-          }
-        }
-      }
     },
     "Parsecs travelled" : {
 
@@ -5162,7 +5163,7 @@
         }
       }
     },
-    "Pirates, police and traders destroyed." : {
+    "Pirates, police and traders destroyed" : {
 
     },
     "Plague" : {
@@ -5235,6 +5236,16 @@
     },
     "Police" : {
 
+    },
+    "Police %@ · Pirates %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Police %1$@ · Pirates %2$@"
+          }
+        }
+      }
     },
     "Police Confiscate Reactor" : {
 
@@ -5315,6 +5326,9 @@
     "Poor Soil" : {
 
     },
+    "Portrait of %@" : {
+
+    },
     "Post-Industrial" : {
 
     },
@@ -5358,9 +5372,6 @@
 
     },
     "Priceless collector's item stolen from home of Geurge Locas!" : {
-
-    },
-    "Prices at %@" : {
 
     },
     "Prince Exiled for Palace Plot!" : {
@@ -5510,6 +5521,9 @@
 
     },
     "Read" : {
+
+    },
+    "Read Newspaper" : {
 
     },
     "Read the Target Column" : {
@@ -5742,6 +5756,9 @@
     "Resources" : {
 
     },
+    "Resources: %@" : {
+
+    },
     "Restores some Palm behaviour the Windows port lost." : {
 
     },
@@ -5872,7 +5889,7 @@
     "Save as Defaults" : {
 
     },
-    "Save this design to your templates." : {
+    "Save this design to your templates" : {
 
     },
     "Saved games" : {
@@ -5927,9 +5944,6 @@
     "Sealed Canisters" : {
 
     },
-    "Search systems" : {
-
-    },
     "Search the log" : {
 
     },
@@ -5964,6 +5978,9 @@
 
     },
     "Select the galaxy chart first." : {
+
+    },
+    "Selected System" : {
 
     },
     "Selected: %@" : {
@@ -6087,7 +6104,7 @@
     "Services" : {
 
     },
-    "Set Target" : {
+    "Set as Target" : {
 
     },
     "Set the quantity to 1" : {
@@ -6202,12 +6219,6 @@
     "Show on Galactic Chart" : {
 
     },
-    "Show or Hide Inspector" : {
-
-    },
-    "Show or Hide Sidebar" : {
-
-    },
     "Show or hide the legend" : {
 
     },
@@ -6217,13 +6228,13 @@
     "Show recent events" : {
 
     },
-    "Show the best buys and destinations above the Market table." : {
+    "Show the best buys and destinations above the Market table" : {
 
     },
-    "Show the systems in range" : {
+    "Show the systems in range (⌘0)" : {
 
     },
-    "Show the whole galaxy (⌘0)" : {
+    "Show the whole galaxy" : {
 
     },
     "Show trade recommendations" : {
@@ -6259,10 +6270,10 @@
     "Skip" : {
 
     },
-    "Skip the rest of the trip animation." : {
+    "Skip the rest of the trip animation" : {
 
     },
-    "Skip the transit animation." : {
+    "Skip the transit animation" : {
 
     },
     "Slot" : {
@@ -6407,9 +6418,6 @@
     "Sound" : {
 
     },
-    "Source" : {
-
-    },
     "Sources report %@ in the %@ System." : {
       "localizations" : {
         "en" : {
@@ -6489,9 +6497,6 @@
 
     },
     "Special resource" : {
-
-    },
-    "Special resources unknown" : {
 
     },
     "Spectacular Display as Stolen Ship Destroyed in Fierce Space Battle." : {
@@ -6679,6 +6684,9 @@
     "System Backup Rescheduled." : {
 
     },
+    "System Information" : {
+
+    },
     "System alert" : {
 
     },
@@ -6700,9 +6708,6 @@
     "Take" : {
 
     },
-    "Take All" : {
-
-    },
     "Take Cargo" : {
 
     },
@@ -6712,7 +6717,10 @@
     "Take ambassador Jarek to Devidia.\nJarek is wondering why the journey is taking so long, and is no longer of much help in negotiating trades." : {
 
     },
-    "Take the chosen amount." : {
+    "Take as many as fit in your hold" : {
+
+    },
+    "Take the quantity you typed" : {
 
     },
     "Tank full." : {
@@ -6735,6 +6743,9 @@
       }
     },
     "Target %@, out of range" : {
+
+    },
+    "Target System" : {
 
     },
     "Target shows what each item is estimated to fetch at your target system. The strip above the table suggests the best trades." : {
@@ -7090,6 +7101,9 @@
     "The model is downloading" : {
 
     },
+    "The most you can trade: %@" : {
+
+    },
     "The organic hull used in the Scarab is still not ready for day-to-day use. But Captain Renwick can certainly upgrade your hull with some of his retrofit technology. It's light stuff, and won't reduce your ship's range. Should he upgrade your ship?" : {
 
     },
@@ -7357,7 +7371,7 @@
     "Total costs of the next warp" : {
 
     },
-    "Total shield charge over total shield power." : {
+    "Total shield charge over total shield power" : {
 
     },
     "Total trade profit" : {
@@ -7406,6 +7420,9 @@
 
     },
     "Trade in orbit" : {
+
+    },
+    "Trade the quantity shown" : {
 
     },
     "Trade-in" : {
@@ -7505,10 +7522,16 @@
     "Turn on Continuous attack in Game › Options…, or use Resolve." : {
 
     },
+    "Turn on Continuous attack in View › Options, or use Resolve." : {
+
+    },
     "Turn on “%@” first." : {
 
     },
-    "Type a system name; Return selects it." : {
+    "Two ships stand on the landing pads of your moon base, two windows lit, the planet large in the black sky." : {
+
+    },
+    "Type how many to take" : {
 
     },
     "Type the name of a system." : {
@@ -7588,9 +7611,6 @@
 
     },
     "Use Singularity" : {
-
-    },
-    "Use Singularity…" : {
 
     },
     "Use Wormhole to %@" : {
@@ -7776,22 +7796,19 @@
     "What changes" : {
 
     },
-    "What the hold sells for here and at the target. Estimates carry no guarantee" : {
-
-    },
     "What the next warp to your target will cost" : {
 
     },
-    "What the next warp to your target will cost." : {
+    "What this system pays for each good. Estimates carry no guarantee" : {
 
     },
-    "What you owe the bank. Each warp adds 10% interest." : {
+    "What you owe the bank; each warp adds 10% interest" : {
 
     },
     "What you owe. Interest is charged on every warp" : {
 
     },
-    "What your current ship, its equipment and its cargo are worth." : {
+    "What your current ship, its equipment and its cargo are worth" : {
 
     },
     "What's taking us so long?!" : {
@@ -8040,9 +8057,6 @@
     "You hit the %@." : {
 
     },
-    "You hold" : {
-
-    },
     "You missed the %@." : {
 
     },
@@ -8202,9 +8216,6 @@
     "Your opponent is fleeing." : {
 
     },
-    "Your own value, and in brackets the ship's effective value with crew and gadgets." : {
-
-    },
     "Your passengers need quarters." : {
 
     },
@@ -8229,7 +8240,16 @@
     "Your score didn't make the high-score table." : {
 
     },
+    "Your ship comes to rest in low orbit as the sun sets behind the planet." : {
+
+    },
+    "Your ship drifts in pieces among cooling debris." : {
+
+    },
     "Your ship is insured." : {
+
+    },
+    "Your ship stands on the landing pad of your own moon base, the planet large in the black sky." : {
 
     },
     "Your ship was destroyed by the %@." : {
@@ -8253,7 +8273,7 @@
     "Your ship was destroyed." : {
 
     },
-    "Your ship, cargo and cash, minus your debt." : {
+    "Your ship, cargo and cash, minus your debt" : {
 
     },
     "Your tribbles all died in the explosion." : {
@@ -8302,6 +8322,9 @@
           }
         }
       }
+    },
+    "Your value; in brackets the ship's value with crew and gadgets" : {
+
     },
     "Zoom In" : {
 
@@ -8744,6 +8767,9 @@
 
     },
     "the famous Captain Huie in a" : {
+
+    },
+    "the famous captain" : {
 
     },
     "the famous captain attacks" : {

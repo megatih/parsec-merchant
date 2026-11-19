@@ -94,7 +94,8 @@ nonisolated enum SystemShortcuts {
 
     /// Standard text-view meanings kept free (no app item).
     static let keptFree: Set<NormalizedShortcut> = [
-        s("g", [.command]), s("g", [.shift, .command]), s("e", [.command]), s("p", [.command]), s("p", [.shift, .command]),
+        // ⌘E is View › Recent Events since release 2.0 (PRD-UI-Revamp §4.15); the game has no "Use Selection for Find".
+        s("g", [.command]), s("g", [.shift, .command]), s("p", [.command]), s("p", [.shift, .command]),
         s("t", [.command]), s("b", [.command]), s("i", [.command]), s("u", [.command]),
     ]
 

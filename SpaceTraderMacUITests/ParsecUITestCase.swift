@@ -74,14 +74,25 @@ class ParsecUITestCase: XCTestCase {
         XCTAssertTrue(condition(), message(), file: file, line: line)
     }
 
-    /// The window title as Accessibility reports it: "<title> – <subtitle>" (UI-SHELL-042).
+    /// The window title as Accessibility reports it: "<title> – <subtitle>" (UI-SHELL-042, UI-NAV-007).
     var windowTitle: String { mainWindow.title }
 
-    /// The subtitle part of the title ("Day 0 · Castor · Credits 1,000 · Debt 0").
+    /// The game's status line, read from the status bar ("Day 0 · Castor · Credits 1,000 · Debt 0" docked, "Day 0 · In
+    /// transit to Rhymus" under way). Until release 2.0 this was the window's subtitle; the name stays for the tests.
     var subtitle: String {
-        let t = windowTitle
-        guard let r = t.range(of: " – ") else { return "" }
-        return String(t[r.upperBound...])
+        let location = element("status.location")
+        guard location.exists else { return "" }
+        let parts = text(of: location).components(separatedBy: " · ")  // "Castor · Day 0", "To Rhymus, 7 clicks · Day 0"
+        guard parts.count == 2 else { return "" }
+        func amount(_ id: String) -> String {
+            let e = element(id)
+            return e.exists ? text(of: e).replacingOccurrences(of: " cr.", with: "") : "0"
+        }
+        if element("transit.view").exists || element("encounter.view").exists {
+            let destination = parts[0].components(separatedBy: ", ").first.map { $0.hasPrefix("To ") ? String($0.dropFirst(3)) : $0 } ?? ""
+            return "\(parts[1]) · In transit to \(destination)"
+        }
+        return "\(parts[1]) · \(parts[0]) · Credits \(amount("status.cash")) · Debt \(amount("status.debt"))"
     }
 
     /// Text of a static text or button: its value when it has one, otherwise its label.
@@ -115,6 +126,12 @@ class ParsecUITestCase: XCTestCase {
 
     /// The ⌘-digit of each page in dock order (release 2.0). The 1.x Market page has no shortcut until the Bridge's
     /// Cargo region replaces it.
+    /// ⌥⌘O opens the Options page.
+    func openOptionsPage(file: StaticString = #filePath, line: UInt = #line) {
+        type("o", [.command, .option])
+        waitFor(AXID.Options.root, file: file, line: line)
+    }
+
     static let pageKeys = ["bridge": "1", "shipyard": "2", "outfitter": "3", "crew": "4", "bank": "5", "status": "6", "quests": "7", "galaxy": "8",
                            "logbook": "9"]
 
@@ -163,7 +180,8 @@ class ParsecUITestCase: XCTestCase {
 
     /// Whether the Quick Start game runs (the subtitle starts "Day 0"; doubled or accented under a pseudolanguage).
     var quickStartRuns: Bool {
-        pseudoLocalized ? Self.plainText(subtitle).contains("Day 0") : subtitle.hasPrefix("Day 0")
+        // Under a pseudolanguage the words are doubled, accented or reordered: the game runs when its Bridge is on screen.
+        pseudoLocalized ? element("bridge.root").exists : subtitle.hasPrefix("Day 0")
     }
 
     func menuBarItem(_ menu: String) -> XCUIElement {

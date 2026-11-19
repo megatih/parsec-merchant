@@ -108,25 +108,14 @@ nonisolated enum OverlayBackground: Equatable, Sendable {
 /// Applies `OverlayBackground` in a rounded shape.
 struct OverlayBackgroundModifier: ViewModifier {
     @Environment(\.accessibilityPreferences) private var prefs
-    @Environment(\.colorScheme) private var colorScheme
     var cornerRadius: CGFloat = 10
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius)
         let style = ContrastStyle.make(prefs: prefs)
-        // A11Y-029: in the light appearance the text on a material turns vibrant and takes on the dark map behind it,
-        // so light overlays are opaque; the dark appearance keeps the glass.
-        let background = colorScheme == .light ? .opaque : OverlayBackground.make(prefs: prefs)
-        switch background {
-        case .material:
-            // A material tinted with the window colour, so text keeps 4.5:1 over the dark map (A11Y-029).
-            content.background(Color(nsColor: .windowBackgroundColor).opacity(0.95), in: shape)
-                .background(.regularMaterial, in: shape)
-                .contrastCardBorder(style, cornerRadius: cornerRadius)
-        case .opaque:
-            content.background(Color(nsColor: .windowBackgroundColor), in: shape)
-                .contrastCardBorder(style, cornerRadius: cornerRadius)
-        }
+        // UI-HIG-006: no materials in the game area: the console's panel fill, whatever Reduce Transparency says.
+        content.background(PMColor.panel, in: shape)
+            .contrastCardBorder(style, cornerRadius: cornerRadius)
     }
 }
 

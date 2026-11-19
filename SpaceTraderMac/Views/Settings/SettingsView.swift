@@ -56,7 +56,7 @@ struct GeneralSettingsView: View {
                 Text("Text Size")
             }
             Toggle(isOn: $fastTravel) { Text("Fast travel") }.accessibilityLabel(Text("Fast travel"))
-                .help(Text("Skip the transit animation."))
+                .help(Text("Skip the transit animation"))
                 .accessibilityIdentifier(AXID.Settings.fastTravel)
             LabeledContent {
                 PopUpMenuButton(title: "", items: ArrivalReportStyle.allCases.map { style in

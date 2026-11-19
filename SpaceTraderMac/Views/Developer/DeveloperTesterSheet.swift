@@ -19,14 +19,15 @@ struct DeveloperTesterSheet: View {
             Divider()
             HStack {
                 Text("Previews only: the game is not changed.")
-                    .scaledFont(.caption)
-                    .foregroundStyle(.readableSecondary)
+                    .pmFont(.caption)
+                    .foregroundStyle(PMColor.textSecondary)
                 Spacer()
                 Button("Close") { session.dismissPresentation() }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .accessibilityIdentifier(AXID.DevTester.close)
             }
-            .padding(12)
+            .padding(PMSpace.m)
         }
         .frame(width: 720, height: 520)
         // UI-KEYS-021: Esc and ⌘. press the only button.
@@ -40,7 +41,7 @@ struct DeveloperTesterSheet: View {
             SwiftUI.Section("Alerts (ALR)") {
                 ForEach(ALRCatalog.rows, id: \.number) { row in
                     HStack {
-                        Text(verbatim: "\(row.number)").monospacedDigit().foregroundStyle(.readableSecondary)
+                        Text(verbatim: "\(row.number)").monospacedDigit().foregroundStyle(PMColor.textSecondary)
                         Text(verbatim: row.alertType)
                     }
                     .tag(DeveloperTester.Item.alr(row.number))
@@ -63,9 +64,9 @@ struct DeveloperTesterSheet: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(verbatim: sample.surface)
                     .font(.caption.smallCaps())
-                    .foregroundStyle(.readableSecondary)
+                    .foregroundStyle(PMColor.textSecondary)
                 Text(verbatim: sample.title)
-                    .scaledFont(.title3, weight: .bold)
+                    .pmFont(.title)
                 ScrollView {
                     Text(verbatim: sample.message)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,16 +76,16 @@ struct DeveloperTesterSheet: View {
                         Spacer()
                         ForEach(Array(sample.buttons.enumerated()), id: \.offset) { index, label in
                             Text(verbatim: label)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 4)
+                                .padding(.horizontal, PMSpace.m)
+                                .padding(.vertical, PMSpace.xs)
                                 .background(.quaternary, in: Capsule())
-                                .foregroundStyle(index == 0 && sample.isDestructive ? Color.signalRed : Color.primary)
+                                .foregroundStyle(index == 0 && sample.isDestructive ? PMColor.loss : PMColor.textPrimary)
                         }
                     }
                     .accessibilityElement(children: .combine)
                 }
             }
-            .padding(20)
+            .padding(PMSpace.xl)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         } else {
             ContentUnavailableView("Choose an alert or a special event", systemImage: "rectangle.on.rectangle")

@@ -48,18 +48,18 @@ struct StatusPage: View {
                     Text("\(String(localized: Names.difficulty(m.difficulty))) · Day \(m.days)").pmFont(.body).foregroundStyle(PMColor.textSecondary)
                     ForEach(m.skills, id: \.skill) { row in
                         PMInfoRow(label: Names.skill(row.skill), identifier: AXID.Inspector.skill(row.skill),
-                                  help: "Your own value, and in brackets the ship's effective value with crew and gadgets.") {
+                                  help: "Your value; in brackets the ship's value with crew and gadgets") {
                             Text(verbatim: "\(row.base) (\(row.effective))")
                         }
                     }
                 }
             }
             PMDivider()
-            PMInfoRow(label: "Police record", help: "How the police see you.") {
+            PMInfoRow(label: "Police record", help: "How the police see you") {
                 Text("\(String(localized: Names.policeRecord(m.policeRecord))) (\(m.policeScore))")
             }
-            PMInfoRow(label: "Reputation", help: "How dangerous other pilots think you are.") { Text(Names.reputation(m.reputation)) }
-            PMInfoRow("Kills", value: m.kills.formatted(), help: "Pirates, police and traders destroyed.")
+            PMInfoRow(label: "Reputation", help: "How dangerous other pilots think you are") { Text(Names.reputation(m.reputation)) }
+            PMInfoRow("Kills", value: m.kills.formatted(), help: "Pirates, police and traders destroyed")
             switch m.notoriety {
             case .none: EmptyView()
             case let .bounty(n): PMInfoRow("Bounty offered", credits: n)
@@ -68,7 +68,7 @@ struct StatusPage: View {
             PMDivider()
             HStack(spacing: PMSpace.s * scale) {
                 PMInfoRow("Galaxy code", value: GalaxyCodeCard.code(state: state), identifier: AXID.Inspector.galaxyCode,
-                          help: "A friend who enters this code plays the same galaxy.")
+                          help: "A friend who enters this code plays the same galaxy")
                 PMButton(title: "Copy", systemImage: "doc.on.doc", help: "Copy the galaxy code so a friend can play the same galaxy",
                          identifier: AXID.Inspector.galaxyCodeCopy) {
                     GalaxyCodeCard.copy(GalaxyCodeCard.code(state: state))
@@ -92,14 +92,14 @@ struct StatusPage: View {
             }
             PMGauge(label: "Hull", fraction: Double(m.hullPercent) / 100, valueText: StatusBarText.percent(m.hullPercent),
                     tone: m.hullPercent < 25 ? .loss : (m.hullPercent < 50 ? .caution : .neutral), identifier: AXID.Inspector.hull)
-                .help(Text("Hull strength as a percentage of the maximum."))
+                .help(Text("Hull strength as a percentage of the maximum"))
             if let s = m.shields {
                 PMGauge(label: "Shields", fraction: s.power > 0 ? Double(s.charge) / Double(s.power) : 0, valueText: "\(s.charge)/\(s.power)",
                         identifier: AXID.Inspector.shields)
-                    .help(Text("Total shield charge over total shield power."))
+                    .help(Text("Total shield charge over total shield power"))
             } else {
                 PMInfoRow("Shields", value: String(localized: "No shields"), identifier: AXID.Inspector.shields,
-                          help: "Total shield charge over total shield power.")
+                          help: "Total shield charge over total shield power")
             }
             PMDivider()
             ForEach(m.weapons, id: \.type) { w in line("\(w.count) × \(String(localized: Names.weapon(w.type)))") }
@@ -121,15 +121,15 @@ struct StatusPage: View {
 
     private func finances(_ m: InspectorModel) -> some View {
         PMPanel("Finances", identifier: "status.finances") {
-            PMInfoRow("Cash", credits: m.cash, identifier: AXID.Inspector.cash, help: "Credits on hand.")
-            PMInfoRow("Debt", credits: m.debt, identifier: AXID.Inspector.debt, help: "What you owe the bank. Each warp adds 10% interest.")
-            PMInfoRow("Net worth", credits: m.worth, identifier: AXID.Inspector.worth, help: "Your ship, cargo and cash, minus your debt.")
+            PMInfoRow("Cash", credits: m.cash, identifier: AXID.Inspector.cash, help: "Credits on hand")
+            PMInfoRow("Debt", credits: m.debt, identifier: AXID.Inspector.debt, help: "What you owe the bank; each warp adds 10% interest")
+            PMInfoRow("Net worth", credits: m.worth, identifier: AXID.Inspector.worth, help: "Your ship, cargo and cash, minus your debt")
             PMDivider()
             PMInfoRow("Mercenaries", credits: m.dailyCosts.mercenaries)
             PMInfoRow("Insurance", credits: m.dailyCosts.insurance)
             PMInfoRow("Interest", credits: m.dailyCosts.interest)
             PMInfoRow("Wormhole tax", credits: m.dailyCosts.wormholeTax)
-            PMInfoRow("Total costs of the next warp", credits: m.dailyCosts.total, help: "What the next warp to your target will cost.")
+            PMInfoRow("Total costs of the next warp", credits: m.dailyCosts.total, help: "What the next warp to your target will cost")
             // STAT-020: career totals live in Logbook › Statistics.
             let enabled = LogbookLinks.showStatisticsEnabled(sectionContext: session.sectionContext, inputLocked: session.isInputLocked)
             PMButton(title: "Show Statistics", systemImage: "arrow.right", kind: .quiet, help: "Open the Logbook's statistics",

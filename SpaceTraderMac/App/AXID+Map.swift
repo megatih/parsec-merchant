@@ -21,7 +21,6 @@ extension AXID {
             case .track: "\(p).selection.track"
             case .plotRoute: "\(p).selection.plotRoute"
             case .useWormhole: "\(p).selection.useWormhole"
-            case .findPrices: "\(p).selection.findPrices"
             }
         }
         var legend: String { "\(p).legend" }
@@ -40,7 +39,6 @@ extension AXID {
         var contextPlotRoute: String { "\(p).context.plotRoute" }
         var contextUseWormhole: String { "\(p).context.useWormhole" }
         /// INT-037 / MAP-053 (M10).
-        var contextFindPrices: String { "\(p).context.findPrices" }
         /// MAP-096 (M10).
         var heatmap: String { "\(p).heatmap" }
         var heatmapCommodity: String { "\(p).heatmap.commodity" }
@@ -50,7 +48,6 @@ extension AXID {
             case .track: contextTrack
             case .plotRoute: contextPlotRoute
             case .useWormhole: contextUseWormhole
-            case .findPrices: contextFindPrices
             }
         }
         var searchField: String { "\(p).search.field" }
@@ -69,9 +66,9 @@ extension AXID {
         func all(systemCount: Int) -> [String] {
             var ids = [map, hoverCard, legend, legendToggle, zoomIn, zoomOut, fitRange, fitGalaxy, target, warp, jump, trackedRange,
                        wormholeLabel, contextSetTarget, contextTrack, contextPlotRoute, contextUseWormhole, searchField, routePanel,
-                       routeObjective, routeClear, routeUnreachable, contextFindPrices, heatmap, heatmapCommodity,
+                       routeObjective, routeClear, routeUnreachable, heatmap, heatmapCommodity,
                        searchFilterSells, selectionCard, selectionFacts]
-            ids += [MapContextItem.Kind.setTarget, .track, .plotRoute, .useWormhole, .findPrices].map(selection)
+            ids += [MapContextItem.Kind.setTarget, .track, .plotRoute, .useWormhole].map(selection)
             ids += (0..<systemCount).flatMap { [system($0), searchResult($0)] }
             ids += SystemSearchFilter.allCases.map(searchFilter)
             ids += RouteObjective.allCases.map(routeObjective)
@@ -86,8 +83,7 @@ extension AXID {
         static let windowPlaceholder = "galaxyWindow.placeholder"
         static let miniChartMap = "bridge.miniChart.map"
         static let miniChartOpen = BridgeID.Chart.open
-        static let bridgePlotRoute = "bridge.target.plotRoute"
-        static let bridgeShowOnMap = "bridge.target.showOnMap"
+        static let find = "galaxy.find"
         static func questShowOnMap(_ entry: Int) -> String { "quests.entry.\(entry).showOnMap" }
     }
 
@@ -96,7 +92,7 @@ extension AXID {
         let count = RulesetID.allCases.map { Ruleset.named($0).tables.systemNames.count }.max() ?? 0
         // `bridge.miniChart.map` is the mini chart's `map` identifier; root identifiers are listed once.
         return MapScope.allCases.flatMap { Map($0).all(systemCount: count) }
-            + [Galaxy.windowRoot, Galaxy.windowPlaceholder, Galaxy.bridgePlotRoute, Galaxy.bridgeShowOnMap, Galaxy.miniChartOpen]
+            + [Galaxy.windowRoot, Galaxy.windowPlaceholder, Galaxy.find]
             + (0..<4).map(Galaxy.questShowOnMap)
     }
 }

@@ -17,7 +17,7 @@ struct NewGameWizard: View {
                 Divider()
                 ScrollView {
                     page(draft)
-                        .padding(24)
+                        .padding(PMSpace.xl)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Divider()
@@ -54,11 +54,11 @@ struct NewGameWizard: View {
             ForEach(NewGameDraft.Step.allCases, id: \.self) { s in
                 HStack(spacing: 6) {
                     Text(s.title)
-                        .scaledFont(.callout, weight: s == step ? .bold : .medium)
+                        .pmFont(s == step ? .valueLarge : .body)
                         // A11Y-029: the other steps in the readable secondary colour (the system one is too light).
-                        .foregroundStyle(s == step ? AnyShapeStyle(.tint) : AnyShapeStyle(.readableSecondary))
+                        .foregroundStyle(s == step ? PMColor.accent : PMColor.textSecondary)
                     if s != .summary {
-                        Image(systemName: "chevron.forward").scaledFont(.caption2).foregroundStyle(.readableSecondary)
+                        Image(systemName: "chevron.forward").pmFont(.caption).foregroundStyle(PMColor.textSecondary)
                             .accessibilityHidden(true)
                     }
                 }
@@ -66,7 +66,7 @@ struct NewGameWizard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
+        .padding(PMSpace.l)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Step \(step.rawValue + 1) of \(NewGameDraft.Step.allCases.count): \(String(localized: step.title))"))
     }
@@ -91,7 +91,7 @@ struct NewGameWizard: View {
                 }
             }
         }
-        .padding(16)
+        .padding(PMSpace.l)
     }
 
     private var cancelButton: some View {
@@ -103,10 +103,10 @@ struct NewGameWizard: View {
     @ViewBuilder
     private func footerMessages(_ d: NewGameDraft) -> some View {
         if let reason = d.canAdvance(from: step).reason {
-            Text(reason).scaledFont(.callout).foregroundStyle(.readableSecondary)
+            Text(reason).pmFont(.body).foregroundStyle(PMColor.textSecondary)
         }
         if let startError {
-            Text(ReasonText.text(for: startError)).scaledFont(.callout).foregroundStyle(.signalRed)
+            Text(ReasonText.text(for: startError)).pmFont(.body).foregroundStyle(PMColor.loss)
         }
     }
 
@@ -120,12 +120,14 @@ struct NewGameWizard: View {
             if step == .summary {
                 Button("Start") { start(d) }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .disabled(!availability.isEnabled)
                     .help(availability.reason.map { Text($0) } ?? Text("Start the game."))
                     .accessibilityIdentifier(AXID.NewGame.start)
             } else {
                 Button("Next") { if let next = NewGameDraft.Step(rawValue: step.rawValue + 1) { step = next } }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .disabled(!availability.isEnabled)
                     .help(availability.reason.map { Text($0) } ?? Text("Go to the next step."))
                     .accessibilityIdentifier(AXID.NewGame.next)
@@ -157,7 +159,7 @@ struct NewGameWizard: View {
 
     private func commanderPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("What's your name, Commander?").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("What's your name, Commander?").pmFont(.title).accessibilityAddTraits(.isHeader)
             TextField("Commander name", text: Binding { d.commanderName } set: { v in update { $0.commanderName = v } })
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 320)
@@ -168,7 +170,7 @@ struct NewGameWizard: View {
 
     private func difficultyPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Choose a difficulty").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Choose a difficulty").pmFont(.title).accessibilityAddTraits(.isHeader)
             ForEach(Difficulty.allCases, id: \.self) { level in
                 choiceRow(selected: d.difficulty == level, title: Names.difficulty(level),
                           detail: WizardText.difficultyDescription(level)) {
@@ -181,7 +183,7 @@ struct NewGameWizard: View {
 
     private func rulesetPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Choose the rules").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Choose the rules").pmFont(.title).accessibilityAddTraits(.isHeader)
             ForEach(RulesetID.allCases, id: \.self) { r in
                 VStack(alignment: .leading, spacing: 4) {
                     choiceRow(selected: d.ruleset == r, title: Names.ruleset(r), detail: WizardText.rulesetTagline(r)) {
@@ -189,25 +191,27 @@ struct NewGameWizard: View {
                     }
                     .accessibilityIdentifier(AXID.NewGame.ruleset(r))
                     ForEach(WizardText.rulesetBullets(r).indices, id: \.self) { i in
-                        Label { Text(WizardText.rulesetBullets(r)[i]) } icon: { Image(systemName: "circle.fill").font(.system(size: 4)) }
-                            .scaledFont(.callout)
-                            .foregroundStyle(.readableSecondary)
-                            .padding(.leading, 28)
+                        Label { Text(WizardText.rulesetBullets(r)[i]) } icon: {
+                            Circle().fill(PMColor.textSecondary).frame(width: PMSpace.xs, height: PMSpace.xs)
+                        }
+                            .pmFont(.body)
+                            .foregroundStyle(PMColor.textSecondary)
+                            .padding(.leading, PMSpace.xl)
                     }
                 }
             }
-            Text("The rules can't be changed once the game has started.").scaledFont(.callout).foregroundStyle(.readableSecondary)
+            Text("The rules can't be changed once the game has started.").pmFont(.body).foregroundStyle(PMColor.textSecondary)
         }
     }
 
     private func skillsPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Distribute your skill points").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Distribute your skill points").pmFont(.title).accessibilityAddTraits(.isHeader)
             ForEach(SkillType.allCases, id: \.self) { skill in
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(Names.skill(skill)).scaledFont(.headline)
-                        Text(WizardText.skillDescription(skill)).scaledFont(.callout).foregroundStyle(.readableSecondary)
+                        Text(Names.skill(skill)).pmFont(.valueLarge)
+                        Text(WizardText.skillDescription(skill)).pmFont(.body).foregroundStyle(PMColor.textSecondary)
                     }
                     Spacer()
                     Button { update { $0.decrement(skill) } } label: { Image(systemName: "minus").pointerTarget() }
@@ -238,7 +242,7 @@ struct NewGameWizard: View {
 
     private func galaxyPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Galaxy and extras").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Galaxy and extras").pmFont(.title).accessibilityAddTraits(.isHeader)
             LabeledContent("Galaxy code") {
                 TextField("Galaxy code", text: Binding { d.galaxyCodeText } set: { v in
                     update { $0.setGalaxyCodeText(v) }
@@ -249,7 +253,7 @@ struct NewGameWizard: View {
                 .accessibilityIdentifier(AXID.NewGame.galaxyCode)
             }
             if d.galaxyCodeInvalid {
-                Text("Not a valid galaxy code.").scaledFont(.callout).foregroundStyle(.signalRed)
+                Text("Not a valid galaxy code.").pmFont(.body).foregroundStyle(PMColor.loss)
             }
             LabeledContent("Seed") {
                 HStack {
@@ -273,7 +277,7 @@ struct NewGameWizard: View {
             Toggle(isOn: Binding { d.ironman } set: { v in update { $0.ironman = v } }) {
                 VStack(alignment: .leading) {
                     Text("Ironman")
-                    Text("One save, no reloading; your score gets an Ironman badge.").scaledFont(.callout).foregroundStyle(.readableSecondary)
+                    Text("One save, no reloading; your score gets an Ironman badge.").pmFont(.body).foregroundStyle(PMColor.textSecondary)
                 }
             }
             .accessibilityIdentifier(AXID.NewGame.ironman)
@@ -293,7 +297,7 @@ struct NewGameWizard: View {
 
     private func summaryPage(_ d: NewGameDraft) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Ready to launch").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Ready to launch").pmFont(.title).accessibilityAddTraits(.isHeader)
             LabeledContent("Commander") { Text(verbatim: d.commanderName) }
             LabeledContent("Difficulty") { Text(Names.difficulty(d.difficulty)) }
             LabeledContent("Rules") { Text(Names.ruleset(d.ruleset)) }
@@ -303,10 +307,12 @@ struct NewGameWizard: View {
             }
             LabeledContent("Galaxy code") { Text(verbatim: d.galaxyCode).fontWeight(.medium) }  // A11Y-029
             LabeledContent("Ironman") { Text(d.ironman ? "On" : "Off") }
-            LabeledContent("Ship name") { Text(verbatim: d.trimmedShipName ?? "—") }
+            LabeledContent("Ship name") {
+                if let name = d.trimmedShipName { Text(verbatim: name) } else { Text("None") }
+            }
             LabeledContent("Options") { Text(d.options == nil ? "Standard options" : "Your saved defaults") }
             if let failing = d.firstFailingStep {
-                Text("Check the \(String(localized: failing.title)) step.").foregroundStyle(.signalRed)
+                Text("Check the \(String(localized: failing.title)) step.").foregroundStyle(PMColor.loss)
             }
         }
     }
@@ -316,10 +322,10 @@ struct NewGameWizard: View {
         Button(action: action) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Image(systemName: selected ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(selected ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                    .foregroundStyle(selected ? PMColor.accent : PMColor.textSecondary)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).scaledFont(.headline)
-                    Text(detail).scaledFont(.callout).foregroundStyle(.readableSecondary)
+                    Text(title).pmFont(.valueLarge)
+                    Text(detail).pmFont(.body).foregroundStyle(PMColor.textSecondary)
                 }
             }
             .pointerTarget()  // UI-PTR-002

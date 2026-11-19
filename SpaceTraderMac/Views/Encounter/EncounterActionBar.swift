@@ -3,7 +3,8 @@ import ParsecEngine
 import SwiftUI
 
 /// UI-ENC-027…033: one button per offered action (label plus key cap), then Resolve, Stop and the Auto-repeat toggle,
-/// on the Liquid Glass action bar. The letter keys live in the Encounter menu; only the default action carries Return.
+/// on a full-width bar (UI-ENC-200, UI-ENC-201; no glass, UI-DS-024). The letter keys live in the Encounter menu; only
+/// the default action carries Return.
 struct EncounterActionBar: View {
     @Environment(GameSession.self) private var session
     let model: EncounterActionBarModel
@@ -20,7 +21,7 @@ struct EncounterActionBar: View {
             }
             ActionButton(button: model.stop) { session.stopEncounter() }
             Toggle(isOn: Binding { session.encounterUI.autoRepeatEnabled } set: { session.setAutoRepeat($0) }) {
-                Text("Auto-repeat ⌥A")
+                Text("Auto-repeat ⌥A").pmFont(.body).foregroundStyle(PMColor.textPrimary)
             }
             .toggleStyle(.checkbox)
             .disabled(!model.autoRepeatAvailable)
@@ -29,12 +30,13 @@ struct EncounterActionBar: View {
             .accessibilityHint(Text(verbatim: model.autoRepeatHelp))  // A11Y-005
             .accessibilityIdentifier(AXID.Encounter.autoRepeat)
         }
-        .controlSize(.large)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .glassEffect(in: .capsule)
+        .padding(.horizontal, PMSpace.m)
+        .padding(.vertical, PMSpace.xs)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(PMColor.panel, in: RoundedRectangle(cornerRadius: PMRadius.panel))
+        .overlay { RoundedRectangle(cornerRadius: PMRadius.panel).strokeBorder(PMColor.hairline) }
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(AXID.Encounter.actions)
+        .probed(AXID.Encounter.actions)
     }
 }
 
@@ -52,9 +54,13 @@ private struct ActionButton: View {
 
     private var base: some View {
         Button(action: action) {
-            // UI-PTR-014: the action name on a large button; the key is in the help tag.
-            Text(verbatim: button.label).pointerTarget()
+            // UI-ENC-201: the action's name and its key cap; the default action is the primary button.
+            HStack(spacing: PMSpace.xs) {
+                Text(verbatim: button.label)
+                if let key = button.keyCap { PMKeyCap(key: key) }
+            }
         }
+        .buttonStyle(PMButtonStyle(kind: button.isDefault ? .primary : .standard))
         .disabled(!button.isEnabled)
         .help(Text(verbatim: button.help))
         .accessibilityLabel(Text(verbatim: button.label))

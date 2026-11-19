@@ -15,10 +15,10 @@ nonisolated enum HelpTopic: String, CaseIterable, Sendable, Identifiable {
         switch self {
         case .gettingStarted: "Getting Started"
         case .bridge: "Bridge"
-        case .market: "Market"
+        case .market: "Cargo and Trading"
         case .shipyard: "Shipyard"
-        case .outfitter: "Outfitter"
-        case .crew: "Crew"
+        case .outfitter: "Equipment"
+        case .crew: "Personnel"
         case .bank: "Bank"
         case .quests: "Quests"
         case .travel: "Travel"
@@ -83,7 +83,7 @@ struct HelpView: View {
         } detail: {
             ScrollView {
                 MarkdownBlocks(text: HelpContent.text(router.topic))
-                    .padding(24)
+                    .padding(PMSpace.xl)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .accessibilityIdentifier(AXID.Help.content)

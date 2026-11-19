@@ -31,11 +31,12 @@ struct SourceAuditTests {
         return out
     }
 
-    @Test("UI-KEYS-034 UI-SHELL-108 custom glass only on the map HUD and the encounter bar; no popovers; no disabled focus rings")
+    @Test("UI-KEYS-034 UI-SHELL-108 UI-DS-024 no glass anywhere; no popovers; no disabled focus rings")
     func audit() throws {
         let lines = try Self.lines()
         #expect(Set(lines.map(\.file)).count > 100, "the app sources are found")
-        let glassFiles: Set<String> = ["Map/MapHUDViews.swift", "Map/HeatmapHUDView.swift", "Views/Encounter/EncounterActionBar.swift"]
+        // UI-DS-024: no glass anywhere in the app target since release 2.0.
+        let glassFiles: Set<String> = []
         for l in lines {
             if l.code.contains(".glassEffect(") {
                 #expect(glassFiles.contains(l.file), "\(l.file):\(l.number) uses .glassEffect")

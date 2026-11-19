@@ -2,29 +2,24 @@
 import Foundation
 import ParsecEngine
 
-/// The main window's title and subtitle (UI-SHELL-042). Pure; numbers are locale-formatted.
+/// The main window's title and subtitle (UI-SHELL-042, UI-NAV-007). Pure. The title names the commander (never the app,
+/// as the HIG asks); the subtitle names the page. Cash, day and system are in the status bar.
 enum WindowTitles {
-    static func make(state: GameState?) -> (title: String, subtitle: String?) {
-        let app = String(localized: "Parsec Merchant")
-        guard let state else { return (app, nil) }
+    static func make(state: GameState?, page: Section = .bridge) -> (title: String, subtitle: String?) {
+        guard let state else { return (String(localized: "Parsec Merchant"), nil) }
         let commander = state.commander.name
         let title: String
         if let ship = state.commander.shipName, !ship.isEmpty {
-            title = String(localized: "Parsec Merchant — Cmdr. \(commander) · “\(ship)”")
+            title = String(localized: "Cmdr. \(commander) · “\(ship)”")
         } else {
-            title = String(localized: "Parsec Merchant — Cmdr. \(commander)")
+            title = String(localized: "Cmdr. \(commander)")
         }
-        let days = state.commander.days.formatted()
         let subtitle: String
         switch state.phase {
-        case .docked:
-            let system = Names.system(state.commander.currentSystem, in: state)
-            subtitle = String(localized: "Day \(days) · \(system) · Credits \(state.commander.cash.formatted()) · Debt \(state.commander.debt.formatted())")
-        case .inTransit, .encounter:
-            let dest = state.transitPreview.map { Names.system($0.destination, in: state) } ?? ""
-            subtitle = String(localized: "Day \(days) · In transit to \(dest)")
-        case .gameOver:
-            subtitle = String(localized: "Day \(days) · Game over")
+        case .docked: subtitle = String(localized: page.title)
+        case .inTransit: subtitle = String(localized: "In Transit")
+        case .encounter: subtitle = String(localized: "Encounter")
+        case .gameOver: subtitle = String(localized: "Game Over")
         }
         return (title, subtitle)
     }

@@ -15,11 +15,11 @@ struct ArrivalSectionsView: View {
                 } icon: {
                     Image(systemName: "exclamationmark.triangle")
                 }
-                .scaledFont(.callout, weight: .bold)
+                .pmFont(.body)
             }
             ForEach(report.sections, id: \.title) { section in
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(verbatim: section.title).scaledFont(.subheadline, weight: .bold).foregroundStyle(.readableSecondary)
+                    Text(verbatim: section.title).pmFont(.body).foregroundStyle(PMColor.textSecondary)
                     switch section.kind {
                     case .encounters? where !report.encounters.isEmpty:
                         ForEach(Array(report.encounters.enumerated()), id: \.offset) { index, encounter in
@@ -50,7 +50,7 @@ private struct EncounterSummaryRow: View {
     var body: some View {
         DisclosureGroup(isExpanded: $expanded) {
             if encounter.log.isEmpty {
-                Text("No combat.").foregroundStyle(.readableSecondary)
+                Text("No combat.").foregroundStyle(PMColor.textSecondary)
             } else {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(Array(encounter.log.enumerated()), id: \.offset) { _, line in

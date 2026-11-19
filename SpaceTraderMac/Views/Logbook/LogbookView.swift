@@ -147,11 +147,11 @@ struct CaptainsLogView: View {
             } label: {
                 Label("Export…", systemImage: "square.and.arrow.up")
             }
-            .help(Text("Export the log as a Markdown file."))
+            .help(Text("Export the log as a Markdown file"))
             .accessibilityIdentifier(AXID.Logbook.export)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, PMSpace.m)
+        .padding(.vertical, PMSpace.s)
     }
 
     private func list(_ groups: [LogDayGroup], journal: GameJournal, state: GameState) -> some View {
@@ -196,7 +196,7 @@ private struct LogEntryRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: LogCategoryStyle.symbol(entry.kind.category))
-                .foregroundStyle(.readableSecondary)
+                .foregroundStyle(PMColor.textSecondary)
                 .frame(width: 18)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
@@ -206,24 +206,24 @@ private struct LogEntryRow: View {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
                         if entry.flavor?.source == .foundationModels {
                             Image(systemName: "apple.intelligence")
-                                .scaledFont(.caption)
+                                .pmFont(.caption)
                                 .help(Text("Written by Apple Intelligence"))
                                 .accessibilityLabel(Text("Apple Intelligence"))
                         }
-                        Text(verbatim: flavor).scaledFont(.callout).italic().foregroundStyle(.readableSecondary)
+                        Text(verbatim: flavor).pmFont(.body).italic().foregroundStyle(PMColor.textSecondary)
                     }
                 }
                 if case let .encounter(record) = entry.kind {
                     DisclosureGroup {
                         Text(verbatim: LogEntryText.encounterDetails(record))
-                            .scaledFont(.caption)
-                            .foregroundStyle(.readableSecondary)
+                            .pmFont(.caption)
+                            .foregroundStyle(PMColor.textSecondary)
                     } label: {
-                        Text("Details").scaledFont(.caption)
+                        Text("Details").pmFont(.caption)
                     }
                 }
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, PMSpace.xs)
     }
 }

@@ -36,8 +36,10 @@ struct PMInfoRow<Value: View>: View {
             Spacer(minLength: PMSpace.s * scale)
             value().pmFont(.value).foregroundStyle(PMColor.textPrimary).multilineTextAlignment(.trailing)
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isStaticText)
+        // A11Y-029: a labelled container, so the contrast audit measures the label and the value each in its own colour
+        // (a combined element is measured across the gap between them).
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(label))
         .help(help.map { Text($0) } ?? Text(label))
         .modifier(OptionalIdentifier(identifier: identifier))
     }
@@ -119,8 +121,8 @@ struct PMSkillBars: View {
                     Text(verbatim: "\(value.formatted())/10").pmFont(.caption).monospacedDigit().foregroundStyle(PMColor.textPrimary)
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2 * scale).fill(PMColor.panelInset)
-                            RoundedRectangle(cornerRadius: 2 * scale).fill(PMColor.info)
+                            RoundedRectangle(cornerRadius: PMRadius.control * scale).fill(PMColor.panelInset)
+                            RoundedRectangle(cornerRadius: PMRadius.control * scale).fill(PMColor.info)
                                 .frame(width: geo.size.width * Double(min(max(value, 0), 10)) / 10)
                         }
                     }

@@ -28,8 +28,6 @@ struct BridgeCargoPanel: View {
     @Environment(\.pmScale) private var scale
     let model: BridgeCargoModel
     let rowHeight: CGFloat
-    /// The quantity typed in each row; empty means 1.
-    @State private var quantities: [TradeItemType: String] = [:]
     @FocusState private var rowsFocused: Bool
     @Namespace private var rotorNamespace
 
@@ -87,7 +85,7 @@ struct BridgeCargoPanel: View {
         .foregroundStyle(PMColor.textPrimary)
         .fixedSize()
         .accessibilityElement(children: .combine)
-        .help(Text("What the hold sells for here and at the target. Estimates carry no guarantee"))
+        .help(Text("Compare the hold's value here and at the target (estimates, no guarantee)"))
         .probed(BridgeID.Cargo.hold)
     }
 
@@ -143,6 +141,11 @@ struct BridgeCargoPanel: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("Cargo"))
         // A11Y-014: the "In Hold" and "Profitable at Target" rotors.
+        .accessibilityRotor(Text("Cargo Rows")) {
+            ForEach(model.rows.map(\.item), id: \.self) { item in
+                AccessibilityRotorEntry(Text(Names.item(item)), id: item, in: rotorNamespace)
+            }
+        }
         .accessibilityRotor(Text("In Hold")) {
             ForEach(MarketRotors.inHold(model.rows.map(\.market)), id: \.self) { item in
                 AccessibilityRotorEntry(Text(Names.item(item)), id: item, in: rotorNamespace)
@@ -157,7 +160,7 @@ struct BridgeCargoPanel: View {
     }
 
     private func binding(_ item: TradeItemType) -> Binding<String> {
-        Binding { quantities[item] ?? "" } set: { quantities[item] = String($0.filter(\.isNumber).prefix(4)) }
+        Binding { session.cargoQuantities[item] ?? "" } set: { session.cargoQuantities[item] = String($0.filter(\.isNumber).prefix(4)) }
     }
 
     /// UI-BRG-007: ↑/↓ move the selection; B, ⇧B, S and ⇧S act on the selected row; digits edit its quantity.
@@ -172,24 +175,18 @@ struct BridgeCargoPanel: View {
         default:
             break
         }
-        guard let item = session.marketSelection, let row = model.row(item) else { return .ignored }
+        guard let item = session.marketSelection, model.row(item) != nil else { return .ignored }
+        let quantities = session.cargoQuantities
         if press.modifiers.isEmpty, press.characters.count == 1, let digit = press.characters.first, digit.isNumber {
             binding(item).wrappedValue = (quantities[item] ?? "") + String(digit)
             return .handled
         }
         if press.key == .delete, !(quantities[item] ?? "").isEmpty {
-            quantities[item] = String((quantities[item] ?? "").dropLast())
+            session.cargoQuantities[item] = String((quantities[item] ?? "").dropLast())
             return .handled
         }
         guard let action = MarketKeyAction.make(characters: press.characters, modifiers: press.modifiers) else { return .ignored }
-        let text = quantities[item] ?? ""
-        let command: Command? = switch action {
-        case .buy: row.buyCommand(text: text)
-        case .sell: row.sellCommand(text: text)
-        case .buyMax: row.maxCommand
-        case .sellAll: row.allCommand
-        }
-        if let command { session.send(command) }
+        session.performTrade(action)
         return .handled
     }
 }
@@ -228,13 +225,26 @@ struct BridgeCargoRow: View {
         .overlay(alignment: .bottom) { Rectangle().fill(PMColor.hairline).frame(height: 1) }
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
-        .hoverHighlight(cornerRadius: 0)
+        .hoverHighlight(cornerRadius: PMRadius.control)
         .onTapGesture { session.marketSelection = item }
         .contextMenu { menu }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(Names.item(item)))
+        // UI-HIG-005: the row reads as one sentence and offers the four trades as actions.
+        .accessibilityValue(Text(verbatim: MarketRowAccessibility.make(market, target: row.targetPrice).value))
+        .accessibilityAction(named: Text("Buy")) { trade(.buy) }
+        .accessibilityAction(named: Text("Buy Maximum")) { trade(.buyMax) }
+        .accessibilityAction(named: Text("Sell")) { trade(.sell) }
+        .accessibilityAction(named: Text("Sell All")) { trade(.sellAll) }
+        // UI-HIG-003: one Tab stop for the table (the arrow keys move inside it); the rows are not stops of their own.
+        .accessibilityRespondsToUserInteraction(false)
         .accessibilityAddTraits(selected ? .isSelected : [])
         .probed(BridgeID.Cargo.row(item))
+    }
+
+    private func trade(_ action: MarketKeyAction) {
+        session.marketSelection = item
+        session.performTrade(action)
     }
 
     // MARK: Values
@@ -340,7 +350,8 @@ struct BridgeCargoRow: View {
     }
 
     private func dash(label: LocalizedStringResource) -> some View {
-        Text(verbatim: "—").pmFont(.value).foregroundStyle(PMColor.textSecondary).accessibilityLabel(Text(label))
+        // A11Y-029: a symbol, not a dash glyph too thin for the contrast audit to measure.
+        Image(systemName: "minus").pmFont(.value).foregroundStyle(PMColor.textSecondary).accessibilityLabel(Text(label))
     }
 
     // MARK: Controls
@@ -349,6 +360,7 @@ struct BridgeCargoRow: View {
         HStack(spacing: CargoColumns.actionGap * scale) {
             PMField(text: $quantity, prompt: "1", label: "Quantity of \(Names.item(item))", invalid: BridgeCargoModel.Row.quantity(quantity) == nil,
                     identifier: BridgeID.Cargo.quantity(item))
+                .onFocusChange { session.textEntryFocused = $0 }
                 .frame(width: CargoColumns.quantity * scale)
                 // UI-KEYS-022: Return in the field buys the typed quantity.
                 .onSubmit { send(row.buyCommand(text: quantity)) }

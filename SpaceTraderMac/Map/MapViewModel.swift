@@ -5,11 +5,6 @@ import ParsecEngine
 import ParsecInsights
 import SwiftUI
 
-/// INT-037: the System Intel sheet's subject.
-struct SystemIntelRequest: Identifiable, Equatable {
-    var id: Int
-}
-
 /// What the View menu's zoom items and ⌘F talk to: the focused map (MAP-015, MENU-022).
 struct MapControl {
     var scope: MapScope
@@ -40,8 +35,6 @@ final class MapViewModel {
     /// MAP-096: the heatmap mode and its commodity.
     var heatmapChoice = MapHeatmapChoice.none
     var heatmapItem = TradeItemType.water
-    /// INT-037: the system whose System Intel sheet is open (Find Prices).
-    var intelSheet: SystemIntelRequest?
     var searchText = ""
     var filters: Set<SystemSearchFilter> = []
     /// INT-028: the "sells <item>" filter (nil: off).

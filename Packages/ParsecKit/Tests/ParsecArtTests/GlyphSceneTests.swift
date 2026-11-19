@@ -138,7 +138,7 @@ struct GlyphSceneTests {
         return n
     }
 
-    @Test("ART-084 retired: the sun sinks behind the limb, the stars come out, the planet fills the lower frame")
+    @Test("ART-084 retired: the sun sinks behind the limb, the stars come out, the planet fills the lower frame, the ship comes to rest")
     func retired() {
         let size = CGSize(width: 320, height: 180)
         let start = ArtSnapshot.render(GameOverScene(end: .retired, phase: 0), size: size)
@@ -162,32 +162,42 @@ struct GlyphSceneTests {
             ground += Int(start.bytes[bottom]) + Int(start.bytes[bottom + 1]) + Int(start.bytes[bottom + 2])
         }
         #expect(ground > 4 * sky, "at the start the day side fills the bottom of the frame")
+        // The player's ship is in the sky: another ship gives another upper half.
+        let other = ArtSnapshot.render(GameOverScene(end: .retired, phase: 4, ship: .wasp), size: size)
+        #expect(other != held)
     }
 
-    @Test("ART-085 bought moon: a barren moon with a dome and the parent planet; the princess variant differs")
-    func moon() {
+    @Test("ART-085 bought moon: the moon's surface with a habitat, a landing pad and the parent planet; the princess variant differs")
+    func moon() throws {
         let size = CGSize(width: 320, height: 180)
         #expect(EndingScenes.recipe(resource: 8, seed: 0x4D4F_4F4E, tech: 0).planetClass == .barren)
         #expect(EndingScenes.recipe(resource: 4, seed: 0x5041_5245, size: 5).planetClass == .ocean)
         let plain = ArtSnapshot.render(GameOverScene(end: .boughtMoon), size: size)
         let princess = ArtSnapshot.render(GameOverScene(end: .boughtMoonGirl), size: size)
         #expect(plain != princess)
-        // The difference is local (a second window and the docked ship), not another scene.
+        // The difference is local (a second lit window, a second pad and ship), not another scene.
         var differing = 0
         for i in stride(from: 0, to: plain.bytes.count, by: 4) where plain.bytes[i] != princess.bytes[i] || plain.bytes[i + 1] != princess.bytes[i + 1] {
             differing += 1
         }
         #expect(differing > 40 && differing < plain.width * plain.height / 8)
-        // The moon rises: the first frame has more sky.
+        // The camera settles: the first frame differs from the held one.
         #expect(ArtSnapshot.render(GameOverScene(end: .boughtMoon, phase: 0), size: size) != plain)
+        // One sun for the scene: the ground, the planet and the long shadows use the same light.
+        let source = try String(contentsOf: ArtSnapshot.packageRoot.appendingPathComponent("Sources/ParsecArt/Scenes/Endings.swift"), encoding: .utf8)
+        #expect(source.components(separatedBy: "moonLight").count >= 4 && source.contains("groundShadow("))
     }
 
-    @Test("ART-086 killed: the player's own ship, scorched and tumbling, among twelve hull plates; no star shapes")
+    @Test("ART-086 killed: the player's own ship broken into three drifting hull sections among shards; no star shapes, no pilot")
     func killed() throws {
         let size = CGSize(width: 320, height: 180)
-        #expect(EndingScenes.wreckHull == 0.25 && EndingScenes.tumblePeriod == 8 && EndingScenes.fragments == 12)
-        let plates = EndingScenes.plates(seed: ArtSeed.kind(.wasp))
-        #expect(plates.count == 12 && plates == EndingScenes.plates(seed: ArtSeed.kind(.wasp)) && Set(plates).count == 12)
+        #expect(EndingScenes.sections == 3 && EndingScenes.shards == 22)
+        let sections = EndingScenes.hullSections(seed: ArtSeed.kind(.wasp))
+        #expect(sections.count == 3 && sections == EndingScenes.hullSections(seed: ArtSeed.kind(.wasp)) && Set(sections).count == 3)
+        // The sections drift apart: the aft goes one way, the nose the other.
+        #expect(sections[0].drift.x < 0 && sections[2].drift.x > 0)
+        let shards = EndingScenes.plating(seed: ArtSeed.kind(.wasp))
+        #expect(shards.count == 22 && Set(shards).count == 22)
         let wasp = ArtSnapshot.render(GameOverScene(end: .killed, ship: .wasp), size: size)
         let beetle = ArtSnapshot.render(GameOverScene(end: .killed, ship: .beetle), size: size)
         #expect(wasp != beetle)
@@ -196,9 +206,70 @@ struct GlyphSceneTests {
         stats.cargoBays = 70
         stats.weaponSlots = 0
         #expect(ArtSnapshot.render(GameOverScene(end: .killed, ship: .wasp, shipInput: ShipArtInput(kind: .wasp, stats: stats)), size: size) != wasp)
-        #expect(ArtSnapshot.render(GameOverScene(end: .killed, phase: 2, ship: .wasp), size: size) != wasp, "it tumbles")
+        #expect(ArtSnapshot.render(GameOverScene(end: .killed, phase: 2, ship: .wasp), size: size) != wasp, "the sections drift")
         let source = try String(contentsOf: ArtSnapshot.packageRoot.appendingPathComponent("Sources/ParsecArt/Scenes/Endings.swift"), encoding: .utf8)
         #expect(!source.contains("ArtGeometry.star") && source.contains("sparks: false"))
+        #expect(!source.contains("Portrait") && !source.contains("pilot("), "no pilot is shown")
+    }
+
+    @Test("ART-END-001 every ending renders for every buyable ship and a custom ship, twice the same, and has a description")
+    func endingsForEveryShip() {
+        let size = CGSize(width: 160, height: 90)
+        var custom = ShipArtStats.standard(.hornet)
+        custom.cargoBays = 55
+        custom.crewQuarters = 3
+        let ships = ShipArtKind.allCases.filter(\.isBuyable).map { ShipArtInput(kind: $0) } + [ShipArtInput(kind: .hornet, stats: custom, style: .wasp)]
+        for end in GameEndArt.allCases {
+            #expect(!GameOverScene.sceneDescription(end).isEmpty)
+            for ship in ships {
+                let (a, b) = ArtSnapshot.twice(GameOverScene(end: end, ship: ship.kind, shipInput: ship), size: size)
+                #expect(a == b && a.coverage() > 0.97, "\(end) \(ship.kind)")
+            }
+        }
+        #expect(Set(GameEndArt.allCases.map(GameOverScene.sceneDescription)).count == 4)
+    }
+
+    @Test("ART-END-002 planets in the endings come only from the frozen planet API with fixed seeds")
+    func endingPlanets() throws {
+        let source = try String(contentsOf: ArtSnapshot.packageRoot.appendingPathComponent("Sources/ParsecArt/Scenes/Endings.swift"), encoding: .utf8)
+        #expect(source.contains("PlanetRecipe.make(PlanetArtInput(") && source.contains("PlanetSphere.project(") && source.contains("PlanetRenderer.maps("))
+        for seed in ["0x5245_5449", "0x4D4F_4F4E", "0x5041_5245"] { #expect(source.contains("seed: \(seed)"), "\(seed)") }
+        // Nothing draws a planet by hand: no disc filled with a planet colour, no noise of its own.
+        #expect(!source.contains("PlanetNoise") && !source.contains("PlanetTextureBaker"))
+    }
+
+    @Test("ART-END-003 the player's own ship is in every ending: two different final ships give two different scenes")
+    func endingShips() {
+        let size = CGSize(width: 320, height: 180)
+        let a = ShipArtInput(kind: .gnat, liverySeed: 11, playerLiverySeed: 11)
+        var stats = ShipArtStats.standard(.grasshopper)
+        stats.weapons = [2, 2]
+        let b = ShipArtInput(kind: .grasshopper, stats: stats, liverySeed: 99, playerLiverySeed: 99)
+        for end in GameEndArt.allCases {
+            let first = ArtSnapshot.render(GameOverScene(end: end, ship: a.kind, shipInput: a), size: size)
+            let second = ArtSnapshot.render(GameOverScene(end: end, ship: b.kind, shipInput: b), size: size)
+            #expect(first.fingerprint != second.fingerprint, "\(end)")
+            // The same class in another livery is another picture too.
+            let repainted = ShipArtInput(kind: .gnat, liverySeed: 12, playerLiverySeed: 12)
+            #expect(ArtSnapshot.render(GameOverScene(end: end, ship: .gnat, shipInput: repainted), size: size).fingerprint != first.fingerprint, "\(end)")
+        }
+    }
+
+    @Test("ART-END-004 phases 0, 2 and 4 differ with motion on; with Reduce Motion the scene is the held frame from the start")
+    func endingPhases() {
+        let size = CGSize(width: 320, height: 180)
+        for end in GameEndArt.allCases {
+            let frames = [0.0, 2.0, 4.0].map { ArtSnapshot.render(GameOverScene(end: end, phase: $0, ship: .wasp), size: size).fingerprint }
+            #expect(Set(frames).count == 3, "\(end)")
+            let still = ArtSnapshot.render(GameOverScene(end: end, phase: 0, ship: .wasp, accessibility: ArtAccessibility(reduceMotion: true)), size: size)
+            #expect(still.fingerprint == frames[2], "\(end)")
+        }
+    }
+
+    @Test("ART-END-005 the endings sheet shows each ending at phases 0, 2 and 4")
+    func endingsSheet() throws {
+        let sheet = try String(contentsOf: ArtSnapshot.packageRoot.appendingPathComponent("Sources/pmart/ShipSheet.swift"), encoding: .utf8)
+        #expect(sheet.contains("ForEach(GameEndArt.allCases") && sheet.contains("ForEach([0.0, 2.0, 4.0]"))
     }
 
     @Test("ART-049 art views are decorative (accessibility hidden) unless they carry their own label")

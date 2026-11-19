@@ -19,7 +19,7 @@ struct PriceSparkline: View {
                 .chartYAxis(.hidden)
                 .frame(width: 70, height: 20)
             } else {
-                Text("No history").scaledFont(.caption2).foregroundStyle(.readableSecondary)
+                Text("No history").pmFont(.caption).foregroundStyle(PMColor.textSecondary)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -47,7 +47,7 @@ struct PriceExplanationPanel: View {
         VStack(alignment: .leading, spacing: 4) {
             if let item, let explanation, !explanation.steps.isEmpty {
                 HStack {
-                    Text("Why this price? \(Text(Names.item(item)))").scaledFont(.headline)
+                    Text("Why this price? \(Text(Names.item(item)))").pmFont(.valueLarge)
                     Spacer()
                     if explanation.steps.contains(where: \.isNeutral) {
                         Button(showAll ? "Hide unchanged" : "Show all") { showAll.toggle() }
@@ -61,17 +61,17 @@ struct PriceExplanationPanel: View {
                         Spacer()
                         Text(verbatim: step.factor == .base ? step.valueAfter.formatted() : IntelText.signed(step.delta))
                             .monospacedDigit()
-                            .foregroundStyle(.readableSecondary)
+                            .foregroundStyle(PMColor.textSecondary)
                         Text(verbatim: step.valueAfter.formatted()).monospacedDigit().frame(width: 60, alignment: .trailing)
                     }
-                    .scaledFont(.callout)
+                    .pmFont(.body)
                 }
             } else {
-                Text("Select a commodity to see how its price is made").foregroundStyle(.readableSecondary)
+                Text("Select a commodity to see how its price is made").foregroundStyle(PMColor.textSecondary)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, PMSpace.m)
+        .padding(.vertical, PMSpace.s)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.MarketIntel.why)

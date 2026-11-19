@@ -424,7 +424,8 @@ struct EncounterViewTests {
         for id in MenuItemID.allCases {
             let e = MenuCatalog.entry(for: id)
             guard let sc = e.shortcut else { continue }
-            if !sc.modifiers.contains(.command), !sc.modifiers.contains(.control) {
+            // Since release 2.0 the Trade menu's B and S are letter keys too (UI-NAV-011), bound only on the Bridge.
+            if !sc.modifiers.contains(.command), !sc.modifiers.contains(.control), !MenuCatalog.letterKeyItems.contains(id) {
                 #expect(e.menu == .encounter, "\(id)")
             }
         }

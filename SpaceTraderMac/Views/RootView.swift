@@ -7,7 +7,7 @@ struct RootView: View {
     @AppStorage(AppSettingsKey.textSize) private var textSize = TextSizeSetting.standard.rawValue
 
     var body: some View {
-        let titles = WindowTitles.make(state: session.state)
+        let titles = WindowTitles.make(state: session.state, page: session.selectedSection)
         // UI-DS-004: the window's minimum follows the Text Size, on the Welcome screen too.
         let minimum = GameShellView.minimumSize(textSize)
         Group {

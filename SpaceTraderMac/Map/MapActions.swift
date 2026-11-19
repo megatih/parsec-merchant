@@ -35,6 +35,10 @@ nonisolated enum MapActions {
         }
     }
 
+    /// UI-PG-060: on the Galactic Chart (page and window) a plain click only selects the system; the Short-Range Chart's
+    /// click sets the target (UI-BRG-011). Double-click and ⌥-click act everywhere.
+    static func selectsOnly(scope: MapScope, gesture: MapGesture) -> Bool { scope.hasHUD && gesture == .click }
+
     /// MAP-048: exhaustive table over hit kind × gesture × locked.
     static func action(for hit: MapHit, gesture: MapGesture, snapshot s: MapSnapshot, isModal: Bool = false) -> MapAction {
         if isLocked(s, isModal: isModal) { return .none }
@@ -52,7 +56,7 @@ nonisolated enum MapActions {
 /// One item of the map context menu (MAP-053).
 struct MapContextItem: Equatable, Identifiable {
     nonisolated enum Kind: String, Equatable, Sendable {
-        case setTarget, track, plotRoute, useWormhole, findPrices
+        case setTarget, track, plotRoute, useWormhole
     }
 
     var kind: Kind
@@ -75,7 +79,7 @@ enum MapContextMenu {
         let i = hit.systemIndex
         let name = s.systems[i].name
         var items: [MapContextItem] = []
-        items.append(MapContextItem(kind: .setTarget, title: String(localized: "Set Target"), command: .selectTarget(i), destination: nil,
+        items.append(MapContextItem(kind: .setTarget, title: String(localized: "Set as Target"), command: .selectTarget(i), destination: nil,
                                     isEnabled: !locked, reason: locked ? lockReason : nil))
         let track = MapActions.trackCommand(for: i, snapshot: s)
         let trackTitle = s.trackedSystem == i ? String(localized: "Stop Tracking “\(name)”") : String(localized: "Track “\(name)”")
@@ -89,9 +93,6 @@ enum MapContextMenu {
             items.append(MapContextItem(kind: .useWormhole, title: String(localized: "Use Wormhole to \(s.systems[dest].name)"),
                                         command: cmd, destination: nil, isEnabled: !locked, reason: locked ? lockReason : nil))
         }
-        // INT-037: Find Prices opens the System Intel sheet (disabled under the MAP-079 lock like every item).
-        items.append(MapContextItem(kind: .findPrices, title: String(localized: "Find Prices"), command: nil, destination: i,
-                                    isEnabled: !locked, reason: locked ? lockReason : nil))
         return items
     }
 }

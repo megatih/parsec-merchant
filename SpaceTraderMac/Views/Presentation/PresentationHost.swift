@@ -28,7 +28,7 @@ struct PresentationHost: ViewModifier {
             .sheet(item: sheetBinding) { item in
                 SheetRouteView(route: item.route)
                     .environment(session)
-                    .buttonStyle(PointerButtonStyle())  // UI-PTR-002: sheets do not inherit the window's style
+                    .pmSheetChrome()  // UI-PTR-002, UI-PG-070: sheets do not inherit the window's styles
             }
             .confirmationDialog(Text(verbatim: dialog?.content.title ?? ""), isPresented: dialogBinding(dialog),
                                 titleVisibility: .visible, presenting: dialog) { item in
@@ -38,10 +38,12 @@ struct PresentationHost: ViewModifier {
                         .accessibilityIdentifier(item.confirmID)
                     Button(item.cancelLabel, role: .cancel) { cancel(item) }
                         .keyboardShortcut(.defaultAction)
+                        .buttonStyle(PMButtonStyle(kind: .primary))
                         .accessibilityIdentifier(item.cancelID)
                 } else {
                     Button(item.content.confirmLabel) { item.onConfirm() }
                         .keyboardShortcut(.defaultAction)
+                        .buttonStyle(PMButtonStyle(kind: .primary))
                         .accessibilityIdentifier(item.confirmID)
                     Button(item.cancelLabel, role: .cancel) { cancel(item) }
                         .accessibilityIdentifier(item.cancelID)
@@ -52,6 +54,7 @@ struct PresentationHost: ViewModifier {
             .alert(Text(verbatim: alertTitle), isPresented: alertBinding) {
                 Button("OK") { session.dismissPresentation() }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .accessibilityIdentifier(AXID.Dialog.systemAlertOK)
             } message: {
                 Text(verbatim: alertMessage)

@@ -138,7 +138,7 @@ struct ParsecMerchantApp: App {
         .commands {
             MenuCommands(session: appDelegate.session, helpRouter: appDelegate.helpRouter)
         }
-        Window("Galaxy Chart", id: GalaxyWindowMetrics.id) {
+        Window("Galactic Chart", id: GalaxyWindowMetrics.id) {
             GalaxyChartWindowView()
                 .modifier(SceneAccessibility())
                 .environment(appDelegate.session)

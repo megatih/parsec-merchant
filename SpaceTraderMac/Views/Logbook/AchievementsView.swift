@@ -14,12 +14,12 @@ struct AchievementsView: View {
             let m = model(state)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text(verbatim: m.headerText).scaledFont(.headline)
+                    Text(verbatim: m.headerText).pmFont(.valueLarge)
                     if let banner = m.disabledBanner {
                         Label { Text(verbatim: banner) } icon: { Image(systemName: "nosign") }
-                            .padding(10)
+                            .padding(PMSpace.m)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(.orange.opacity(0.15), in: RoundedRectangle(cornerRadius: 8))
+                            .background(.orange.opacity(0.15), in: RoundedRectangle(cornerRadius: PMRadius.panel))
                             .accessibilityElement(children: .combine)
                             .accessibilityIdentifier(AXID.Logbook.achievementsDisabled)
                     }
@@ -33,7 +33,7 @@ struct AchievementsView: View {
                         .accessibilityIdentifier(AXID.Logbook.achievementsUnavailable)
                     }
                 }
-                .padding(16)
+                .padding(PMSpace.l)
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(AXID.Logbook.achievements)
@@ -64,29 +64,29 @@ private struct BadgeView: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 4) {
-                    Text(verbatim: badge.name).scaledFont(.headline)
+                    Text(verbatim: badge.name).pmFont(.valueLarge)
                     if badge.unlocked {
-                        Image(systemName: "checkmark.seal.fill").foregroundStyle(.signalGreen).accessibilityLabel(Text("Unlocked"))
+                        Image(systemName: "checkmark.seal.fill").foregroundStyle(PMColor.profit).accessibilityLabel(Text("Unlocked"))
                     }
                 }
-                Text(verbatim: badge.description).scaledFont(.callout).foregroundStyle(.readableSecondary).lineSpacing(3)  // A11Y-029
+                Text(verbatim: badge.description).pmFont(.body).foregroundStyle(PMColor.textSecondary).lineSpacing(3)  // A11Y-029
                     .fixedSize(horizontal: false, vertical: true)
                 if let p = badge.progress, !badge.unlocked {
                     ProgressView(value: Double(p.current), total: Double(max(1, p.target)))
-                    Text(verbatim: "\(p.current.formatted()) / \(p.target.formatted())").scaledFont(.caption2).monospacedDigit()
+                    Text(verbatim: "\(p.current.formatted()) / \(p.target.formatted())").pmFont(.caption).monospacedDigit()
                 }
                 if let text = badge.unlockedText {
                     Text(verbatim: [text, badge.inGameText].compactMap(\.self).joined(separator: ", "))
-                        .scaledFont(.caption2)
-                        .foregroundStyle(.readableSecondary)
+                        .pmFont(.caption)
+                        .foregroundStyle(PMColor.textSecondary)
                 } else if !badge.unlocked {
-                    Text("Locked").scaledFont(.caption2).foregroundStyle(.readableSecondary)
+                    Text("Locked").pmFont(.caption).foregroundStyle(PMColor.textSecondary)
                 }
             }
             Spacer(minLength: 0)
         }
-        .padding(10)
-        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
+        .padding(PMSpace.m)
+        .background(PMColor.panel, in: RoundedRectangle(cornerRadius: PMRadius.panel))
         // A11Y-029: a labelled container; its texts keep their own (readable) colours for the contrast audit.
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(verbatim: badge.accessibilityText))

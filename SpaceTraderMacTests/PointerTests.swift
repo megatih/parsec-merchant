@@ -17,10 +17,11 @@ struct PointerTests {
         // Modifier clicks are accelerators of visible controls; the key table itself is pinned by UI-KEYS-003.
         #expect(MarketKeyAction.make(characters: "B", modifiers: []) != nil && MarketKeyAction.make(characters: "S", modifiers: .shift) == .sellAll)
         #expect(EncounterKeys.keyCap(for: .resolve) == "R")
-        // Since release 2.0 the dock buttons show their key caps (UI-NAV-002); encounter buttons get theirs in M25.
-        #expect((try Self.source("Views/Shell/DockBarView.swift")).contains("key: section.keyCap"))
+        // Since release 2.0 the dock buttons and the encounter buttons show their key caps (UI-NAV-002, UI-ENC-201).
+        #expect((try Self.source("Views/Shell/DockBarView.swift")).contains("section.keyCap"))
         let bar = try Self.source("Views/Encounter/EncounterActionBar.swift")
-        #expect(!bar.contains("button.keyCap") && bar.contains("Text(verbatim: button.label).pointerTarget()"))
+        #expect(bar.contains("if let key = button.keyCap { PMKeyCap(key: key) }"))
+        #expect(bar.contains("PMButtonStyle(kind: button.isDefault ? .primary : .standard)"))
     }
 
     @Test("UI-PTR-002 UI-PTR-003 the shared modifiers: a 36 pt minimum target and a hover tint that changes no layout")
@@ -62,14 +63,15 @@ struct PointerTests {
             }
         }
         // Every place that reads the held modifiers sits beside a visible control that does the same without them.
-        let twins = ["Map/GalaxyMapView.swift": "ids.selection(item.kind)"]                // card buttons for ⌥-click and ⌘-scroll
+        // The Selected System panel's buttons do what ⌥-click and double-click do on the chart.
+        let twins = ["Map/GalaxyMapView.swift": "ChartSelectionPanel(ids: ids"]
         for f in files where f.text.contains("NSEvent.modifierFlags") || f.text.contains("event.modifierFlags") {
             let twin = try #require(twins[f.name], "\(f.name) reads modifier keys but is not in the accelerator table")
             #expect(f.text.contains(twin), "\(f.name)")
         }
-        // Hover reveals nothing a click does not: the map's hover card has the pinned selection card.
+        // Hover reveals nothing a click does not: a click selects the system into the Selected System panel.
         let map = try Self.source("Map/GalaxyMapView.swift")
-        #expect(map.contains("if scope.hasHUD { ui.pinnedHit = hit }") && map.contains(".allowsHitTesting(pinned)"))
+        #expect(map.contains("if scope.hasHUD { ui.pinnedHit = hit }") && map.contains("hit: ui.pinnedHit"))
     }
 
     @Test("UI-PTR-007 the Cargo row trades by its quantity field (empty means 1) with visible Buy, Max, Sell and All; no modifier is needed")
@@ -135,7 +137,7 @@ struct PointerTests {
         #expect(view.contains("AXID.Outfitter.buy(o.item)") && view.contains("AXID.Outfitter.sell(group, slot: t.slot)"))
     }
 
-    @Test("UI-PTR-011 UI-PTR-012 the map: a click pins a card with buttons; a plain wheel zooms, two fingers pan")
+    @Test("UI-PTR-011 UI-PTR-012 UI-PG-060 the map: a click selects into the panel with buttons; a plain wheel zooms, two fingers pan")
     func map() throws {
         #expect(MapScroll.action(deltaX: 0, deltaY: 1, precise: false, command: false) == .zoom(steps: 1))
         #expect(MapScroll.action(deltaX: 0, deltaY: -2, precise: false, command: true) == .zoom(steps: -2))
@@ -159,19 +161,25 @@ struct PointerTests {
         let items = MapContextMenu.items(for: .system(other), snapshot: snapshot, isModal: false)
         #expect(items.contains { $0.kind == .setTarget } && items.contains { $0.kind == .track } && items.contains { $0.kind == .plotRoute })
         let view = try Self.source("Map/GalaxyMapView.swift")
-        #expect(view.contains("MapContextMenu.items(for: hit, snapshot: snapshot, isModal: session.isInputLocked) : []"))
+        #expect(view.contains("MapActions.selectsOnly(scope: scope, gesture: gesture)"), "UI-PG-060: a click on the Galactic Chart only selects")
+        #expect(MapActions.selectsOnly(scope: .galaxy, gesture: .click) && !MapActions.selectsOnly(scope: .miniChart, gesture: .click)
+            && !MapActions.selectsOnly(scope: .galaxy, gesture: .doubleClick))
+        let panel = try Self.source("Map/ChartSelectionPanel.swift")
+        #expect(panel.contains("MapContextMenu.items(for: subject, snapshot: snapshot, isModal: session.isInputLocked)"))
         // The Short-Range Chart: one click targets (UI-BRG-011); its button opens the Galactic Chart (UI-BRG-012).
         #expect((try Self.source("Views/Bridge/BridgeChartPanel.swift")).contains("session.openGalacticChartAtTarget()"))
     }
 
-    @Test("UI-PTR-014 UI-PTR-015 sheet chips 1 / 5 / All and the money slider's step")
+    @Test("UI-PTR-014 UI-PTR-015 sheet quantities (chips 1 / 5 / All, Quantity fields) and the money slider's step")
     func sheetsAndSliders() throws {
         #expect(SheetChip.allCases.map { $0.quantity(in: 1...12) } == [1, 5, 12])
         #expect(SheetChip.allCases.map { $0.quantity(in: 1...3) } == [1, 3, 3])
         #expect(SheetChip.allCases.map { $0.quantity(in: 2...2) } == [2, 2, 2])
         #expect(AXID.quantityChip("decision.trade.quantity", .all) == "decision.trade.quantity.chip.all")
         let sheets = try Self.source("Views/Encounter/EncounterSheets.swift")
-        #expect(sheets.components(separatedBy: "QuantityChips(").count - 1 == 3, "plunder, trade in orbit and make room")
+        // Since release 2.0 the three sheets use the Cargo region's vocabulary: a Quantity field with Max or All (UI-ENC-205).
+        #expect(sheets.components(separatedBy: "PMQuantityField(").count - 1 == 3, "plunder, trade in orbit and make room")
+        #expect(!sheets.contains("QuantityChips(") && !sheets.contains("Stepper("))
         #expect((try Self.source("Views/Market/BridgeSheets.swift")).contains("QuantityChips(value: $quantity"))
         #expect([0, 50, 100, 101, 1000, 1001, 25000, 100_000, 1_000_000].map(BankSlider.step(limit:)) == [1, 1, 1, 10, 10, 10, 1000, 1000, 10000])
         for limit in [7, 480, 12_345, 987_654] {

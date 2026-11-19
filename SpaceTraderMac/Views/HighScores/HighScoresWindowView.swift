@@ -27,7 +27,7 @@ struct HighScoresWindowView: View {
                 }
             }
         }
-        .padding(20)
+        .padding(PMSpace.xl)
         .frame(minWidth: 480, minHeight: 400)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Scores.window)
@@ -58,13 +58,13 @@ struct HighScoresWindowView: View {
                 }
                 .buttonStyle(.borderless)
                 .background(r == selected ? AnyShapeStyle(.tint.opacity(0.25)) : AnyShapeStyle(.clear),
-                            in: RoundedRectangle(cornerRadius: 6))
+                            in: RoundedRectangle(cornerRadius: PMRadius.control))
                 .accessibilityAddTraits(r == selected ? .isSelected : [])
                 .accessibilityIdentifier(AXID.Scores.ruleset(r))
             }
         }
-        .padding(2)
-        .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+        .padding(PMSpace.xs)
+        .background(.quaternary, in: RoundedRectangle(cornerRadius: PMRadius.panel))
     }
 
     private func reload() {
@@ -110,9 +110,9 @@ struct HighScoreRowView: View {
                 Spacer()
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 6)
-        .background(isNew ? AnyShapeStyle(.tint.opacity(0.18)) : AnyShapeStyle(.clear), in: RoundedRectangle(cornerRadius: 6))
+        .padding(.vertical, PMSpace.s)
+        .padding(.horizontal, PMSpace.s)
+        .background(isNew ? AnyShapeStyle(.tint.opacity(0.18)) : AnyShapeStyle(.clear), in: RoundedRectangle(cornerRadius: PMRadius.control))
         .accessibilityElement(children: .contain)
         .accessibilityValue(isNew ? Text("new") : Text(verbatim: ""))
         .accessibilityIdentifier(AXID.Scores.row(row.rank))

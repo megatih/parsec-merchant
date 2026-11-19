@@ -26,11 +26,11 @@ struct ShipPaneView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(verbatim: model.title).scaledFont(.headline)
+                Text(verbatim: model.title).pmFont(.valueLarge).foregroundStyle(PMColor.textPrimary)
                 if model.isDisabled {
                     Label("Disabled", systemImage: "bolt.slash.fill")
-                        .scaledFont(.caption, weight: .bold)
-                        .foregroundStyle(.signalOrange)
+                        .pmFont(.caption)
+                        .foregroundStyle(PMColor.caution)
                         .accessibilityIdentifier(AXID.Encounter.opponentDisabled)
                 }
             }
@@ -41,8 +41,8 @@ struct ShipPaneView: View {
                         .offset(x: offset * geo.size.width)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: ShipPanelSize.encounterPaneFloor, idealHeight: ShipPanelSize.encounterPane.lowerBound,
-                   maxHeight: ShipPanelSize.encounterPane.upperBound)
+            // UI-ENC-200: the ship takes all the height its panel has.
+            .frame(maxWidth: .infinity, minHeight: ShipPanelSize.encounterPaneFloor, maxHeight: .infinity)
             // ART-083: the stage reads where the portrait really is, so the effects land on the ships.
             .anchorPreference(key: ShipPaneArtKey.self, value: .bounds) { [identifiers.pane: $0] }
             .accessibilityElement(children: .ignore)
@@ -53,11 +53,12 @@ struct ShipPaneView: View {
             EncounterBar(model: model.shields)
                 .accessibilityIdentifier(identifiers.shields)
         }
-        .padding(12)
-        .frame(maxWidth: .infinity)
-        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
+        .padding(PMSpace.m)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(PMColor.panel, in: RoundedRectangle(cornerRadius: PMRadius.panel))
+        .overlay { RoundedRectangle(cornerRadius: PMRadius.panel).strokeBorder(PMColor.hairline) }
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(identifiers.pane)
+        .probed(identifiers.pane)
     }
 
     static func input(_ art: ShipArtInput, phase: Double, accessibility: ArtAccessibility) -> ShipArtInput {
@@ -78,13 +79,13 @@ struct EncounterBar: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 if model.isCritical {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.signalRed)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(PMColor.loss)
                 }
-                Text(verbatim: model.text).scaledFont(.caption).monospacedDigit()
+                Text(verbatim: model.text).pmFont(.value).foregroundStyle(PMColor.textPrimary)
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.secondary.opacity(0.2))
+                    Capsule().fill(PMColor.panelInset)
                     Capsule().fill(tint).frame(width: geo.size.width * model.fraction)
                     // A11Y-021: stripes on a critical hull under Differentiate Without Color.
                     if model.isCritical, ColorSignal.hullCritical.extra(prefs: a11yPrefs) != nil {
@@ -92,10 +93,10 @@ struct EncounterBar: View {
                     }
                 }
                 // A11Y-018: the bar outline (2 pt under Increase Contrast).
-                .overlay(Capsule().strokeBorder(Color.primary.opacity(0.45),
+                .overlay(Capsule().strokeBorder(PMColor.strongLine,
                                                 lineWidth: ContrastStyle.make(prefs: a11yPrefs).barOutlineWidth))
             }
-            .frame(height: 6)
+            .frame(height: 8)
             .animation(MotionPolicy.animation(for: .gaugeChange, prefs: a11yPrefs), value: model.fraction)
         }
         // A11Y-004: a progress element "Hull 78%" with the value "78 percent" ("No shields" without shields).
@@ -107,8 +108,8 @@ struct EncounterBar: View {
 
     private var tint: Color {
         switch model.kind {
-        case .hull: model.isCritical ? .red : .green
-        case .shields: .blue
+        case .hull: model.isCritical ? PMColor.loss : PMColor.profit
+        case .shields: PMColor.info
         }
     }
 }

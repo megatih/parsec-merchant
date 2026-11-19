@@ -56,6 +56,12 @@ final class GameSession {
     @ObservationIgnored var mapSnapshotCache: MapSnapshot?
     /// UI-BRG-005: the Bridge's intel, built once per state generation and journal revision (GameSession+Bridge).
     @ObservationIgnored var bridgeIntelCache: BridgeIntelCache?
+    /// A11Y-029: Recent Events is open over the page; the page under it is hidden from assistive tools meanwhile.
+    var feedOverlayOpen = false
+    /// UI-BRG-006: the quantity typed in each Cargo row; empty means 1. Kept here so the Trade menu reads it too.
+    var cargoQuantities: [TradeItemType: String] = [:]
+    /// UI-NAV-011: a text field of the Bridge has the keyboard focus, so B and S are letters, not Trade keys.
+    var textEntryFocused = false
     @ObservationIgnored var mapSnapshotBuilds = 0
     @ObservationIgnored var routeTask: Task<Void, Never>?
     @ObservationIgnored var routePlanner: RoutePlanning = RoutePlanning.standard

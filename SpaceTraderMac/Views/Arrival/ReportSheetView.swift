@@ -11,7 +11,7 @@ struct ReportSheetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label {
-                Text(ReportSheetText.title(sheet.kind)).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+                Text(ReportSheetText.title(sheet.kind)).pmFont(.title).accessibilityAddTraits(.isHeader)
             } icon: {
                 Image(systemName: ReportSheetText.symbol(sheet.kind))
             }
@@ -19,7 +19,7 @@ struct ReportSheetView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     ForEach(Array(sheet.criticalSections.enumerated()), id: \.offset) { _, section in
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(verbatim: section.title).scaledFont(.headline)
+                            Text(verbatim: section.title).pmFont(.valueLarge)
                             ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
                                 Text(verbatim: line).fixedSize(horizontal: false, vertical: true)
                             }
@@ -27,7 +27,7 @@ struct ReportSheetView: View {
                     }
                     if let arrival = sheet.arrival {
                         if !sheet.criticalSections.isEmpty { Divider() }
-                        Text(verbatim: arrival.summary).scaledFont(.headline)
+                        Text(verbatim: arrival.summary).pmFont(.valueLarge)
                         ArrivalSectionsView(report: arrival)
                     }
                 }
@@ -38,10 +38,11 @@ struct ReportSheetView: View {
                 Spacer()
                 Button("Continue") { session.dismissPresentation() }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .accessibilityIdentifier(AXID.Report.continueButton)
             }
         }
-        .padding(24)
+        .padding(PMSpace.xl)
         .frame(width: 520)
         .interactiveDismissDisabled()
         // UI-KEYS-021: Esc and ⌘. press the only button.

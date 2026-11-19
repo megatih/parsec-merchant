@@ -26,8 +26,9 @@ final class M12KeysUITests: ParsecUITestCase {
 
     private func focusedIdentifier() -> String {
         if let field = textFieldIDs.first(where: { hasFocus($0) }) { return field }
-        let focused = app.descendants(matching: .any).matching(NSPredicate(format: "hasKeyboardFocus == true")).firstMatch
-        return focused.exists ? focused.identifier : ""
+        // A container reports the focus of what it holds, so the innermost identified element is the focused control.
+        let focused = app.descendants(matching: .any).matching(NSPredicate(format: "hasKeyboardFocus == true AND identifier != ''"))
+        return focused.allElementsBoundByIndex.last?.identifier ?? ""
     }
 
     private func hasFocus(_ id: String) -> Bool {
@@ -110,7 +111,7 @@ final class M12KeysUITests: ParsecUITestCase {
         let items = find.menus.menuItems.allElementsBoundByIndex.map(\.title).filter { !$0.isEmpty }
         type(esc, [])
         type(esc, [])
-        XCTAssertEqual(items, ["Find…"], "the Find submenu holds only Find… (found \(items))")
+        XCTAssertEqual(items, ["Find System…"], "the Find submenu holds only Find System… (found \(items))")
         type("]")
         expect("a target is selected") { !targetName.isEmpty && !targetName.hasPrefix("Choose") }
         type("j")
@@ -146,13 +147,7 @@ final class M12KeysUITests: ParsecUITestCase {
         type("0")
         expect("⌘0 fits the galaxy") { moved(before, frame(probe)) }
         XCTAssertTrue(element(g.zoomIn).isEnabled, "\(g.zoomIn) is enabled at Fit Galaxy")
-        // With the search field focused the canvas has no focus: ⌘= does nothing.
-        click(g.searchField)
-        pause()
-        before = frame(probe)
-        type("=")
-        pause()
-        XCTAssertFalse(moved(before, frame(probe)), "⌘= does nothing while the map is unfocused")
+        // The chart has no search field since release 2.0 (UI-PG-061), so nothing on the page takes the focus from it.
     }
 
     /// The Encounter letters do nothing while a sheet is up.
@@ -173,35 +168,24 @@ final class M12KeysUITests: ParsecUITestCase {
 
     // MARK: §5 Return and Esc
 
-    /// One Esc router: the feed overlay closes first, then the Shipyard comparison clears.
+    /// One Esc router: the feed overlay closes first, then Esc returns from a page to the Bridge.
     @MainActor
-    func testEscapeClosesTheFeedOverlayThenClearsTheComparison() throws {
-        // covers: UI-KEYS-018, UI-KEYS-017, UI-PTR-020 (the Compare toggle is a new control beside each card)
-        var cards: [XCUIElement] = []
-        for seed in [UITestFixtures.flowSeed, UITestFixtures.mapFlowSeed, 1, 2, 3, 4, 5, 6] {
-            if seed != UITestFixtures.flowSeed { relaunch(UITestFixtures.launchArguments(seed: seed)) }
-            quickStart()
-            openPage("shipyard")
-            waitFor("shipyard.root")
-            pause()
-            cards = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'shipyard.ship.'"))
-                .allElementsBoundByIndex.filter { !$0.identifier.hasSuffix(".buy") && !$0.identifier.hasSuffix(".compare") }
-            if cards.count >= 2 { break }
-        }
-        XCTAssertGreaterThanOrEqual(cards.count, 2, "a Quick Start system with a ship for sale")
-        cards[0].click()
-        XCUIElement.perform(withKeyModifiers: .command) { cards[1].click() }
-        let compare = waitFor("shipyard.compare")
+    func testEscapeClosesTheFeedOverlayThenReturnsToTheBridge() throws {
+        // covers: UI-KEYS-018, UI-KEYS-017, UI-NAV-003, UI-PTR-020
+        quickStart()
+        openPage("shipyard")
+        waitFor("shipyard.root")
+        pause()
         click(AXID.Status.feed)
         let feed = waitFor(AXID.Status.feedList)
         type(esc, [])
         expect("the first Esc closes the feed overlay") { !feed.exists }
-        XCTAssertTrue(compare.exists, "the comparison stays after the first Esc")
+        XCTAssertTrue(element("shipyard.root").exists, "the page stays after the first Esc")
         type(esc, [])
-        expect("the second Esc clears the comparison") { !compare.exists }
+        expect("the second Esc returns to the Bridge") { self.element(AXID.Bridge.root).exists }
         type(esc, [])
         pause()
-        XCTAssertTrue(mainWindow.exists && element("shipyard.root").exists, "a third Esc does nothing")
+        XCTAssertTrue(mainWindow.exists && element(AXID.Bridge.root).exists, "a third Esc does nothing")
     }
 
     /// Return on the Bridge never warps; ⌘J does.
@@ -224,12 +208,12 @@ final class M12KeysUITests: ParsecUITestCase {
     func testEscapeClosesEverySheet() throws {
         // covers: UI-KEYS-021, UI-KEYS-020
         quickStart()
-        // Options and Find System (Cancel).
-        type("o", [.command, .option])
-        let options = waitFor(AXID.Options.sheet)
+        // Options is a page: Esc returns to the Bridge. Find System is a sheet (Cancel).
+        openOptionsPage()
         type(esc, [])
-        expect("Esc closes Options") { !options.exists }
-        type("f", [.command, .option])
+        expect("Esc leaves Options") { !self.element(AXID.Options.root).exists }
+        openPage("bridge")
+        type("f")  // ⌘F: Edit › Find System…
         let find = waitFor("findSystem.sheet")
         type(esc, [])
         expect("Esc closes Find System") { !find.exists }
@@ -336,7 +320,9 @@ final class M12KeysUITests: ParsecUITestCase {
         type("]")
         expect("⌘] chose a target") { self.element(AXID.Bridge.targetWarp).isEnabled }
         let bridgeOrder = tabCycle()
-        try XCTSkipIf(bridgeOrder.count <= 1, """
+        // Without Full Keyboard Access Tab stops only at text fields (the ten Quantity fields of the Cargo rows).
+        let reachesButtons = bridgeOrder.contains { $0.hasPrefix("bridge.cargo.buy.") || $0.hasPrefix("dock.") || $0.hasPrefix("bridge.target.") }
+        try XCTSkipIf(bridgeOrder.count <= 1 || !reachesButtons, """
             Full Keyboard Access is off on this Mac (Tab only reaches \(bridgeOrder)); turn on System Settings › Keyboard › \
             Keyboard navigation to run UI-KEYS-025/026 (QA-REPORT UI-KEYS-029).
             """)
@@ -475,7 +461,7 @@ final class M12KeysUITests: ParsecUITestCase {
         expect("⌘] changes the target") { targetName != target }
         type("[")
         expect("⌘[ restores it") { targetName == target }
-        type("f", [.command, .option])
+        type("f")  // ⌘F: Edit › Find System…
         let find = waitFor("findSystem.sheet")
         type(esc, [])
         expect("Esc closes Find System") { !find.exists }
@@ -489,8 +475,9 @@ final class M12KeysUITests: ParsecUITestCase {
         openPage("galaxy")
         waitFor(AXID.Galaxy.root)
         type("f")
-        expect("⌘F on Galaxy focuses the map search") { hasFocus(AXID.Galaxy.section.searchField) }
+        let chartFind = waitFor("findSystem.sheet")  // UI-PG-061: Find System is the chart's one search
         type(esc, [])
+        expect("Esc closes Find System on the chart") { !chartFind.exists }
         openPage("logbook")
         waitFor("logbook.root")
         type("f")
@@ -502,21 +489,20 @@ final class M12KeysUITests: ParsecUITestCase {
         expect("⌘W closes the Galaxy Chart window") { !chart.exists }
         // Closing the chart window leaves no key window until the main window is clicked.
         mainWindow.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.01)).click()
-        type("o", [.command, .option])
-        let options = waitFor(AXID.Options.sheet)
+        openOptionsPage()
         pause()
         type(esc, [])
-        expect("Esc closes Options") { !options.exists }
+        expect("Esc leaves Options") { !self.element(AXID.Options.root).exists }
         openPage("bridge")
         click(AXID.Bridge.targetNext)
         type("j")
         expect("warped (subtitle: \(subtitle))") { day == "Day 1" }
         let fuel = element("status.fuel")
         let fuelBefore = text(of: fuel)
-        if isMenuItemEnabled("Game", "Fill Fuel") {
+        if isMenuItemEnabled("Trade", "Fill Tank") {
             type("f", [.command, .shift])
             expect("⇧⌘F refuels (\(fuelBefore) → \(text(of: fuel)))") { text(of: fuel) != fuelBefore }
-            XCTAssertFalse(isMenuItemEnabled("Game", "Fill Fuel"), "the tank is full after ⇧⌘F")
+            XCTAssertFalse(isMenuItemEnabled("Trade", "Fill Tank"), "the tank is full after ⇧⌘F")
         } else {
             // The arrival refuelled already (auto-fuel); ⇧⌘F then changes nothing.
             type("f", [.command, .shift])
@@ -524,7 +510,7 @@ final class M12KeysUITests: ParsecUITestCase {
             XCTAssertEqual(text(of: fuel), fuelBefore, "⇧⌘F with a full tank changes nothing")
         }
         app.menuBars.menuBarItems["Game"].click()
-        let newspaperItem = menuItem("Game", "Newspaper")
+        let newspaperItem = menuItem("Game", "Read Newspaper")
         let newspaperOffered = newspaperItem.waitForExistence(timeout: 2) && newspaperItem.isEnabled
         type(esc, [])
         guard newspaperOffered else { return } // this system prints no paper (MENU-024); testEscapeClosesEverySheet covers ⇧⌘N

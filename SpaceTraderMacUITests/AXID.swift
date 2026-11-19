@@ -123,14 +123,13 @@ enum AXID {
     }
 
     enum Options {
-        static let sheet = "options.sheet"
+        /// The Options page (release 2.0: a page whose changes apply at once; ⌥⌘O).
+        static let root = "options.root"
         static let autoFuel = "options.autoFuel"
         static let autoRepair = "options.autoRepair"
         static let leaveEmpty = "options.leaveEmpty"
         static let alwaysIgnoreTraders = "options.alwaysIgnoreTraders"
         static let alwaysIgnoreTradeInOrbit = "options.alwaysIgnoreTradeInOrbit"
-        static let ok = "options.ok"
-        static let cancel = "options.cancel"
     }
 
     enum Settings {
@@ -141,7 +140,7 @@ enum AXID {
         static let save = "menu.file.save"
         static let saveAs = "menu.file.saveAs"
         static let revert = "menu.file.revert"
-        static let options = "menu.game.options"
+        static let options = "menu.view.options"
     }
 
     /// The Encounter view (UI-ENC §17).
@@ -235,8 +234,6 @@ enum AXID {
         var fitGalaxy: String { "\(p).fitGalaxy" }
         var trackedRange: String { "\(p).trackedRange" }
         var plotRoute: String { "\(p).context.plotRoute" }
-        var searchField: String { "\(p).search.field" }
-        var searchResultPrefix: String { "\(p).search.result." }
         var filterInRange: String { "\(p).search.filter.inRange" }
         var routePanel: String { "\(p).route.panel" }
         func routeHop(_ n: Int) -> String { "\(p).route.hop.\(n)" }

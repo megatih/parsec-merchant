@@ -46,14 +46,14 @@ struct CareerCardView: View {
                     ForEach(badges, id: \.self) { badge in
                         Text(verbatim: badge)
                             .scaledFont(.caption, weight: .bold)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
+                            .padding(.horizontal, PMSpace.s)
+                            .padding(.vertical, PMSpace.xs)
                             .overlay(Capsule().strokeBorder(.secondary))
                     }
                 }
             }
         }
-        .padding(20)
+        .padding(PMSpace.xl)
         .frame(width: 440, alignment: .leading)
     }
 

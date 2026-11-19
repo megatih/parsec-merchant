@@ -162,16 +162,16 @@ struct MapInteractionTests {
         #expect(session.state?.trackedSystem == w && session.state?.warpSystem == before)
     }
 
-    @Test("MAP-053 INT-037 context menu items for a hit (Find Prices from M10), with disabled reasons; nothing for empty space")
+    @Test("MAP-053 context menu items for a hit, with disabled reasons; nothing for empty space")
     func contextMenu() {
         var s = MapFx.placed([(10, 10), (20, 20), (30, 30)], wormholes: [1, 2])
         #expect(MapContextMenu.items(for: nil, snapshot: s, isModal: false).isEmpty)
         let items = MapContextMenu.items(for: .wormhole(1), snapshot: s, isModal: false)
-        #expect(items.map(\.kind) == [.setTarget, .track, .plotRoute, .useWormhole, .findPrices] && items.allSatisfy(\.isEnabled))
-        #expect(items[4].destination == 1 && AXID.Map(.galaxy).context(.findPrices) == "galaxy.context.findPrices")
+        #expect(items.map(\.kind) == [.setTarget, .track, .plotRoute, .useWormhole] && items.allSatisfy(\.isEnabled))
+        #expect(items[0].title == "Set as Target")
         #expect(items[1].title == "Track “\(s.systems[1].name)”" && items[2].destination == 1)
         let here = MapContextMenu.items(for: .system(0), snapshot: s, isModal: false)
-        #expect(!here[1].isEnabled && !here[2].isEnabled && here[2].reason != nil && here.count == 4 && here[3].isEnabled)
+        #expect(!here[1].isEnabled && !here[2].isEnabled && here[2].reason != nil && here.count == 3)
         s.isDocked = false
         #expect(MapContextMenu.items(for: .system(2), snapshot: s, isModal: false).allSatisfy { !$0.isEnabled && $0.reason != nil })
     }
@@ -271,6 +271,6 @@ struct MapInteractionTests {
             }
         }
         #expect(AXID.Map(.miniChart).map == AXID.Galaxy.miniChartMap && all.contains(AXID.Galaxy.windowRoot))
-        #expect(all.contains("galaxy.root") && all.contains("dock.galaxy") && all.contains(AXID.Galaxy.bridgePlotRoute))
+        #expect(all.contains("galaxy.root") && all.contains("dock.galaxy") && all.contains(AXID.Galaxy.find))
     }
 }

@@ -52,7 +52,7 @@ struct ShipyardPage: View {
     private func list(_ model: ShipyardModel, selected: ShipCardModel?, state: GameState) -> some View {
         PMPanel("Ships for Sale", identifier: "shipyard.list") {
             if !model.hasShipsForSale {
-                PMEmptyState(symbol: "airplane", message: "No ships for sale here.", identifier: "shipyard.none")
+                PMEmptyState(symbol: "airplane", message: "No ships for sale in this system", identifier: "shipyard.none")
             }
             ScrollView(.vertical) {
                 VStack(spacing: 0) {
@@ -183,7 +183,7 @@ private struct ShipRow: View {
             .padding(.vertical, PMSpace.xs * scale)
             .padding(.trailing, PMSpace.s * scale)
         }
-        .hoverHighlight(cornerRadius: 0)  // UI-PTR-003
+        .hoverHighlight(cornerRadius: PMRadius.control)  // UI-PTR-003
         // UI-PG-010: one click selects; double-click is only an accelerator for Buy Ship….
         .onTapGesture(perform: onSelect)
         .simultaneousGesture(TapGesture(count: 2).onEnded { onBuy() })

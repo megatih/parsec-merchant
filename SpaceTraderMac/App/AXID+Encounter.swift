@@ -5,6 +5,8 @@ import ParsecEngine
 nonisolated extension AXID {
     enum Encounter {
         static let view = "encounter.view"
+        /// UI-ENC-204: a famous captain's portrait.
+        static let captainPortrait = "encounter.opponent.portrait"
         static let intro = "encounter.intro"
         static let badge = "encounter.badge"
         static let player = "encounter.player"
@@ -32,7 +34,7 @@ nonisolated extension AXID {
 
         /// Actions that have a button (the `autoRepeat` engine tick has none, UI-ENC-028).
         static let buttonActions = EncounterAction.allCases.filter { $0 != .autoRepeat }
-        static let all: [String] = [view, intro, badge, player, playerHull, playerShields, opponent, opponentHull,
+        static let all: [String] = [view, captainPortrait, intro, badge, player, playerHull, playerShields, opponent, opponentHull,
                                     opponentShields, opponentDisabled, log, actions, autoRepeat, resumeDecision, tactical,
                                     tacticalClass, tacticalEquipment, tacticalFleeOdds]
             + buttonActions.map(action)

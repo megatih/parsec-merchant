@@ -4,7 +4,7 @@ import ParsecEngine
 import ParsecPersistence
 import SwiftUI
 
-/// The Welcome view (UI-SHELL-017/018): no sidebar, toolbar or inspector.
+/// The Welcome view (UI-SHELL-017/018, UI-PG-070): the console palette, like the game it opens.
 struct WelcomeView: View {
     @Environment(GameSession.self) private var session
     @State private var slots: [SlotInfo] = []
@@ -15,11 +15,14 @@ struct WelcomeView: View {
             actions
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background { WelcomeBackdrop() }
-                .environment(\.colorScheme, .dark)
-            Divider()
+            Rectangle().fill(PMColor.hairline).frame(width: 1).accessibilityHidden(true)
             recentList
                 .frame(width: 420)
+                .background(PMColor.panel)
         }
+        .foregroundStyle(PMColor.textPrimary)
+        .environment(\.colorScheme, .dark)
+        .background(PMColor.space)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Welcome.root)
         .onAppear(perform: reload)
@@ -27,19 +30,21 @@ struct WelcomeView: View {
     }
 
     private var actions: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: PMSpace.m) {
             ArtAccessibilityReader { a11y in
                 Wordmark(size: 34, increaseContrast: a11y.increaseContrast)
                     .artAccessibility(.wordmark)  // A11Y-006, A11Y-009
             }
             Text("Based on Space Trader by Pieter Spronck.")
-                .foregroundStyle(.white.opacity(0.9))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(.black.opacity(0.45), in: Capsule())  // A11Y-029: legible over the starfield
-            VStack(spacing: 8) {
+                .pmFont(.body)
+                .foregroundStyle(PMColor.textPrimary)
+                .padding(.horizontal, PMSpace.s)
+                .padding(.vertical, PMSpace.xs)
+                .background(PMColor.panelInset, in: Capsule())  // A11Y-029: legible over the starfield
+            VStack(spacing: PMSpace.xs) {
                 Button("Quick Start") { session.requestQuickStart() }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary, fillsWidth: true))
                     .accessibilityIdentifier(AXID.Welcome.quickStart)
                 if session.continueCandidate != nil {
                     Button("Continue") { session.continueGame() }
@@ -52,29 +57,32 @@ struct WelcomeView: View {
                 Button("Import…") { session.requestImport() }
                     .accessibilityIdentifier(AXID.Welcome.importSave)
             }
-            .controlSize(.large)
             .frame(width: 240)
-            // UI-PTR-002: the scene's push-button style gives these their 36 pt targets around the large bezels.
-            .buttonStyle(PointerButtonStyle())
-            .padding(.top, 12)
+            // UI-PTR-002: the component's 36 pt targets.
+            .buttonStyle(PMButtonStyle(fillsWidth: true))
+            .padding(.top, PMSpace.m)
         }
-        .padding(40)
+        .padding(PMSpace.xl)
     }
 
     private var recentList: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: PMSpace.s) {
             Text("Recent Games")
-                .scaledFont(.headline)
-                .padding([.top, .horizontal])
+                .pmFont(.panelTitle)
+                .foregroundStyle(PMColor.textSecondary)
+                .accessibilityAddTraits(.isHeader)
+                .padding([.top, .horizontal], PMSpace.l)
             if slots.isEmpty {
                 Text("No saved games yet.")
-                    .foregroundStyle(.readableSecondary)
+                    .foregroundStyle(PMColor.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(slots, id: \.id, selection: $selection) { slot in
                     RecentSlotRow(slot: slot)
+                        .listRowBackground(Color.clear)
                         .accessibilityIdentifier(AXID.Welcome.recent(slot.id))
                 }
+                .scrollContentBackground(.hidden)
                 .contextMenu(forSelectionType: String.self) { _ in
                     EmptyView()
                 } primaryAction: { ids in
@@ -98,18 +106,19 @@ struct RecentSlotRow: View {
         let system = Ruleset.named(slot.rulesetID).tables.systemNames
         let systemName = system.indices.contains(s.system) ? system[s.system] : ""
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 6) {
-                Text(verbatim: s.commander).scaledFont(.body, weight: .bold)
-                if s.ironman { Text("Ironman").scaledFont(.caption).foregroundStyle(.signalOrange) }
-                if s.cheatsUsed { Text("Cheats").scaledFont(.caption).foregroundStyle(.readableSecondary) }
-                if s.ended { Text("Ended").scaledFont(.caption).foregroundStyle(.readableSecondary) }
-                if slot.isAutosave { Text("Autosave").scaledFont(.caption).foregroundStyle(.readableSecondary) }
+            HStack(spacing: PMSpace.s) {
+                Text(verbatim: s.commander).pmFont(.value).foregroundStyle(PMColor.textPrimary)
+                if s.ironman { Text("Ironman").pmFont(.caption).foregroundStyle(PMColor.caution) }
+                if s.cheatsUsed { Text("Cheats").pmFont(.caption).foregroundStyle(PMColor.textSecondary) }
+                if s.ended { Text("Ended").pmFont(.caption).foregroundStyle(PMColor.textSecondary) }
+                if slot.isAutosave { Text("Autosave").pmFont(.caption).foregroundStyle(PMColor.textSecondary) }
             }
             Text("Day \(s.day) · \(systemName) · Worth \(s.worth.formatted()) cr. · \(String(localized: Names.ruleset(slot.rulesetID)))")
-                .scaledFont(.caption)
-                .foregroundStyle(.readableSecondary)
+                .pmFont(.caption)
+                // A11Y-029: full contrast, also on the list's selection highlight.
+                .foregroundStyle(PMColor.textPrimary)
                 .monospacedDigit()
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, PMSpace.xs)
     }
 }

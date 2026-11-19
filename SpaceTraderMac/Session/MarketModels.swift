@@ -115,7 +115,7 @@ enum MarketKeyAction: Equatable, Sendable {
         let table: [(KeyActionID, MenuShortcut, LocalizedStringResource)] = [
             (.marketBuyOne, MenuShortcut("b", []), "Market: buy one unit of the selected item"),
             (.marketSellOne, MenuShortcut("s", []), "Market: sell or dump one unit of the selected item"),
-            (.marketBuyMax, MenuShortcut("b", [.shift]), "Market: Buy Max"),
+            (.marketBuyMax, MenuShortcut("b", [.shift]), "Market: Buy Maximum"),
             (.marketSellAll, MenuShortcut("s", [.shift]), "Market: Sell All"),
             (.marketSelectPrevious, MenuShortcut(MenuShortcut.upArrowKey, []), "Market: select the previous item"),
             (.marketSelectNext, MenuShortcut(MenuShortcut.downArrowKey, []), "Market: select the next item"),

@@ -128,7 +128,8 @@ struct MenuTests {
     @Test("MENU-005 shortcut hygiene: unique, no standard shortcuts, every shortcut has ⌘ or ⌃")
     func shortcutHygiene() {
         var seen: Set<MenuShortcut> = []
-        for id in MenuItemID.allCases {
+        // The Trade menu's letter keys (UI-NAV-011) live on the docked Bridge only, the Encounter menu's in an encounter.
+        for id in MenuItemID.allCases where !MenuCatalog.letterKeyItems.contains(id) {
             guard let sc = MenuCatalog.entry(for: id).shortcut else { continue }
             #expect(!seen.contains(sc), "duplicate shortcut \(sc.display)")
             seen.insert(sc)
@@ -148,7 +149,7 @@ struct MenuTests {
         for id in MenuItemID.allCases {
             let menu = MenuCatalog.entry(for: id).menu
             switch menu {
-            case .file, .edit, .view, .game, .encounter: #expect(!on(id, c), "\(id)")
+            case .file, .edit, .view, .trade, .game, .encounter: #expect(!on(id, c), "\(id)")
             case .app, .window, .help: #expect(on(id, c), "\(id)")
             }
         }
@@ -307,10 +308,10 @@ struct MenuTests {
     @Test("MENU-019 MENU-023 the View menu's page items in dock order with ⌘1–⌘9; the 1.x Market page has no shortcut")
     func viewOrder() {
         let sections = MenuCatalog.items(in: .view).filter { $0.section != nil }
-        #expect(sections == [.bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .quests, .galaxy, .logbook])
-        #expect(sections.compactMap { MenuCatalog.entry(for: $0).shortcut?.key } == ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
+        #expect(sections == [.bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .quests, .galaxy, .logbook, .options])
+        #expect(sections.compactMap { MenuCatalog.entry(for: $0).shortcut?.key } == ["1", "2", "3", "4", "5", "6", "7", "8", "9", "o"])
         #expect(MenuCatalog.entry(for: .logbook).identifier == "menu.view.logbook")
-        #expect(sections.compactMap(\.section) == Section.allCases.filter { $0 != .options }, "Options is ⌥⌘O in the Game menu")
+        #expect(Set(sections.compactMap(\.section)) == Set(Section.allCases), "every page, Options (⌥⌘O) last")
     }
 
     @Test("MENU-020 ⌘1…⌘9 select their pages (the 1.x Market page has no shortcut); during an encounter they are disabled")
@@ -335,15 +336,6 @@ struct MenuTests {
     }
 
     // MARK: Game
-
-    @Test("MENU-024 the Game menu's rows in order (Plot Route… after Find System from M8) with separators")
-    func gameOrder() {
-        #expect(MenuCatalog.items(in: .game) == [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .sellAllCargo,
-                                                 .priceDetails, .buyFuelAmount, .fillFuel, .repairAmount, .repair, .newspaper, .options, .retire])
-        #expect(MenuCatalog.items(in: .game, milestone: 7).contains(.plotRoute) == false)
-        #expect(MenuCatalog.separatorAfter.isSuperset(of: [.findSystem, .repair, .options]))
-        #expect(MenuCatalog.items(in: .game, milestone: 9).contains(.newspaper) && MenuCatalog.items(in: .game, milestone: 8).contains(.plotRoute))
-    }
 
     @Test("MENU-025 Retire… has no shortcut and goes through the retire sheet (Cancel default)")
     func retire() throws {
@@ -485,10 +477,10 @@ struct MenuTests {
         #expect(MenuRules.availability(of: .track, in: Fx.ctx(Fx.fresh())).reason == .targetIsCurrentSystem)
     }
 
-    @Test("MENU-035 Find System… ⌥⌘F is always the system search; both finds are game commands")
+    @Test("MENU-035 Find System… ⌘F is the one find item (Edit menu); it is a game command")
     func findSystem() {
-        #expect(MenuCatalog.entry(for: .findSystem).shortcut == MenuShortcut("f", [.option, .command]))
-        #expect(on(.findSystem, Fx.ctx(Fx.fresh())) && !on(.findSystem, Fx.ctx(nil)) && !on(.find, Fx.ctx(Fx.ended)))
+        #expect(MenuCatalog.entry(for: .find).shortcut == MenuShortcut("f", [.command]) && MenuCatalog.entry(for: .find).menu == .edit)
+        #expect(on(.find, Fx.ctx(Fx.fresh())) && !on(.find, Fx.ctx(nil)) && !on(.find, Fx.ctx(Fx.ended)))
     }
 
     // MARK: Window and Help
@@ -529,7 +521,7 @@ struct MenuTests {
     func galaxyViewItems() {
         #expect(MenuCatalog.entry(for: .galaxy).shortcut == MenuShortcut("8"))
         #expect(MenuCatalog.entry(for: .galaxyChart).shortcut == MenuShortcut("m", [.shift, .command]))
-        #expect(MenuCatalog.items(in: .view).suffix(4) == [.galaxyChart, .zoomIn, .zoomOut, .zoomFit])
+        #expect(MenuCatalog.items(in: .view).suffix(5) == [.galaxyChart, .zoomIn, .zoomOut, .zoomFit, .recentEvents])
         let unfocused = Fx.ctx(Fx.fresh())
         #expect([MenuItemID.zoomIn, .zoomOut, .zoomFit].allSatisfy { !on($0, unfocused) })
         #expect(MenuRules.availability(of: .zoomIn, in: unfocused).reason == .noMapFocus)
@@ -617,5 +609,69 @@ struct MenuTests {
         #expect(HelpContent.text(.keyboardShortcuts).contains("⌘J"))
         #expect(AboutContent.credits.contains { $0.names == "Pieter Spronck" })
         #expect(String(localized: AboutContent.gplNotice).contains("GNU General Public License"))
+    }
+}
+
+/// The menu bar of release 2.0 (PRD-UI-Revamp §4.15).
+@MainActor
+@Suite("Menu bar 2.0")
+struct MenuBarLayoutTests {
+    private typealias Fx = MenuFixtures
+
+    private func on(_ id: MenuItemID, _ c: MenuContext) -> Bool { MenuRules.availability(of: id, in: c).isEnabled }
+
+    @Test("MENU-024 UI-HIG-001 UI-NAV-011 the menus in order: App, File, Edit, View, Trade, Game, Encounter, Window, Help, and their rows")
+    func gameOrder() throws {
+        #expect(MenuName.allCases == [.app, .file, .edit, .view, .trade, .game, .encounter, .window, .help])
+        #expect(MenuCatalog.items(in: .game) == [.warp, .previousTarget, .nextTarget, .track, .plotRoute, .jump, .newspaper, .retire])
+        #expect(MenuCatalog.items(in: .trade) == [.tradeBuy, .tradeBuyMax, .tradeSell, .tradeSellAll, .sellAllCargo, .dumpCargo, .priceDetails,
+                                                  .buyFuelAmount, .fillFuel, .repairAmount, .repair])
+        #expect(MenuCatalog.items(in: .view) == [.bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .quests, .galaxy, .logbook, .options,
+                                                 .galaxyChart, .zoomIn, .zoomOut, .zoomFit, .recentEvents])
+        #expect(MenuCatalog.items(in: .edit) == [.find] && MenuCatalog.items(in: .window) == [.mainWindow, .galaxyChartWindow, .highScores])
+        // PRD-UI-Revamp §4.15: the titles and keys of the table.
+        let table: [(MenuItemID, String, String?)] = [
+            (.find, "Find System…", "⌘F"), (.options, "Options", "⌥⌘O"), (.galaxyChart, "Galactic Chart Window", "⇧⌘M"), (.zoomFit, "Fit Range", "⌘0"),
+            (.recentEvents, "Recent Events", "⌘E"), (.tradeBuy, "Buy", "B"), (.tradeBuyMax, "Buy Maximum", "⇧B"), (.tradeSell, "Sell", "S"),
+            (.tradeSellAll, "Sell All", "⇧S"), (.sellAllCargo, "Sell All Cargo", "⌥⌘S"), (.dumpCargo, "Dump…", nil),
+            (.priceDetails, "Price Details…", "⌥⌘I"), (.buyFuelAmount, "Buy Fuel…", nil), (.fillFuel, "Fill Tank", "⇧⌘F"), (.repairAmount, "Repair…", nil),
+            (.repair, "Repair Hull", "⇧⌘R"), (.warp, "Warp", "⌘J"), (.previousTarget, "Previous Target", "⌘["), (.nextTarget, "Next Target", "⌘]"),
+            (.plotRoute, "Plot Route…", nil), (.jump, "Jump…", nil), (.newspaper, "Read Newspaper", "⇧⌘N"), (.retire, "Retire…", nil),
+            (.galaxyChartWindow, "Galactic Chart", nil), (.highScores, "High Scores", nil),
+        ]
+        for (id, title, key) in table {
+            let entry = MenuCatalog.entry(for: id)
+            #expect(String(localized: entry.titleKey) == title && entry.shortcut?.display == key, "\(id): \(String(localized: entry.titleKey)) \(entry.shortcut?.display ?? "-")")
+        }
+        // Title case; an ellipsis only where more input follows.
+        for id in MenuItemID.allCases {
+            let title = String(localized: MenuCatalog.entry(for: id).titleKey)
+            #expect(title.first?.isUppercase == true && !title.hasSuffix("."), "\(id): \(title)")
+        }
+        // The single-letter Trade keys are bound only on the Bridge with no text field focused.
+        #expect(MenuCatalog.letterKeyItems == [.tradeBuy, .tradeBuyMax, .tradeSell, .tradeSellAll])
+        let s = try TestSessions.playing()
+        #expect(MenuContext.make(session: s).tradeKeysActive)
+        s.textEntryFocused = true
+        #expect(!MenuContext.make(session: s).tradeKeysActive)
+        s.textEntryFocused = false
+        s.selectedSection = .bank
+        #expect(!MenuContext.make(session: s).tradeKeysActive && !on(.tradeBuy, .make(session: s)))
+        s.selectedSection = .bridge
+        s.marketSelection = .water
+        #expect(on(.tradeBuy, .make(session: s)) && on(.tradeBuyMax, .make(session: s)) && !on(.tradeSell, .make(session: s)))
+        s.performTrade(.buy)
+        #expect(s.state?.commander.ship.cargo[TradeItemType.water.rawValue] == 1 && on(.tradeSell, .make(session: s)) && on(.tradeSellAll, .make(session: s)))
+        s.cargoQuantities[.water] = "3"
+        s.performTrade(.buy)
+        #expect(s.state?.commander.ship.cargo[TradeItemType.water.rawValue] == 4, "the menu uses the quantity typed in the row")
+        s.performTrade(.sellAll)
+        #expect(s.state?.commander.ship.cargo[TradeItemType.water.rawValue] == 0)
+        #expect(on(.recentEvents, .make(session: s)) && !on(.recentEvents, Fx.ctx(nil)))
+        let commands = try String(contentsOf: PageLayoutTests.appRoot.appendingPathComponent("Menus/MenuCommands.swift"), encoding: .utf8)
+        #expect(commands.contains("CommandMenu(\"Trade\")") && commands.contains("bindsShortcut: ctx.tradeKeysActive"))
+        #expect(MenuCatalog.items(in: .game, milestone: 7).contains(.plotRoute) == false)
+        #expect(MenuCatalog.separatorAfter.isSuperset(of: [.options, .tradeSellAll, .newspaper]))
+        #expect(MenuCatalog.items(in: .game, milestone: 9).contains(.newspaper) && MenuCatalog.items(in: .game, milestone: 8).contains(.plotRoute))
     }
 }

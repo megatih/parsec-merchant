@@ -47,7 +47,10 @@ struct CrewAvatarView: View {
         if let state = session.state {
             CharacterPortrait(genome: ArtAdapters.portraitGenome(crewID: crewID, state: state))
                 .frame(width: side, height: side)
-                .accessibilityHidden(true)
+                // ART-FACE-010: a labelled picture; it takes no keyboard focus.
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("Portrait of \(Names.crew(crewID, in: state))"))
+                .accessibilityAddTraits(.isImage)
         }
     }
 }
@@ -76,6 +79,8 @@ struct EquipmentIcon: View {
 struct GameOverArt: View {
     let end: GameEndType
     let ship: ShipType
+    /// ART-END-003: the player's own ship at the end of the game (statistics, equipment and livery).
+    var shipInput: ShipArtInput?
     @State private var appeared: Date?
     @State private var finished = false
 
@@ -83,7 +88,7 @@ struct GameOverArt: View {
         ArtAccessibilityReader { a11y in
             TimelineView(.animation(minimumInterval: 1.0 / 30, paused: finished || a11y.reduceMotion)) { timeline in
                 GameOverScene(end: ArtAdapters.gameEnd(end), phase: appeared.map { timeline.date.timeIntervalSince($0) } ?? 0,
-                              ship: ArtAdapters.shipKind(ship), accessibility: a11y)
+                              ship: ArtAdapters.shipKind(ship), accessibility: a11y, shipInput: shipInput)
             }
         }
         .onAppear { appeared = .now }

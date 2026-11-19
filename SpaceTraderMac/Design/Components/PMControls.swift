@@ -121,6 +121,8 @@ struct PMField: View {
     var label: LocalizedStringResource
     var invalid = false
     let identifier: String
+    /// Told when the field gains or loses the keyboard focus.
+    var focusChanged: ((Bool) -> Void)?
     @Environment(\.pmScale) private var scale
     @FocusState private var focused: Bool
 
@@ -138,11 +140,22 @@ struct PMField: View {
                     .strokeBorder(invalid ? PMColor.loss : (focused ? PMColor.accent : PMColor.hairline), lineWidth: focused || invalid ? 2 : 1)
             }
             .focused($focused)
+            .onChange(of: focused) { _, now in focusChanged?(now) }
+            .onDisappear { if focused { focusChanged?(false) } }
             // UI-PTR-002: the visible box keeps its size; the target reaches 36 pt.
             .frame(minHeight: PointerTarget.minimum * scale)
             .contentShape(Rectangle())
             .accessibilityLabel(Text(label))
             .probed(identifier)
+    }
+}
+
+extension PMField {
+    /// Reports focus changes (the Trade keys step aside while a field is typed in, UI-NAV-011).
+    func onFocusChange(_ action: @escaping (Bool) -> Void) -> PMField {
+        var copy = self
+        copy.focusChanged = action
+        return copy
     }
 }
 

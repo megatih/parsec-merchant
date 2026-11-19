@@ -7,10 +7,9 @@ import SwiftUI
 struct StatusBarView: View {
     @Environment(GameSession.self) private var session
     @Environment(\.pmScale) private var scale
-    @State private var showFeed = false
     @State private var visibleRejection: CommandError?
-    /// UI-BRG-042: the feed length when the arrival summary appeared; a newer event replaces the summary.
-    @State private var arrivalFeedMark: Int?
+    /// UI-BRG-042: the state generation when the arrival summary appeared; the next command replaces the summary.
+    @State private var arrivalMark: Int?
 
     var body: some View {
         if let state = session.state {
@@ -41,16 +40,17 @@ struct StatusBarView: View {
             .background(PMColor.panelInset)
             .overlay(alignment: .bottom) { Rectangle().fill(PMColor.hairline).frame(height: 1) }
             .overlay(alignment: .topLeading) {
-                if showFeed {
+                if session.feedOverlayOpen {
                     FeedOverlay(groups: FeedGroup.make(session.feed), state: state,
                                 showLogbookEnabled: LogbookLinks.feedShowLogbookEnabled(state: state, inputLocked: session.isInputLocked),
-                                showLogbook: { session.showLogbook(tab: .log) }, dismiss: { showFeed = false })
+                                showLogbook: { session.showLogbook(tab: .log) }, dismiss: { session.feedOverlayOpen = false })
                         .offset(x: PMSpace.m * scale, y: 40 * scale)  // below the bar, which is at the top of the window
                 }
             }
             .zIndex(1)
             // UI-KEYS-018: the window's Esc router closes the overlay (level 7).
-            .escapeHandler(.closeFeed, active: showFeed) { showFeed = false }
+            .escapeHandler(.closeFeed, active: session.feedOverlayOpen) { session.feedOverlayOpen = false }
+            .onDisappear { session.feedOverlayOpen = false }
             .task(id: session.rejectionSerial) {
                 visibleRejection = session.lastRejection
                 guard visibleRejection != nil else { return }
@@ -59,10 +59,10 @@ struct StatusBarView: View {
             }
             .onChange(of: session.lastRejection) { _, new in if new == nil { visibleRejection = nil } }
             .task(id: session.arrivalCard?.summary) {
-                // The step that ends a trip adds its events after the summary is set; mark the feed once it has settled.
-                arrivalFeedMark = nil
+                // The step that ends a trip is still being applied when the summary is set; mark the state once it has settled.
+                arrivalMark = nil
                 await Task.yield()
-                arrivalFeedMark = session.arrivalCard == nil ? nil : session.feed.count
+                arrivalMark = session.arrivalCard == nil ? nil : session.stateGeneration
             }
             .accessibilityElement(children: .contain)
             .probed(AXID.Status.bar)
@@ -94,12 +94,12 @@ struct StatusBarView: View {
     private func message(_ model: StatusBarModel, state: GameState) -> some View {
         let latest = model.latestFeed.map { FeedText.text(for: $0.entry, state: state) }
         // UI-BRG-042: after a trip the slot holds the arrival summary until something newer happens; a click opens the report.
-        let arrival = session.arrivalCard.flatMap { report in arrivalFeedMark.map { $0 == session.feed.count } ?? true ? report : nil }
+        let arrival = session.arrivalCard.flatMap { report in arrivalMark.map { $0 == session.stateGeneration } ?? true ? report : nil }
         return Button {
             if let arrival, visibleRejection == nil {
                 session.present(.sheet(.report(.arrival(arrival))))
             } else {
-                showFeed.toggle()
+                session.feedOverlayOpen.toggle()
             }
         } label: {
             HStack(spacing: PMSpace.xs * scale) {

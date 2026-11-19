@@ -167,8 +167,31 @@ nonisolated enum PMFont {
         }
     }
 
+    /// The newspaper's masthead: the one serif display face in the game.
+    static let masthead = Font.system(size: 34, weight: .black, design: .serif)
+
+    /// A11Y-040: how much smaller the type is set in a language whose words run longer than the English the layout was
+    /// measured for. The screens have fixed places and never scroll, so a long language gets smaller type (the Text Size
+    /// setting enlarges it again) instead of clipped text. 1 in English and in any language up to 15% longer.
+    static let languageFit: CGFloat = {
+        let probes: [(String, String)] = [
+            ("Commander Status", String(localized: "Commander Status")), ("Galactic Chart", String(localized: "Galactic Chart")),
+            ("Short-Range Chart", String(localized: "Short-Range Chart")), ("Target System", String(localized: "Target System")),
+            ("System Information", String(localized: "System Information")), ("Sell All Cargo", String(localized: "Sell All Cargo")),
+            ("Personnel", String(localized: "Personnel")), ("Equipment", String(localized: "Equipment")), ("Shields", String(localized: "Shields")),
+            ("Resources", String(localized: "Resources")), ("Government", String(localized: "Government")),
+        ]
+        return fit(english: probes.reduce(0) { $0 + $1.0.count }, localized: probes.reduce(0) { $0 + $1.1.count })
+    }()
+
+    /// The type factor for a language whose probe strings have `localized` characters where English has `english`.
+    static func fit(english: Int, localized: Int) -> CGFloat {
+        guard english > 0, localized * 100 > english * 115 else { return 1 }
+        return max(0.45, CGFloat(english) / CGFloat(localized))
+    }
+
     static func font(_ style: Style, scale: CGFloat) -> Font {
-        let font = Font.system(size: (style.size * scale).rounded(), weight: style.weight)
+        let font = Font.system(size: (style.size * scale * languageFit).rounded(), weight: style.weight)
         return style == .value || style == .valueLarge ? font.monospacedDigit() : font
     }
 }

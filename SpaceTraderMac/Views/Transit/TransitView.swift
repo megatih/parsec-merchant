@@ -8,32 +8,38 @@ import SwiftUI
 struct TransitView: View {
     @Environment(GameSession.self) private var session
     let playback: TransitPlayback
+    @Environment(\.pmScale) private var scale
 
     var body: some View {
         let tick = session.transitPlayback == playback ? session.transitTick : 0
         let flown = playback.clicksFlown(atTick: tick)
-        VStack(spacing: 24) {
+        VStack(spacing: PMSpace.l * scale) {
             if let rip = playback.fabricRip, let state = session.state {
                 Label {
                     Text("A fracture in the space-time fabric pulls you to \(Names.system(rip, in: state))!")
                 } icon: {
                     Image(systemName: "tornado")
                 }
-                .scaledFont(.headline)
-                .padding(12)
-                .background(.orange.opacity(0.2), in: RoundedRectangle(cornerRadius: 8))
+                .pmFont(.valueLarge)
+                .foregroundStyle(PMColor.caution)
+                .padding(PMSpace.m * scale)
+                .background(PMColor.panelRaised, in: RoundedRectangle(cornerRadius: PMRadius.panel * scale))
+                .overlay { RoundedRectangle(cornerRadius: PMRadius.panel * scale).strokeBorder(PMColor.caution) }
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier(AXID.Transit.fabricRip)
             }
             if let state = session.state {
                 Text(TransitText.title(playback, state: state))
-                    .scaledFont(.title2)
+                    .pmFont(.title)
+                    .foregroundStyle(PMColor.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
                 TransitArt(ship: ArtAdapters.playerShipInput(state),
                            progress: Double(flown) / Double(TransitPlayback.totalClicks), wormhole: playback.viaWormhole, seed: state.seed)
-                    .frame(maxWidth: 640, minHeight: ShipPanelSize.transit.lowerBound, maxHeight: ShipPanelSize.transit.upperBound)
+                    // PRD §4.12: the scene takes the game area.
+                    .frame(maxWidth: .infinity, minHeight: ShipPanelSize.transit.lowerBound, maxHeight: .infinity)
             }
             TransitTrack(flown: flown)
-                .frame(maxWidth: 520)
+                .frame(maxWidth: 640 * scale)
                 // A11Y-004: a progress element "Click N of 20".
                 .accessibilityRepresentation {
                     ProgressView(value: Double(flown), total: Double(TransitPlayback.totalClicks)) { Text("Transit progress") }
@@ -42,15 +48,17 @@ struct TransitView: View {
                 .accessibilityIdentifier(AXID.Transit.progress)
             if playback.isFrozen {
                 Text("Transit interrupted")
-                    .foregroundStyle(.readableSecondary)
+                    .pmFont(.body)
+                    .foregroundStyle(PMColor.textSecondary)
             } else {
-                Button("Skip") { session.skipPlayback() }
-                    .keyboardShortcut(.defaultAction)
-                    .help(Text("Skip the rest of the trip animation."))
-                    .accessibilityIdentifier(AXID.Transit.skip)
+                PMButton(title: "Skip", kind: .primary, key: "↩", help: "Skip the rest of the trip animation", identifier: AXID.Transit.skip) {
+                    session.skipPlayback()
+                }
+                .fixedSize()
+                .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(40)
+        .padding(PMSpace.xl * scale)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Transit.view)
@@ -65,8 +73,8 @@ private struct TransitTrack: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 3) {
                 ForEach(0..<TransitPlayback.totalClicks, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(i < flown ? Color.accentColor : Color.secondary.opacity(0.25))
+                    RoundedRectangle(cornerRadius: PMRadius.control)
+                        .fill(i < flown ? PMColor.accent : PMColor.panelRaised)
                         .frame(height: 10)
                 }
             }
@@ -99,7 +107,7 @@ private struct TransitArt: View {
                              seed: seed)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: PMRadius.panel))
         .accessibilityHidden(true)
     }
 

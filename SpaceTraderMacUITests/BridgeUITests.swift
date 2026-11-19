@@ -144,4 +144,82 @@ final class BridgeUITests: ParsecUITestCase {
         XCTAssertLessThanOrEqual(clicks, 6, "the core loop takes at most six clicks")
         waitFor(AXID.Bridge.root)
     }
+
+    /// UI-BRG-041, UI-HIG-003: the same loop with the keyboard only: the arrow keys choose a good, B and S trade, ⌘] steps
+    /// through the destinations and ⌘J leaves. The pointer is never used after Quick Start.
+    @MainActor
+    func testTheCoreLoopWithTheKeyboardOnly() throws {
+        // covers: UI-BRG-041, UI-HIG-003, UI-NAV-011, UI-HIG-001
+        startGame([])
+        let down = XCUIKeyboardKey.downArrow.rawValue
+        func held(_ item: String) -> Int { Int(text(of: element(AXID.Cargo.held(item)))) ?? 0 }
+        func total() -> Int { AXID.Cargo.items.reduce(0) { $0 + held($1) } }
+        /// ↓ then ⇧B until something is aboard (not every system sells every good).
+        func buySomething() {
+            for _ in AXID.Cargo.items where total() == 0 {
+                type(down, [])
+                type("b", [.shift])
+                RunLoop.current.run(until: Date().addingTimeInterval(0.4))
+            }
+        }
+        /// Whatever is met on the way is answered from the keyboard too: Ignore, Flee or Submit, by their letters.
+        func sailThrough() {
+            for _ in 0..<60 where element(AXID.Encounter.view).exists || element(AXID.Transit.view).exists {
+                for key in ["i", "f", "u"] where element(AXID.Encounter.view).exists { type(key, []) }
+                RunLoop.current.run(until: Date().addingTimeInterval(0.4))
+            }
+        }
+        // Setup (not counted): fill the hold and make one trip.
+        RunLoop.current.run(until: Date().addingTimeInterval(0.6))  // the Cargo rows take the focus when the Bridge opens
+        buySomething()
+        expect("⇧B bought cargo") { total() > 0 }
+        /// ⌘] until the target is `name` (the chart is only read here, never clicked).
+        func target(_ name: String) {
+            for _ in 0..<40 where targetName != name {
+                type("]")
+                RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+            }
+        }
+        let firstStop = try XCTUnwrap(chartSystem(excluding: "~"), "an in-range system").label.components(separatedBy: ", ").first ?? ""
+        target(firstStop)
+        expect("⌘] reached \(firstStop) (target: \(targetName))") { self.targetName == firstStop }
+        type("j")
+        expect("⌘J: the trip is on day 1 (\(subtitle))") { self.subtitle.hasPrefix("Day 1 · ") }
+        sailThrough()
+        waitFor(AXID.Bridge.root)
+
+        // The loop: sell everything, buy, refuel, compare two destinations, leave.
+        type("s", [.command, .option])
+        expect("⌥⌘S sold the hold") { total() == 0 }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.6))
+        buySomething()
+        expect("⇧B bought cargo again") { total() > 0 }
+        let bought = total()
+        type("s", [])
+        expect("S sold one unit") { total() == bought - 1 }
+        type("b", [])
+        expect("B bought one unit") { total() == bought }
+        if element(AXID.Bridge.fillTank).isEnabled {
+            type("f", [.command, .shift])
+            expect("⇧⌘F filled the tank: Fill Tank is disabled") { !self.element(AXID.Bridge.fillTank).isEnabled }
+        }
+        let first = try XCTUnwrap(chartSystem(excluding: "~"), "an in-range system").label.components(separatedBy: ", ").first ?? ""
+        target(first)
+        expect("⌘] chose a destination") { self.targetName == first }
+        let second = try XCTUnwrap(chartSystem(excluding: first), "a second in-range system").label.components(separatedBy: ", ").first ?? ""
+        target(second)
+        expect("⌘] chose another destination to compare (was \(first))") { self.targetName == second }
+        XCTAssertTrue(element(AXID.Bridge.root).exists, "the loop never left the Bridge")
+        type("j")
+        expect("⌘J: the second trip is on day 2 (\(subtitle))") { self.subtitle.hasPrefix("Day 2 · ") }
+        sailThrough()
+        expect("docked at \(second) on day 2 (\(subtitle))") { self.subtitle.hasPrefix("Day 2 · \(second) · ") }
+        // The menu bar carries the same commands (UI-HIG-001): the Trade menu exists with its items.
+        XCTAssertTrue(app.menuBars.menuBarItems["Trade"].exists, "the Trade menu is in the menu bar")
+        // Esc on a page returns to the Bridge (UI-NAV-003), and the page keys work without the pointer.
+        type("5")
+        waitFor("bank.root")
+        type(XCUIKeyboardKey.escape.rawValue, [])
+        waitFor(AXID.Bridge.root)
+    }
 }

@@ -1,5 +1,7 @@
 # Parsec Merchant: UX Vision
 
+> **Release 2.0:** `docs/PRD-UI-Revamp.md` §3–§4 supersede this document for the window layout (dock bar, status bar, Bridge with the Cargo market), every page, the encounter screen, the menu bar and the visual design. What it does not cover (principles, the event feed, reports, accessibility goals) still stands here.
+>
 > Normative design direction for the app layer. Where this document and `docs/PRD.md` conflict, the PRD wins. Research inputs: `docs/research/02` (the WinForms UI we are replacing and its 17 pain points), `03` (Spronck's own design critique, fan complaints, patterns from Endless Sky, EV Nova and Elite), and `05` (macOS 27 / HIG).
 
 ## 1. Design principles

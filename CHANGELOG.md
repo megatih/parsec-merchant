@@ -2,6 +2,29 @@
 
 All notable changes to Parsec Merchant are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [2.0.0] - 2026-11-20
+A new interface built around one screen. The rules, formulas, data, saves and scores are unchanged; the game shows only what it showed before.
+
+### Changed
+- **The Bridge is the whole trade loop.** System Information, the Cargo market, the Short-Range Chart and the Target System are on screen together at every window size, with no scrolling and nothing collapsed. Selling a hold, buying, refuelling, comparing two destinations and warping take six clicks on one page.
+  - Cargo: one row per good with what you hold and paid, the prices here and at the target, and the profit per unit; a Quantity field with Buy, Max, Sell and All; Sell All Cargo; Price Details… for any good.
+  - The target's prices are the game's own estimates or prices you remember, shown with their age.
+- **Dock bar and status bar** replace the sidebar, the toolbar and the inspector. The dock bar opens Bridge, Shipyard, Equipment, Personnel, Bank, Commander Status, Quests, Galactic Chart, Logbook and Options; the status bar always shows the system, day, cash, debt, bays, fuel, hull, shields and the latest event. Esc returns to the Bridge.
+- **Every page is rebuilt** on one dark console design with shared components: Shipyard, Equipment (was Outfitter), Personnel (was Crew), Bank, Commander Status (was the inspector), Quests, Logbook and Options (now a page).
+- **Galactic Chart:** a Selected System panel beside the chart shows a system's facts and known prices with Set as Target, Track and Plot Route. Find System is the one search; ⌘0 fits the range.
+- **Encounters:** two large ship panels, a role badge (Police, Pirate, Trader, Alien, Special), a full-width action bar with key caps above the combat log. Plunder, Trade in Orbit and Make Room list one good per row with Quantity, Max and All.
+- **Ships:** ten class designs, each with its own silhouette and shaped by its statistics; police, pirate and trader liveries; visible weapons, shields and gadgets; an opponent never looks like your own ship.
+- **Portraits:** illustrated faces for the commander, every mercenary and the famous captains replace the helmet avatars.
+- **Endings:** the four ending scenes are redrawn: your own ship in orbit at sunset, on the landing pad of your moon base (with a second ship and a second lit window when the princess is with you), or broken up among its debris.
+- **Menu bar:** a Trade menu (Buy, Buy Maximum, Sell, Sell All, Sell All Cargo, Dump…, Price Details…, Buy Fuel…, Fill Tank, Repair…, Repair Hull); Options and Recent Events (⌘E) in View; Find System… is ⌘F.
+- **Keyboard:** the whole trade loop works without the pointer (arrows, B, S, ⇧B, ⇧S, ⌥⌘S, ⇧⌘F, ⌘[ ⌘], ⌘J). Buttons show their keys.
+- **Window:** the minimum is 1200 × 680 points; the interface scales with the window, and the Text Size setting raises the scale in five steps.
+- **Words** follow the original game: Equipment, Personnel, Galactic Chart, Commander Status, Fill Tank.
+- Help pages are rewritten for the new screens.
+
+### Removed
+- The sidebar, the toolbar, the inspector, the separate Market page, the System Intel sheet, the chart's inline search field and all Liquid Glass surfaces in the game area.
+
 ## [1.1.0] - 2026-11-19
 Realistic art and a pointer- and touch-first interface. The rules, saves and scores are unchanged.
 

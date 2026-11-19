@@ -55,6 +55,20 @@ extension GameSession {
         return sold
     }
 
+    /// UI-BRG-007, UI-NAV-011: Buy, Buy Maximum, Sell or Sell All on the good selected in the Cargo region, with the
+    /// quantity typed in its row. The B and S keys and the Trade menu both come here.
+    func performTrade(_ action: MarketKeyAction) {
+        guard selectedSection == .bridge, let item = marketSelection, let row = bridgeCargo?.row(item) else { return }
+        let text = cargoQuantities[item] ?? ""
+        let command: Command? = switch action {
+        case .buy: row.buyCommand(text: text)
+        case .sell: row.sellCommand(text: text)
+        case .buyMax: row.maxCommand
+        case .sellAll: row.allCommand
+        }
+        if let command { send(command) }
+    }
+
     /// UI-BRG-008: Price Details… for one good.
     func showPriceDetails(_ item: TradeItemType) {
         marketSelection = item

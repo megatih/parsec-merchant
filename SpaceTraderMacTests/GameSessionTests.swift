@@ -263,9 +263,9 @@ struct GameSessionTests {
         let s = try TestSessions.playing(seed: 9)
         let state = try #require(s.state)
         #expect(state.commander.days == 0 && state.commander.cash == state.ruleset.tables.startingCash)
-        let subtitle = WindowTitles.make(state: state).subtitle ?? ""
-        #expect(subtitle.contains("Day 0") && subtitle.contains("1,000"))
-        #expect(subtitle.contains(Names.system(state.commander.currentSystem, in: state)))
+        let status = StatusBarModel.make(state: state, feed: [])
+        #expect(status.day == 0 && status.cash == 1_000)
+        #expect(status.systemName == Names.system(state.commander.currentSystem, in: state))
     }
 
     @Test("UI-SHELL-095 Close Game clears engine, ids and feed; SAV-043 asks first when days are unsaved")

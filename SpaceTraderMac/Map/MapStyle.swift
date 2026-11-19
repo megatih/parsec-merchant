@@ -71,6 +71,9 @@ nonisolated enum MapGlyphStyle {
 
 /// The map palette (UX-VISION §7): named colours with light and dark variants, drawn in code.
 struct MapStyle {
+    /// The chart's label faces: fixed sizes, drawn inside the canvas (the canvas scales with the chart).
+    static func font(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight) }
+
     /// A11Y-018 / MAP-087: stroke widths are doubled under Increase Contrast.
     var strokeScale = 1.0
     var differentiateWithoutColor = false

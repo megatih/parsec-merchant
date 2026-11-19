@@ -13,13 +13,12 @@ enum KeyFixture {
         ("newGame", "⌘N", "global"), ("open", "⌘O", "global"), ("save", "⌘S", "global"), ("saveAs", "⇧⌘S", "global"),
         ("export", "⇧⌘E", "global"), ("find", "⌘F", "global"), ("bridge", "⌘1", "global"),
         ("shipyard", "⌘2", "global"), ("outfitter", "⌘3", "global"), ("crew", "⌘4", "global"), ("bank", "⌘5", "global"),
-        ("commanderStatus", "⌘6", "global"), ("quests", "⌘7", "global"), ("galaxy", "⌘8", "global"), ("logbook", "⌘9", "global"), ("galaxyChart", "⇧⌘M",
-            "global"),
-        ("zoomIn", "⌘+", "mapCanvas"), ("zoomOut", "⌘−", "mapCanvas"), ("zoomFit", "⌘0", "mapCanvas"),
+        ("commanderStatus", "⌘6", "global"), ("galaxy", "⌘8", "global"), ("quests", "⌘7", "global"), ("logbook", "⌘9", "global"),
+        ("options", "⌥⌘O", "global"), ("galaxyChart", "⇧⌘M", "global"),
+        ("zoomIn", "⌘+", "mapCanvas"), ("zoomOut", "⌘−", "mapCanvas"), ("zoomFit", "⌘0", "mapCanvas"), ("recentEvents", "⌘E", "global"),
+        ("sellAllCargo", "⌥⌘S", "global"), ("priceDetails", "⌥⌘I", "global"), ("fillFuel", "⇧⌘F", "global"), ("repair", "⇧⌘R", "global"),
         ("warp", "⌘J", "global"), ("previousTarget", "⌘[", "global"), ("nextTarget", "⌘]", "global"),
-        ("findSystem", "⌥⌘F", "global"), ("fillFuel", "⇧⌘F", "global"), ("repair", "⇧⌘R", "global"),
-        ("sellAllCargo", "⌥⌘S", "global"), ("priceDetails", "⌥⌘I", "global"),
-        ("newspaper", "⇧⌘N", "global"), ("options", "⌥⌘O", "global"), ("help", "⌘?", "global"),
+        ("newspaper", "⇧⌘N", "global"), ("help", "⌘?", "global"),
         ("encounterAttack", "A", "encounter"), ("encounterFlee", "F", "encounter"), ("encounterSurrender", "S", "encounter"),
         ("encounterIgnore", "I", "encounter"), ("encounterBribe", "B", "encounter"), ("encounterSubmit", "U", "encounter"),
         ("encounterTrade", "T", "encounter"), ("encounterPlunder", "P", "encounter"), ("encounterBoard", "O", "encounter"),
@@ -32,7 +31,7 @@ enum KeyFixture {
         ("system.quit", "⌘Q", "global"), ("system.closeWindow", "⌘W", "global"), ("system.closeAll", "⌥⌘W", "global"),
         ("system.undo", "⌘Z", "global"), ("system.redo", "⇧⌘Z", "global"), ("system.cut", "⌘X", "global"),
         ("system.copy", "⌘C", "global"), ("system.paste", "⌘V", "global"), ("system.selectAll", "⌘A", "global"),
-        ("system.toggleSidebar", "⌃⌘S", "global"), ("system.toggleInspector", "⌃⌘I", "global"), ("system.fullScreen", "⌃⌘F", "global"),
+        ("system.fullScreen", "⌃⌘F", "global"),
         ("system.minimize", "⌘M", "global"), ("system.minimizeAll", "⌥⌘M", "global"), ("system.cycleWindows", "⌘`", "global"),
         ("system.cycleWindowsBackward", "⇧⌘`", "global"),
     ]
@@ -84,7 +83,10 @@ struct KeyBindingTests {
         let all = KeyBindingTable.all
         for id in MenuItemID.allCases {
             let matches = all.filter { if case .menu(id) = $0.owner { true } else { false } }
-            if let sc = MenuCatalog.entry(for: id).shortcut {
+            if MenuCatalog.letterKeyItems.contains(id) {
+                // UI-NAV-011: the Trade menu shows the Cargo rows' own keys, which the table lists once (`MarketKeyAction`).
+                #expect(matches.isEmpty && MarketKeyAction.bindings.contains { $0.shortcut == MenuCatalog.entry(for: id).shortcut }, "\(id)")
+            } else if let sc = MenuCatalog.entry(for: id).shortcut {
                 #expect(matches.count == 1 && matches.first?.shortcut == sc, "\(id)")
             } else {
                 #expect(matches.isEmpty, "\(id)")
@@ -372,8 +374,8 @@ struct KeyBindingTests {
 
     @Test("UI-KEYS-033 a menu title ends with … iff the item asks for more input first")
     func ellipsis() {
-        let expected: Set<MenuItemID> = [.newGame, .open, .saveAs, .importSave, .export, .find, .findSystem, .plotRoute, .retire,
-                                         .jump, .priceDetails, .buyFuelAmount, .repairAmount]
+        let expected: Set<MenuItemID> = [.newGame, .open, .saveAs, .importSave, .export, .find, .plotRoute, .retire,
+                                         .jump, .priceDetails, .buyFuelAmount, .repairAmount, .dumpCargo]
         for id in MenuItemID.allCases {
             let title = String(localized: MenuCatalog.entry(for: id).titleKey)
             #expect(title.hasSuffix("…") == expected.contains(id), "\(id) \(title)")

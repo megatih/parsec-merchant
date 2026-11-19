@@ -47,7 +47,10 @@ final class M8FlowUITests: ParsecUITestCase {
             return text.contains(target) && text.contains("parsecs")
         }
 
+        // UI-PG-060: a click selects the system into the panel; its button sets the target.
         system.click()
+        waitFor(g.selectionCard)
+        click(g.selectionSetTarget)
         expect("the toolbar target shows \(target) (toolbar: \(targetName))") { targetName.hasPrefix(target) }
         expect("the system's value says target and in range (value: \(value(system)))") {
             value(system).contains("target") && value(system).contains("in range")
@@ -57,13 +60,14 @@ final class M8FlowUITests: ParsecUITestCase {
         expect("the warp ends docked at \(target) on day 1 (subtitle: \(subtitle))") {
             subtitle.hasPrefix("Day 1 · \(target) · ")
         }
-        expect("the system is now the current system") {
-            element(g.system(UITestFixtures.mapFlowTarget)).label.contains("current system")
-        }
         // UI-NAV-004: a trip always ends on the Bridge, with its summary in the status bar (UI-BRG-042).
         XCTAssertFalse(element(AXID.Transit.view).exists, "no transit playback with -PMFastTravel")
         waitFor(AXID.Bridge.root)
         waitFor(AXID.Arrival.card)
+        openPage("galaxy")
+        expect("the system is now the current system") {
+            element(g.system(UITestFixtures.mapFlowTarget)).label.contains("current system")
+        }
     }
 
     /// Scenario: tracking and routes.
@@ -98,6 +102,7 @@ final class M8FlowUITests: ParsecUITestCase {
         expect("the toolbar target is hop 2's destination \(hop2Destination) (toolbar: \(targetName))") {
             targetName.hasPrefix(hop2Destination)
         }
+        openPage("galaxy")  // the trip ended on the Bridge (UI-NAV-004)
         click(g.routeClear)
         expect("the route panel disappears") { !element(g.routePanel).exists }
     }
@@ -122,9 +127,10 @@ final class M8FlowUITests: ParsecUITestCase {
         let known = name(of: waitFor(w.system(UITestFixtures.mapFlowTarget)))
         let prefix = String(known.prefix(3))
 
+        // UI-PG-061: ⌘F opens Find System, the one search.
         type("f")
-        let field = waitFor(w.searchField)
-        expect("⌘F focuses the window's search field") { (field.value(forKey: "hasKeyboardFocus") as? Bool) == true }
+        let field = waitFor("findSystem.field")
+        field.click()
         field.typeText(prefix)
         field.typeText("\r")
         expect("the main window's target is a system matching \(prefix) (toolbar: \(targetName))") {
@@ -132,13 +138,23 @@ final class M8FlowUITests: ParsecUITestCase {
             return t != "choose target" && (t.components(separatedBy: " · ").first ?? "").contains(prefix.lowercased())
         }
 
-        click(w.filterInRange)
-        let results = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", w.searchResultPrefix))
-        expect("in-range suggestions appear") { results.count > 0 }
-        for r in results.allElementsBoundByIndex {
-            XCTAssertTrue(value(r).contains("in range"), "\(r.identifier) value: \(value(r))")
+        // The filters dim what does not match (MAP-074); the switch reports its state.
+        func isOn(_ id: String) -> Bool {
+            let value = element(id).value
+            if let text = value as? String { return text == "On" || text == "1" }
+            return (value as? NSNumber)?.boolValue ?? false
+        }
+        type("m", [.command, .shift])  // Find System belongs to the main window, which came forward: back to the chart's window
+        RunLoop.current.run(until: Date().addingTimeInterval(0.6))
+        func settles(_ on: Bool) -> Bool {
+            for _ in 0..<15 where isOn(w.filterInRange) != on { RunLoop.current.run(until: Date().addingTimeInterval(0.2)) }
+            return isOn(w.filterInRange) == on
         }
         click(w.filterInRange)
+        if !settles(true) { click(w.filterInRange) }  // the first click may only bring the chart's window forward
+        expect("the In range filter is on") { isOn(w.filterInRange) }
+        click(w.filterInRange)
+        expect("the In range filter is off") { !isOn(w.filterInRange) }
 
         click(w.zoomIn)
         click(w.zoomIn)

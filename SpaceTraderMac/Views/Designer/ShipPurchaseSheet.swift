@@ -13,7 +13,8 @@ struct ShipPurchaseSheet: View {
         VStack(alignment: .leading, spacing: 16) {
             if let state = session.state, let model = ShipPurchaseModel.make(request: request, state: state, declined: declined) {
                 header(model)
-                Form {
+                // UI-DS-023: a plain stack on the inset fill, not a system form.
+                VStack(alignment: .leading, spacing: PMSpace.s) {
                     prices(model)
                     transfers(model)
                     consequences(model, state: state)
@@ -21,7 +22,8 @@ struct ShipPurchaseSheet: View {
                         LabeledContent("Final cost") { credits(model.finalCost).bold() }
                     }
                 }
-                .formStyle(.grouped)
+                .padding(PMSpace.m)
+                .background(PMColor.panelInset, in: RoundedRectangle(cornerRadius: PMRadius.panel))
                 .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
                 footer(model)
             } else {
@@ -29,7 +31,7 @@ struct ShipPurchaseSheet: View {
                 footer(nil)
             }
         }
-        .padding(20)
+        .padding(PMSpace.xl)
         .frame(width: 520)
         .frame(minHeight: 420)
         .accessibilityElement(children: .contain)
@@ -44,12 +46,12 @@ struct ShipPurchaseSheet: View {
                 .frame(height: ShipPanelSize.purchaseHero)
             switch request {
             case let .ship(t):
-                Text("Buy a \(String(localized: Names.ship(t)))?").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+                Text("Buy a \(String(localized: Names.ship(t)))?").pmFont(.title).accessibilityAddTraits(.isHeader)
             case let .design(d):
-                Text("Build “\(d.name)”?").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+                Text("Build “\(d.name)”?").pmFont(.title).accessibilityAddTraits(.isHeader)
             }
             Text("\(String(localized: Names.size(model.newSpec.size))) · \(model.newSpec.cargoBays) bays · \(model.newSpec.hullStrength) hull")
-                .foregroundStyle(.readableSecondary)
+                .foregroundStyle(PMColor.textSecondary)
         }
     }
 
@@ -60,7 +62,7 @@ struct ShipPurchaseSheet: View {
                 LabeledContent("Trader discount") { credits(-model.discount) }
             }
             LabeledContent("Trade-in value") { credits(-model.tradeIn) }
-                .help(Text("What your current ship, its equipment and its cargo are worth."))
+                .help(Text("What your current ship, its equipment and its cargo are worth"))
             LabeledContent("Net price") { credits(model.netPrice) }
         }
     }
@@ -76,7 +78,7 @@ struct ShipPurchaseSheet: View {
                             if row.affordable {
                                 credits(row.price)
                             } else {
-                                Text("Can't afford").foregroundStyle(.readableSecondary)
+                                Text("Can't afford").foregroundStyle(PMColor.textSecondary)
                             }
                         }
                     }
@@ -86,7 +88,7 @@ struct ShipPurchaseSheet: View {
                 }
                 ForEach(model.lost, id: \.self) { item in
                     LabeledContent {
-                        Text("No slot: lost").foregroundStyle(.signalOrange)
+                        Text("No slot: lost").foregroundStyle(PMColor.caution)
                     } label: {
                         Text(Names.transfer(item))
                     }
@@ -99,15 +101,15 @@ struct ShipPurchaseSheet: View {
         SwiftUI.Section("What changes") {
             if !model.crewWithoutSeat.isEmpty {
                 let names = model.crewWithoutSeat.map { Names.crew($0, in: state) }.formatted(.list(type: .and))
-                Text("No quarters for: \(names)").foregroundStyle(.signalOrange)
+                Text("No quarters for: \(names)").foregroundStyle(PMColor.caution)
             }
             if model.cargoUnits > 0 {
                 Text("Your \(model.cargoUnits) units of cargo stay behind; their cost is part of the trade-in.")
             }
             switch model.insurance {
-            case .notInsured: Text("You have no insurance.").foregroundStyle(.readableSecondary)
+            case .notInsured: Text("You have no insurance.").foregroundStyle(PMColor.textSecondary)
             case .kept: Text("Your insurance stays active.")
-            case .ends: Text("Without an escape pod your insurance ends and the no-claim discount is lost.").foregroundStyle(.signalOrange)
+            case .ends: Text("Without an escape pod your insurance ends and the no-claim discount is lost.").foregroundStyle(PMColor.caution)
             }
         }
     }
@@ -115,7 +117,7 @@ struct ShipPurchaseSheet: View {
     private func footer(_ model: ShipPurchaseModel?) -> some View {
         HStack {
             if let blocker = model?.blocker {
-                Text(ReasonText.text(for: blocker)).foregroundStyle(.signalOrange)
+                Text(ReasonText.text(for: blocker)).foregroundStyle(PMColor.caution)
             }
             Spacer()
             Button("Cancel", role: .cancel) { session.cancel() }
@@ -127,6 +129,7 @@ struct ShipPurchaseSheet: View {
                 session.send(model.command, acknowledging: [.buyShip])
             }
             .keyboardShortcut(.defaultAction)
+            .buttonStyle(PMButtonStyle(kind: .primary))
             .disabled(model?.canBuy != true)
             .help(model?.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Complete the purchase."))
             .accessibilityIdentifier(AXID.ShipPurchase.buy)

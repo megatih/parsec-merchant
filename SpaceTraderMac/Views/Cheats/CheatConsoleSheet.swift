@@ -11,16 +11,17 @@ struct CheatConsoleSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Cheat Console").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Cheat Console").pmFont(.title).accessibilityAddTraits(.isHeader)
             Label {
                 Text("Cheats are on. This game is flagged and stays off the high-score table.")
             } icon: {
                 Image(systemName: "exclamationmark.triangle")
             }
-            .foregroundStyle(.signalOrange)
+            .foregroundStyle(PMColor.caution)
             .accessibilityIdentifier(AXID.CheatConsole.flaggedNotice)
             if let state = session.state, form != nil {
-                Form {
+                // UI-DS-023: a plain stack on the inset fill, not a system form.
+                VStack(alignment: .leading, spacing: PMSpace.s) {
                     Picker(selection: codeBinding(state)) {
                         ForEach(CheatForm.codes(for: state.ruleset.content.cheatSet), id: \.self) { code in
                             Text(verbatim: code.rawValue).tag(code)
@@ -31,7 +32,8 @@ struct CheatConsoleSheet: View {
                     .accessibilityIdentifier(AXID.CheatConsole.code)
                     fields(state)
                 }
-                .formStyle(.grouped)
+                .padding(PMSpace.m)
+                .background(PMColor.panelInset, in: RoundedRectangle(cornerRadius: PMRadius.panel))
                 .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
             }
             readout
@@ -42,12 +44,13 @@ struct CheatConsoleSheet: View {
                     .accessibilityIdentifier(AXID.CheatConsole.close)
                 Button("Run") { run() }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .disabled(session.state?.phase != .docked)
                     .help(session.state?.phase == .docked ? Text(verbatim: "") : Text("Cheats run only while docked."))  // UI-KEYS-035
                     .accessibilityIdentifier(AXID.CheatConsole.run)
             }
         }
-        .padding(20)
+        .padding(PMSpace.xl)
         .frame(width: 520)
         .frame(minHeight: 420)
         .accessibilityElement(children: .contain)
@@ -135,12 +138,12 @@ struct CheatConsoleSheet: View {
                 if let state = session.state {
                     ForEach(items) { item in
                         if let event = item.event, event != .cheatUsed {
-                            Text(EventText.text(for: event, state: state)).scaledFont(.callout)
+                            Text(EventText.text(for: event, state: state)).pmFont(.body)
                         }
                     }
                 }
                 if let reason = session.lastRejection {
-                    Text(verbatim: ReasonText.string(for: reason)).scaledFont(.callout).foregroundStyle(.signalRed)
+                    Text(verbatim: ReasonText.string(for: reason)).pmFont(.body).foregroundStyle(PMColor.loss)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

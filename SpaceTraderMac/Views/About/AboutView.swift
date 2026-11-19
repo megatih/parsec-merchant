@@ -110,7 +110,7 @@ struct AboutView: View {
                         .accessibilityIdentifier(AXID.About.github)
                 }
             }
-            .padding(24)
+            .padding(PMSpace.xl)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(width: 520, height: 600)
@@ -142,7 +142,7 @@ struct LicenseSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .accessibilityIdentifier(AXID.About.licenseClose)
         }
-        .padding(20)
+        .padding(PMSpace.xl)
         .frame(width: 620, height: 520)
         // UI-KEYS-021: Esc and ⌘. press the only button.
         .sheetEscape { dismiss() }

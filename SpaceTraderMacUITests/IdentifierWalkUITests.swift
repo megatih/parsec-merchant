@@ -34,11 +34,10 @@ final class IdentifierWalkUITests: ParsecUITestCase {
         type("w")
         expect("the Galaxy Chart window closes") { !element(AXID.Galaxy.windowRoot).exists }
 
-        type("o", [.command, .option])
-        waitFor(AXID.Options.sheet)
-        walk(sheet(), surface: "options sheet")
-        click(AXID.Options.cancel)
-        expect("the options sheet closes") { !element(AXID.Options.sheet).exists }
+        openOptionsPage()
+        walk(mainWindow, surface: "Options page")
+        openPage("bridge")
+        expect("the Options page closes") { !self.element(AXID.Options.root).exists }
 
         type("o")
         waitFor(AXID.Files.list)

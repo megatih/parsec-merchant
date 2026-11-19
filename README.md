@@ -24,7 +24,7 @@ Buy low, sell high, dodge pirates and police, take on quests, and earn enough to
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/readme-bridge-dark.png">
-  <img src="docs/screenshots/readme-bridge.png" width="880" alt="The Bridge: the current system's planet portrait, ship status and the next target">
+  <img src="docs/screenshots/readme-bridge.png" width="880" alt="The Bridge: System Information, the Cargo market, the Short-Range Chart and the Target System on one screen">
 </picture>
 
 </div>
@@ -32,16 +32,16 @@ Buy low, sell high, dodge pirates and police, take on quests, and earn enough to
 ## Highlights
 
 - **The original rules, three ways.** Pick a ruleset when you start a new game (see [Rulesets](#rulesets)).
-- **One window instead of dozens of screens.** A sidebar takes you to Bridge, Market, Shipyard, Outfitter, Crew, Bank, Galaxy, Quests and the Logbook. A ship-status inspector stays on the right.
-- **A trade table that does the arithmetic.** It shows the price here and at your target, the difference and the profit per cargo bay. Quantity chips (1, 5, 20, Max) and Buy and Sell buttons on every row do the trading.
-- **Made for the pointer and for touch.** Every action is a visible button, chip or menu item with a 36-point target: nothing needs a modifier key, a hover or the keyboard. Context menus, drag and drop in the Outfitter and double-click on cards are there too, and the keyboard remains a complete second path.
-- **A zoomable galaxy chart** with price and danger heatmaps, a route planner, search and a detachable window. Click a system for its card with Set Target, Track and Plot Route; pinch or turn the wheel to zoom.
-- **Encounters you can see.** Ships drawn from their statistics and equipment, hull and shield bars, an animated combat log and large action buttons (each with a single key). Each arrival gathers everything that happened into a single report instead of a chain of alerts, and the newspaper is a styled page.
+- **One screen for the whole trade run.** The Bridge shows the system, the cargo market with ten goods, the Short-Range Chart and the Target System at once: buy, sell, refuel, repair, compare destinations and warp without leaving it. A dock bar opens the other pages (Shipyard, Equipment, Personnel, Bank, Commander Status, Quests, Galactic Chart, Logbook, Options), and a status bar always shows cash, debt, bays, fuel, hull and shields.
+- **A cargo table that does the arithmetic.** Each row shows what you hold and paid, the prices here and at your target, and the profit per unit. A Quantity field with Buy, Max, Sell and All on every row does the trading, and Sell All Cargo empties the hold in one click.
+- **Made for the pointer, complete from the keyboard.** Every action is a visible button with a 36-point target and its key printed on it; the same commands are in the menu bar (File, Edit, View, Trade, Game, Encounter). The whole trade loop also works without the pointer: arrows, B and S, ⌘] and ⌘J.
+- **A zoomable Galactic Chart** with price and danger heatmaps, filters, a route planner and a detachable window. Click a system to see its facts and known prices in the Selected System panel, with Set as Target, Track and Plot Route; pinch or turn the wheel to zoom.
+- **Encounters you can see.** Two large ships, each class with its own hull design and each role (police, pirate, trader) in its own livery, hull and shield bars, an action bar with key caps and a combat log. Each arrival gathers everything that happened into a single report instead of a chain of alerts, and the newspaper is a styled page.
 - **Trade intelligence, Captain's Log, career statistics and 36 achievements.** Everything is stored locally.
 - **Optional on-device log entries** written by Apple's Foundation Models when Apple Intelligence is available. A deterministic template fallback covers every other case.
-- **New art and sound, all made in code.** Sphere-projected planets in ten classes (terran, ocean, desert, ice, jungle, rocky, barren, volcanic, toxic and gas giants, some ringed) that turn live on the Bridge; 17 ships generated from their statistics, so a freighter looks like a freighter and a warship like a warship; cinematic endings; a Liquid Glass app icon; synthesized audio and haptics.
+- **Art and sound, all made in code.** Sphere-projected planets in ten classes that turn live on the Bridge; ten distinct ship classes shaped by their statistics, with visible weapons, shields and gadgets; illustrated portraits for your commander and every mercenary; four lit ending scenes; a Liquid Glass app icon; synthesized audio and haptics.
 - **Built for every Mac user:**
-  - pointer, trackpad and touch first, with a full keyboard map;
+  - pointer and trackpad first, with a full keyboard map;
   - VoiceOver labels, announcements and custom rotors;
   - Text Size;
   - Reduce Motion, Increase Contrast, Reduce Transparency and Differentiate Without Color.
@@ -59,7 +59,7 @@ Buy low, sell high, dodge pirates and police, take on quests, and earn enough to
 
 | | |
 |:---:|:---:|
-| ![The Market: prices here and at the target, with profit per bay](docs/screenshots/readme-market.png)<br>**Market** | ![The zoomable galaxy chart with a route and hover card](docs/screenshots/readme-galaxy.png)<br>**Galaxy chart** |
+| ![Personnel: the crew and the mercenaries for hire, with portraits](docs/screenshots/readme-personnel.png)<br>**Personnel** | ![The Galactic Chart with a route, a heatmap and the Selected System panel](docs/screenshots/readme-galaxy.png)<br>**Galactic Chart** |
 | ![A pirate encounter with hull and shield bars and the combat log](docs/screenshots/readme-encounter.png)<br>**Encounter** | ![The styled newspaper page](docs/screenshots/readme-newspaper.png)<br>**Newspaper** |
 | ![The Shipyard: ships for sale, each drawn from its statistics](docs/screenshots/readme-shipyard-designer.png)<br>**Shipyard** | ![The Logbook statistics view](docs/screenshots/readme-logbook-statistics.png)<br>**Logbook statistics** |
 | ![The arrival report](docs/screenshots/readme-arrival.png)<br>**Arrival report** | ![Achievements](docs/screenshots/readme-achievements.png)<br>**Achievements** |
@@ -86,14 +86,16 @@ Everything can be done with clicks or taps; these shortcuts are the fast lane.
 
 | Keys | Action |
 |---|---|
-| <kbd>⌘1</kbd> … <kbd>⌘9</kbd> | Bridge, Market, Shipyard, Outfitter, Crew, Bank, Galaxy, Quests, Logbook |
+| <kbd>⌘1</kbd> … <kbd>⌘9</kbd>, <kbd>⌥⌘O</kbd> | Bridge, Shipyard, Equipment, Personnel, Bank, Commander Status, Quests, Galactic Chart, Logbook, Options |
 | <kbd>⌘[</kbd> / <kbd>⌘]</kbd> | Previous / next target system |
 | <kbd>⌘J</kbd> | Warp to the target |
-| <kbd>⇧⌘M</kbd> | Galaxy Chart in its own window |
-| <kbd>⇧⌘N</kbd> | Newspaper |
-| <kbd>⌘F</kbd> | Search the current section (Market, Galaxy, Logbook) |
-| <kbd>⌥⌘F</kbd> | Find a system by name |
-| <kbd>⎋</kbd> | Close the topmost sheet or overlay |
+| <kbd>⇧⌘M</kbd> | Galactic Chart in its own window |
+| <kbd>⇧⌘N</kbd> | Read the newspaper |
+| <kbd>⌘F</kbd> | Find a system by name (on the Logbook: search the log) |
+| <kbd>B</kbd> / <kbd>S</kbd>, <kbd>⇧B</kbd> / <kbd>⇧S</kbd> | Buy / sell the selected good; buy the maximum / sell all |
+| <kbd>⌥⌘S</kbd> | Sell All Cargo |
+| <kbd>⇧⌘F</kbd> / <kbd>⇧⌘R</kbd> | Fill Tank / Repair Hull |
+| <kbd>⎋</kbd> | Back to the Bridge; close the topmost sheet or overlay |
 
 The full map is in **Help › Keyboard Shortcuts**.
 

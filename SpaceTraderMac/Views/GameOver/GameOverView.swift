@@ -19,7 +19,7 @@ struct GameOverView: View {
                                                   table: table, stats: session.careerStats) {
                 content(model)
                     .frame(maxWidth: .infinity)
-                    .padding(32)
+                    .padding(PMSpace.xl)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -30,47 +30,49 @@ struct GameOverView: View {
     }
 
     private func content(_ m: GameOverCardModel) -> some View {
-        VStack(spacing: 18) {
+        VStack(spacing: PMSpace.l) {
             // D8: a cinematic 16:9 scene as wide as the card.
-            GameOverArt(end: m.end, ship: session.state?.commander.ship.type ?? .gnat)
+            GameOverArt(end: m.end, ship: session.state?.commander.ship.type ?? .gnat, shipInput: session.state.map { ArtAdapters.playerShipInput($0) })
                 .aspectRatio(ShipPanelSize.endingAspect, contentMode: .fit)
                 .frame(maxWidth: 640)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: PMRadius.panel))
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text(Names.ending(m.end)))
+                // ART-END-001: the scene in words.
+                .accessibilityLabel(Text(EndingText.scene(m.end)))
                 .accessibilityAddTraits(.isImage)
                 .accessibilityIdentifier(AXID.GameOver.vignette)
             Text(Names.ending(m.end))
-                .scaledFont(.largeTitle, weight: .bold)
+                .pmFont(.title)
                 .multilineTextAlignment(.center)
             if let cause = m.cause {
                 Text(verbatim: CareerText.cause(cause))
-                    .foregroundStyle(.readableSecondary)
+                    .foregroundStyle(PMColor.textSecondary)
             }
             Text(verbatim: CareerText.score(m.scoreText))
-                .scaledFont(.title3)
+                .pmFont(.title)
                 .monospacedDigit()
                 .accessibilityIdentifier(AXID.GameOver.score)
             if let outcome = m.highScoreText {
                 Text(verbatim: outcome)
-                    .foregroundStyle(.readableSecondary)
+                    .foregroundStyle(PMColor.textSecondary)
                     .accessibilityIdentifier(AXID.GameOver.highScore)
             }
             CareerCardView(card: m.career)
-                .background(.background.secondary, in: RoundedRectangle(cornerRadius: 12))
+                .background(PMColor.panel, in: RoundedRectangle(cornerRadius: PMRadius.panel))
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier(AXID.GameOver.career)
             actions(m)
             // LOG-035: the Logbook of the ended game.
             Button("Show Logbook") { session.showLogbook(tab: .log) }
-                .buttonStyle(.link)
+                .buttonStyle(PMButtonStyle(kind: .quiet))
                 .accessibilityIdentifier(AXID.LogbookLinks.gameOverShowLogbook)
         }
         .frame(maxWidth: 560)
+        .foregroundStyle(PMColor.textPrimary)
     }
 
     private func actions(_ m: GameOverCardModel) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: PMSpace.m) {
             Button("Main Menu") { session.requestCloseGame() }
                 .accessibilityIdentifier(AXID.GameOver.mainMenu)
             Button("High Scores") {
@@ -85,13 +87,27 @@ struct GameOverView: View {
                 .accessibilityIdentifier(AXID.GameOver.share)
             Button("New Game…") { session.requestNewGame() }
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(PMButtonStyle(kind: .primary))
                 .accessibilityIdentifier(AXID.GameOver.newGame)
         }
-        .controlSize(.large)
+        // UI-PG-070: the console's buttons.
+        .buttonStyle(PMButtonStyle())
     }
 
     private func loadTable() {
         guard let ruleset = session.state?.rulesetID else { return }
         table = try? session.highScoreStore.table(for: ruleset)
+    }
+}
+
+/// ART-END-001: what each ending scene shows, for VoiceOver.
+enum EndingText {
+    static func scene(_ end: GameEndType) -> LocalizedStringResource {
+        switch end {
+        case .killed: "Your ship drifts in pieces among cooling debris."
+        case .retired: "Your ship comes to rest in low orbit as the sun sets behind the planet."
+        case .boughtMoon: "Your ship stands on the landing pad of your own moon base, the planet large in the black sky."
+        case .boughtMoonGirl: "Two ships stand on the landing pads of your moon base, two windows lit, the planet large in the black sky."
+        }
     }
 }

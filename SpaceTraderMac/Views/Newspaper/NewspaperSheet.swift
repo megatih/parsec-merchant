@@ -14,14 +14,14 @@ struct NewspaperSheet: View {
                 let model = NewspaperSheetModel.make(paper: paper, state: state)
                 VStack(spacing: 6) {
                     Text(verbatim: model.masthead)
-                        .font(.system(size: 34, weight: .black, design: .serif))
+                        .font(PMFont.masthead)
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
                         .accessibilityIdentifier(AXID.Newspaper.masthead)
                     Rectangle().frame(height: 2)
                     Text(verbatim: model.dateLine)
                         .scaledFont(.caption, design: .serif).textCase(.uppercase)
-                        .foregroundStyle(.readableSecondary)
+                        .foregroundStyle(PMColor.textSecondary)
                     Rectangle().frame(height: 1)
                 }
                 ScrollView {
@@ -47,10 +47,11 @@ struct NewspaperSheet: View {
                 Spacer()
                 Button("Close") { session.dismissPresentation() }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .accessibilityIdentifier(AXID.Decision.newspaperClose)
             }
         }
-        .padding(28)
+        .padding(PMSpace.xl)
         .frame(width: 560)
         // UI-KEYS-021: Esc and ⌘. press the only button.
         .sheetEscape { session.dismissPresentation() }

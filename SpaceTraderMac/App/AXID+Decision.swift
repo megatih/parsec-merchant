@@ -10,6 +10,11 @@ nonisolated extension AXID {
         static func plunderTake(_ item: TradeItemType) -> String { "decision.plunder.take.\(item)" }
         static func plunderTakeAll(_ item: TradeItemType) -> String { "decision.plunder.takeAll.\(item)" }
         static let plunderFreeBays = "decision.plunder.freeBays"
+        static let tradeRow = "decision.trade.row"
+        static func makeRoomRow(_ item: TradeItemType) -> String { "decision.makeRoom.row.\(item)" }
+        static func makeRoomQuantity(_ item: TradeItemType) -> String { "decision.makeRoom.quantity.\(item)" }
+        static func makeRoomJettison(_ item: TradeItemType) -> String { "decision.makeRoom.jettison.\(item)" }
+        static func makeRoomAll(_ item: TradeItemType) -> String { "decision.makeRoom.all.\(item)" }
         static let plunderDone = "decision.plunder.done"
         static let tradeSheet = "decision.trade.sheet"
         static let tradeQuantity = "decision.trade.quantity"
@@ -24,5 +29,6 @@ nonisolated extension AXID {
         static let all: [String] = [plunderSheet, plunderFreeBays, plunderDone, tradeSheet, tradeQuantity, tradeMax,
                                     tradeAccept, tradeDecline, scoopAccept, scoopDecline, scoopMakeRoom, newspaperClose]
             + TradeItemType.allCases.flatMap { [plunderRow($0), plunderQuantity($0), plunderTake($0), plunderTakeAll($0)] }
+            + [tradeRow] + TradeItemType.allCases.flatMap { [makeRoomRow($0), makeRoomQuantity($0), makeRoomJettison($0), makeRoomAll($0)] }
     }
 }

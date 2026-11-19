@@ -15,7 +15,7 @@ struct IntelligenceSettingsView: View {
         Form {
             SwiftUI.Section {
                 Toggle(isOn: $showRecommendations) { Text("Show trade recommendations") }.accessibilityLabel(Text("Show trade recommendations"))
-                    .help(Text("Show the best buys and destinations above the Market table."))
+                    .help(Text("Show the best buys and destinations above the Market table"))
                     .accessibilityIdentifier(AXID.IntelSettings.recommendations)
             } header: {
                 Text("Trade Intelligence")

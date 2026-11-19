@@ -13,7 +13,7 @@ struct HeatmapHUDView: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 6) {
             HStack(spacing: 6) {
-                Text("Heatmap").accessibilityHidden(true)
+                Text("Heatmap").pmFont(.body).foregroundStyle(PMColor.textPrimary).accessibilityHidden(true)
                 // A11Y-029: AppKit pop-ups (a SwiftUI menu-style Picker here has no press action for VoiceOver).
                 PopUpMenuButton(title: "", items: MapHeatmapChoice.allCases.map { c in
                     PopUpMenuButton.Item(title: String(localized: c.title)) { choice = c }
@@ -35,13 +35,15 @@ struct HeatmapHUDView: View {
                         .clipShape(.capsule)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 0) {
-                        ForEach(HeatmapTint.legend(result), id: \.self) { Text(verbatim: $0).scaledFont(.caption2) }
+                        ForEach(HeatmapTint.legend(result), id: \.self) { Text(verbatim: $0).pmFont(.caption).foregroundStyle(PMColor.textPrimary) }
                     }
                 }
                 .accessibilityElement(children: .combine)
             }
         }
-        .padding(6)
-        .glassEffect(in: .rect(cornerRadius: 10))
+        .padding(PMSpace.s)
+        // UI-DS-024: a solid panel fill; the game area uses no glass.
+        .background(PMColor.panel, in: RoundedRectangle(cornerRadius: PMRadius.panel))
+        .overlay { RoundedRectangle(cornerRadius: PMRadius.panel).strokeBorder(PMColor.hairline) }
     }
 }

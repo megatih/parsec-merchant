@@ -109,7 +109,8 @@ extension GameSession {
         } else if case .encounter = step.before.phase {
             encounterUI.markActed()
         }
-        encounterUI.append(CombatLog.lines(for: step))
+        // UI-ENC-206: when the step ended one encounter and started the next, the old one's last round opens the new log.
+        encounterUI.append(CombatLog.closingLines(for: step) + CombatLog.lines(for: step))
         let inEncounter = if case .encounter = step.after.phase { true } else { false }
         let canRepeat = engine?.encounterPreview?.canAutoRepeat ?? false
         encounterDriver.handle(.stepApplied(canAutoRepeat: canRepeat, inEncounter: inEncounter))

@@ -44,10 +44,10 @@ struct OpenSavedGameSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Open Saved Game")
-                .scaledFont(.title2, weight: .bold)
+                .pmFont(.title)
             if model.rows.isEmpty {
                 Text("No saved games yet.")
-                    .foregroundStyle(.readableSecondary)
+                    .foregroundStyle(PMColor.textSecondary)
                     .frame(maxWidth: .infinity, minHeight: 240)
                     .accessibilityLabel(Text("Saved games"))  // A11Y-003
                     .accessibilityIdentifier(AXID.Files.list)
@@ -82,12 +82,13 @@ struct OpenSavedGameSheet: View {
                     .accessibilityIdentifier(AXID.Files.cancel)
                 Button("Open") { if let selection { open(selection) } }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .disabled(!model.canOpen(selection))
                     .help(openHelp)
                     .accessibilityIdentifier(AXID.Files.open)
             }
         }
-        .padding(20)
+        .padding(PMSpace.xl)
         .frame(width: 560)
         .onAppear(perform: reload)
         .confirmationDialog(deleteTitle, isPresented: deleteBinding, titleVisibility: .visible) {
@@ -99,6 +100,7 @@ struct OpenSavedGameSheet: View {
             .accessibilityIdentifier(AXID.Dialog.appConfirmationConfirm)
             Button("Cancel", role: .cancel) { pendingDelete = nil }
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(PMButtonStyle(kind: .primary))
                 .accessibilityIdentifier(AXID.Dialog.appConfirmationCancel)
         } message: {
             Text(verbatim: deleteContent.message)

@@ -231,12 +231,12 @@ struct ParsecTipViewStyle: TipViewStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: id.systemImage)
-                .scaledFont(.title2)
-                .foregroundStyle(.tint)
+                .pmFont(.title)
+                .foregroundStyle(PMColor.accent)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 6) {
-                Text(id.title).scaledFont(.headline).accessibilityAddTraits(.isHeader)
-                Text(id.message).fixedSize(horizontal: false, vertical: true)
+                Text(id.title).pmFont(.valueLarge).foregroundStyle(PMColor.textPrimary).accessibilityAddTraits(.isHeader)
+                Text(id.message).pmFont(.body).foregroundStyle(PMColor.textPrimary).fixedSize(horizontal: false, vertical: true)
                 Button(String(localized: TipID.learnMoreTitle), action: learnMore)
                     .buttonStyle(.link)
                     .accessibilityIdentifier(id.learnMoreIdentifier)
@@ -253,6 +253,10 @@ struct ParsecTipViewStyle: TipViewStyle {
             .accessibilityIdentifier(id.closeIdentifier)
         }
         .padding(12)
+        // A11Y-029: a solid card, so the tip reads over whatever page is behind it.
+        .background(PMColor.panelRaised, in: RoundedRectangle(cornerRadius: PMRadius.panel))
+        .overlay { RoundedRectangle(cornerRadius: PMRadius.panel).strokeBorder(PMColor.strongLine) }
+        .environment(\.colorScheme, .dark)
         // A labelled container (only drawn while the tip shows); the controls keep their own identifiers.
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(id.title))

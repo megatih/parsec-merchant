@@ -17,7 +17,7 @@ struct FeedOverlay: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Recent Events").scaledFont(.headline)
+                Text("Recent Events").pmFont(.valueLarge)
                 Spacer()
                 Button("Show Logbook") {
                     dismiss()
@@ -30,15 +30,15 @@ struct FeedOverlay: View {
                 Button("Close", action: dismiss)
                     .accessibilityIdentifier(AXID.Status.feedClose)
             }
-            .padding(10)
+            .padding(PMSpace.m)
             Divider()
             ScrollView {
                 AccessibleLazyVStack(label: "Recent Events") {
                     ForEach(groups) { group in
                         Text("Day \(group.day) · \(Names.system(group.systemIndex, in: state))")
-                            .scaledFont(.caption, weight: .bold)
-                            .foregroundStyle(.readableSecondary)
-                            .padding(.top, 4)
+                            .pmFont(.caption)
+                            .foregroundStyle(PMColor.textSecondary)
+                            .padding(.top, PMSpace.xs)
                             .accessibilityAddTraits(.isHeader)
                             .accessibilityIdentifier(AXID.Feed.group(day: group.day, systemIndex: group.systemIndex))
                         ForEach(group.rows) { row in
@@ -51,15 +51,15 @@ struct FeedOverlay: View {
                         }
                     }
                 }
-                .padding(10)
+                .padding(PMSpace.m)
             }
         }
         .frame(width: 480 * min(max(textScale, 1), 1.3), height: 280)  // A11Y-026: wider at large Text Sizes
         // A11Y-019/029: opaque, so the Bridge art behind the list never shows through its lines. The shadow belongs to
         // the card's shape only: on the whole view it would put a dark halo around every line of text.
         .background {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(nsColor: .windowBackgroundColor))
+            RoundedRectangle(cornerRadius: PMRadius.panel)
+                .fill(PMColor.panelRaised)
                 .shadow(radius: 6)
         }
         .contrastCardBorder(ContrastStyle.make(prefs: a11yPrefs))
@@ -78,12 +78,12 @@ struct FeedRow: View {
         let style = FeedStyle.classify(entry)
         HStack(alignment: .firstTextBaseline, spacing: 14) {  // room between the symbol and the text (A11Y-029)
             Image(systemName: style.symbol)
-                .foregroundStyle(.readableSecondary)
+                .foregroundStyle(PMColor.textSecondary)
                 .frame(width: 16 * textScale)  // A11Y-026: the symbol grows with the text
                 .accessibilityHidden(true)
             if let badge = style.severity.badgeSymbol {
                 Image(systemName: badge)
-                    .foregroundStyle(style.severity == .critical ? .signalRed : .signalOrange)
+                    .foregroundStyle(style.severity == .critical ? PMColor.loss : PMColor.caution)
                     .accessibilityLabel(style.severity == .critical ? Text("Critical") : Text("Warning"))
             }
             Text(verbatim: FeedText.text(for: entry, state: state))
@@ -108,7 +108,7 @@ private struct RoundsRow: View {
             }
         } label: {
             HStack(spacing: 6) {
-                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(.readableSecondary).frame(width: 16 * textScale)
+                Image(systemName: FeedCategory.combat.symbol).foregroundStyle(PMColor.textSecondary).frame(width: 16 * textScale)
                 if let opponent {
                     Text("\(items.count) rounds against the \(String(localized: Names.ship(opponent)))")
                 } else {

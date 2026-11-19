@@ -25,6 +25,7 @@ struct GameShellView: View {
                     .frame(maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     .clipped()
                     .focusSection()
+                    .accessibilityHidden(session.feedOverlayOpen)  // A11Y-029: the Recent Events card covers it
             }
             .environment(\.pmScale, scale)
             .environment(\.textScale, scale)

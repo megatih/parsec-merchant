@@ -15,8 +15,8 @@ extension AXID {
         static let repairAmount = "bridge.repair.amount"
         static let repairBuy = "bridge.repair.buy"
         static let repairSlider = "bridge.repair.slider"
-        // The chart's two identifiers are registered with the map's (`AXID.mapAll`).
-        static let all = BridgeManifest.all.filter { !BridgeID.Chart.all.contains($0) }
+        // The chart's map identifier is registered with the map's (`AXID.mapAll`).
+        static let all = BridgeManifest.all.filter { $0 != BridgeID.Chart.map }
             + [BridgeID.Cargo.header, BridgeID.Cargo.rows, targetJump, serviceSheet, serviceCancel, fuelAmount, fuelBuy, fuelSlider, repairAmount,
                repairBuy, repairSlider]
     }

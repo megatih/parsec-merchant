@@ -15,7 +15,9 @@ struct DockBarView: View {
         HStack(spacing: 2 * scale) {
             ForEach(Section.allCases) { section in
                 let badge = badges.badge(for: section)
-                PMDockButton(title: section.title, symbol: section.systemImage, key: section.keyCap, current: session.selectedSection == section,
+                // While the pages are locked their keys do nothing, and the phase label needs the room: no key caps then.
+                PMDockButton(title: section.title, symbol: section.systemImage, key: lock == .none ? section.keyCap : nil,
+                             current: session.selectedSection == section,
                              badge: badge.map(Self.text), badgeLabel: badge?.accessibilityLabel, badgeIdentifier: badge.map(Self.identifier),
                              disabledReason: Self.reason(section: section, lock: lock, context: context), identifier: section.axID) {
                     session.selectedSection = section

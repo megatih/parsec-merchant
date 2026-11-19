@@ -194,32 +194,38 @@ struct ShellTests {
         #expect(WarpButtonModel.make(state: st, isModal: false).help == ReasonText.string(for: .debtTooLargeToTravel))
     }
 
-    @Test("UI-SHELL-042 window title and subtitle per phase")
+    @Test("UI-SHELL-042 UI-NAV-007 the window title names the commander and the subtitle names the page")
     func titles() throws {
         #expect(WindowTitles.make(state: nil).title == "Parsec Merchant" && WindowTitles.make(state: nil).subtitle == nil)
         var st = fresh()
         let docked = WindowTitles.make(state: st)
-        #expect(docked.title == "Parsec Merchant — Cmdr. Shell")
-        #expect(docked.subtitle == "Day 0 · \(Names.system(st.commander.currentSystem, in: st)) · Credits 1,000 · Debt 0")
+        #expect(docked.title == "Cmdr. Shell" && docked.subtitle == "Bridge")
+        for page in Section.allCases {
+            let titles = WindowTitles.make(state: st, page: page)
+            #expect(titles.subtitle == String(localized: page.title) && !titles.title.contains("Parsec Merchant"))
+            #expect(titles.subtitle?.contains("Day") == false && titles.subtitle?.contains("1,000") == false, "day and cash are in the status bar")
+        }
         st.commander.shipName = "Rocinante"
-        #expect(WindowTitles.make(state: st).title == "Parsec Merchant — Cmdr. Shell · “Rocinante”")
+        #expect(WindowTitles.make(state: st).title == "Cmdr. Shell · “Rocinante”")
         let enc = EncounterState(type: .pirateAttack, opponent: st.commander.ship)
         let transitJSON = #"{"destination":5,"clicksRemaining":3,"viaWormhole":false,"raided":false,"inspected":false,"#
             + #""litterWarning":false,"hadEncounter":false}"#
         st.encounterTransit = try decode(transitJSON)
         st.phase = .encounter(enc)
-        #expect(WindowTitles.make(state: st).subtitle == "Day 0 · In transit to \(Names.system(5, in: st))")
+        #expect(WindowTitles.make(state: st, page: .bank).subtitle == "Encounter")
         st.phase = .gameOver(.killed)
-        #expect(WindowTitles.make(state: st).subtitle == "Day 0 · Game over")
+        #expect(WindowTitles.make(state: st).subtitle == "Game Over")
     }
 
-    @Test("UI-SHELL-043 the titles update after every accepted command")
+    @Test("UI-SHELL-043 the status bar follows every accepted command; the subtitle follows the page")
     func titlesUpdate() throws {
         let s = try TestSessions.playing()
-        let before = WindowTitles.make(state: s.state).subtitle
+        let before = StatusBarModel.make(state: try #require(s.state), feed: [])
         s.send(.borrow(500))
-        #expect(WindowTitles.make(state: s.state).subtitle != before)
-        #expect(WindowTitles.make(state: s.state).subtitle?.contains("Debt 500") == true)
+        let after = StatusBarModel.make(state: try #require(s.state), feed: [])
+        #expect(after != before && after.debt == 500)
+        s.selectedSection = .bank
+        #expect(WindowTitles.make(state: s.state, page: s.selectedSection).subtitle == "Bank")
     }
 
     @Test("UI-SHELL-044 status bar: bays, fuel, hull and the latest feed item; overlay lists the newest 50")

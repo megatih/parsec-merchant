@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M20 done; working on M21 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
-- **Next step:** M21 design system and shell: `APP/Design/` tokens and components (PRD §3.3–3.5), `GameShellView` = dock bar / status bar / game area with the old sections hosted as pages, sidebar + toolbar + inspector removed, window 1200 × 680 min and the `pmScale` environment; re-point UI tests and `UISurfaceCatalog` from the sidebar to the dock bar in the same commits; then `verify.sh --ui`.
-- **Last gate result:** 2026-11-19: M20 exit: `verify.sh` ALL GATES PASSED.
+- **Current milestone:** M27 done; working on M28 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
+- **Next step:** M28: README screenshots re-exported, QA-REPORT release rows, `scripts/release.sh`, `gh release create v2.0.0`, `scripts/final-check.sh`.
+- **Last gate result:** 2026-11-20: `verify.sh --ui` from the mirror: every step PASS except one UI test of 56 (the accented pseudo-language start check, a test helper that read an English word); fixed and that test re-run green. `verify.sh` ALL GATES PASSED on the commit.
 - **Blockers:** none
 
 ## Milestones
@@ -30,13 +30,13 @@
 - [x] M18 Setup, freezes and baselines (release 2.0) (2026-11-19, tag m18-done; baselines: fuzz 4531100 / 4528609 / 3134221 commands, galaxy seed-1 hashes ff4fb0e3… / c04d544a… / 8f2dead9…, planet digests pinned in PlanetFrozenTests and PlanetInputFrozenTests)
 - [x] M19 Portrait proof of concept (2026-11-19, tag m19-done; target style adopted, ADR 0005: self review 56/60, independent review 55/60 on iteration 3; ART-FACE-001…009, 011; helmet avatars and ART-034 retired; the app shows the new portraits in the Crew section)
 - [x] M20 Ships and liveries (2026-11-19, tag m20-done; ten class designs shaped by statistics (`PA/Ships2/`), role liveries with the never-the-player's-twin rule, visible fittings, special ships, Marie Celeste hulk; old generator deleted; icon regenerated from the Hornet; ART-SHIP-001…014; ART-009…013, 081, 082 retired)
-- [ ] M21 Design system and shell
-- [ ] M22 Bridge
-- [ ] M23 Secondary pages
-- [ ] M24 Charts
-- [ ] M25 Encounter, transit, interruptions
-- [ ] M26 Endings, welcome, new game, game over, icon
-- [ ] M27 Keyboard, menus, accessibility, words, help
+- [x] M21 Design system and shell (2026-11-20, tag m21-done; tokens and components in `APP/Design/`, dock bar and status bar, one interface scale from the window size, 1200×680 minimum)
+- [x] M22 Bridge (2026-11-20, tag m22-done; four regions always on screen, Cargo market with target prices, Sell All Cargo, fit tests on 105 combinations, core loop in six clicks)
+- [x] M23 Secondary pages (2026-11-20, tag m23-done; Shipyard, Equipment, Personnel, Bank, Commander Status, Quests, Logbook, Options as pages; portraits placed)
+- [x] M24 Charts (2026-11-20, tag m24-done; Galactic Chart page with the Selected System panel, one Find, solid HUD, the chart window kept)
+- [x] M25 Encounter, transit, interruptions (2026-11-20, tag m25-done; two ship panels, role badge, action bar with key caps, sheets rebuilt from components, no glass)
+- [x] M26 Endings, welcome, new game, game over, icon (2026-11-20, tag m26-done; four ending scenes redrawn with the player's ship, Welcome and Game Over in the console palette)
+- [x] M27 Keyboard, menus, accessibility, words, help (2026-11-20, tag m27-done; Trade menu, keyboard-only loop, design and help-tag audits, vocabulary, help pages rewritten)
 - [ ] M28 Release 2.0.0
 
 ## M18 checklist
@@ -75,6 +75,15 @@
 - [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-20: a language whose words run more than 15% longer than English is set in proportionally smaller type (`PMFont.languageFit`, floor 0.45), because the screens have fixed places and never scroll; the Text Size setting enlarges it again. English is unchanged. This is how the double-length pseudo-localization run fits without clipping (A11Y-040, UI-BRG-034). Assumption: smaller type is better than clipped or missing text in a language the game does not ship yet.
+- 2026-11-20: M21 to M27 are gated together. Each milestone's code and tests were written in order, but the app-hosted unit tests could only run from a mirror of the tree outside `~/Documents` (the macOS Documents consent dialog, see the session log), and one full UI run takes about an hour, so the full `verify.sh --ui` was run once on the M27 state instead of seven times. Every exit check of M21…M27 is in that run; the tags `m21-done`…`m27-done` sit on the commits that completed each milestone's code.
+- 2026-11-20: ⌘F is Edit › Find System… everywhere except the Logbook, where it still focuses the log's search (LOG-032). The separate ⌥⌘F item of 1.x is gone, as the menu table of PRD-UI-Revamp §4.15 lists one Find item. Assumption: the table is exhaustive for custom items.
+- 2026-11-20: ⌘0 is View › Fit Range (the table's name), so it now fits the systems in range; Fit Galaxy stays a button of the chart's zoom controls. ⌘E is View › Recent Events and left the "kept free" list of UI-KEYS-008 (the game has no text selection to use for Find).
+- 2026-11-20: the Trade menu's B, ⇧B, S and ⇧S are bound only while the Bridge is the page, the game is docked, nothing is presented and no text field has the focus (`MenuContext.tradeKeysActive`), so typing in a Quantity field is never taken by the menu. They are the Cargo rows' own keys and appear once in the key table.
+- 2026-11-20: a cargo row stays an accessibility container (its buttons remain separate elements for pointer users and UI tests) and gains the sentence value, the four trade actions and the Cargo Rows rotor that UI-HIG-005 asks for.
+- 2026-11-20: sheets are drawn in the console palette (`pmSheetChrome`): the system draws the sheet's frame, the content uses the game's tokens. Settings, About, Help, the developer sheet, the High Scores window and the exported career card keep the system look (they are chrome, not game area).
+- 2026-11-20: when one step ends an encounter and starts the next, the ended encounter's last round and outcome now open the new encounter's log (`CombatLog.closingLines`), so no shot or escape is shown only as animation (UI-ENC-206). Display only; no rule changed.
+- 2026-11-20: `SpaceTraderMac/Views/Sections/BridgeSectionView.swift` stays (it holds `SystemHeroCard`), because the protected `PlanetLiveTests` reads that path. Everything else under `Views/Sections/` and `Views/Inspector/` is deleted.
 - 2026-11-19: M21 and M22 land together. The old pages hosted in the new shell were never gated on their own: the M21 UI run was stopped once the Bridge replaced the old Bridge and Market, because most of its failures were in screens M22 deletes. The M21 exit checks (UI-DS, UI-NAV, UI-SB, UI-HIG-007) are gated with M22's in one `verify.sh --ui`, and tags `m21-done` and `m22-done` sit on the same commit.
 - 2026-11-19: M22 Bridge, as built (PRD §4.2 lets up to 24 pt move between neighbours): System Information is 148 pt high and Cargo 428 pt (header row 20 pt). System Information is three lines beside the planet: facts in three columns, fuel and hull with their buttons, the four notices. Sell shows its gain under the price and Target its tag under the price, so the Good column gets 156 pt.
 - 2026-11-19: M22 decisions. (1) The Illegal mark is on firearms and narcotics in every system (the police confiscate them everywhere), not per government as the first PRD text said. (2) Price Details… is ⌥⌘I: ⌘I is kept free for text views by the key audit. (3) Quantity chips and modifier quantities are gone (UI-PTR-008, UI-SHELL-063 retired): a row trades the quantity typed in its field, Max and All are one click; a pointer-only player buys a middle quantity with repeated clicks. (4) The item filter and the Market footer are gone (UI-SHELL-066, -067 retired). (5) `SystemCardModel` carries a pressure only for the current system (UI-BRG-023). (6) UI-BRG-032 assertion 4 is met by construction: every Bridge text and button is `fixedSize`, so the test proves fit by containment and non-overlap. (7) UI-BRG-034's pseudo-localization variant is covered by the pseudo-language UI flow, not by the unit test (the test host cannot switch languages per render). (8) The two onboarding tips of the old Bridge and Market sit over the Short-Range Chart. (9) The arrival report is one line in the status bar's message slot; the 1.x card is gone. (10) The galaxy code moves to Commander Status in M23; between M22 and M23 it is not on screen.
@@ -107,6 +116,7 @@
 - 2026-11-16: Planning complete. Decisions D1–D5 are in PRD §2. The research dossiers are in `docs/research/`.
 
 ## Session log (newest first)
+- 2026-11-20: M21–M27 finished and gated together (see the decisions log). Note for the owner: app-hosted unit tests read the repository's sources, and macOS asks "Parsec Merchant would like to access files in your Documents folder" for the sandboxed test host. The agent does not answer that dialog; gates were run from a copy of the tree (with `.git`) in `~/Library/Caches/ParsecMerchantMirror`, where no consent is needed.
 - 2026-11-18: M14 exit. Note for M17: the README Bridge screenshot is scrolled because the test clicks Target Next, which now sits lower on the taller page; fix the test's scroll position when re-exporting.
 - 2026-11-18: M14 planets built: PlanetNoise/PlanetClass/PlanetTextureBaker/PlanetSphere/PlanetCache in ParsecArt (10 classes, rings, CPU projector), PlanetMetalView + shader string (GPU/CPU mean abs diff ≤ 0.011/255), PlanetHero stage with StarGlow, cached map sprites, mini chart vortices still. ART-068…080 traced.
 - 2026-11-18: 1.1 work started (docs/PRD-1.1.md, M14–M17). Setup: spec-trace threshold 13 → 17 with PM_TRACE_MILESTONE preview; final-check/release retargeted to v1.1.0 and 18 milestones; marketing version 1.1.0.

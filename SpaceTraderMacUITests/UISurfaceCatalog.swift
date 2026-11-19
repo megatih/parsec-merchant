@@ -26,6 +26,7 @@ enum UISurfaceCatalog {
         ("bridge", "bridge", "bridge.root"), ("shipyard", "shipyard", "shipyard.root"), ("outfitter", "outfitter", "outfitter.root"),
         ("crew", "crew", "crew.root"), ("bank", "bank", "bank.root"), ("status", "status", "inspector.root"),
         ("quests", "quests", "quests.root"), ("galaxy", "galaxy", "galaxy.root"), ("logbook", "logbook", "logbook.root"),
+        ("options", "options", "options.root"),
     ]
 
     static let entries: [UISurface] = {
@@ -35,7 +36,7 @@ enum UISurfaceCatalog {
             UISurface(name: "logbook-statistics", root: AXID.A11y.logbookStats, group: .shell),
             UISurface(name: "logbook-achievements", root: AXID.A11y.logbookAchievements, group: .shell),
             UISurface(name: "galaxy-legend-route", root: AXID.Galaxy.section.routePanel, group: .shell),
-            UISurface(name: "system-intel-sheet", root: AXID.A11y.systemIntelSheet, group: .shell),
+            UISurface(name: "galaxy-selected-system", root: "galaxy.selectionCard", group: .shell),
             UISurface(name: "galaxy-window", root: AXID.Galaxy.windowRoot, group: .shell),
             UISurface(name: "high-scores-window", root: AXID.Scores.window, group: .shell),
             UISurface(name: "about-window", root: AXID.A11y.aboutWindow, group: .shell),
@@ -44,7 +45,6 @@ enum UISurfaceCatalog {
         ]
         e += AXID.A11y.settingsTabs.map { UISurface(name: "settings-\($0)", root: AXID.A11y.settingsTabProbe[$0] ?? "", group: .shell) }
         e += [
-            UISurface(name: "options-sheet", root: AXID.Options.sheet, group: .shell),
             UISurface(name: "open-sheet", root: AXID.Files.list, group: .shell),
             UISurface(name: "delete-confirmation", root: AXID.A11y.appConfirmationCancel, group: .shell),
             UISurface(name: "find-system-sheet", root: AXID.A11y.findSystemSheet, group: .shell),
@@ -126,6 +126,7 @@ extension ParsecUITestCase {
             goToSection(s.key, root: s.root)
             at("section-\(s.name)", element(s.root))
         }
+        goToSection("logbook", root: "logbook.root")  // the page loop ends on Options
         selectLogbookTab("Statistics")
         at("logbook-statistics")
         selectLogbookTab("Achievements")
@@ -141,26 +142,10 @@ extension ParsecUITestCase {
         waitFor(g.legend)
         chooseMenuItem("Game", "Plot Route…")
         at("galaxy-legend-route", waitFor(g.routePanel))
-        // The hover card appears after a delay and re-renders the map, which would close an open context menu: let it
-        // settle before the right click, and retry the menu once.
+        // UI-PG-060: a click fills the Selected System panel (the average prices live there since release 2.0).
         let system = visibleSystem(in: g)
-        if system.waitForExistence(timeout: timeout) {
-            for _ in 0..<3 where !element(AXID.A11y.systemIntelSheet).exists {
-                system.hover()
-                RunLoop.current.run(until: Date().addingTimeInterval(1.2))
-                system.rightClick()
-                let item = element(AXID.A11y.galaxyFindPrices)
-                if item.waitForExistence(timeout: 3) {
-                    item.click()
-                } else {
-                    type(XCUIKeyboardKey.escape.rawValue, [])
-                }
-                _ = element(AXID.A11y.systemIntelSheet).waitForExistence(timeout: 3)
-            }
-        }
-        at("system-intel-sheet")
-        click(AXID.A11y.systemIntelDone)
-        expect("the system intel sheet closes") { !element(AXID.A11y.systemIntelSheet).exists }
+        if system.waitForExistence(timeout: timeout) { system.click() }
+        at("galaxy-selected-system", waitFor(g.selectionCard))
         click(g.routeClear)
 
         type("m", [.command, .shift])
@@ -199,11 +184,6 @@ extension ParsecUITestCase {
         type("w")
         expect("Settings closes") { !element(AXID.A11y.settingsTextSize).exists }
 
-        type("o", [.command, .option])
-        at("options-sheet", waitFor(AXID.Options.sheet))
-        click(AXID.Options.cancel)
-        expect("the options sheet closes") { !element(AXID.Options.sheet).exists }
-
         type("o")
         at("open-sheet", waitFor(AXID.Files.list))
         let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", AXID.Files.rowPrefix)).firstMatch
@@ -214,7 +194,8 @@ extension ParsecUITestCase {
         click(AXID.Files.cancel)
         expect("the Open sheet closes") { !element(AXID.Files.list).exists }
 
-        type("f", [.command, .option])
+        openPage("bridge")
+        type("f")  // ⌘F: Edit › Find System…
         at("find-system-sheet", waitFor(AXID.A11y.findSystemSheet))
         click(AXID.A11y.findSystemCancel)
         expect("Find System closes") { !element(AXID.A11y.findSystemSheet).exists }

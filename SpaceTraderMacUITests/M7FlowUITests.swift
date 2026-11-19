@@ -64,7 +64,7 @@ final class M7FlowUITests: ParsecUITestCase {
     @MainActor
     func testFlow4SettingsAndOptions() throws {
         // covers: UI-SHELL-126
-        XCTAssertFalse(isMenuItemEnabled("Game", "Options…"), "Game › Options… is disabled without a game")
+        XCTAssertFalse(isMenuItemEnabled("View", "Options"), "View › Options is disabled without a game")
 
         type(",")
         let fast = waitFor(AXID.Settings.fastTravel)
@@ -81,43 +81,31 @@ final class M7FlowUITests: ParsecUITestCase {
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
 
+        // Options is a page; a change applies at once (no OK or Cancel) and is still there after leaving the page.
         openOptions()
         let autoFuel = isOn(element(AXID.Options.autoFuel))
         element(AXID.Options.autoFuel).click()
-        expect("Get full fuel toggles") { isOn(element(AXID.Options.autoFuel)) != autoFuel }
+        expect("Get full fuel toggles") { self.isOn(self.element(AXID.Options.autoFuel)) != autoFuel }
         setLeaveEmpty(3)
-        click(AXID.Options.ok)
-        expect("the sheet closes") { !element(AXID.Options.sheet).exists }
+        openPage("bridge")
+        expect("the page closes") { !self.element(AXID.Options.root).exists }
 
         openOptions()
-        XCTAssertEqual(isOn(element(AXID.Options.autoFuel)), !autoFuel, "OK kept the fuel option")
-        XCTAssertEqual(leaveEmpty(), 3, "OK kept the empty bays")
-        let autoRepair = isOn(element(AXID.Options.autoRepair))
-        element(AXID.Options.autoRepair).click()
-        expect("Get full repairs toggles") { isOn(element(AXID.Options.autoRepair)) != autoRepair }
-        click(AXID.Options.cancel)
-        expect("the sheet closes") { !element(AXID.Options.sheet).exists }
-
-        openOptions()
-        XCTAssertEqual(isOn(element(AXID.Options.autoRepair)), autoRepair, "Cancel discarded the repair option")
-        XCTAssertEqual(isOn(element(AXID.Options.autoFuel)), !autoFuel)
-        XCTAssertEqual(leaveEmpty(), 3)
-        let traders = reveal(element(AXID.Options.alwaysIgnoreTraders), in: optionsScrollView)
+        XCTAssertEqual(isOn(element(AXID.Options.autoFuel)), !autoFuel, "the fuel option was kept")
+        XCTAssertEqual(leaveEmpty(), 3, "the empty bays were kept")
+        let traders = element(AXID.Options.alwaysIgnoreTraders)
         if isOn(traders) { traders.click() }
-        expect("Ignore traders is off") { !isOn(element(AXID.Options.alwaysIgnoreTraders)) }
-        expect("Ignore dealing traders is disabled under Modern") { !element(AXID.Options.alwaysIgnoreTradeInOrbit).isEnabled }
-        click(AXID.Options.cancel)
+        expect("Ignore traders is off") { !self.isOn(self.element(AXID.Options.alwaysIgnoreTraders)) }
+        expect("Ignore dealing traders is disabled under Modern") { !self.element(AXID.Options.alwaysIgnoreTradeInOrbit).isEnabled }
+        openPage("bridge")
     }
 
     // MARK: Helpers
 
     private func openOptions() {
-        type("o", [.command, .option])
-        waitFor(AXID.Options.sheet)
+        openOptionsPage()
         waitFor(AXID.Options.autoFuel)
     }
-
-    private var optionsScrollView: XCUIElement { element(AXID.Options.sheet).scrollViews.firstMatch }
 
     private func leaveEmpty() -> Int? {
         let stepper = element(AXID.Options.leaveEmpty)

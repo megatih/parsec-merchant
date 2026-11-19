@@ -57,6 +57,14 @@ nonisolated struct MenuContext: Sendable, Equatable {
     var sellAllBlocker: CommandError? = .cargoNoneToSell
     /// UI-BRG-008: a good is selected in the Bridge's Cargo region.
     var hasCargoSelection = false
+    /// UI-NAV-011: why Buy, Sell and Sell All cannot act on the selected good; nil when they can.
+    var tradeBuyBlocker: CommandError?
+    var tradeSellBlocker: CommandError?
+    var tradeSellAllBlocker: CommandError?
+    /// The selected good can be dumped (or jettisoned) here.
+    var canDumpSelection = false
+    /// UI-NAV-011: the Bridge is the page and no text field has the focus, so B and S are the Trade keys.
+    var tradeKeysActive = false
     var canRepair = false
     var fuelFull = true
     var hullFull = true
@@ -125,6 +133,13 @@ nonisolated struct MenuContext: Sendable, Equatable {
                      focusedMap: focusedMap, galaxyIsKey: session.galaxyWindowIsKey,
                      transitPlaying: session.transitPlayback != nil, autoRepeatOn: session.encounterUI.autoRepeatEnabled)
         c.hasCargoSelection = session.marketSelection != nil && session.selectedSection == .bridge
+        if c.hasCargoSelection, let item = session.marketSelection, let row = session.bridgeCargo?.row(item) {
+            c.tradeBuyBlocker = row.market.buyBlocker
+            c.tradeSellBlocker = row.sellBlocker
+            c.tradeSellAllBlocker = row.allBlocker
+            c.canDumpSelection = CargoDisposal.dump(row.market) != nil
+        }
+        c.tradeKeysActive = session.selectedSection == .bridge && !session.textEntryFocused && c.phase == .docked && !c.isModal
         return c
     }
 }
@@ -167,7 +182,7 @@ nonisolated enum DisabledReason: Sendable, Equatable {
         case .noMapFocus: String(localized: "Select the galaxy chart first.")
         case .currentIronmanSlot: String(localized: "This Ironman game is already loaded.")
         case .notInEncounter: String(localized: "Only during an encounter.")
-        case .autoRepeatUnavailable: String(localized: "Turn on Continuous attack in Game › Options…, or use Resolve.")
+        case .autoRepeatUnavailable: String(localized: "Turn on Continuous attack in View › Options, or use Resolve.")
         case let .engine(e): ReasonText.string(for: e)
         }
     }
@@ -238,14 +253,23 @@ nonisolated enum MenuRules {
             return c.canRevertToAutosave ? .enabled : .disabled(.noAutosave)
         case .export, .closeGame:
             return anyGame(c)
-        case .find, .bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .galaxy, .quests, .findSystem, .options, .retire:
+        case .find, .bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .galaxy, .quests, .options, .retire:
             return gameCommand(c)
         case .newspaper:
             return gameCommand(c, and: c.newspaperBlocker == nil, else: .engine(c.newspaperBlocker ?? .insufficientFunds))
         case .plotRoute:
             return gameCommand(c, and: !c.targetIsCurrentSystem, else: .targetIsCurrentSystem)
-        case .logbook, .galaxyChart:
+        case .logbook, .galaxyChart, .recentEvents:
             return anyGame(c)
+        case .tradeBuy, .tradeBuyMax:
+            return tradeCommand(c, blocker: c.tradeBuyBlocker)
+        case .tradeSell:
+            return tradeCommand(c, blocker: c.tradeSellBlocker)
+        case .tradeSellAll:
+            return tradeCommand(c, blocker: c.tradeSellAllBlocker)
+        case .dumpCargo:
+            let base = gameCommand(c, and: c.hasCargoSelection, else: .noCargoSelection)
+            return base.isEnabled && !c.canDumpSelection ? .disabled(.engine(.cargoNoneToSell)) : base
         case .zoomIn, .zoomOut, .zoomFit:
             let base = anyGame(c)
             return base.isEnabled && c.focusedMap == nil ? .disabled(.noMapFocus) : base
@@ -270,6 +294,13 @@ nonisolated enum MenuRules {
              .encounterResolve, .encounterStop:
             return encounterItem(item, in: c)
         }
+    }
+
+    /// UI-NAV-011: a Trade item that acts on the good selected on the Bridge.
+    private static func tradeCommand(_ c: MenuContext, blocker: CommandError?) -> MenuAvailability {
+        let base = gameCommand(c, and: c.hasCargoSelection, else: .noCargoSelection)
+        guard base.isEnabled, let blocker else { return base }
+        return .disabled(.engine(blocker))
     }
 
     /// UI-ENC-034 / MENU-036: an Encounter item is enabled iff nothing is presented, the phase is `.encounter` (a running

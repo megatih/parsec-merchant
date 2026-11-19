@@ -51,12 +51,13 @@ struct PlaceholderSheet: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("This screen isn't available yet.")
-                .scaledFont(.headline)
+                .pmFont(.valueLarge)
             Button("Close") { session.dismissPresentation() }
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(PMButtonStyle(kind: .primary))
                 .accessibilityIdentifier(AXID.Dialog.placeholderClose)
         }
-        .padding(32)
+        .padding(PMSpace.xl)
         .frame(width: 420)
     }
 }
@@ -69,7 +70,7 @@ struct RetireSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Retire?")
-                .scaledFont(.title2, weight: .bold)
+                .pmFont(.title)
             if let state = session.state {
                 Text(verbatim: ConfirmationText.content(for: pending.confirmation, state: state).message)
             }
@@ -79,10 +80,11 @@ struct RetireSheet: View {
                     .accessibilityIdentifier(AXID.Dialog.retireConfirm)
                 Button("Cancel", role: .cancel) { session.cancel() }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .accessibilityIdentifier(AXID.Dialog.retireCancel)
             }
         }
-        .padding(24)
+        .padding(PMSpace.xl)
         .frame(width: 420)
         // UI-KEYS-020/021: Cancel is both the default and the Esc button.
         .sheetEscape { session.cancel() }

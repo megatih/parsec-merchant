@@ -43,10 +43,8 @@ nonisolated extension AXID {
     }
 
     enum SystemIntel {
-        static let sheet = "systemIntel.sheet"
         static func row(_ item: TradeItemType) -> String { "systemIntel.row.\(item)" }
-        static let done = "systemIntel.done"
-        static let all: [String] = [sheet, done] + TradeItemType.allCases.map(row)
+        static let all: [String] = TradeItemType.allCases.map(row)
     }
 
     enum IntelSettings {

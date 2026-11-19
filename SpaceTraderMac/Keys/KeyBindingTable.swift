@@ -133,7 +133,7 @@ nonisolated enum KeyContext: Hashable, Sendable, CustomStringConvertible {
 /// System menu items whose shortcut the app keeps (§2.1 rows marked "system").
 nonisolated enum SystemMenuItem: String, CaseIterable, Sendable {
     case settings, hide, hideOthers, quit, closeWindow, closeAll, undo, redo, cut, copy, paste, selectAll
-    case toggleSidebar, toggleInspector, fullScreen, minimize, minimizeAll, cycleWindows, cycleWindowsBackward
+    case fullScreen, minimize, minimizeAll, cycleWindows, cycleWindowsBackward
 
     var shortcut: MenuShortcut {
         switch self {
@@ -149,8 +149,6 @@ nonisolated enum SystemMenuItem: String, CaseIterable, Sendable {
         case .copy: MenuShortcut("c")
         case .paste: MenuShortcut("v")
         case .selectAll: MenuShortcut("a")
-        case .toggleSidebar: MenuShortcut("s", [.control, .command])
-        case .toggleInspector: MenuShortcut("i", [.control, .command])
         case .fullScreen: MenuShortcut("f", [.control, .command])
         case .minimize: MenuShortcut("m")
         case .minimizeAll: MenuShortcut("m", [.option, .command])
@@ -173,8 +171,6 @@ nonisolated enum SystemMenuItem: String, CaseIterable, Sendable {
         case .copy: "Copy"
         case .paste: "Paste"
         case .selectAll: "Select All"
-        case .toggleSidebar: "Show or Hide Sidebar"
-        case .toggleInspector: "Show or Hide Inspector"
         case .fullScreen: "Enter Full Screen"
         case .minimize: "Minimize"
         case .minimizeAll: "Minimize All"
@@ -236,7 +232,8 @@ nonisolated enum KeyBindingTable {
     static var menuBindings: [KeyBinding] {
         MenuItemID.allCases.compactMap { id in
             let entry = MenuCatalog.entry(for: id)
-            guard let shortcut = entry.shortcut else { return nil }
+            // UI-NAV-011: the Trade menu's B and S show the Cargo rows' own keys (`MarketKeyAction.bindings`), listed once.
+            guard let shortcut = entry.shortcut, !MenuCatalog.letterKeyItems.contains(id) else { return nil }
             return KeyBinding(action: .menu(id), shortcut: shortcut, context: menuContext(id), owner: .menu(id), titleKey: entry.titleKey)
         }
     }

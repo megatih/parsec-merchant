@@ -18,9 +18,9 @@ struct GalaxyMapView: View {
     /// A11Y-042: the window's writing direction. The map itself is never mirrored (it is a chart of fixed positions);
     /// its HUD and the hover card's text follow this direction.
     @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.pmScale) private var pmScale
     @State private var ui: MapViewModel
     @FocusState private var canvasFocused: Bool
-    @FocusState private var searchFocused: Bool
     @FocusState private var warpFocused: Bool
     @AccessibilityFocusState private var axFocus: Int?
     @Namespace private var rotorNamespace
@@ -53,6 +53,29 @@ struct GalaxyMapView: View {
     // MARK: Layout
 
     private func content(_ snapshot: MapSnapshot) -> some View {
+        HStack(spacing: 8) {
+            mapArea(snapshot)
+            if scope.hasHUD {
+                // UI-PG-060: the Selected System panel, beside the chart.
+                ChartSelectionPanel(ids: ids, snapshot: snapshot, hit: ui.pinnedHit, send: sendFromMap)
+                    .frame(width: ChartMetrics.selectionWidth * pmScale)
+            }
+        }
+        .onAppear { installScrollMonitor() }
+        .onDisappear { removeScrollMonitor() }
+        .onChange(of: session.map.focusRequest) { _, request in handleFocusRequest(request, snapshot: snapshot) }
+        // UI-KEYS-027: the Galactic Chart opens with the canvas focused, so the arrows pan at once.
+        .task(id: scope) {
+            // After the canvas is laid out inside the GeometryReader (an assignment in onAppear comes too early).
+            guard scope.hasHUD else { return }
+            try? await Task.sleep(for: .milliseconds(150))
+            canvasFocused = true
+        }
+        // UI-KEYS-017 level 4, run by the main window's Esc router.
+        .escapeHandler(.closeMapOverlay, active: ui.cardHit != nil || ui.pinnedHit != nil || ui.legendShown) { dismissOverlays() }
+    }
+
+    private func mapArea(_ snapshot: MapSnapshot) -> some View {
         GeometryReader { proxy in
             let size = proxy.size
             let viewport = ui.viewport(session: session, snapshot: snapshot)
@@ -60,11 +83,9 @@ struct GalaxyMapView: View {
             ZStack(alignment: .topLeading) {
                 mapCanvas(snapshot, projected: projected)
                 overlayCanvas(snapshot, projected: projected)
-                // UI-PTR-011: a click pins the selection card (with buttons); hovering only previews.
-                if let hit = ui.pinnedHit {
-                    hoverCard(hit, snapshot: snapshot, projected: projected, size: size, pinned: true)
-                } else if let hit = ui.cardHit {
-                    hoverCard(hit, snapshot: snapshot, projected: projected, size: size, pinned: false)
+                // UI-PTR-011: hovering previews; a click selects into the Selected System panel.
+                if let hit = ui.cardHit, hit != ui.pinnedHit {
+                    hoverCard(hit, snapshot: snapshot, projected: projected, size: size)
                 }
                 if scope.hasHUD {
                     hud(snapshot, size: size)
@@ -77,31 +98,7 @@ struct GalaxyMapView: View {
             .onChange(of: size) { _, new in ui.viewSize = new }
         }
         .clipped()
-        .onAppear { installScrollMonitor() }
-        .onDisappear { removeScrollMonitor() }
-        .onChange(of: session.map.focusRequest) { _, request in handleFocusRequest(request, snapshot: snapshot) }
-        .sheet(item: $ui.intelSheet) { request in
-            SystemIntelSheet(system: request.id) { ui.intelSheet = nil }
-                .environment(session)
-                .buttonStyle(PointerButtonStyle())  // UI-PTR-002
-        }
-        .focusedSceneValue(\.contextSearch, scope.hasHUD ? ContextSearchAction { searchFocused = true } : nil)
-        // UI-KEYS-027: the Galaxy section opens with the canvas focused, so the arrows pan at once.
-        .task(id: scope) {
-            // After the canvas is laid out inside the GeometryReader (an assignment in onAppear comes too early).
-            guard scope.hasHUD else { return }
-            try? await Task.sleep(for: .milliseconds(150))
-            // The sidebar's outline view keeps AppKit's first responder after ⌘7; hand it to the SwiftUI host so the
-            // focused canvas receives the keys.
-            if let window = NSApp.keyWindow, window.firstResponder is NSTableView, let host = window.contentView {
-                window.makeFirstResponder(host)
-            }
-            canvasFocused = true
-        }
-        // UI-KEYS-017 levels 3 and 4, run by the main window's Esc router.
-        .escapeHandler(.clearField, active: searchFocused && !ui.searchText.isEmpty) { ui.searchText = "" }
-        .escapeHandler(.closeMapOverlay,
-                       active: ui.cardHit != nil || ui.pinnedHit != nil || ui.legendShown || suggestionsVisible(snapshot)) { dismissOverlays() }
+        .clipShape(RoundedRectangle(cornerRadius: scope.hasHUD ? PMRadius.panel * pmScale : 0))
     }
 
     // MARK: Canvas
@@ -269,11 +266,11 @@ struct GalaxyMapView: View {
     }
 
     private func click(at location: CGPoint, snapshot: MapSnapshot, projected: ProjectedMap) {
-        ui.closeCard()
-        ui.suggestionsShown = false
+        ui.closeHoverCard()
         if scope.hasHUD { canvasFocused = true }
         guard let hit = hit(at: location, snapshot: snapshot, projected: projected) else {
             ui.lastClick = nil
+            ui.pinnedHit = nil
             return
         }
         if scope.hasHUD { ui.pinnedHit = hit }
@@ -287,6 +284,8 @@ struct GalaxyMapView: View {
             gesture = .click
         }
         ui.lastClick = gesture == .click ? (now, hit) : nil
+        // UI-PG-060: on the Galactic Chart a click only selects; the Short-Range Chart's click sets the target (UI-BRG-011).
+        guard !MapActions.selectsOnly(scope: scope, gesture: gesture) else { return }
         perform(MapActions.action(for: hit, gesture: gesture, snapshot: snapshot, isModal: session.isInputLocked))
     }
 
@@ -326,7 +325,6 @@ struct GalaxyMapView: View {
             Button {
                 if let command = item.command { sendFromMap(command) }
                 if item.kind == .plotRoute, let d = item.destination { session.planRoute(to: d) }
-                if item.kind == .findPrices, let d = item.destination { ui.intelSheet = SystemIntelRequest(id: d) }
             } label: {
                 Text(verbatim: item.title)
             }
@@ -340,13 +338,7 @@ struct GalaxyMapView: View {
 
     private func dismissOverlays() {
         ui.closeCard()
-        ui.suggestionsShown = false
         ui.legendShown = false
-    }
-
-    /// Whether the search's suggestion list is on screen (as `MapSearchView` shows it).
-    private func suggestionsVisible(_ snapshot: MapSnapshot) -> Bool {
-        scope.hasHUD && ui.suggestionsShown && !ui.suggestions(snapshot, sells: session.sellsMatches(ui.sellsItem)).isEmpty
     }
 
     private func handleKey(_ action: MapKeyAction, snapshot: MapSnapshot) -> KeyPress.Result {
@@ -365,7 +357,7 @@ struct GalaxyMapView: View {
             return .handled
         case .fit:
             guard scope.hasHUD else { return .ignored }
-            fitGalaxy(snapshot)
+            fitRange(snapshot)  // ⌘0 is View › Fit Range (PRD-UI-Revamp §4.15)
             return .handled
         case let .pan(x, y):
             guard scope.hasHUD else { return .ignored }
@@ -383,6 +375,11 @@ struct GalaxyMapView: View {
                            snapshot: snapshot, reduceMotion: viewportJumps)
     }
 
+    func fitRange(_ snapshot: MapSnapshot) {
+        ui.animateViewport(to: .fitRange(snapshot: snapshot, viewSize: ui.viewSize), session: session, snapshot: snapshot,
+                           reduceMotion: viewportJumps)
+    }
+
     func fitGalaxy(_ snapshot: MapSnapshot) {
         ui.animateViewport(to: .fitGalaxy(MapBounds(snapshot)), session: session, snapshot: snapshot, reduceMotion: viewportJumps)
     }
@@ -392,7 +389,7 @@ struct GalaxyMapView: View {
         return MapControl(scope: scope, canZoomIn: !v.isAtMaxZoom, canZoomOut: !v.isAtMinZoom,
                           zoomIn: { zoom(MapViewport.zoomStep, snapshot: snapshot) },
                           zoomOut: { zoom(1 / MapViewport.zoomStep, snapshot: snapshot) },
-                          fit: { fitGalaxy(snapshot) })
+                          fit: { fitRange(snapshot) })
     }
 
     // MARK: Scroll wheel (MAP-014)
@@ -470,7 +467,7 @@ struct GalaxyMapView: View {
 
     // MARK: Hover card (MAP-044…046)
 
-    private func hoverCard(_ hit: MapHit, snapshot: MapSnapshot, projected: ProjectedMap, size: CGSize, pinned: Bool) -> some View {
+    private func hoverCard(_ hit: MapHit, snapshot: MapSnapshot, projected: ProjectedMap, size: CGSize) -> some View {
         let model: HoverCardModel
         switch hit {
         case let .system(i):
@@ -490,43 +487,16 @@ struct GalaxyMapView: View {
             model = HoverCardModel.make(wormhole: w, snapshot: snapshot, tax: session.state.map { $0.wormholeTaxPerJump } ?? 0)
         }
         let (c, _) = glyph(hit, snapshot: snapshot, projected: projected)
-        let items = pinned ? MapContextMenu.items(for: hit, snapshot: snapshot, isModal: session.isInputLocked) : []
-        let buttonRows = Double((items.count + 1) / 2)
-        let cardSize = CGSize(width: pinned ? 280 : 250,
-                              height: 30 + Double(model.rows.count) * 16 + (model.tags.isEmpty ? 0 : 20) + buttonRows * (PointerTarget.minimum + 6))
+        let cardSize = CGSize(width: 250, height: 30 + Double(model.rows.count) * 16 + (model.tags.isEmpty ? 0 : 20))
         let frame = HoverCardPlacement.frame(anchor: c, cardSize: cardSize, bounds: CGRect(origin: .zero, size: size))
-        return VStack(alignment: .leading, spacing: 6) {
-            HoverCardView(model: model)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier(pinned ? ids.selectionFacts : ids.hoverCard)
-            if pinned {
-                // The card's buttons are the context menu's items (MAP-053): one rule for both.
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 6) {
-                    ForEach(items) { item in
-                        Button {
-                            if let command = item.command { sendFromMap(command) }
-                            if item.kind == .plotRoute, let d = item.destination { session.planRoute(to: d) }
-                            if item.kind == .findPrices, let d = item.destination { ui.intelSheet = SystemIntelRequest(id: d) }
-                        } label: {
-                            Text(verbatim: item.title).lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).pointerTarget()
-                        }
-                        .disabled(!item.isEnabled)
-                        .help(item.reason.map { Text(verbatim: $0) } ?? Text(verbatim: item.title))
-                        .accessibilityIdentifier(ids.selection(item.kind))
-                    }
-                }
-                .padding(.horizontal, 8)
-                .padding(.bottom, 8)
-            }
-        }
-        .environment(\.layoutDirection, layoutDirection)
-        .frame(width: cardSize.width, alignment: .leading)
-        .fixedSize(horizontal: false, vertical: true)
-        .background(pinned ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(.clear), in: RoundedRectangle(cornerRadius: 10))
-        .offset(x: frame.minX, y: frame.minY)
-        .allowsHitTesting(pinned)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(pinned ? ids.selectionCard : ids.hoverCard + ".container")
+        return HoverCardView(model: model)
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier(ids.hoverCard)
+            .environment(\.layoutDirection, layoutDirection)
+            .frame(width: cardSize.width, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .offset(x: frame.minX, y: frame.minY)
+            .allowsHitTesting(false)
     }
 
     // MARK: HUD (MAP-016, MAP-027)
@@ -537,20 +507,13 @@ struct GalaxyMapView: View {
         // space beside the route panel.
         VStack(spacing: 8) {
             HStack(alignment: .top, spacing: 8) {
-                MapSearchView(ui: ui, snapshot: snapshot, ids: ids, searchFocused: $searchFocused, center: { i in
-                    let v = ui.viewport(session: session, snapshot: snapshot)
-                    ui.animateViewport(to: v.centered(on: i, snapshot: snapshot), session: session, snapshot: snapshot,
-                                       reduceMotion: viewportJumps)
-                }, send: sendFromMap)
+                MapFiltersView(ui: ui, snapshot: snapshot, ids: ids)
                 Spacer(minLength: 0)
                 VStack(alignment: .trailing, spacing: 8) {
                     MapZoomHUD(ids: ids, viewport: ui.viewport(session: session, snapshot: snapshot), legendShown: $ui.legendShown,
                                zoomIn: { zoom(MapViewport.zoomStep, snapshot: snapshot) },
                                zoomOut: { zoom(1 / MapViewport.zoomStep, snapshot: snapshot) },
-                               fitRange: {
-                                   ui.animateViewport(to: .fitRange(snapshot: snapshot, viewSize: ui.viewSize), session: session,
-                                                      snapshot: snapshot, reduceMotion: viewportJumps)
-                               },
+                               fitRange: { fitRange(snapshot) },
                                fitGalaxy: { fitGalaxy(snapshot) })
                     HeatmapHUDView(ids: ids, choice: $ui.heatmapChoice, item: $ui.heatmapItem,
                                    result: session.heatmap(ui.heatmapChoice.mode(item: ui.heatmapItem)))
@@ -571,7 +534,7 @@ struct GalaxyMapView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(12)
+        .padding(PMSpace.m)
     }
 }
 

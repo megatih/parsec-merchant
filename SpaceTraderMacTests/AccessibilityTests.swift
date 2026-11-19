@@ -96,7 +96,7 @@ struct AccessibilityTests {
         #expect(m.label == "Water")
         #expect(m.value.hasPrefix("Buy \(water.buyPrice ?? 0) credits, sell "))
         #expect(m.value.hasSuffix("held 0, target 40 credits (estimate)"))
-        #expect(m.actions.map(\.name) == ["Buy 1", "Sell 1", "Buy Max", "Sell All", "Why This Price"])
+        #expect(m.actions.map(\.name) == ["Buy 1", "Sell 1", "Buy Maximum", "Sell All", "Why This Price"])
 
         let yard = ShipyardModel.make(state: st)
         if let card = yard.cards.first(where: { !$0.isYours }) {

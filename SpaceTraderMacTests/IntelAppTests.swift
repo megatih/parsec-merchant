@@ -133,7 +133,7 @@ struct IntelAppTests {
         #expect(!here.contains { $0.hasPrefix("Best profit") })
     }
 
-    @Test("INT-037 Find Prices: the System Intel model (quotes, resource, hint, last visit) and identifiers")
+    @Test("INT-037 UI-PG-060 the System Intel model behind the Selected System panel (quotes, resource, hint, last visit)")
     func systemIntel() throws {
         let s = try TestSessions.playing()
         let inputs = try #require(s.intelInputs())
@@ -144,10 +144,8 @@ struct IntelAppTests {
         let unvisited = try #require(inputs.snapshot.systems.indices.first { !inputs.snapshot.systems[$0].visited })
         let far = SystemIntelModel.make(system: unvisited, book: inputs.book, snapshot: inputs.snapshot)
         #expect(far.lastVisit == .never && far.knownResource == nil)
-        #expect(SystemIntelText.resource(nil) == "Special resources unknown")
-        #expect(SystemIntelText.lastVisit(.dateUnknown) == "Last visit: date unknown")
-        #expect(AXID.SystemIntel.sheet == "systemIntel.sheet" && AXID.SystemIntel.done == "systemIntel.done"
-            && AXID.SystemIntel.row(.ore) == "systemIntel.row.ore")
+        // UI-PG-060: the Selected System panel of the Galactic Chart shows these rows (the Find Prices sheet is gone).
+        #expect(AXID.SystemIntel.row(.ore) == "systemIntel.row.ore" && AXID.all.contains(AXID.SystemIntel.row(.water)))
     }
 
     @Test("INT-038 Show trade recommendations defaults on and affects only the strip")

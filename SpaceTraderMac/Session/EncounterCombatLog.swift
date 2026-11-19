@@ -125,6 +125,39 @@ enum CombatLog {
         return lines
     }
 
+    /// UI-ENC-206: the closing lines of an encounter that the step ended before it started the next one: its last round and
+    /// its outcome. They open the new encounter's log, so no shot or escape is shown only as animation.
+    static func closingLines(for step: StepRecord) -> [CombatLogLine] {
+        let events = step.events
+        guard let startIndex = events.lastIndex(where: { if case .encounterStarted = $0 { true } else { false } }),
+              case let .encounter(before) = step.before.phase else { return [] }
+        let ship = shipText(type: before.type, opponent: before.opponent.type)
+        let cmdrFleeing: Bool = switch step.command {
+        case .encounter(.flee): true
+        case .encounter(.autoRepeat): before.cmdrFleeing || before.continueFleeing
+        default: false
+        }
+        var prevPlayerHull = step.before.commander.ship.hull
+        var prevOppHull = before.opponent.hull
+        var lines: [CombatLogLine] = []
+        for event in events[..<startIndex] {
+            if case let .combatRound(round, playerHit, opponentHit, playerHull, opponentHull) = event {
+                var first = playerSentence(cmdrFleeing: cmdrFleeing, opponentHit: opponentHit, ship: ship)
+                if prevOppHull > opponentHull { first += " " + hullLoss(prevOppHull - opponentHull) }
+                var second = opponentSentence(oppFleeingPrev: before.oppFleeing, playerHit: playerHit, ship: ship)
+                if prevPlayerHull > playerHull { second += " " + hullLoss(prevPlayerHull - playerHull) }
+                prevPlayerHull = playerHull
+                prevOppHull = opponentHull
+                lines.append(CombatLogLine(round: round, text: first + " " + second))
+            } else if case .encounterChanged = event {
+                continue
+            } else if let entry = entry(for: event, state: step.after) {
+                lines.append(entry)
+            }
+        }
+        return lines
+    }
+
     // MARK: Event → outcome line (UI-ENC-023)
 
     /// The log line of an outcome event, or nil for events the log does not show. Exhaustive, no `default`.

@@ -38,7 +38,7 @@ final class PointerOnlyScenarioUITests: ParsecUITestCase {
             all.frame.minX >= table.frame.minX && all.frame.maxX <= table.frame.maxX
         }
 
-        // 3. Pick a target on the map: a click pins the selection card, whose buttons need no modifier.
+        // 3. Pick a target on the map: a click selects into the panel, whose buttons need no modifier.
         clickSidebar(AXID.Galaxy.sidebarRow, root: AXID.Galaxy.root)
         let system = waitFor(g.system(UITestFixtures.mapFlowTarget))
         let target = system.label.components(separatedBy: ", ").first ?? ""
@@ -47,6 +47,7 @@ final class PointerOnlyScenarioUITests: ParsecUITestCase {
         waitFor(g.selectionCard)
         waitFor(g.selectionTrack)
         waitFor(g.selectionPlotRoute)
+        click(g.selectionSetTarget)
         expect("the click set the target to \(target)") {
             targetName.hasPrefix(target)
         }

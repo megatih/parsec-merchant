@@ -45,7 +45,8 @@ struct DesignerView: View {
     // MARK: Left: allocation
 
     private func allocation(_ draft: DesignerDraft, quote: DesignQuote?, state: GameState) -> some View {
-        Form {
+        // UI-DS-023: a plain stack on the inset fill, not a system form.
+        VStack(alignment: .leading, spacing: PMSpace.s) {
             SwiftUI.Section {
                 templatePicker(state: state)
                 TextField("Ship name", text: binding(\.name))
@@ -68,7 +69,8 @@ struct DesignerView: View {
                 if let quote { unitsBar(quote) }
             }
         }
-        .formStyle(.grouped)
+        .padding(PMSpace.m)
+        .background(PMColor.panelInset, in: RoundedRectangle(cornerRadius: PMRadius.panel))
         .labeledContentStyle(ReadableLabeledContentStyle())  // A11Y-029: values at full contrast
     }
 
@@ -124,7 +126,7 @@ struct DesignerView: View {
                 .tint(tint)
             Text("Units used: \(quote.unitsUsed) of \(quote.maxUnits) (\(quote.percentOfMax)%)")
                 .monospacedDigit()
-                .foregroundStyle(level == .over ? .signalRed : .primary)
+                .foregroundStyle(level == .over ? PMColor.loss : PMColor.textPrimary)
         }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(AXID.ShipDesigner.units)
@@ -138,12 +140,12 @@ struct DesignerView: View {
                 // D7: the preview fills its box.
                 ShipPortrait(input: ArtAdapters.designInput(draft.design, style: draft.silhouette, price: quote?.spec.price ?? 0))
                     .frame(maxWidth: .infinity, minHeight: 130, maxHeight: 220)
-                    .padding(.horizontal, 12)
-                Text(Names.ship(draft.silhouette)).foregroundStyle(.readableSecondary)
+                    .padding(.horizontal, PMSpace.m)
+                Text(Names.ship(draft.silhouette)).foregroundStyle(PMColor.textSecondary)
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, PMSpace.s)
             .frame(maxWidth: .infinity, minHeight: 180)
-            .background(.background.secondary, in: RoundedRectangle(cornerRadius: 10))
+            .background(PMColor.panel, in: RoundedRectangle(cornerRadius: PMRadius.panel))
             if let quote {
                 Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
                     costRow("Base price", quote.adjustedPrice)
@@ -154,12 +156,12 @@ struct DesignerView: View {
                     costRow("Total", quote.totalCost).bold()
                 }
                 if let blocker = quote.blocker {
-                    Text(ReasonText.text(for: blocker)).foregroundStyle(.signalOrange)
+                    Text(ReasonText.text(for: blocker)).foregroundStyle(PMColor.caution)
                 }
                 HStack {
                     Button("Save Template") { save(draft.design) }
                         .disabled(draft.name.trimmingCharacters(in: .whitespaces).isEmpty)
-                        .help(Text("Save this design to your templates."))
+                        .help(Text("Save this design to your templates"))
                         .accessibilityIdentifier(AXID.ShipDesigner.saveTemplate)
                     Spacer()
                     Button("Construct…") { session.present(.sheet(.shipPurchase(.design(quote.design)))) }
@@ -169,7 +171,7 @@ struct DesignerView: View {
                         .accessibilityIdentifier(AXID.ShipDesigner.construct)
                 }
                 if let saveMessage {
-                    Text(saveMessage).scaledFont(.footnote).foregroundStyle(.readableSecondary)
+                    Text(saveMessage).pmFont(.caption).foregroundStyle(PMColor.textSecondary)
                 }
             }
             Spacer()

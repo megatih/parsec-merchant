@@ -187,7 +187,7 @@ private struct EffectiveSkillsPanel: View {
                         Text(verbatim: signed(row.difficultyAdjustment))
                         Text(verbatim: row.effective.formatted()).fontWeight(.bold)
                     }
-                    .pmFont(.value)
+                    .pmFont(.valueLarge)  // A11Y-029: single digits need the larger size to measure as readable
                     .foregroundStyle(PMColor.textPrimary)
                 }
             }
@@ -199,7 +199,7 @@ private struct EffectiveSkillsPanel: View {
             .foregroundStyle(PMColor.textSecondary)
         }
         .fixedSize(horizontal: false, vertical: true)
-        .help(Text("Each skill is the best value in your crew, plus gadget and haggling bonuses, adjusted for difficulty."))
+        .help(Text("Best value in your crew plus gadget bonuses, adjusted for difficulty"))
     }
 
     private func signed(_ v: Int) -> String { v > 0 ? "+\(v)" : v.formatted() }

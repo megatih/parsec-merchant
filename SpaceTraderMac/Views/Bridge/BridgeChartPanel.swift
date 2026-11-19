@@ -25,7 +25,7 @@ struct BridgeChartPanel: View {
                     InlineTipView(tip: MarketTip(), id: .market, margin: 6)
                     InlineTipView(tip: WarpTip(), id: .warp, margin: 6)
                 }
-                .padding(.top, 28 * scale)
+                .padding(.top, (PMSpace.xl + PMSpace.xs) * scale)
             }
             .overlay(alignment: .topLeading) {
                 BridgeTitle(title: "Short-Range Chart")

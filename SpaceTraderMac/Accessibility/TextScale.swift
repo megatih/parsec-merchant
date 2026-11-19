@@ -55,7 +55,7 @@ nonisolated enum AppFontMetrics {
     }
 
     static func font(_ style: Font.TextStyle, scale: CGFloat, weight: Font.Weight? = nil, design: Font.Design? = nil) -> Font {
-        .system(size: (pointSize(style) * scale).rounded(), weight: weight ?? Self.weight(style), design: design ?? .default)
+        .system(size: (pointSize(style) * scale * PMFont.languageFit).rounded(), weight: weight ?? Self.weight(style), design: design ?? .default)
     }
 }
 

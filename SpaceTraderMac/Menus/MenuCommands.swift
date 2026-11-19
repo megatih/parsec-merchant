@@ -28,6 +28,9 @@ struct MenuCommands: Commands {
         CommandGroup(before: .toolbar) {
             SectionMenuItems(session: session)
         }
+        CommandMenu("Trade") {
+            TradeMenuItems(session: session)
+        }
         CommandMenu("Game") {
             GameMenuItems(session: session)
         }
@@ -48,6 +51,8 @@ struct MenuItemButton: View {
     let id: MenuItemID
     var title: String?
     let availability: MenuAvailability
+    /// False leaves the key to the focused view (the single-letter Trade keys while a field is being typed in).
+    var bindsShortcut = true
     let action: () -> Void
 
     var body: some View {
@@ -57,7 +62,7 @@ struct MenuItemButton: View {
         } label: {
             if let title { Text(verbatim: title) } else { Text(entry.titleKey) }
         }
-        .modifier(OptionalShortcut(shortcut: entry.shortcut))
+        .modifier(OptionalShortcut(shortcut: bindsShortcut ? entry.shortcut : nil))
         .disabled(!availability.isEnabled)
         .accessibilityIdentifier(entry.identifier)
     }
@@ -231,6 +236,43 @@ struct MapViewMenuItems: View {
         }
         MenuItemButton(id: .zoomFit, availability: a(.zoomFit)) { mapControl?.fit() }
         Divider()
+        MenuItemButton(id: .recentEvents, availability: a(.recentEvents)) { session.feedOverlayOpen.toggle() }
+        Divider()
+    }
+}
+
+// MARK: Trade
+
+/// UI-HIG-001, UI-NAV-011: the Trade menu: what the Bridge's Cargo and System Information buttons do, on the good
+/// selected in the Cargo region.
+struct TradeMenuItems: View {
+    let session: GameSession
+
+    var body: some View {
+        let ctx = MenuContext.make(session: session)
+        let a = { (id: MenuItemID) in MenuRules.availability(of: id, in: ctx) }
+        ForEach([(MenuItemID.tradeBuy, MarketKeyAction.buy), (.tradeBuyMax, .buyMax), (.tradeSell, .sell), (.tradeSellAll, .sellAll)], id: \.0) { id, action in
+            MenuItemButton(id: id, availability: a(id), bindsShortcut: ctx.tradeKeysActive) { session.performTrade(action) }
+        }
+        MenuItemButton(id: .sellAllCargo, availability: a(.sellAllCargo)) { session.sellAllCargo() }
+        MenuItemButton(id: .dumpCargo, availability: a(.dumpCargo)) {
+            if let item = session.marketSelection, let row = session.bridgeCargo?.row(item), let disposal = CargoDisposal.dump(row.market) {
+                session.showCargoDisposal(disposal)
+            }
+        }
+        Divider()
+        MenuItemButton(id: .priceDetails, availability: a(.priceDetails)) {
+            if let item = session.marketSelection { session.showPriceDetails(item) }
+        }
+        Divider()
+        MenuItemButton(id: .buyFuelAmount, availability: a(.buyFuelAmount)) { session.showServiceAmount(.fuel) }
+        MenuItemButton(id: .fillFuel, availability: a(.fillFuel)) {
+            if let state = session.state { session.send(.buyFuel(credits: state.fullTankCost)) }
+        }
+        MenuItemButton(id: .repairAmount, availability: a(.repairAmount)) { session.showServiceAmount(.hull) }
+        MenuItemButton(id: .repair, availability: a(.repair)) {
+            if let state = session.state { session.send(.repairHull(credits: state.fullRepairCost)) }
+        }
     }
 }
 
@@ -243,37 +285,22 @@ struct GameMenuItems: View {
         let ctx = MenuContext.make(session: session)
         let a = { (id: MenuItemID) in MenuRules.availability(of: id, in: ctx) }
         MenuItemButton(id: .warp, availability: a(.warp)) { session.send(.warp) }
-        if MenuRules.isShown(.jump, in: ctx) {
-            MenuItemButton(id: .jump, availability: a(.jump)) { session.send(.jump) }
-        }
         MenuItemButton(id: .previousTarget, availability: a(.previousTarget)) { session.send(.selectNextTarget(forward: false)) }
         MenuItemButton(id: .nextTarget, availability: a(.nextTarget)) { session.send(.selectNextTarget(forward: true)) }
         MenuItemButton(id: .track, title: ctx.hasGame ? MenuRules.trackTitle(ctx) : nil, availability: a(.track)) {
             if let state = session.state { session.send(MenuRules.trackCommand(ctx, warpSystem: state.warpSystem)) }
         }
-        MenuItemButton(id: .findSystem, availability: a(.findSystem)) { session.present(.sheet(.findSystem)) }
-        MenuItemButton(id: .plotRoute, availability: a(.plotRoute)) { session.plotRouteToTarget() }
         Divider()
-        MenuItemButton(id: .sellAllCargo, availability: a(.sellAllCargo)) { session.sellAllCargo() }
-        MenuItemButton(id: .priceDetails, availability: a(.priceDetails)) {
-            if let item = session.marketSelection { session.showPriceDetails(item) }
-        }
-        MenuItemButton(id: .buyFuelAmount, availability: a(.buyFuelAmount)) { session.showServiceAmount(.fuel) }
-        MenuItemButton(id: .fillFuel, availability: a(.fillFuel)) {
-            if let state = session.state { session.send(.buyFuel(credits: state.fullTankCost)) }
-        }
-        MenuItemButton(id: .repairAmount, availability: a(.repairAmount)) { session.showServiceAmount(.hull) }
-        MenuItemButton(id: .repair, availability: a(.repair)) {
-            if let state = session.state { session.send(.repairHull(credits: state.fullRepairCost)) }
+        MenuItemButton(id: .plotRoute, availability: a(.plotRoute)) { session.plotRouteToTarget() }
+        if MenuRules.isShown(.jump, in: ctx) {
+            MenuItemButton(id: .jump, availability: a(.jump)) { session.send(.jump) }
         }
         Divider()
         if MenuRules.isShown(.newspaper, in: ctx) {
-            // UI-ENC-072 / MENU-024: Game › Newspaper ⇧⌘N, like the Bridge card's Read.
+            // UI-ENC-072 / MENU-024: Game › Read Newspaper ⇧⌘N, like the Bridge's News button.
             MenuItemButton(id: .newspaper, availability: a(.newspaper)) { session.readNewspaper() }
             Divider()
         }
-        MenuItemButton(id: .options, availability: a(.options)) { session.selectedSection = .options }
-        Divider()
         MenuItemButton(id: .retire, availability: a(.retire)) { session.send(.retire) }
     }
 }

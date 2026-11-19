@@ -315,7 +315,7 @@ struct BridgeModelTests {
         let sheet = try String(contentsOf: Self.appRoot.appendingPathComponent("Views/Market/BridgeSheets.swift"), encoding: .utf8)
         #expect(sheet.contains("PriceExplanationPanel(item: item") && sheet.contains("PriceSparkline(item: item"))
         // Sell All Cargo and the amount sheets are menu commands too.
-        #expect(MenuCatalog.items(in: .game).contains(.sellAllCargo) && MenuCatalog.items(in: .game).contains(.buyFuelAmount))
+        #expect(MenuCatalog.items(in: .trade).contains(.sellAllCargo) && MenuCatalog.items(in: .trade).contains(.buyFuelAmount))
         session.showServiceAmount(.fuel)
         #expect(session.presentation == .sheet(.serviceAmount(.fuel)))
     }

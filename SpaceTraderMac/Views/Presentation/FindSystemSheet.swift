@@ -12,7 +12,7 @@ struct FindSystemSheet: View {
     var body: some View {
         @Bindable var session = session
         VStack(alignment: .leading, spacing: 12) {
-            Text("Find System").scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text("Find System").pmFont(.title).accessibilityAddTraits(.isHeader)
             TextField("System name", text: $text)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit(select)
@@ -38,10 +38,10 @@ struct FindSystemSheet: View {
                 }
             }
             if noMatch {
-                Text("No system found.").foregroundStyle(.signalRed)
+                Text("No system found.").foregroundStyle(PMColor.loss)
             }
             if ironmanRefusal {
-                Text("Loading a save isn't possible in an Ironman game.").foregroundStyle(.signalRed)
+                Text("Loading a save isn't possible in an Ironman game.").foregroundStyle(PMColor.loss)
             }
             Toggle("Track this system", isOn: $session.findTrackSystem)
                 .accessibilityIdentifier(AXID.FindSystem.track)
@@ -52,12 +52,13 @@ struct FindSystemSheet: View {
                     .accessibilityIdentifier(AXID.FindSystem.cancel)
                 Button("Select", action: select)
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .disabled(text.isEmpty)
                     .help(text.isEmpty ? Text("Type the name of a system.") : Text(verbatim: ""))  // UI-KEYS-035
                     .accessibilityIdentifier(AXID.FindSystem.select)
             }
         }
-        .padding(24)
+        .padding(PMSpace.xl)
         .frame(width: 400)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.FindSystem.sheet)

@@ -16,7 +16,7 @@ struct NarrativeSheet: View {
                     offer(NarrativeModel.offer(type: type, state: state, preview: session.engine?.specialEventPreview))
                 }
             case let .result(result):
-                Text(verbatim: result.title).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+                Text(verbatim: result.title).pmFont(.title).accessibilityAddTraits(.isHeader)
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier(AXID.Narrative.title)
                 ScrollView {
@@ -28,11 +28,12 @@ struct NarrativeSheet: View {
                     Spacer()
                     Button("Continue") { session.dismissPresentation() }
                         .keyboardShortcut(.defaultAction)
+                        .buttonStyle(PMButtonStyle(kind: .primary))
                         .accessibilityIdentifier(AXID.Narrative.continueButton)
                 }
             }
         }
-        .padding(24)
+        .padding(PMSpace.xl)
         .frame(width: 480)
         .interactiveDismissDisabled()
         // UI-KEYS-021: Esc on a message page presses Continue; on an offer it declines (the Decline button's
@@ -61,7 +62,7 @@ struct NarrativeSheet: View {
                 NarrativeVignetteView(type: model.type, state: state)
                     .accessibilityIdentifier(AXID.Narrative.vignette)
             }
-            Text(verbatim: model.title).scaledFont(.title2, weight: .bold).accessibilityAddTraits(.isHeader)
+            Text(verbatim: model.title).pmFont(.title).accessibilityAddTraits(.isHeader)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier(AXID.Narrative.title)
         }
@@ -71,7 +72,7 @@ struct NarrativeSheet: View {
         .frame(maxHeight: 240)
         .accessibilityIdentifier(AXID.Narrative.story)
         if let price = model.priceLine {
-            Text(verbatim: price).monospacedDigit().scaledFont(.headline)
+            Text(verbatim: price).monospacedDigit().pmFont(.valueLarge)
         }
         if let blocker = model.blocker {
             Label {
@@ -79,13 +80,14 @@ struct NarrativeSheet: View {
             } icon: {
                 Image(systemName: "exclamationmark.circle")
             }
-            .foregroundStyle(.readableSecondary)
+            .foregroundStyle(PMColor.textSecondary)
         }
         HStack {
             Spacer()
             if model.messageOnly {
                 Button("Continue") { session.acceptSpecialEvent(messageOnly: true) }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .accessibilityIdentifier(AXID.Narrative.continueButton)
             } else {
                 Button("Decline") { session.cancel() }
@@ -93,6 +95,7 @@ struct NarrativeSheet: View {
                     .accessibilityIdentifier(AXID.Narrative.decline)
                 Button("Accept") { session.acceptSpecialEvent(messageOnly: false) }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(PMButtonStyle(kind: .primary))
                     .disabled(!model.canAccept)
                     .help(model.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Accept the offer."))
                     .accessibilityIdentifier(AXID.Narrative.accept)

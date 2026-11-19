@@ -4,7 +4,7 @@ import SwiftUI
 
 /// The menus of the menu bar that hold custom items (MENU §3).
 nonisolated enum MenuName: String, CaseIterable, Sendable {
-    case app, file, edit, view, game, encounter, window, help
+    case app, file, edit, view, trade, game, encounter, window, help
 }
 
 /// One case per custom menu item (MENU-001). System items (Hide, Services, Minimize, Enter Full Screen…) are not cases.
@@ -16,11 +16,12 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
     // Edit
     case find
     // View
-    case bridge, shipyard, outfitter, crew, bank, commanderStatus, galaxy, quests, logbook, galaxyChart, zoomIn, zoomOut, zoomFit
+    case bridge, shipyard, outfitter, crew, bank, commanderStatus, galaxy, quests, logbook, options, galaxyChart, zoomIn, zoomOut, zoomFit
+    case recentEvents
+    // Trade (UI-HIG-001, PRD-UI-Revamp §4.15)
+    case tradeBuy, tradeBuyMax, tradeSell, tradeSellAll, sellAllCargo, dumpCargo, priceDetails, buyFuelAmount, fillFuel, repairAmount, repair
     // Game
-    case warp, jump, previousTarget, nextTarget, track, findSystem, plotRoute, fillFuel, repair, newspaper, options, retire
-    // Trade (release 2.0; they sit in the Game menu until the menu bar is rebuilt)
-    case sellAllCargo, priceDetails, buyFuelAmount, repairAmount
+    case warp, previousTarget, nextTarget, track, plotRoute, jump, newspaper, retire
     // Encounter (UI-ENC-034)
     case encounterAttack, encounterFlee, encounterSurrender, encounterIgnore, encounterBribe, encounterSubmit, encounterTrade
     case encounterPlunder, encounterBoard, encounterDrink, encounterMeet, encounterYield, encounterAutoRepeat, encounterResolve
@@ -114,7 +115,7 @@ nonisolated enum MenuCatalog {
         case .importSave: return file("Import…", nil, "import")
         case .export: return file("Export…", s("e", [.shift, .command]), "export")
         case .closeGame: return file("Close Game", nil, "closeGame")
-        case .find: return MenuEntry(menu: .edit, titleKey: "Find…", shortcut: s("f", [.command]), identifier: "menu.edit.find", milestone: 7)
+        case .find: return MenuEntry(menu: .edit, titleKey: "Find System…", shortcut: s("f", [.command]), identifier: "menu.edit.find", milestone: 7)
         case .bridge: return view("Bridge", s("1", [.command]), "bridge")
         case .shipyard: return view("Shipyard", s("2", [.command]), "shipyard")
         case .outfitter: return view("Equipment", s("3", [.command]), "outfitter")
@@ -124,25 +125,30 @@ nonisolated enum MenuCatalog {
         case .galaxy: return view("Galactic Chart", s("8", [.command]), "galaxy", milestone: 8)
         case .quests: return view("Quests", s("7", [.command]), "quests")
         case .logbook: return view("Logbook", s("9", [.command]), "logbook", milestone: 10)
-        case .galaxyChart: return view("Galaxy Chart", s("m", [.shift, .command]), "galaxyChart", milestone: 8)
+        case .galaxyChart: return view("Galactic Chart Window", s("m", [.shift, .command]), "galaxyChart", milestone: 8)
         case .zoomIn: return view("Zoom In", s("+", [.command]), "zoomIn", milestone: 8)
         case .zoomOut: return view("Zoom Out", s("-", [.command]), "zoomOut", milestone: 8)
-        case .zoomFit: return view("Fit", s("0", [.command]), "zoomFit", milestone: 8)
+        case .zoomFit: return view("Fit Range", s("0", [.command]), "zoomFit", milestone: 8)
+        case .recentEvents: return view("Recent Events", s("e", [.command]), "recentEvents")
         case .warp: return game("Warp", s("j", [.command]), "warp")
-        case .jump: return game("Use Singularity…", nil, "jump")
+        case .jump: return game("Jump…", nil, "jump")
         case .previousTarget: return game("Previous Target", s("[", [.command]), "previousTarget")
         case .nextTarget: return game("Next Target", s("]", [.command]), "nextTarget")
         case .track: return game("Track Target", nil, "track")
-        case .findSystem: return game("Find System…", s("f", [.option, .command]), "findSystem")
         case .plotRoute: return game("Plot Route…", nil, "plotRoute", milestone: 8)
-        case .fillFuel: return game("Fill Fuel", s("f", [.shift, .command]), "fillFuel")
-        case .repair: return game("Repair Hull", s("r", [.shift, .command]), "repair")
-        case .sellAllCargo: return game("Sell All Cargo", s("s", [.option, .command]), "sellAllCargo")
-        case .priceDetails: return game("Price Details…", s("i", [.option, .command]), "priceDetails")
-        case .buyFuelAmount: return game("Buy Fuel…", nil, "buyFuelAmount")
-        case .repairAmount: return game("Repair…", nil, "repairAmount")
-        case .newspaper: return game("Newspaper", s("n", [.shift, .command]), "newspaper", milestone: 9)
-        case .options: return game("Options", s("o", [.option, .command]), "options")
+        case .tradeBuy: return trade("Buy", s("b", []), "buy")
+        case .tradeBuyMax: return trade("Buy Maximum", s("b", [.shift]), "buyMaximum")
+        case .tradeSell: return trade("Sell", s("s", []), "sell")
+        case .tradeSellAll: return trade("Sell All", s("s", [.shift]), "sellAll")
+        case .sellAllCargo: return trade("Sell All Cargo", s("s", [.option, .command]), "sellAllCargo")
+        case .dumpCargo: return trade("Dump…", nil, "dump")
+        case .priceDetails: return trade("Price Details…", s("i", [.option, .command]), "priceDetails")
+        case .buyFuelAmount: return trade("Buy Fuel…", nil, "buyFuelAmount")
+        case .fillFuel: return trade("Fill Tank", s("f", [.shift, .command]), "fillFuel")
+        case .repairAmount: return trade("Repair…", nil, "repairAmount")
+        case .repair: return trade("Repair Hull", s("r", [.shift, .command]), "repair")
+        case .newspaper: return game("Read Newspaper", s("n", [.shift, .command]), "newspaper", milestone: 9)
+        case .options: return view("Options", s("o", [.option, .command]), "options")
         case .retire: return game("Retire…", nil, "retire")
         case .encounterAttack, .encounterFlee, .encounterSurrender, .encounterIgnore, .encounterBribe, .encounterSubmit, .encounterTrade,
              .encounterPlunder, .encounterBoard, .encounterDrink, .encounterMeet, .encounterYield, .encounterAutoRepeat,
@@ -150,7 +156,7 @@ nonisolated enum MenuCatalog {
             return encounterEntry(id)
         case .mainWindow: return MenuEntry(menu: .window, titleKey: "Parsec Merchant", shortcut: nil, identifier: "menu.window.main", milestone: 7)
         case .galaxyChartWindow:
-            return MenuEntry(menu: .window, titleKey: "Galaxy Chart", shortcut: nil, identifier: "menu.window.galaxyChart", milestone: 8)
+            return MenuEntry(menu: .window, titleKey: "Galactic Chart", shortcut: nil, identifier: "menu.window.galaxyChart", milestone: 8)
         case .highScores:
             return MenuEntry(menu: .window, titleKey: "High Scores", shortcut: nil, identifier: "menu.window.highScores", milestone: 9)
         case .help: return help("Parsec Merchant Help", s("?", [.command]), "help")
@@ -171,6 +177,10 @@ nonisolated enum MenuCatalog {
 
     private static func view(_ t: LocalizedStringResource, _ sc: MenuShortcut?, _ name: String, milestone: Int = 7) -> MenuEntry {
         MenuEntry(menu: .view, titleKey: t, shortcut: sc, identifier: "menu.view.\(name)", milestone: milestone)
+    }
+
+    private static func trade(_ t: LocalizedStringResource, _ sc: MenuShortcut?, _ name: String) -> MenuEntry {
+        MenuEntry(menu: .trade, titleKey: t, shortcut: sc, identifier: "menu.trade.\(name)", milestone: 7)
     }
 
     private static func game(_ t: LocalizedStringResource, _ sc: MenuShortcut?, _ name: String, milestone: Int = 7) -> MenuEntry {
@@ -222,10 +232,11 @@ nonisolated enum MenuCatalog {
         case .app: [.about]
         case .file: [.newGame, .quickStart, .open, .openRecent, .save, .saveAs, .revert, .importSave, .export, .closeGame]
         case .edit: [.find]
-        case .view: [.bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .quests, .galaxy, .logbook, .galaxyChart, .zoomIn, .zoomOut,
-                     .zoomFit]
-        case .game: [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .sellAllCargo, .priceDetails, .buyFuelAmount,
-                     .fillFuel, .repairAmount, .repair, .newspaper, .options, .retire]
+        case .view: [.bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .quests, .galaxy, .logbook, .options, .galaxyChart, .zoomIn,
+                     .zoomOut, .zoomFit, .recentEvents]
+        case .trade: [.tradeBuy, .tradeBuyMax, .tradeSell, .tradeSellAll, .sellAllCargo, .dumpCargo, .priceDetails, .buyFuelAmount, .fillFuel,
+                      .repairAmount, .repair]
+        case .game: [.warp, .previousTarget, .nextTarget, .track, .plotRoute, .jump, .newspaper, .retire]
         case .encounter: MenuItemID.encounterItems
         case .window: [.mainWindow, .galaxyChartWindow, .highScores]
         case .help: [.help, .prices, .shortcuts, .credits, .github]
@@ -233,7 +244,11 @@ nonisolated enum MenuCatalog {
     }
 
     /// Items followed by a separator (MENU-014, MENU-024).
-    static let separatorAfter: Set<MenuItemID> = [.openRecent, .revert, .closeGame, .findSystem, .plotRoute, .repair, .newspaper, .options]
+    static let separatorAfter: Set<MenuItemID> = [.openRecent, .revert, .closeGame, .options, .zoomFit, .tradeSellAll, .dumpCargo, .priceDetails,
+                                                  .track, .jump, .newspaper]
+
+    /// UI-NAV-011: the single-letter Trade keys; bound only while the Bridge is the page and no text field has the focus.
+    static let letterKeyItems: Set<MenuItemID> = [.tradeBuy, .tradeBuyMax, .tradeSell, .tradeSellAll]
 
     /// Shortcuts that stay with standard macOS items (MENU-005).
     static let reservedShortcuts: Set<MenuShortcut> = [
