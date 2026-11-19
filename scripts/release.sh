@@ -10,7 +10,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="1.1.0"
+VERSION="2.0.0"
 APPNAME="Parsec Merchant"
 ZIP="Parsec-Merchant-$VERSION.zip"
 REPO="megatih/parsec-merchant"

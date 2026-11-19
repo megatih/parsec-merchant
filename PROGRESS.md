@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M17 done
-- **Next step:** none; 1.1.0 is released. Owner hand checks (f)–(i) in `docs/QA-HANDCHECKS.md` remain for the owner and do not block.
-- **Last gate result:** 2026-11-19: `verify.sh --ui` ALL GATES PASSED in the mirror on d355f44 (516 app tests, 52 UI tests); `verify.sh` passes on 538fce6; `release.sh` RELEASE PASS and a clean-clone build on fd6aa75; `scripts/final-check.sh` run from this folder after the release (app-hosted tests run here again since 2026-11-19 ~07:00).
+- **Current milestone:** M17 done; working on M18 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
+- **Next step:** M18 baselines: measure fuzz counts and galaxy hashes, PlanetFrozenTests, then CLAUDE.md and the exit checks.
+- **Last gate result:** 2026-11-19: 1.1.0 state: `verify.sh --ui` ALL GATES PASSED in the mirror on d355f44; `final-check.sh` 8/8 for v1.1.0.
 - **Blockers:** none
 
 ## Milestones
@@ -27,6 +27,27 @@
 - [x] M15 Ships, sizing, endings and icon (2026-11-19, tag m15-done; stat-driven hull generator with archetypes and specials, no insect anatomy, D7 layout in every panel, lit ending scenes on a 16:9 card, icon hauler = generated freighter; verify --ui green in the mirror on d355f44, make-icon --check OK, idle CPU 3.2%/3.0%; QA-REPORT M15 visual review row)
 - [x] M16 Pointer and touch first (2026-11-19, tag m16-done; UI-POINTER spec, 36 pt targets with unchanged density (PointerButtonStyle, pointerTarget), hover feedback, Market chips with Buy/Sell and a row that fits the default window, Shipyard Compare toggle and double-click, Outfitter drag and drop with a sell well, pinned map selection card, wheel zoom, context menus, sheet quantity chips; PointerTargetUITests and PointerOnlyScenarioUITests; verify --ui green in the mirror on d355f44; QA-REPORT M16 review and touch-checklist rows, hands-on touch part is owner hand check (h))
 - [x] M17 Polish and release 1.1.0 (2026-11-19, tags m17-done and v1.1.0; README and QA screenshots re-exported and read, Help/README/CHANGELOG/CREDITS updated, QA-REPORT 1.1 rows, pmsim bench OK, bench-map 0.253 ms, idle CPU 3.2%/3.0%, release.sh PASS, clean-clone build, GitHub release v1.1.0, final-check.sh)
+- [ ] M18 Setup, freezes and baselines (release 2.0)
+- [ ] M19 Portrait proof of concept
+- [ ] M20 Ships and liveries
+- [ ] M21 Design system and shell
+- [ ] M22 Bridge
+- [ ] M23 Secondary pages
+- [ ] M24 Charts
+- [ ] M25 Encounter, transit, interruptions
+- [ ] M26 Endings, welcome, new game, game over, icon
+- [ ] M27 Keyboard, menus, accessibility, words, help
+- [ ] M28 Release 2.0.0
+
+## M18 checklist
+- [x] PRD, audit and research committed
+- [x] protected-check.sh, logic-frozen.sh, verify steps 7c/7d
+- [x] spec-trace threshold 28; final-check/release/marketing version 2.0.0, 29 milestones, 10 checks
+- [x] New spec files (123 IDs) from the PRD
+- [ ] Baselines measured and written into logic-frozen.sh
+- [ ] PlanetFrozenTests (PROT-003), PROT-001/002 tests
+- [ ] CLAUDE.md
+- [ ] Exit: verify.sh, protected-check, logic-frozen
 
 ## M14 checklist
 - [x] Setup: PRD-1.1 committed, D10 spec-trace threshold 17 + PM_TRACE_MILESTONE, final-check/release/marketing version 1.1.0, PRD.md/CLAUDE.md folded

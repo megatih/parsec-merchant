@@ -1,0 +1,22 @@
+# ART-SHIP: procedural ships and liveries
+
+> Format (PRD §7): `- **ID** {Mn} [UI] [M][W][P] statement`. `[M]` Modern, `[W]` Windows 2.01, `[P]` Palm 1.2.2. `[UI]` = verified by app tests hosted in the app or by XCUITest.
+> Milestones: M18–M28 (`docs/PRD-UI-Revamp.md` §7). The first number on the PROGRESS status line is the last finished milestone; an ID becomes due when its milestone is finished.
+> Normative input: `docs/PRD-UI-Revamp.md` §5.1, which holds the wireframes, tables and reasons. These bullets are the testable statements; where a bullet and the PRD differ, fix the bullet.
+
+## ART-SHIP
+
+- **ART-SHIP-001** {M20} [M][W][P] Every `ShipType` (17) and every ruleset's table renders without error at 96, 160 and 240 pt in both scale modes; rendering twice gives identical pixels (fingerprint).
+- **ART-SHIP-002** {M20} [M][W][P] Geometry is a pure function of `ShipArtStats` and the equipment lists: two inputs that differ only in `kind` produce identical geometry (special designs excepted).
+- **ART-SHIP-003** {M20} [M][W][P] Monotonic statistics: with everything else equal, more cargo bays never gives fewer container blocks; likewise crew quarters → habitat segments, hull strength → plates, shield slots → radiator pairs, fuel → tank length, size class → length. Tested over the full table of each ruleset and over 500 random Designer specifications.
+- **ART-SHIP-004** {M20} [M][W][P] Slots: the blueprint has exactly `weaponSlots` hardpoints, `shieldSlots` emitters and `gadgetSlots` mounts; each installed item yields its distinct part and each empty slot its empty part. Each of the 6 weapons, 3 shields and 6 visible gadgets changes the rendered pixels in its slot region; hidden cargo bays change nothing (pixel-identical).
+- **ART-SHIP-005** {M20} [M][W][P] Types are distinguishable: silhouette IoU between any two of the ten buyable types, pristine and unequipped, is < 0.85 (ART-013 rewritten).
+- **ART-SHIP-006** {M20} [M][W][P] Livery variety: for each buyable type and each of the roles trader and pirate, 2,000 consecutive seeds give at least 1,500 distinct livery signatures, and 64 consecutive seeds give 64 distinct pixel fingerprints at 240 × 160.
+- **ART-SHIP-007** {M20} [M][W][P] Never the player's twin: over 100,000 random (player seed, opponent seed, ship type, role ∈ {trader, pirate, famousCaptain}) cases, the opponent's signature differs from the player's and, when the types match, the base hues differ by ≥ 40°; and the two fingerprints differ.
+- **ART-SHIP-008** {M20} [M][W][P] Role legibility: every police render contains the checker band (a test samples the band region for alternating blue and white cells) and the insignia; no non-police render does. Pirate renders have wear ≥ 0.6 and no registry; trader renders have a registry block. Role is also always given in words by the encounter badge (UI-ENC-202), so role never depends on colour alone.
+- **ART-SHIP-009** {M20} [M][W][P] Special designs: Space Monster, Dragonfly, Scarab, Scorpion, Mantis, bottle and Marie Celeste each render through their own blueprint, pairwise IoU < 0.85 against every buyable type's silhouette for the first five, and the Marie Celeste render has no plume and no lit light.
+- **ART-SHIP-010** {M20} [M][W][P] Determinism and stability: livery and geometry for fixed inputs are pinned by golden signature values for 20 cases; the opponent seed is identical before and after a save/load round trip and across rounds of one encounter (app test using the `pirateAmbush` scenario).
+- **ART-SHIP-011** {M20} [M][W][P] Performance: a 240 × 160 ship draws in ≤ 4 ms median (ART-006 stays); blueprints are cached in a new cache type, not in a frozen file.
+- **ART-SHIP-012** {M20} [M][W][P] `pmart sheet --page ships` shows all 17 types; `--page liveries` shows 10 types × 4 roles × 4 seeds; `--page fittings` shows one hull with each item installed and empty.
+- **ART-SHIP-013** {M25} [M][W][P] Call sites: encounter panels pass the role from `EncounterBadge` / `OpponentType` and the opponent seed; Shipyard, Equipment, Commander Status, transit and the purchase sheet pass the player role and seed. The achievement emblems, the two ship vignettes and the combat-effect frame keep working through the retained entry points.
+- **ART-SHIP-014** {M26} [M][W][P] The app icon is regenerated from the new generator (a Beetle in a brass-accent livery) by `scripts/make-icon.sh`; the committed icon PNGs are replaced in the same commit and `scripts/make-icon.sh --check` passes.

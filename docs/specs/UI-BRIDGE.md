@@ -1,0 +1,49 @@
+# UI-BRIDGE: the Bridge and the status bar
+
+> Format (PRD §7): `- **ID** {Mn} [UI] [M][W][P] statement`. `[M]` Modern, `[W]` Windows 2.01, `[P]` Palm 1.2.2. `[UI]` = verified by app tests hosted in the app or by XCUITest.
+> Milestones: M18–M28 (`docs/PRD-UI-Revamp.md` §7). The first number on the PROGRESS status line is the last finished milestone; an ID becomes due when its milestone is finished.
+> Normative input: `docs/PRD-UI-Revamp.md` §4.2, §4.3, which holds the wireframes, tables and reasons. These bullets are the testable statements; where a bullet and the PRD differ, fix the bullet.
+
+## UI-BRG
+
+- **UI-BRG-001** {M22} [UI] [M][W][P] The Cargo region shows exactly ten rows and the two summary lines at every window size and in every ruleset, with no scroll view.
+- **UI-BRG-002** {M22} [UI] [M][W][P] Buy, Max, Sell (or Dump) and All are separate visible buttons in every row. A button that cannot act is disabled with the engine's reason (`marketBuyCheck` / `marketSellCheck` → `ReasonText`) in its help tag.
+- **UI-BRG-003** {M22} [UI] [M][W][P] Buy and Sell send the quantity as typed; the engine's rejection, if any, appears in the status bar message slot. Max and All take their quantity from the engine checks, never from view arithmetic.
+- **UI-BRG-004** {M22} [UI] [M][W][P] **Sell All Cargo** sends `.sellCargo` for each held good that has a sell price here, in table order, and stops at the first rejection or pending decision. It is disabled with a reason when nothing can be sold. It adds no rule: the resulting state equals the same commands sent one by one (unit test compares states).
+- **UI-BRG-005** {M22} [UI] [M][W][P] The Target and ± columns always describe the current Target System and update in the same frame the target changes. With no valid quote they show "—". A number from another system is never shown without its "est." or age tag, and the Target column header's help tag says "Average price at the target. Estimates carry no guarantee" (the original's disclaimer).
+- **UI-BRG-006** {M22} [UI] [M][W][P] All intel numbers come from `ParsecInsights` (`TradeIntel.quote`, `bestBuys`, `holdValue`) with the active game's `Ruleset`; the row model contains no price formula. A test builds the Bridge model for one fixture per ruleset (`Tests/Fixtures/saves/v1/{modern,windows201,palm122}.parsecsave`) and compares every Target cell with `TradeIntel.quote`.
+- **UI-BRG-007** {M22} [UI] [M][W][P] Row selection: clicking a row or ↑/↓ selects it (`panelRaised` fill **and** a 3 pt `accent` bar at the left). Keys act on the selected row: B buy quantity, ⇧B Max, S sell quantity, ⇧S All; typing digits edits the row's quantity.
+- **UI-BRG-008** {M22} [UI] [M][W][P] The row context menu (on the whole row) offers Buy, Buy Maximum, Sell, Sell All, Dump…, Price Details…; every item also exists as a button or menu-bar command. **Price Details…** opens a sheet with the existing "Why this price?" breakdown and the price-history sparkline for that good.
+- **UI-BRG-009** {M22} [UI] [M][W][P] Illegal goods show the ⚠ symbol and the word "Illegal", not colour alone.
+- **UI-BRG-010** {M22} [UI] [M][W][P] Shows every system the fixed zoom reaches, the range circle, wormholes, the current system, the Target System (brass reticle **and** the label "target"), the tracked system as an edge arrow with name and distance, and a brass diamond on systems named by `TradeIntel.bestDestinations`.
+- **UI-BRG-011** {M22} [UI] [M][W][P] One click on a system makes it the Target System (`.selectTarget`), in range or not. Hover shows the existing hover card. Arrow keys move the selection between systems when the chart has focus; Return on the chart moves focus to Warp.
+- **UI-BRG-012** {M22} [UI] [M][W][P] The "Galactic Chart" button in the chart's corner opens the Galactic Chart page centred on the Target System.
+- **UI-BRG-013** {M22} [UI] [M][W][P] A system reachable only through a wormhole from here is marked with the wormhole symbol and can be selected; the Target panel then shows "via wormhole".
+- **UI-BRG-020** {M22} [UI] [M][W][P] All elements are present at every size. When the target is the current system (the engine's state after arrival, `warpSystem == currentSystem`), the panel shows that system with the badge "Current system", cost lines of 0, and Warp disabled with the reason "Select a target system on the chart"; it is never empty.
+- **UI-BRG-021** {M22} [UI] [M][W][P] Warp is disabled with the engine's blocker (`warpBlocker()` / `warpTargetPreview.blocking`) as its help tag and as a one-line `caution` note under the button (text, not only a tag; its line is reserved so nothing moves).
+- **UI-BRG-022** {M22} [UI] [M][W][P] Warp is the only Warp control in the game area of the Bridge. Other entry points are the menu command and the Galactic Chart's own target strip. Return does not trigger Warp unless Warp has focus (the existing rule).
+- **UI-BRG-023** {M22} [UI] [M][W][P] Facts shown for the target are limited to public facts and known resources (`IntelSnapshot.publicSystem`).
+- **UI-BRG-030** {M22} [UI] [M][W][P] **No scroll containers.** Source audit: files under `APP/Views/Bridge/` contain none of `ScrollView`, `List(`, `Table(`, `Form`, `LazyVStack`, `LazyVGrid`, `DisclosureGroup`, `TabView`, `.sheet(`, `ViewThatFits`, `.lineLimit(` with truncation allowed on a value, or `.minimumScaleFactor(`.
+- **UI-BRG-031** {M22} [UI] [M][W][P] **Element manifest.** `BridgeManifest.all` lists the accessibility identifiers of every Bridge element: the 4 regions, 10 rows × (9 cells + 5 controls), 2 summary lines and Sell All Cargo, system facts (8), 2 gauges, 2 service buttons, 4 notices and their buttons, the chart and its button, the target facts (6), badge, 5 cost lines, fuel line, 5 buttons. The spec file lists them; identifiers follow `bridge.‹region›.‹element›[.‹good›]`.
+- **UI-BRG-032** {M22} [UI] [M][W][P] **Fit test (unit, hosted in the app).** `BridgeLayoutTests` renders the Bridge in an `NSHostingView` for every combination of: sizes 1200 × 680, 1204 × 700, 1280 × 800, 1440 × 860, 1728 × 1050, 2056 × 1290, 2560 × 1380; the three rulesets; and five states (new game; full hold with all ten goods held and 8-digit cash; in debt with insurance and two mercenaries; a wormhole system with a tracked system and an out-of-range target; all four notices active). Frames are collected through a preference key written by a `.layoutProbe(id)` modifier. The test asserts for every combination:
+  1. every manifest identifier reports a frame (nothing missing);
+  2. every frame has width and height > 0 and lies fully inside its region's frame, which lies fully inside the game area;
+  3. the four regions, the rows, and the controls within a row do not overlap;
+  4. every text probe's laid-out size is at least its ideal size at unlimited width (nothing truncated, wrapped beyond its line budget or scaled down);
+  5. the hosting view contains no `NSScrollView` in its subview tree;
+  6. every control's frame has a short side ≥ 36 × `s`.
+- **UI-BRG-033** {M22} [UI] [M][W][P] **Fit test (XCUITest).** At `-PMWindowSize min` and at 1728 × 1050: every manifest identifier `exists`, is inside the window frame, every button `isHittable`, and `app.windows["main"].scrollViews.count == 0` on the Bridge. Repeated with Text Size Large when the screen allows it.
+- **UI-BRG-034** {M22} [UI] [M][W][P] **Long strings.** The fit test also runs with the longest system name, good name, government name and resource name of each ruleset's tables, and with the pseudo-localization (double-length) variant; assertion 4 must hold.
+- **UI-BRG-035** {M22} [UI] [M][W][P] Resizing never changes the manifest: the set of identifiers found at 1200 × 680 equals the set at 2560 × 1380.
+- **UI-BRG-036** {M22} [UI] [M][W][P] The window cannot be made smaller than the minimum (UI test drags the corner and asserts the size).
+- **UI-BRG-040** {M22} [UI] [M][W][P] **Core loop without leaving the Bridge (XCUITest, pointer).** From a seeded docked game with cargo: Sell All Cargo → Max on a good → Fill Tank → click a chart system → read its Target cells → click another → Warp. Asserts the page identifier stays `page.bridge` until Warp, and that the click count is ≤ 6.
+- **UI-BRG-041** {M27} [UI] [M][W][P] The same loop with the keyboard only.
+- **UI-BRG-042** {M22} [UI] [M][W][P] On arrival a one-line summary appears in the status bar's message slot ("Arrived at Esmee. 2 encounters. Hull −21"), and clicking it opens the full arrival report. Critical reports (arrest, escape pod, meltdown) still open as sheets. The setting "arrival report style" keeps its two values; "sheet" opens the full report automatically.
+
+## UI-SB
+
+- **UI-SB-001** {M21} [UI] [M][W][P] The status bar shows exactly these eight slots, in this order, on every page and during transit and encounters, spanning the full window width. Nothing else is added to it. Slots never appear or disappear; a value that does not apply shows its zero form ("Debt 0 cr.", "Shields none").
+- **UI-SB-002** {M21} [UI] [M][W][P] Labels are words, not icons alone; every value has a help tag naming it and where to change it (for example "Cargo bays in use. Trade on the Bridge").
+- **UI-SB-003** {M21} [UI] [M][W][P] The seven value slots never truncate at any supported size with 8-digit cash and debt; the message slot takes the remaining width and may truncate with an ellipsis, its full text being in the help tag, the overlay and VoiceOver.
+- **UI-SB-004** {M21} [UI] [M][W][P] A rejection stays in the message slot for 4 s and is announced to VoiceOver; then the latest event returns (existing behaviour).
+- **UI-SB-005** {M21} [UI] [M][W][P] Police Record, Reputation, skills, net worth and the galaxy code are **not** in the status bar; they are on Commander Status.

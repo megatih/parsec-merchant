@@ -400,3 +400,16 @@ Retired with the interim surfaces: `encounter.panel` (UI-SHELL-010). `AXID.Inter
 - **Scenario constants**: `ambushSeed`, `ambushTarget`, `ambushExpectedAttacks` and `ambushMaxAttacks` are found at implementation time by a search (UI-ENC-091) and recorded in `UITestFixtures` and PROGRESS. They are not hand-picked here, because the military-laser cheat changes worth and therefore the opponent generation.
 - **Score display fix**: UI-ENC-081 replaces two `abs`-based formatters that disagreed with SCORE-024's negative-score quirk.
 - **ID ranges**: §15 uses UI-ENC-104…106 and §16 uses UI-ENC-098…103. IDs were assigned per section and are not renumbered.
+
+## 17. Release 2.0 encounter page (docs/PRD-UI-Revamp.md §4.13)
+
+These requirements replace the layout statements of §§2–4 above from M25; behaviour requirements stay.
+
+- **UI-ENC-200** {M25} [UI] [M][W][P] Layout, top to bottom: intro lines and role badge; two ship panels that take 55% of the height; the action bar, full width; the combat log, so the controls never sit at the window's bottom edge. No floating bar, no empty band.
+- **UI-ENC-201** {M25} [UI] [M][W][P] The action bar shows exactly the actions `encounterPreview.actions` offers, each a `PMButton` with a `PMKeyCap` showing its key from `EncounterKeys`; the default action (`defaultAction`) is `.primary` and takes Return; a rejected action is disabled with its reason. Resolve, Stop and Auto-repeat appear under the conditions `canAutoRepeat` / `canStop` give, as today.
+- **UI-ENC-202** {M25} [UI] [M][W][P] The role badge shows a symbol **and** a word: Police, Pirate, Trader, Alien, Special (`EncounterBadge`), in the role colour.
+- **UI-ENC-203** {M25} [UI] [M][W][P] The opponent's ship is drawn with its role livery and installed equipment (§5.1). The opponent panel lists only what the 1.1.0 encounter view and tactical readout already show (hull percent, shield percent, and the tactical readout lines when that setting is on).
+- **UI-ENC-204** {M25} [UI] [M][W][P] A famous captain's encounter shows that captain's portrait (§5.2) in the opponent panel. Other opponents have no portrait.
+- **UI-ENC-205** {M25} [UI] [M][W][P] Plunder, Trade in Orbit and Make Room stay sheets, rebuilt from components, each with one row per good and the same Quantity / Max / All vocabulary as the Cargo region.
+- **UI-ENC-206** {M25} [UI] [M][W][P] Combat effects still aim at `ShipArtLayout.frame`; hits, misses, shield flashes and destruction have a text line in the log for each visual effect (no information only in animation).
+- **UI-ENC-207** {M25} [UI] [M][W][P] Every existing encounter requirement that is not about layout (UI-ENC IDs on behaviour, auto-repeat timing, deferred decisions, tribbles) stays and stays tested.

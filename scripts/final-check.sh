@@ -1,14 +1,14 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Final completion check (PRD §10). Prints one PASS/FAIL line per check,
-# then "FINAL CHECK n/8 PASS" and "EXIT=<code>".
+# then "FINAL CHECK n/10 PASS" and "EXIT=<code>".
 # Scratch folders live under build/final/ (gitignored) and are recreated on each run.
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT" || exit 1
 REPO="megatih/parsec-merchant"
-TAG="v1.1.0"
-ASSET="Parsec-Merchant-1.1.0.zip"
+TAG="v2.0.0"
+ASSET="Parsec-Merchant-2.0.0.zip"
 APPNAME="Parsec Merchant"
 LOGS="build/final/logs"
 mkdir -p "$LOGS"
@@ -29,9 +29,9 @@ c1() { scripts/verify.sh --ui | tee /dev/stderr | tail -2 | /usr/bin/grep -q "AL
 c2() {
   local n
   # Count distinct milestones: checklist items such as "- [x] M0 exit: …" must not stand in for an unchecked milestone.
-  n=$(/usr/bin/grep -oE '^- \[x\] M([0-9]|1[0-7]) ' PROGRESS.md | sort -u | wc -l | tr -d ' ')
-  echo "milestones checked: $n/18"
-  [ "$n" -eq 18 ] || return 1
+  n=$(/usr/bin/grep -oE '^- \[x\] M([0-9]|1[0-9]|2[0-8]) ' PROGRESS.md | sort -u | wc -l | tr -d ' ')
+  echo "milestones checked: $n/29"
+  [ "$n" -eq 29 ] || return 1
   /usr/bin/python3 -I - <<'PY'
 import re, sys
 s = open("PROGRESS.md").read()
@@ -52,7 +52,8 @@ c4() {
   local required=("AlertType (188)" "SpecialEventType (46)" "EncounterType (35)" "ShipType (17)"
     "Palm special events (37)" "UX-VISION §12" "full game per ruleset" "Economy bot" "Accessibility audit"
     "Text Size" "Pseudo-localization" "Light and dark" "Smallest window" "License check" "Credits visible"
-    "Release smoke test" "Clean-clone build")
+    "Release smoke test" "Clean-clone build" "Bridge layout" "Ship liveries" "Portraits" "Endings"
+    "Keyboard-only loop")
   local ok=0 r
   for r in "${required[@]}"; do
     if /usr/bin/grep -F "$r" docs/QA-REPORT.md | /usr/bin/grep -q '✓'; then echo "✓ $r"; else echo "missing or not ✓: $r"; ok=1; fi
@@ -101,12 +102,14 @@ c8() {
 }
 
 check 1 "verify --ui ALL GATES PASSED on HEAD" c1
-check 2 "all milestones M0-M17 checked, no open blockers" c2
+check 2 "all milestones M0-M28 checked, no open blockers" c2
 check 3 "gh release $TAG lists $ASSET" c3
 check 4 "QA-REPORT complete, all ✓" c4
 check 5 "downloaded release app launches (open -n, pgrep -f)" c5
 check 6 "clean clone builds" c6
 check 7 "pmsim bench within budgets" c7
 check 8 "git clean and HEAD == origin/main" c8
-echo "FINAL CHECK $PASSN/8 PASS"
-if [ "$PASSN" -eq 8 ]; then echo "EXIT=0"; exit 0; else echo "EXIT=1"; exit 1; fi
+check 9 "protected planet files untouched" scripts/protected-check.sh
+check 10 "game logic frozen at v1.1.0" scripts/logic-frozen.sh
+echo "FINAL CHECK $PASSN/10 PASS"
+if [ "$PASSN" -eq 10 ]; then echo "EXIT=0"; exit 0; else echo "EXIT=1"; exit 1; fi

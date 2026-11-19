@@ -4,6 +4,8 @@
 #   scripts/verify.sh --quick   steps 1, 2 (no coverage), 6
 #   scripts/verify.sh           steps 1-7 (7b: app icon check, from M11, ART-056)
 #   scripts/verify.sh --ui      steps 1-8
+# Every mode also runs 7c (protected files) and 7d (game logic frozen), docs/PRD-UI-Revamp.md §8.2; --quick runs 7d
+# without the behaviour fingerprints.
 # Writes only under build/ and Packages/ParsecKit/.build.
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -72,6 +74,12 @@ else
   step 5-spec-trace scripts/spec-trace.sh
 fi
 step 6-swiftlint swiftlint lint --strict --quiet
+step 7c-protected scripts/protected-check.sh
+if [ "$MODE" = "quick" ]; then
+  step 7d-logic-frozen scripts/logic-frozen.sh --fast
+else
+  step 7d-logic-frozen scripts/logic-frozen.sh --fuzz-log "$LOGS/3-fuzz.log"
+fi
 if [ "$MODE" != "quick" ]; then
   step 7-license-check scripts/license-check.sh
   if [ "${MILESTONE:-0}" -ge 11 ]; then

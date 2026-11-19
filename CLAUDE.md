@@ -3,8 +3,8 @@
 A native macOS 27 remake of Space Trader (Pieter Spronck, GPL). It is built from the C# port at `/Users/megatih/Downloads/SpaceTraderSource201`, which is **read-only reference: never modify it**. The only exception is the differential harness (PRD §8.4), which compiles a *copy* under `build/harness/` (gitignored).
 
 ## Source of truth
-1. `docs/PRD.md` is **normative**: decisions, architecture, milestones, gates, operating rules. For M14–M17 (release 1.1.0) `docs/PRD-1.1.md` extends it and wins where they differ.
-2. `docs/design/UX-VISION.md` is the design direction for every screen.
+1. `docs/PRD.md` is **normative**: decisions, architecture, milestones, gates, operating rules. For M14–M17 (release 1.1.0) `docs/PRD-1.1.md` extends it and wins where they differ. For M18–M28 (release 2.0.0, the interface revamp) `docs/PRD-UI-Revamp.md` extends both and wins.
+2. `docs/design/UX-VISION.md` is the design direction for every screen, except where `docs/PRD-UI-Revamp.md` §3–§4 supersede it.
 3. `docs/specs/*.md` holds requirements with IDs (ECO-012…). Tests reference these IDs.
 4. `docs/research/01–06` is research input. **The QA ERRATA block at the top of each file overrides that file's body.** Re-verify every value against the source before encoding it.
 5. `PROGRESS.md` holds the current milestone, next step, blockers and the last gate result. **Read it first, update it after every step.**
@@ -13,9 +13,10 @@ A native macOS 27 remake of Space Trader (Pieter Spronck, GPL). It is built from
 - **Gates:**
   - `scripts/verify.sh --quick` between small steps.
   - `scripts/verify.sh` before every commit.
-  - `scripts/verify.sh --ui` at the end of M7, M8, M9, M12, M13, M14, M15, M16 and M17.
+  - `scripts/verify.sh --ui` at the end of M7, M8, M9, M12, M13, M14, M15, M16, M17 and M21–M28.
+  - `scripts/protected-check.sh` and `scripts/logic-frozen.sh` (also steps 7c and 7d of every verify mode).
   - Success prints `ALL GATES PASSED` and `EXIT=0`.
-- Completion: `scripts/final-check.sh` (M17).
+- Completion: `scripts/final-check.sh` (M28; 10 checks).
 - Engine fast loop: `swift test --package-path Packages/ParsecKit --filter <Suite>`
 - App build: `xcodebuild -project SpaceTraderMac.xcodeproj -scheme SpaceTraderMac -destination 'platform=macOS' -derivedDataPath build/DD build`
 - Benchmarks: `swift run --package-path Packages/ParsecKit -c release pmsim bench`
@@ -42,6 +43,8 @@ A native macOS 27 remake of Space Trader (Pieter Spronck, GPL). It is built from
 - **Blockers:** follow PRD §11.6. Write them in PROGRESS.md, print `BLOCKED: …`, and carry on with unblocked work.
 
 ## Gotchas
+- **Protected files (release 2.0):** the planet graphics and the shared art files they depend on (the 22 paths in `docs/PRD-UI-Revamp.md` §1.4 and `scripts/protected-check.sh`) must stay byte-identical; so must the engine, insights, persistence and pmsim sources and their tests (`scripts/logic-frozen.sh`). Put new art code in new files.
+- **PROGRESS status line:** the first `M<n>` on the "Current milestone" line is the last *finished* milestone; raise it only in a milestone's exit commit.
 - **Project file:** the project uses the JSON `SpaceTraderMac.xcodeproj/project.xcproj` with synchronized folders. Back it up (git) before editing it. Follow PRD §6.3 for package linking.
 - **Renaming:** target and folder names stay `SpaceTraderMac`. Only the product and display name are "Parsec Merchant". `TEST_HOST` must match the product name. The Debug bundle id ends in `.debug` so its sandbox container stays separate from Release.
 - **Never commit** these (all gitignored): `docs/reference/palm-src/` (it contains copyrighted bitmaps), `.claude/skills/` (Apple content), build outputs, or `Config/Local.xcconfig`.
