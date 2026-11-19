@@ -61,12 +61,74 @@ nonisolated enum ArtAdapters {
 
     /// ART-008: the portrait input of an engine ship; statistics come from `ShipMath`'s spec (custom ships use `customSpec`).
     static func shipInput(_ ship: Ship, ruleset: Ruleset, facing: ShipFacing, disabled: Bool = false, cloaked: Bool = false,
+                          role: ShipRole = .player, liverySeed: UInt64? = nil, playerLiverySeed: UInt64? = nil, derelict: Bool = false,
                           phase: Double = 0, accessibility: ArtAccessibility = .standard) -> ShipArtInput {
         let spec = ship.spec(ruleset)
         let maxHull = max(1, ship.hullStrength(ruleset))
         return ShipArtInput(kind: shipKind(ship.type), stats: shipStats(spec: spec, ship: ship), facing: facing,
                             hullFraction: Double(max(0, ship.hull)) / Double(maxHull), shield: shield(ship, ruleset: ruleset),
-                            disabled: disabled, cloaked: cloaked, phase: phase, accessibility: accessibility)
+                            disabled: disabled, cloaked: cloaked, role: role, liverySeed: liverySeed, playerLiverySeed: playerLiverySeed,
+                            derelict: derelict, phase: phase, accessibility: accessibility)
+    }
+
+    // MARK: Liveries (ART-SHIP-006, 007, 010, 013)
+
+    /// The seed of the player's livery: the galaxy seed and the commander's name. It uses saved state only, so the
+    /// player's colours survive a save and stay the same from ship to ship.
+    static func playerLiverySeed(_ state: GameState) -> UInt64 {
+        ArtSeed.mix(ArtSeed.mix(state.seed, 0x504C_4159), nameHash(state.commander.name))
+    }
+
+    /// The commander's own ship, in the player's livery.
+    static func playerShipInput(_ state: GameState, facing: ShipFacing = .right, cloaked: Bool = false) -> ShipArtInput {
+        shipInput(state.commander.ship, ruleset: state.ruleset, facing: facing, cloaked: cloaked, role: .player, liverySeed: playerLiverySeed(state))
+    }
+
+    /// ART-SHIP-010: the seed of an opponent's livery. It is made of saved state that does not change during the
+    /// encounter (galaxy seed, day, the clicks at which the encounter began, the encounter's badge and the ship type), so
+    /// it is the same after a save and from round to round.
+    static func opponentLiverySeed(_ state: GameState, encounter: EncounterState) -> UInt64 {
+        let badge = encounter.type.badge(opponent: encounter.opponent.type)
+        let base = ArtSeed.of(state.commander.days, encounter.clicks, badgeIndex(badge), encounter.opponent.type.rawValue)
+        switch encounter.type {
+        case .captainAhab: return 0
+        case .captainConrad: return 1
+        case .captainHuie: return 2
+        default: return ArtSeed.mix(state.seed, base)
+        }
+    }
+
+    static func badgeIndex(_ badge: EncounterBadge) -> Int {
+        switch badge {
+        case .special: 0
+        case .pirate: 1
+        case .alien: 2
+        case .police: 3
+        case .trader: 4
+        }
+    }
+
+    /// ART-SHIP-013: who flies the opponent's ship, from the encounter.
+    static func shipRole(_ encounter: EncounterState) -> ShipRole {
+        switch encounter.type {
+        case .captainAhab, .captainConrad, .captainHuie, .famousCaptainAttack, .famousCaptDisabled: return .famousCaptain
+        case .marieCeleste: return .trader
+        default: break
+        }
+        switch encounter.type.badge(opponent: encounter.opponent.type) {
+        case .police: return .police
+        case .pirate: return .pirate
+        case .trader: return .trader
+        case .alien: return .alien
+        case .special: return .special
+        }
+    }
+
+    /// The opponent's ship in an encounter: its role's livery, never painted like the player's ship.
+    static func opponentShipInput(_ state: GameState, encounter: EncounterState) -> ShipArtInput {
+        shipInput(encounter.opponent, ruleset: state.ruleset, facing: .left, disabled: encounter.opponentDisabled, role: shipRole(encounter),
+                  liverySeed: opponentLiverySeed(state, encounter: encounter), playerLiverySeed: playerLiverySeed(state),
+                  derelict: encounter.type == .marieCeleste)
     }
 
     /// A pristine portrait of a ship type (narrative vignettes, endings).
@@ -212,17 +274,17 @@ nonisolated enum ArtAdapters {
     }
 
     /// A pristine portrait of a ship type with a known spec (shipyard cards, purchase sheet).
-    static func specInput(_ type: ShipType, spec: ShipSpec) -> ShipArtInput {
-        ShipArtInput(kind: shipKind(type), stats: shipStats(spec: spec))
+    static func specInput(_ type: ShipType, spec: ShipSpec, liverySeed: UInt64? = nil) -> ShipArtInput {
+        ShipArtInput(kind: shipKind(type), stats: shipStats(spec: spec), role: .yard, liverySeed: liverySeed)
     }
 
-    /// ART-012: the designer draft's live preview: the draft's statistics shape the hull, the chosen hull style is the variant.
-    static func designInput(_ design: ShipDesign, style: ShipType, price: Int) -> ShipArtInput {
+    /// The designer draft's live preview: the chosen class style's design, shaped by the draft's statistics (ART-SHIP-002).
+    static func designInput(_ design: ShipDesign, style: ShipType, price: Int, liverySeed: UInt64? = nil) -> ShipArtInput {
         let stats = ShipArtStats(sizeClass: design.size.rawValue, cargoBays: design.cargoBays, weaponSlots: design.weaponSlots,
                                  shieldSlots: design.shieldSlots, gadgetSlots: design.gadgetSlots, crewQuarters: design.crewQuarters,
                                  fuelTanks: design.fuelTanks, hullStrength: design.hull, priceTier: ShipArtStats.priceTier(price: price),
                                  techTier: 7)
-        return ShipArtInput(kind: .custom, stats: stats, variant: ArtSeed.kind(shipKind(style)))
+        return ShipArtInput(kind: .custom, stats: stats, role: .yard, liverySeed: liverySeed, style: shipKind(style))
     }
 }
 

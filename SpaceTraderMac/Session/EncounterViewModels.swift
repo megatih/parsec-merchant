@@ -73,7 +73,7 @@ struct ShipPaneModel: Equatable, Sendable {
         let label = ArtSurface.playerPortrait(ship: type, hull: hull.percent ?? 0, shields: shields.percent).label ?? ""
         return ShipPaneModel(title: title, shipType: ship.type, size: ship.spec(state.ruleset).size, facing: .right, hull: hull,
                              shields: shields, isDisabled: false, accessibilityLabel: label,
-                             art: ArtAdapters.shipInput(ship, ruleset: state.ruleset, facing: .right, cloaked: cloaked))
+                             art: ArtAdapters.playerShipInput(state, facing: .right, cloaked: cloaked))
     }
 
     static func opponent(state: GameState, preview: EncounterPreview) -> ShipPaneModel? {
@@ -87,7 +87,7 @@ struct ShipPaneModel: Equatable, Sendable {
         return ShipPaneModel(title: String(localized: "Opponent: \(type)"), shipType: enc.opponent.type,
                              size: enc.opponent.spec(state.ruleset).size, facing: .left, hull: hull, shields: shields,
                              isDisabled: enc.opponentDisabled, accessibilityLabel: label,
-                             art: ArtAdapters.shipInput(enc.opponent, ruleset: state.ruleset, facing: .left, disabled: enc.opponentDisabled))
+                             art: ArtAdapters.opponentShipInput(state, encounter: enc))
     }
 }
 

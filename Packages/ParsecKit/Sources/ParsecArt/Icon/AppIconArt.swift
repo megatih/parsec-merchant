@@ -58,27 +58,12 @@ public enum AppIconArt {
     /// version cuts the bridge window and the gaps between the container rows out of the silhouette and adds the engine
     /// nozzles, so it reads as a cargo ship.
     static func hauler(scale s: Double, simplified: Bool = false) -> Path {
-        // ART-053: the generated freighter (an ART-010 hauler).
-        let bp = ShipHullGenerator.make(ShipArtStats.standard(.beetle), variant: ArtSeed.kind(.beetle))
-        let g = ShipGeometry.make(bp)
+        // ART-053, ART-SHIP-014: a ship from the forge (a Hornet: its delta wings read as a ship at 16 pt). The detailed
+        // version also cuts out the flight deck.
+        let g = ShipArtInput(kind: .hornet).geometry
         var shape = g.silhouette
         if !simplified {
-            let c = bp.cockpit
-            shape = shape.subtracting(Path(roundedRect: CGRect(x: c.x - c.length, y: 0.5 - c.width / 2, width: c.length, height: c.width),
-                                           cornerRadius: c.length * 0.3))
-            let len = bp.noseX - bp.tailX
-            for k in 1...3 {
-                let x = bp.tailX + len * (0.08 + 0.185 * Double(k))
-                shape = shape.subtracting(Path(CGRect(x: x - 0.011, y: 0, width: 0.022, height: 1)))
-            }
-            // A keel girder keeps the container rows one ship.
-            shape = shape.union(Path(CGRect(x: bp.tailX + len * 0.1, y: 0.5 - 0.03, width: len * 0.72, height: 0.06)).intersection(g.silhouette))
-            for e in bp.engines {
-                for side in [-1.0, 1.0] {
-                    let y = 0.5 + side * e.yOffset
-                    shape = shape.union(ArtGeometry.capsule(from: CGPoint(x: e.x - 0.06, y: y), to: CGPoint(x: e.x + 0.02, y: y), radius: e.radius))
-                }
-            }
+            for part in g.parts where part.tag == "flightDeck" { shape = shape.subtracting(part.path) }
         }
         let b = shape.boundingRect
         let k = 470.0 * s / b.width

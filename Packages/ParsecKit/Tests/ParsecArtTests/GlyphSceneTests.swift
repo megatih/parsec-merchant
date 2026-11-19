@@ -208,14 +208,15 @@ struct GlyphSceneTests {
         }
     }
 
-    @Test("ART-050 light and dark renders are both non-empty and differ where the palette has dark variants")
+    @Test("ART-050 light and dark renders are both non-empty; space and planets differ where the palette has dark variants")
     func darkLight() {
         let size = CGSize(width: 120, height: 80)
         #expect(ArtPalette.hasDarkVariant(.spaceTop) && ArtPalette.hasDarkVariant(.outline))
         for kind in ShipArtKind.allCases {
             let l = ArtSnapshot.render(ShipArt(ShipArtInput(kind: kind)), size: size, scheme: .light)
             let d = ArtSnapshot.render(ShipArt(ShipArtInput(kind: kind)), size: size, scheme: .dark)
-            #expect(l.isNonEmpty() && d.isNonEmpty() && l != d, "\(kind)")
+            // Since release 2.0 a ship wears its livery's own paint, the same in both appearances.
+            #expect(l.isNonEmpty() && d.isNonEmpty(), "\(kind)")
         }
         for tech in 0...7 {
             let i = PlanetArtInput(seed: 4, tech: tech)

@@ -72,8 +72,20 @@ enum CareerCardRenderer {
             .background(Color.white)
             .environment(\.colorScheme, .light)
         let renderer = ImageRenderer(content: content)
-        renderer.scale = 2
-        return renderer.cgImage
+        // Drawn straight into a fixed-format bitmap: `cgImage` goes through a rasteriser cache whose output can differ
+        // by a unit on some pixels depending on what was drawn before, which made the shared PNG vary between renders.
+        let scale: CGFloat = 2
+        var result: CGImage?
+        renderer.render(rasterizationScale: scale) { size, draw in
+            let width = Int((size.width * scale).rounded()), height = Int((size.height * scale).rounded())
+            guard width > 0, height > 0, let space = CGColorSpace(name: CGColorSpace.sRGB),
+                  let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, space: space,
+                                          bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return }
+            context.scaleBy(x: scale, y: scale)
+            draw(context)
+            result = context.makeImage()
+        }
+        return result
     }
 
     static func png(card: CareerCard) -> Data? {

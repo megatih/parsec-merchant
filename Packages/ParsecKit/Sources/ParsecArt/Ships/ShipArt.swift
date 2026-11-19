@@ -9,25 +9,50 @@ public enum ShipScaleMode: Sendable, Hashable {
     case relative
 }
 
-/// Cached geometry and scorch order of one blueprint.
+/// Cached geometry and scorch order of one ship.
 struct ShipArtModel: Sendable {
-    var blueprint: ShipBlueprint
     var geometry: ShipGeometry
     var scorch: ShipScorch
 
+    /// Everything the geometry depends on: the statistics and equipment, the special designs' kind, and the livery.
     private struct Key: Hashable {
-        var blueprint: ShipBlueprint
-        var seed: UInt64
+        var kind: ShipArtKind
+        var design: ShipArtKind
+        var stats: ShipArtStats
+        var livery: ShipLivery
+        var derelict: Bool
     }
 
     @MainActor
     static func make(_ input: ShipArtInput) -> ShipArtModel {
-        let bp = input.blueprint
-        let seed = ArtSeed.kind(input.kind)
-        return ArtCache.shared.value(Key(blueprint: bp, seed: seed)) {
-            let g = ShipGeometry.make(bp)
-            return ShipArtModel(blueprint: bp, geometry: g, scorch: ShipScorch.make(g, seed: seed))
+        let key = Key(kind: ShipForge.isSpecial(input.kind) ? input.kind : .custom, design: ShipForge.designClass(input), stats: input.stats,
+                      livery: input.livery, derelict: input.derelict)
+        return ShipForgeCache.shared.value(key) {
+            let g = input.geometry
+            return ShipArtModel(geometry: g, scorch: ShipScorch.make(g, seed: ArtSeed.kind(key.kind)))
         }
+    }
+}
+
+/// ART-SHIP-011: a small cache of built ships (512 entries, least recently used first out).
+@MainActor
+final class ShipForgeCache {
+    static let shared = ShipForgeCache()
+    static let capacity = 512
+    private var entries: [AnyHashable: (value: Any, used: Int)] = [:]
+    private var clock = 0
+
+    func value<K: Hashable, V>(_ key: K, make: () -> V) -> V {
+        clock += 1
+        let k = AnyHashable(key)
+        if let hit = entries[k], let v = hit.value as? V {
+            entries[k] = (v, clock)
+            return v
+        }
+        let v = make()
+        if entries.count >= Self.capacity, let oldest = entries.min(by: { $0.value.used < $1.value.used }) { entries[oldest.key] = nil }
+        entries[k] = (v, clock)
+        return v
     }
 }
 

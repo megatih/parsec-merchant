@@ -33,7 +33,7 @@ struct ShipInspectorView: View {
     private func header(_ m: InspectorModel, state: GameState) -> some View {
         SwiftUI.Section {
             // D7: the ship is a full-width hero at the top of the inspector.
-            ShipPortrait(input: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right))
+            ShipPortrait(input: ArtAdapters.playerShipInput(state))
                 .frame(maxWidth: .infinity)
                 .frame(height: ShipPanelSize.inspectorHero)
             HStack(spacing: 12) {

@@ -69,4 +69,57 @@ enum ShipSheet {
         .background(Color(red: 0.05, green: 0.06, blue: 0.11))
         .environment(\.displayScale, 1)
     }
+
+    /// ART-SHIP-012: ten ship types × four roles × four seeds.
+    static var liveries: some View {
+        let roles: [ShipRole] = [.player, .police, .pirate, .trader]
+        return VStack(spacing: 0) {
+            ForEach(ShipArtKind.buyable, id: \.self) { kind in
+                ForEach(0..<2, id: \.self) { half in
+                    HStack(spacing: 2) {
+                        ForEach(roles[(half * 2)..<(half * 2 + 2)], id: \.self) { role in
+                            ForEach(0..<4, id: \.self) { seed in
+                                ShipArt(ShipArtInput(kind: kind, role: role, liverySeed: UInt64(seed * 7919 + kind.rawValue * 31 + role.rawValue),
+                                    playerLiverySeed: 1))
+                                    .frame(width: 197, height: 78)
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(width: 1600, height: 1600)
+        .background(Color(red: 0.05, green: 0.06, blue: 0.11))
+        .environment(\.displayScale, 1)
+    }
+
+    /// ART-SHIP-012: one hull (a Grasshopper: 2 weapon, 2 shield and 3 gadget slots) with each item installed, and empty.
+    static var fittings: some View {
+        func ship(_ caption: String, weapons: [Int] = [], shields: [Int] = [], gadgets: [Int] = []) -> AnyView {
+            var stats = ShipArtStats.standard(.grasshopper)
+            stats.weapons = weapons
+            stats.shields = shields
+            stats.gadgets = gadgets
+            return cell(ShipArtInput(kind: .grasshopper, stats: stats), width: 380, height: 190, caption: caption)
+        }
+        let weapons = ["pulse laser", "beam laser", "military laser", "Morgan's laser", "photon disruptor", "quantum disruptor"]
+        let shields = ["energy shield", "reflective shield", "lightning shield"]
+        let gadgets = ["extra cargo bays", "auto-repair system", "navigating system", "targeting system", "cloaking device", "fuel compactor",
+            "hidden cargo bays"]
+        var views: [AnyView] = [ship("empty")]
+        views += weapons.indices.map { ship(weapons[$0], weapons: [$0, $0]) }
+        views += shields.indices.map { ship(shields[$0], shields: [$0, $0]) }
+        views += gadgets.indices.map { ship(gadgets[$0], gadgets: [$0]) }
+        views.append(ship("fully fitted", weapons: [2, 3], shields: [1, 2], gadgets: [2, 3, 5]))
+        return VStack(spacing: 6) {
+            ForEach(0..<5, id: \.self) { r in
+                row(Array(views[(r * 4)..<min(views.count, r * 4 + 4)]), cell: 390)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(width: 1600, height: 1600)
+        .background(Color(red: 0.05, green: 0.06, blue: 0.11))
+        .environment(\.displayScale, 1)
+    }
 }

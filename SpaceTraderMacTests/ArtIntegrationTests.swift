@@ -85,16 +85,17 @@ struct ArtIntegrationTests {
         // The installed weapons show: two barrels on four mounts, and arming a third changes the picture.
         var armed = custom
         armed.weapons.append(.beamLaser)
-        #expect(ArtAdapters.shipInput(armed, ruleset: ruleset, facing: .right).blueprint != input.blueprint)
-        // ART-012: the designer preview follows the draft's statistics; the hull style is only a variant.
+        #expect(ArtAdapters.shipInput(armed, ruleset: ruleset, facing: .right).geometry.description != input.geometry.description)
+        // ART-SHIP-002: the designer preview is the chosen class style's design, shaped by the draft's statistics.
         let design = ShipDesign(name: "T", size: .medium, cargoBays: 30, fuelTanks: 14, hull: 120, weaponSlots: 2, shieldSlots: 1, gadgetSlots: 1,
                                 crewQuarters: 2)
         let preview = ArtAdapters.designInput(design, style: .hornet, price: 60000)
-        #expect(preview.kind == .custom && preview.stats.cargoBays == 30 && preview.stats.priceTier == 3 && preview.variant == ArtSeed.kind(.hornet))
-        #expect(preview.blueprint.livery.primary == .brass)
+        #expect(preview.kind == .custom && preview.stats.cargoBays == 30 && preview.stats.priceTier == 3 && preview.style == .hornet)
+        #expect(preview.livery.accent == ShipLivery.brass && ShipForge.designClass(preview) == .hornet)
+        #expect(ArtAdapters.designInput(design, style: .beetle, price: 60000).geometry.description != preview.geometry.description)
         var bigger = design
         bigger.cargoBays = 60
-        #expect(ArtAdapters.designInput(bigger, style: .hornet, price: 60000).blueprint != preview.blueprint)
+        #expect(ArtAdapters.designInput(bigger, style: .hornet, price: 60000).geometry.description != preview.geometry.description)
         var shielded = Ship(type: .gnat, spec: ruleset.tables.ship(.gnat))
         shielded.shields = [EffectFx.shield(.energy, charge: 10), EffectFx.shield(.reflective, charge: 50)]
         let shield = try #require(ArtAdapters.shield(shielded, ruleset: ruleset))

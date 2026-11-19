@@ -12,6 +12,8 @@ enum ContactSheet {
         case nil: image = IconExport.render(sheet.background(Color(white: 0.85)), pixels: 1600)
         case "planets": image = IconExport.render(PlanetSheet.sheet, pixels: 1600)
         case "ships": image = IconExport.render(ShipSheet.sheet, pixels: 1600)
+        case "liveries": image = IconExport.render(ShipSheet.liveries, pixels: 1600)
+        case "fittings": image = IconExport.render(ShipSheet.fittings, pixels: 1600)
         case "endings": image = IconExport.render(ShipSheet.endings, pixels: 1600)
         case "portraits": image = IconExport.render(PortraitSheet.sheet.frame(width: 1600, height: 1600), pixels: 1600)
         case "portraits-1", "portraits-2", "portraits-3", "portraits-4":

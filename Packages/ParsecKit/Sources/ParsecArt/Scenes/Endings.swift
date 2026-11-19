@@ -292,7 +292,7 @@ enum EndingScenes {
         s.translateBy(x: -box.width / 2, y: -box.height / 2)
         ShipRenderer.draw(&s, size: box, model: model, input: wreck, mode: .fit, ink: ink, sparks: false)
         // Hull plates torn loose: each a quadrilateral with a lit and a shadowed face.
-        let paint = ink.rgb(model.blueprint.livery.primary)
+        let paint = model.geometry.paint
         for f in plates(seed: ArtSeed.kind(wreck.kind)) {
             let p = CGPoint(x: c.x + (f.origin.x + f.drift.x * (0.25 + 0.75 * u)) * side, y: c.y + (f.origin.y + f.drift.y * (0.25 + 0.75 * u)) * side)
             let r = f.size * side

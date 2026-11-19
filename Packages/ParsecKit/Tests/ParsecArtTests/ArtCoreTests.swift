@@ -96,13 +96,13 @@ struct ArtCoreTests {
         #expect(ArtGeometry.isClosed(ArtGeometry.closedSpline(pts)))
         #expect(!ArtGeometry.isClosed(ArtGeometry.openSpline(pts)))
         for kind in ShipArtKind.allCases {
-            let g = ShipGeometry.make(ShipArtInput(kind: kind).blueprint)
+            let g = ShipArtInput(kind: kind).geometry
             #expect(!g.silhouette.isEmpty)
             #expect(ArtGeometry.isClosed(g.hull), "\(kind)")
             let b = g.bounds
             #expect(b.minX >= -1e-9 && b.minY >= -1e-9 && b.maxX <= 1 + 1e-9 && b.maxY <= 1 + 1e-9, "\(kind) \(b)")
             #expect(ArtGeometry.area(g.silhouette) > 0.02, "\(kind)")
-            #expect(ShipGeometry.make(ShipArtInput(kind: kind).blueprint).bounds == b)
+            #expect(ShipArtInput(kind: kind).geometry.bounds == b)
         }
     }
 

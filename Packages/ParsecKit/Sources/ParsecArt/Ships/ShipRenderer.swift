@@ -18,17 +18,16 @@ enum ShipRenderer {
                        style: StrokeStyle(lineWidth: 1.2 * a11y.outlineScale, dash: [4, 3]))
             return
         }
-        let livery = model.blueprint.livery
-        if !input.disabled { drawPlumes(&ctx, g: g, t: t, unit: unit, input: input, ink: ink, livery: livery) }
-        drawNozzles(&ctx, g: g, t: t, unit: unit, ink: ink, organic: model.blueprint.organicSeed != nil)
-        drawParts(&ctx, g: g, t: t, box: box, unit: unit, input: input, ink: ink, livery: livery)
+        if !input.disabled, !g.derelict { drawPlumes(&ctx, g: g, t: t, unit: unit, input: input) }
+        drawNozzles(&ctx, g: g, t: t, unit: unit, ink: ink, organic: g.organic)
+        drawParts(&ctx, g: g, t: t, box: box, unit: unit, input: input, ink: ink)
         let hull = g.silhouette.applying(t)
-        drawShading(&ctx, g: g, hull: hull, t: t, box: box, unit: unit, glass: model.blueprint.isGlassHull)
+        drawShading(&ctx, g: g, hull: hull, t: t, box: box, unit: unit, glass: g.glass || g.organic)
         // A hull has no drawn outline: only a thin dark edge that reads as shadow (the contrast outline under Increase Contrast).
         let edge = a11y.increaseContrast ? ink(.outline) : ArtRGB(0.05, 0.06, 0.09, 0.7).color
         ctx.stroke(hull, with: .color(edge), lineWidth: max(0.5, unit * 0.004) * a11y.outlineScale)
         drawScorch(&ctx, model: model, t: t, hull: hull, input: input, ink: ink)
-        if !input.disabled { drawLights(&ctx, g: g, t: t, unit: unit) }
+        if !input.disabled, !g.derelict { drawLights(&ctx, g: g, t: t, unit: unit, input: input) }
         if input.disabled, sparks { drawSparks(&ctx, box: box, ink: ink) }
         if let shield = input.shield, shield.fraction > 0 { drawShield(&ctx, box: box, shield: shield, a11y: a11y, ink: ink) }
     }
@@ -41,10 +40,9 @@ enum ShipRenderer {
     }
 
     /// ART-016: a bloom plume aft of each engine: a soft tail and a bright core.
-    private static func drawPlumes(_ ctx: inout GraphicsContext, g: ShipGeometry, t: CGAffineTransform, unit: Double, input: ShipArtInput,
-                                   ink: ArtInk, livery: Livery) {
+    private static func drawPlumes(_ ctx: inout GraphicsContext, g: ShipGeometry, t: CGAffineTransform, unit: Double, input: ShipArtInput) {
         let k = glowIntensity(phase: input.phase, reduceMotion: input.accessibility.reduceMotion)
-        let glow = ink.rgb(livery.glow)
+        let glow = g.glow
         let aft: Double = t.a < 0 ? 1 : -1 // view-space direction of "astern"
         for e in g.glows {
             let c = CGPoint(x: e.x, y: 0.5 + e.yOffset).applying(t)
@@ -88,25 +86,26 @@ enum ShipRenderer {
 
     // MARK: Parts (ART-015: one light, from the upper left, in both facings)
 
-    private static func color(_ role: ShipPart.Role, livery: Livery, ink: ArtInk) -> ArtRGB {
-        switch role {
-        case .primary: ink.rgb(livery.primary)
-        case .secondary: ink.rgb(livery.secondary)
-        case .accent: ink.rgb(livery.accent)
+    private static func color(_ part: ShipPart, g: ShipGeometry, ink: ArtInk) -> ArtRGB {
+        if let color = part.color { return color }
+        return switch part.role {
+        case .primary: g.paint
+        case .secondary: g.paint.shade(0.7)
+        case .accent: ShipLivery.brass
         case .glass: ink.rgb(.glassTint)
         case .cockpit: ArtRGB(0.10, 0.16, 0.26)
-        case .glow: ink.rgb(livery.glow)
+        case .glow: g.glow
         case .cork: ink.rgb(.cork)
         case .parchment: ink.rgb(.parchment)
-        case .dark: ink.rgb(livery.secondary).shade(0.55)
+        case .dark: g.paint.shade(0.4)
         }
     }
 
     private static func drawParts(_ ctx: inout GraphicsContext, g: ShipGeometry, t: CGAffineTransform, box: CGRect, unit: Double,
-                                  input: ShipArtInput, ink: ArtInk, livery: Livery) {
+                                  input: ShipArtInput, ink: ArtInk) {
         let a11y = input.accessibility
         for part in g.parts {
-            var c = color(part.role, livery: livery, ink: ink)
+            var c = color(part, g: g, ink: ink)
             if input.disabled { c = c.saturation(0.3).shade(0.8) }
             let path = part.path.applying(t)
             if let w = part.lineWidth {
@@ -123,6 +122,11 @@ enum ShipRenderer {
             }
             if part.role == .glow {
                 ctx.fill(path, with: .color(input.disabled ? c.color : c.shade(1.15).color))
+                continue
+            }
+            if part.flat {
+                // Paint: flat colour, slightly darker towards the far side so it sits on the lit plating.
+                ctx.fill(path, with: .color(c.color))
                 continue
             }
             let b = path.boundingRect
@@ -152,7 +156,7 @@ enum ShipRenderer {
         guard !glass else { return }
         var inner = ctx
         inner.clip(to: hull)
-        for (width, alpha) in [(0.05, 0.10), (0.03, 0.12), (0.014, 0.16)] {
+        for (width, alpha) in [(0.04, 0.14), (0.016, 0.18)] {
             inner.stroke(hull, with: .color(.black.opacity(alpha)), lineWidth: max(1, unit * width))
         }
         var strip = ctx
@@ -166,15 +170,18 @@ enum ShipRenderer {
     }
 
     /// ART-016: navigation lights: red to port, green to starboard, white at the tail.
-    private static func drawLights(_ ctx: inout GraphicsContext, g: ShipGeometry, t: CGAffineTransform, unit: Double) {
+    private static func drawLights(_ ctx: inout GraphicsContext, g: ShipGeometry, t: CGAffineTransform, unit: Double, input: ShipArtInput) {
         for light in g.lights {
             let c = light.position.applying(t)
             let tint: ArtRGB = switch light.kind {
             case .port: ArtRGB(1.0, 0.20, 0.16)
             case .starboard: ArtRGB(0.20, 1.0, 0.36)
             case .tail: ArtRGB(1, 1, 1)
+            case .beacon: ArtRGB(0.25, 0.50, 1.0)
             }
-            let r = max(1.4, unit * 0.022)
+            // ART-SHIP-008: police beacons blink once a second; they are steady under Reduce Motion.
+            if light.kind == .beacon, !input.accessibility.reduceMotion, input.phase.truncatingRemainder(dividingBy: 1) >= 0.5 { continue }
+            let r = max(1.4, unit * (light.kind == .beacon ? 0.034 : 0.022))
             ctx.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)),
                      with: .radialGradient(Gradient(colors: [tint.opacity(0.9).color, tint.opacity(0.25).color, tint.opacity(0).color]),
                                            center: c, startRadius: 0, endRadius: r))

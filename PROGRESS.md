@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M19 done; working on M20 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
-- **Next step:** M20 ships: add `role` and `liverySeed` to `ShipArtInput`; a new stat-driven generator (`PA/Ships2/`) that produces `ShipGeometry` parts with livery colours, so `ShipRenderer`, the layout frame, scorch and shields are reused; keep `ShipHullGenerator` for the icon until M26; rewrite ART-007…019, 081, 082, 087…089 tests in place; pmart pages ships, liveries, fittings.
-- **Last gate result:** 2026-11-19: M19 exit: `verify.sh` ALL GATES PASSED (see session log).
+- **Current milestone:** M20 done; working on M21 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
+- **Next step:** M21 design system and shell: `APP/Design/` tokens and components (PRD §3.3–3.5), `GameShellView` = dock bar / status bar / game area with the old sections hosted as pages, sidebar + toolbar + inspector removed, window 1200 × 680 min and the `pmScale` environment; re-point UI tests and `UISurfaceCatalog` from the sidebar to the dock bar in the same commits; then `verify.sh --ui`.
+- **Last gate result:** 2026-11-19: M20 exit: `verify.sh` ALL GATES PASSED.
 - **Blockers:** none
 
 ## Milestones
@@ -29,7 +29,7 @@
 - [x] M17 Polish and release 1.1.0 (2026-11-19, tags m17-done and v1.1.0; README and QA screenshots re-exported and read, Help/README/CHANGELOG/CREDITS updated, QA-REPORT 1.1 rows, pmsim bench OK, bench-map 0.253 ms, idle CPU 3.2%/3.0%, release.sh PASS, clean-clone build, GitHub release v1.1.0, final-check.sh)
 - [x] M18 Setup, freezes and baselines (release 2.0) (2026-11-19, tag m18-done; baselines: fuzz 4531100 / 4528609 / 3134221 commands, galaxy seed-1 hashes ff4fb0e3… / c04d544a… / 8f2dead9…, planet digests pinned in PlanetFrozenTests and PlanetInputFrozenTests)
 - [x] M19 Portrait proof of concept (2026-11-19, tag m19-done; target style adopted, ADR 0005: self review 56/60, independent review 55/60 on iteration 3; ART-FACE-001…009, 011; helmet avatars and ART-034 retired; the app shows the new portraits in the Crew section)
-- [ ] M20 Ships and liveries
+- [x] M20 Ships and liveries (2026-11-19, tag m20-done; ten class designs shaped by statistics (`PA/Ships2/`), role liveries with the never-the-player's-twin rule, visible fittings, special ships, Marie Celeste hulk; old generator deleted; icon regenerated from the Hornet; ART-SHIP-001…014; ART-009…013, 081, 082 retired)
 - [ ] M21 Design system and shell
 - [ ] M22 Bridge
 - [ ] M23 Secondary pages
@@ -75,6 +75,7 @@
 - [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-19: M20, owner decision during the run: the first ship build (one modular truss for all classes) was rejected as too uniform and cartoonish. PRD §5.1 now says each class has its own sleek hull design shaped by its statistics, with a slight hint of the class name; ART-SHIP-002, 003 and 005 were rewritten to match. Lesson for the remaining art (endings, special ships, any new art): aim for sleek, realistic, clearly differentiated designs, and avoid blocky, flat-coloured shapes. The icon was regenerated at M20 (ART-SHIP-014 done early) because the old generator was deleted; it uses the Hornet's silhouette. Ships keep their livery colours in both appearances (ART-050 amended). The ship draw budget is measured like ART-006 (240 × 160 pt at 1× scale).
 - 2026-11-19: M19. ART-FACE-006's "three tones" is measured as the 10th, 50th and 90th percentile of face brightness at 28 pt being at least 8/255 apart (a fixed-bucket count misjudged dark skin, whose tones are naturally closer). Hair whose brightness is within 0.13 of the skin's is drawn black so the hairline shows; facial hair is not generated with long, tied or knotted hair. Art review method: render `pmart sheet` pages into `build/qa/`, read them, and give an independent subagent only the PNGs and the rubric.
 - 2026-11-19: Release 2.0 (M18). The status line's first number is the last finished milestone (spec-trace due rule). The planet digests in PlanetFrozenTests were stable over three runs on this machine; they hash CPU-projected pixels, so a toolchain or OS change that alters floating-point output would show there first: compare against a checkout of 296ad2c before suspecting the code. Do not edit verify.sh while a verify run is in flight (bash reads the script as it runs).
 - 2026-11-19: test and gate audit against 1.0 (`git diff m13-done HEAD` over the test folders and `scripts/`). Every changed or removed check is a rewrite PRD-1.1 names: `spec-trace.sh` threshold 13 → 17 and `PM_TRACE_MILESTONE` (D10, M14 step 1); ART-006 budgets, ART-021…026/029/052 planet tests (M14); the insect-motif assertions of ART-008…012 and the rebuilt endings (M15); MAP-020 hit radii, the Galaxy tip text, the Market identifier list (M16). No pre-existing threshold was lowered. The new M16 source audit is back to its first, strict form: the small-control allowlist holds only the route panel's progress spinner, and the hover audit exempts no file. To get there the route panel's objective and Clear buttons use regular bezels again (the panel's vertical padding went from 10 to 6 pt so it still fits at the largest Text Size), and the 36 pt target of `PointerButtonStyle` (an `.onTapGesture`) carries `hoverHighlight` itself: a push button tints on hover, the tint the size and shape of its bezel (checked on a screenshot of a hovered button). These two small UI changes landed after the v1.1.0 release was built, so `main` is ahead of the released app by them; tag and release were not rewritten.

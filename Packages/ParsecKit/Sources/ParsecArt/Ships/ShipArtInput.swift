@@ -48,7 +48,7 @@ public struct ShipArtStats: Sendable, Hashable {
     public var priceTier: Int
     /// 0…7: the tech level a shipyard needs to sell it (7 for ships no shipyard sells).
     public var techTier: Int
-    /// The installed equipment's raw type values; nil = not known (every slot is drawn filled).
+    /// The installed equipment's raw type values; nil = nothing installed (every slot is drawn empty).
     public var weapons: [Int]?
     public var shields: [Int]?
     public var gadgets: [Int]?
@@ -101,14 +101,23 @@ public struct ShipArtInput: Sendable, Hashable {
     public var shield: ShieldDisplay?
     public var disabled: Bool
     public var cloaked: Bool
-    /// The planform, wing and nacelle families; nil = `ArtSeed.kind(kind)` (ART-010).
-    public var variant: UInt64?
+    /// ART-SHIP: who flies it; decides the livery's language.
+    public var role: ShipRole
+    /// ART-SHIP: seeds the livery; nil = a constant per kind.
+    public var liverySeed: UInt64?
+    /// ART-SHIP-007: the player's livery seed, so an opponent is never painted like the player's ship.
+    public var playerLiverySeed: UInt64?
+    /// A drifting, powerless hulk (the Marie Celeste): no plume, no lights, an open hatch.
+    public var derelict: Bool
+    /// A designed (custom) ship's chosen class style; nil lets the statistics choose.
+    public var style: ShipArtKind?
     public var phase: Double
     public var accessibility: ArtAccessibility
 
     /// `stats` nil = the reference table (ART-088); `sizeClass` overrides the statistics' size class.
     public init(kind: ShipArtKind, stats: ShipArtStats? = nil, sizeClass: Int? = nil, facing: ShipFacing = .right, hullFraction: Double = 1,
-                shield: ShieldDisplay? = nil, disabled: Bool = false, cloaked: Bool = false, variant: UInt64? = nil,
+                shield: ShieldDisplay? = nil, disabled: Bool = false, cloaked: Bool = false, role: ShipRole = .player,
+                liverySeed: UInt64? = nil, playerLiverySeed: UInt64? = nil, derelict: Bool = false, style: ShipArtKind? = nil,
                 phase: Double = 0, accessibility: ArtAccessibility = .standard) {
         self.kind = kind
         var s = stats ?? ShipArtStats.standard(kind)
@@ -119,18 +128,22 @@ public struct ShipArtInput: Sendable, Hashable {
         self.shield = shield
         self.disabled = disabled
         self.cloaked = cloaked
-        self.variant = variant
+        self.role = role
+        self.liverySeed = liverySeed
+        self.playerLiverySeed = playerLiverySeed
+        self.derelict = derelict
+        self.style = style
         self.phase = phase
         self.accessibility = accessibility
     }
 
     public var sizeClass: Int { stats.sizeClass }
 
-    /// The blueprint drawn for this input: a special design, or the generator's hull for the statistics (ART-009…012).
-    public var blueprint: ShipBlueprint {
-        if let special = ShipSpecials.blueprint(kind, stats: stats) { return special }
-        var bp = ShipHullGenerator.make(stats, variant: variant ?? ArtSeed.kind(kind))
-        if kind == .custom { bp.livery = Livery(primary: .brass, secondary: .slate, accent: .ivory) }
-        return bp
+    /// ART-SHIP-006/007: the livery this input is painted in.
+    public var livery: ShipLivery {
+        ShipLivery.make(role: role, seed: liverySeed ?? ArtSeed.kind(kind), avoidingPlayer: playerLiverySeed)
     }
+
+    /// ART-SHIP: the geometry drawn for this input (pure; `ShipArtModel` caches it).
+    public var geometry: ShipGeometry { ShipForge.geometry(self) }
 }

@@ -713,24 +713,29 @@ All of §5 is drawn in code in `ParsecArt`, deterministic, with no images, no `D
 
 ### 5.1 Ships
 
-**Look.** A believable working spacecraft seen from above (plan view), nose toward the opponent: built from functional modules on a structural spine, lit by one fixed key light from the upper left, flat-shaded in three tones per surface with panel lines. No cartoon outlines, no wings for show, no faces, no insect anatomy (ART-087 stays).
+**Look.** A believable, sleek spacecraft seen from above (plan view), nose toward the opponent: a smooth, lofted fuselage with panel seams, a glazed flight deck, lit cabin ports, wings or pods where the class has them, lit by one fixed key light. No cartoon outlines, no flat toy-like blocks, no faces.
 
-**Inputs.** `ShipArtInput` keeps its fields and gains `role: ShipRole` and `liverySeed: UInt64`. Geometry depends only on statistics and installed equipment, never on the ship's name or type id. Names of the public entry points stay (`ShipArt`, `ShipArtInput`, `ShipArtLayout.frame`, `ShipSilhouette`, `ShipArtEmblem`, `ShipScaleMode`) so call sites keep compiling; the generator behind them is replaced (new files under `PA/Ships2/`, old `PA/Ships/` generator files deleted once nothing calls them).
+**Owner decision, 2026-11-19 (replaces the first draft of this section).** The first build drew every class as the same modular truss with different module counts; the owner rejected it as too uniform and too cartoonish. The rule now is:
 
-**Statistics → geometry.**
+1. **Each of the ten ship classes has its own hull design** (`PA/Ships2/ShipClasses.swift`), clearly distinct in silhouette from the others.
+2. **The statistics shape that design** (table below), so two ships of one class with different statistics differ, and a designed (custom) ship in a class's style follows its own statistics.
+3. **Each design carries a slight hint of its class name**, in engineering terms, never as anatomy: the Flea's tank booms on bent struts, the Gnat's slim straight wings, the Firefly's lit tail band, the Mosquito's needle nose, the Bumblebee's round banded body, the Beetle's broad shell with a centreline seam, the Hornet's and the Wasp's narrow waist, the Wasp's tail spike and forward-swept wings, the Grasshopper's long strut-mounted aft nacelles, the Termite's segmented hull. The Scorpion (a special ship) has two forward booms and a long segmented tail.
 
-| Statistic | Module | Rule |
+**Inputs.** `ShipArtInput` keeps its fields and gains `role: ShipRole`, `liverySeed`, `playerLiverySeed`, `derelict` and `style` (the class style of a designed ship). Names of the public entry points stay (`ShipArt`, `ShipArtInput`, `ShipArtLayout.frame`, `ShipSilhouette`, `ShipArtEmblem`, `ShipScaleMode`); the generator behind them is replaced (`PA/Ships2/`), and the old generator files are deleted.
+
+**Statistics → geometry (every class).**
+
+| Statistic | What it changes | Rule |
 |---|---|---|
-| Size class | overall length and beam | length factor tiny 0.45, small 0.55, medium 0.68, large 0.82, huge 1.00 of the frame in `.relative` mode; `.fit` fills the frame |
-| Crew quarters | pressurised habitat segments with windows, at the nose | one segment per quarter (1–3) |
-| Cargo bays | container blocks on the spine, in rows of two | `ceil(bays / 5)` blocks, 0 bays → none, at most 12 |
-| Fuel tanks | two cylindrical propellant tanks beside the spine | tank length proportional to `fuelTanks / 20` |
-| Hull strength | armour plates over the habitat and engine block, and outline weight | `clamp(hullStrength / 25, 1, 12)` plates |
-| Size class | engine cluster | nozzles: 1, 1, 2, 2, 3 for tiny…huge; bell size grows with class |
-| Shield slots | radiator pairs (black, edge-on) | `1 + shieldSlots` pairs |
-| Weapon slots | hardpoints on the forward hull | one mount per slot; empty slot = capped mount |
-| Shield slots | emitter sockets around the hull | one per slot; empty = bare socket |
-| Gadget slots | utility mounts aft of the habitat | one per slot; empty = blank plate |
+| Size class | overall size in the frame; engine count | `.relative` mode draws `0.5 + 0.1 × size` of the frame; nozzles 1, 1, 2, 2, 3 for tiny…huge |
+| Cargo bays | cargo doors on the hull, and the girth of the mid-body | `ceil(bays / 5)` doors, at most 12; girth grows with `bays / 60` |
+| Crew quarters | rows of lit cabin ports | one row per quarter (1–3) |
+| Fuel tanks | two dorsal propellant blisters | length proportional to `fuelTanks / 20` |
+| Hull strength | armour strakes along the flanks | `clamp(hullStrength / 25, 1, 12)` strakes |
+| Shield slots | radiator fins near the engines (dark, with a hot edge) | `1 + shieldSlots` pairs |
+| Weapon slots | hardpoints at the class's own mount points | one mount per slot; empty slot = capped mount |
+| Shield slots | emitter sockets along the centreline | one per slot; empty = bare socket |
+| Gadget slots | utility mounts aft | one per slot; empty = blank plate |
 
 **Installed equipment is visible.**
 
@@ -780,7 +785,7 @@ Patterns (seeded, not police): nose cap, beam band, twin stripes, panel blocks, 
 | Marie Celeste | a trader hull with every light off, no plume, an open cargo hatch and a slow tumble (static with Reduce Motion). |
 | Bottle | a drifting sealed canister-bottle with a note; an object, drawn at object scale. |
 | Cargo canister | the scooped container from the trader livery set. |
-| Custom (Designer) ships | the same generator from the designed statistics, in the player's livery. |
+| Custom (Designer) ships | the design of the class style chosen in the Designer (or, without one, the class that suits the statistics), shaped by the designed statistics, in the player's livery. |
 
 **Seeds and uniqueness.**
 
@@ -791,10 +796,10 @@ Patterns (seeded, not police): nose cap, beam band, twin stripes, panel blocks, 
 Requirements (spec file `docs/specs/ART-SHIP.md`):
 
 - **ART-SHIP-001** {M20} Every `ShipType` (17) and every ruleset's table renders without error at 96, 160 and 240 pt in both scale modes; rendering twice gives identical pixels (fingerprint).
-- **ART-SHIP-002** {M20} Geometry is a pure function of `ShipArtStats` and the equipment lists: two inputs that differ only in `kind` produce identical geometry (special designs excepted).
-- **ART-SHIP-003** {M20} Monotonic statistics: with everything else equal, more cargo bays never gives fewer container blocks; likewise crew quarters → habitat segments, hull strength → plates, shield slots → radiator pairs, fuel → tank length, size class → length. Tested over the full table of each ruleset and over 500 random Designer specifications.
+- **ART-SHIP-002** {M20} Geometry is a pure function of the class design, `ShipArtStats` and the equipment lists. A designed ship drawn in a class's style equals that class's ship for the same statistics; within a class every statistic changes the geometry; the same statistics in the ten classes give ten different hulls.
+- **ART-SHIP-003** {M20} Monotonic statistics, in every class: with everything else equal, more cargo bays never gives fewer cargo doors or a narrower hull; likewise crew quarters → cabin rows, hull strength → strakes, shield slots → radiator pairs, fuel → tank length, size class → nozzles and drawn length. Tested over the reference table and over 500 random Designer specifications spread over the ten classes.
 - **ART-SHIP-004** {M20} Slots: the blueprint has exactly `weaponSlots` hardpoints, `shieldSlots` emitters and `gadgetSlots` mounts; each installed item yields its distinct part and each empty slot its empty part. Each of the 6 weapons, 3 shields and 6 visible gadgets changes the rendered pixels in its slot region; hidden cargo bays change nothing (pixel-identical).
-- **ART-SHIP-005** {M20} Types are distinguishable: silhouette IoU between any two of the ten buyable types, pristine and unequipped, is < 0.85 (ART-013 rewritten).
+- **ART-SHIP-005** {M20} Classes are distinguishable: silhouette IoU between any two of the ten buyable classes, pristine and unequipped, is < 0.85, and each class has its own hull plan (ART-013 retired).
 - **ART-SHIP-006** {M20} Livery variety: for each buyable type and each of the roles trader and pirate, 2,000 consecutive seeds give at least 1,500 distinct livery signatures, and 64 consecutive seeds give 64 distinct pixel fingerprints at 240 × 160.
 - **ART-SHIP-007** {M20} Never the player's twin: over 100,000 random (player seed, opponent seed, ship type, role ∈ {trader, pirate, famousCaptain}) cases, the opponent's signature differs from the player's and, when the types match, the base hues differ by ≥ 40°; and the two fingerprints differ.
 - **ART-SHIP-008** {M20} Role legibility: every police render contains the checker band (a test samples the band region for alternating blue and white cells) and the insignia; no non-police render does. Pirate renders have wear ≥ 0.6 and no registry; trader renders have a registry block. Role is also always given in words by the encounter badge (UI-ENC-202), so role never depends on colour alone.
@@ -803,9 +808,9 @@ Requirements (spec file `docs/specs/ART-SHIP.md`):
 - **ART-SHIP-011** {M20} Performance: a 240 × 160 ship draws in ≤ 4 ms median (ART-006 stays); blueprints are cached in a new cache type, not in a frozen file.
 - **ART-SHIP-012** {M20} `pmart sheet --page ships` shows all 17 types; `--page liveries` shows 10 types × 4 roles × 4 seeds; `--page fittings` shows one hull with each item installed and empty.
 - **ART-SHIP-013** {M25} Call sites: encounter panels pass the role from `EncounterBadge` / `OpponentType` and the opponent seed; Shipyard, Equipment, Commander Status, transit and the purchase sheet pass the player role and seed. The achievement emblems, the two ship vignettes and the combat-effect frame keep working through the retained entry points.
-- **ART-SHIP-014** {M26} The app icon is regenerated from the new generator (a Beetle in a brass-accent livery) by `scripts/make-icon.sh`; the committed icon PNGs are replaced in the same commit and `scripts/make-icon.sh --check` passes.
+- **ART-SHIP-014** {M26} The app icon is regenerated from the new generator (the Hornet's silhouette, which reads as a ship at 16 pt) by `scripts/make-icon.sh`; the committed icon PNGs are replaced in the same commit and `scripts/make-icon.sh --check` passes. (Done early, at M20, because the old generator was removed there.)
 
-**Look criteria** (judge on the contact sheets, write a QA-REPORT row): reads as machinery, not a toy; modules are recognisable (habitat, containers, tanks, radiators, engines); a Beetle or Termite looks like a freighter and a Wasp or Hornet like a warship before reading the label; police, pirate and trader versions of one type are told apart at 96 pt; no two neighbours on the liveries page look the same; installed weapons can be counted.
+**Look criteria** (judge on the contact sheets, write a QA-REPORT row): reads as a sleek, believable spacecraft, not a toy; every class is recognisable by its silhouette alone; a Beetle or Termite looks like a freighter and a Wasp or Hornet like a warship before reading the label; police, pirate and trader versions of one type are told apart at 96 pt; no two neighbours on the liveries page look the same; installed weapons can be counted.
 
 ### 5.2 Portraits
 

@@ -28,7 +28,7 @@ struct TransitView: View {
             if let state = session.state {
                 Text(TransitText.title(playback, state: state))
                     .scaledFont(.title2)
-                TransitArt(ship: ArtAdapters.shipInput(state.commander.ship, ruleset: state.ruleset, facing: .right),
+                TransitArt(ship: ArtAdapters.playerShipInput(state),
                            progress: Double(flown) / Double(TransitPlayback.totalClicks), wormhole: playback.viaWormhole, seed: state.seed)
                     .frame(maxWidth: 640, minHeight: ShipPanelSize.transit.lowerBound, maxHeight: ShipPanelSize.transit.upperBound)
             }
