@@ -3,9 +3,9 @@
 > The autonomous agent reads this first and updates it after every step. Keep it short and current.
 
 ## Status
-- **Current milestone:** M18 done; working on M19 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
-- **Next step:** M19 portrait proof of concept: `PA/Portraits/` (genome, layers, renderer), ART-FACE-001…008 tests, `pmart sheet --page portraits`, two reviews, ADR 0005.
-- **Last gate result:** 2026-11-19: M18 exit: `verify.sh` ALL GATES PASSED (incl. 7c-protected, 7d-logic-frozen); `protected-check.sh` PROTECTED OK (22 files); `logic-frozen.sh` LOGIC FROZEN OK.
+- **Current milestone:** M19 done; working on M20 (release 2.0, `docs/PRD-UI-Revamp.md`). The first number is the last finished milestone (spec-trace reads it).
+- **Next step:** M20 ships: add `role` and `liverySeed` to `ShipArtInput`; a new stat-driven generator (`PA/Ships2/`) that produces `ShipGeometry` parts with livery colours, so `ShipRenderer`, the layout frame, scorch and shields are reused; keep `ShipHullGenerator` for the icon until M26; rewrite ART-007…019, 081, 082, 087…089 tests in place; pmart pages ships, liveries, fittings.
+- **Last gate result:** 2026-11-19: M19 exit: `verify.sh` ALL GATES PASSED (see session log).
 - **Blockers:** none
 
 ## Milestones
@@ -28,7 +28,7 @@
 - [x] M16 Pointer and touch first (2026-11-19, tag m16-done; UI-POINTER spec, 36 pt targets with unchanged density (PointerButtonStyle, pointerTarget), hover feedback, Market chips with Buy/Sell and a row that fits the default window, Shipyard Compare toggle and double-click, Outfitter drag and drop with a sell well, pinned map selection card, wheel zoom, context menus, sheet quantity chips; PointerTargetUITests and PointerOnlyScenarioUITests; verify --ui green in the mirror on d355f44; QA-REPORT M16 review and touch-checklist rows, hands-on touch part is owner hand check (h))
 - [x] M17 Polish and release 1.1.0 (2026-11-19, tags m17-done and v1.1.0; README and QA screenshots re-exported and read, Help/README/CHANGELOG/CREDITS updated, QA-REPORT 1.1 rows, pmsim bench OK, bench-map 0.253 ms, idle CPU 3.2%/3.0%, release.sh PASS, clean-clone build, GitHub release v1.1.0, final-check.sh)
 - [x] M18 Setup, freezes and baselines (release 2.0) (2026-11-19, tag m18-done; baselines: fuzz 4531100 / 4528609 / 3134221 commands, galaxy seed-1 hashes ff4fb0e3… / c04d544a… / 8f2dead9…, planet digests pinned in PlanetFrozenTests and PlanetInputFrozenTests)
-- [ ] M19 Portrait proof of concept
+- [x] M19 Portrait proof of concept (2026-11-19, tag m19-done; target style adopted, ADR 0005: self review 56/60, independent review 55/60 on iteration 3; ART-FACE-001…009, 011; helmet avatars and ART-034 retired; the app shows the new portraits in the Crew section)
 - [ ] M20 Ships and liveries
 - [ ] M21 Design system and shell
 - [ ] M22 Bridge
@@ -75,6 +75,7 @@
 - [x] M0 exit: verify.sh ALL GATES PASSED, tag m0-done, push
 
 ## Accepted assumptions and decisions log
+- 2026-11-19: M19. ART-FACE-006's "three tones" is measured as the 10th, 50th and 90th percentile of face brightness at 28 pt being at least 8/255 apart (a fixed-bucket count misjudged dark skin, whose tones are naturally closer). Hair whose brightness is within 0.13 of the skin's is drawn black so the hairline shows; facial hair is not generated with long, tied or knotted hair. Art review method: render `pmart sheet` pages into `build/qa/`, read them, and give an independent subagent only the PNGs and the rubric.
 - 2026-11-19: Release 2.0 (M18). The status line's first number is the last finished milestone (spec-trace due rule). The planet digests in PlanetFrozenTests were stable over three runs on this machine; they hash CPU-projected pixels, so a toolchain or OS change that alters floating-point output would show there first: compare against a checkout of 296ad2c before suspecting the code. Do not edit verify.sh while a verify run is in flight (bash reads the script as it runs).
 - 2026-11-19: test and gate audit against 1.0 (`git diff m13-done HEAD` over the test folders and `scripts/`). Every changed or removed check is a rewrite PRD-1.1 names: `spec-trace.sh` threshold 13 → 17 and `PM_TRACE_MILESTONE` (D10, M14 step 1); ART-006 budgets, ART-021…026/029/052 planet tests (M14); the insect-motif assertions of ART-008…012 and the rebuilt endings (M15); MAP-020 hit radii, the Galaxy tip text, the Market identifier list (M16). No pre-existing threshold was lowered. The new M16 source audit is back to its first, strict form: the small-control allowlist holds only the route panel's progress spinner, and the hover audit exempts no file. To get there the route panel's objective and Clear buttons use regular bezels again (the panel's vertical padding went from 10 to 6 pt so it still fits at the largest Text Size), and the 36 pt target of `PointerButtonStyle` (an `.onTapGesture`) carries `hoverHighlight` itself: a push button tints on hover, the tint the size and shape of its bezel (checked on a screenshot of a hovered button). These two small UI changes landed after the v1.1.0 release was built, so `main` is ahead of the released app by them; tag and release were not rewritten.
 - 2026-11-19: tag `m16-done` sits on b7d0fa1, where `spec-trace.sh` reported UI-PTR-020 untraced (found right after tagging). The next commit adds the trace (a `covers:` comment on the two M12 keyboard tests; no behaviour change) and `verify.sh` passes there. The tag was not moved: rewriting a pushed tag needs the owner's say-so.

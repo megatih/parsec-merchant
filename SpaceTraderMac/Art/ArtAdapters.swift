@@ -165,18 +165,50 @@ nonisolated enum ArtAdapters {
         }
     }
 
-    /// ART-034: special passengers get a fixed avatar; everyone else a seeded bust.
-    static func avatarRole(crewID: Int) -> CrewAvatarRole? {
+    // MARK: Portraits (ART-FACE)
+
+    /// The authored characters: special crew and passengers. Everyone else gets a seeded face.
+    static func portraitRole(crewID: Int) -> PortraitRole? {
         switch crewID {
         case CrewID.wild: .wild
         case CrewID.jarek: .jarek
         case CrewID.princess: .princess
+        case CrewID.zeethibal: .zeethibal
         default: nil
         }
     }
 
-    static func avatarSeed(crewID: Int, state: GameState) -> UInt64 {
-        ArtSeed.crew(galaxySeed: state.seed, crewID: crewID)
+    /// A famous captain's authored portrait (UI-ENC-204).
+    static func portraitRole(_ encounter: VeryRareEncounter) -> PortraitRole? {
+        switch encounter {
+        case .captainAhab: .ahab
+        case .captainConrad: .conrad
+        case .captainHuie: .huie
+        default: nil
+        }
+    }
+
+    /// A stable FNV-1a hash of a name (the standard library's hashing is seeded per process and must not be used).
+    static func nameHash(_ name: String) -> UInt64 {
+        name.utf8.reduce(0xCBF2_9CE4_8422_2325) { ($0 ^ UInt64($1)) &* 0x0000_0100_0000_01B3 }
+    }
+
+    /// ART-FACE-005: the portrait seed of a crew member. It uses only saved state: the galaxy seed and the crew id, and
+    /// for the commander also the commander's name, so two games on one galaxy code get different commanders.
+    static func portraitSeed(crewID: Int, state: GameState) -> UInt64 {
+        let base = ArtSeed.crew(galaxySeed: state.seed, crewID: crewID)
+        return crewID == CrewID.commander ? ArtSeed.mix(base, nameHash(state.commander.name)) : base
+    }
+
+    /// The portrait of a crew member: authored or seeded, with the best skill as the chest insignia.
+    static func portraitGenome(crewID: Int, state: GameState) -> PortraitGenome {
+        if let role = portraitRole(crewID: crewID) { return PortraitGenome.fixed(role) }
+        var genome = PortraitGenome.make(seed: portraitSeed(crewID: crewID, state: state))
+        if state.mercenaries.indices.contains(crewID) {
+            let skills = state.mercenaries[crewID].skills
+            if let best = skills.indices.max(by: { skills[$0] < skills[$1] }) { genome.insignia = best }
+        }
+        return genome
     }
 
     /// A pristine portrait of a ship type with a known spec (shipyard cards, purchase sheet).

@@ -45,14 +45,6 @@ struct GlyphSceneTests {
         #expect(colored)
     }
 
-    @Test("ART-034 crew avatars: 100 consecutive ids give at least 90 distinct busts; roles are fixed")
-    func avatars() {
-        let traits = (0..<100).map { CrewAvatar.Traits.make(seed: ArtSeed.crew(galaxySeed: 1234, crewID: $0)) }
-        #expect(Set(traits).count >= 90)
-        #expect(CrewAvatar.Traits.make(seed: 1, role: .wild) == CrewAvatar.Traits.make(seed: 99, role: .wild))
-        #expect(Set(CrewAvatarRole.allCases.map { CrewAvatar.Traits.make(seed: 0, role: $0).insignia }).count == 3)
-    }
-
     @Test("ART-035 tribbles: 24 fur strokes, 4 warm colours; ±8° wiggle over 0.2 s or a scale pulse under Reduce Motion")
     func tribbles() {
         #expect(TribbleSprite.colors.count == 4)
@@ -250,7 +242,7 @@ struct GlyphSceneTests {
         for b in EncounterBadgeKind.allCases {
             for s in [16.0, 64.0] { views.append(("\(b)\(s)", AnyView(EncounterBadgeGlyph(badge: b).foregroundStyle(.black)), CGSize(width: s, height: s))) }
         }
-        for i in 0..<20 { views.append(("avatar\(i)", AnyView(CrewAvatar(seed: UInt64(i))), CGSize(width: 48, height: 48))) }
+        for i in 0..<20 { views.append(("avatar\(i)", AnyView(CharacterPortrait(seed: UInt64(i))), CGSize(width: 48, height: 48))) }
         views.append(("tribble", AnyView(TribbleSprite(index: 2)), CGSize(width: 32, height: 32)))
         for t in AchievementTier.allCases {
             for locked in [false, true] {

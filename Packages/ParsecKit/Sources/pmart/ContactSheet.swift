@@ -13,6 +13,13 @@ enum ContactSheet {
         case "planets": image = IconExport.render(PlanetSheet.sheet, pixels: 1600)
         case "ships": image = IconExport.render(ShipSheet.sheet, pixels: 1600)
         case "endings": image = IconExport.render(ShipSheet.endings, pixels: 1600)
+        case "portraits": image = IconExport.render(PortraitSheet.sheet.frame(width: 1600, height: 1600), pixels: 1600)
+        case "portraits-1", "portraits-2", "portraits-3", "portraits-4":
+            // A quarter of the sheet at a size where details can be judged.
+            let n = (Int(String(page?.last ?? "1")) ?? 1) - 1
+            image = IconExport.render(PortraitSheet.grid(Array(PortraitSheet.genomes[(n * 15)..<(n * 15 + 15)]), columns: 5, side: 300)
+                .frame(width: 1600, height: 1600), pixels: 1600)
+        case "portraits-small": image = IconExport.render(PortraitSheet.small, pixels: 1600)
         default: fail("unknown page \(page ?? "")")
         }
         try IconExport.writePNG(image, to: url)
@@ -33,7 +40,7 @@ enum ContactSheet {
                  + EncounterBadgeKind.allCases.map { AnyView(EncounterBadgeGlyph(badge: $0).padding(20)) }
                  + [AnyView(IllegalBadge().padding(30))], columns: 16, cell: CGSize(width: 95, height: 95))
             grid(EquipmentGlyphKind.allCases.map { AnyView(EquipmentGlyph(kind: $0).padding(20)) }, columns: 16, cell: CGSize(width: 95, height: 95))
-            grid((0..<12).map { AnyView(CrewAvatar(seed: UInt64($0)).padding(10)) }
+            grid((0..<12).map { AnyView(CharacterPortrait(seed: UInt64($0)).padding(10)) }
                  + (0..<4).map { AnyView(TribbleSprite(index: $0).padding(10)) }, columns: 16, cell: CGSize(width: 95, height: 95))
             grid([AnyView(AchievementBadgeArt(shape: .ship(.wasp), tier: .brass, locked: false).padding(8)),
                   AnyView(AchievementBadgeArt(shape: .commodity(.ore), tier: .silver, locked: false).padding(8)),

@@ -37,15 +37,18 @@ struct ShipPortrait: View {
     }
 }
 
-/// ART-034: a crew member's avatar (special passengers have a fixed one).
+/// ART-FACE: a crew member's portrait (special characters have an authored one).
 struct CrewAvatarView: View {
     let crewID: Int
+    var side: CGFloat = 34
     @Environment(GameSession.self) private var session
 
     var body: some View {
-        CrewAvatar(seed: ArtSeed.crew(galaxySeed: session.state?.seed ?? 0, crewID: crewID), role: ArtAdapters.avatarRole(crewID: crewID))
-            .frame(width: 34, height: 34)
-            .accessibilityHidden(true)
+        if let state = session.state {
+            CharacterPortrait(genome: ArtAdapters.portraitGenome(crewID: crewID, state: state))
+                .frame(width: side, height: side)
+                .accessibilityHidden(true)
+        }
     }
 }
 
