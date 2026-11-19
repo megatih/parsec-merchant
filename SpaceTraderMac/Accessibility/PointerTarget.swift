@@ -18,10 +18,12 @@ private struct PointerTargetModifier: ViewModifier {
     }
 }
 
-/// UI-PTR-003: hover feedback of a tappable card or row. It never changes layout and reveals nothing.
+/// UI-PTR-003: hover feedback of a tappable card, row or push-button target. It never changes layout and reveals nothing.
 private struct HoverHighlightModifier: ViewModifier {
     let cornerRadius: CGFloat
     let isEnabled: Bool
+    /// The size of the tint when it is smaller than the hover area (a push button's bezel inside its target).
+    var tintSize: CGSize?
     @State private var hovering = false
 
     func body(content: Content) -> some View {
@@ -29,6 +31,7 @@ private struct HoverHighlightModifier: ViewModifier {
             .background {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(Color.accentColor.opacity(hovering && isEnabled ? HoverHighlight.opacity : 0))
+                    .frame(width: tintSize?.width, height: tintSize?.height)
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
             }
@@ -65,9 +68,11 @@ private struct PointerButtonBody: View {
                     // Centred on the bezel and allowed to reach past it, so rows keep their height.
                     Color.clear
                         .contentShape(Rectangle())
-                        .gesture(TapGesture().onEnded { if isEnabled { configuration.trigger() } })
+                        .onTapGesture { if isEnabled { configuration.trigger() } }
                         .accessibilityRepresentation { Button(configuration).buttonStyle(.automatic) }
                         .frame(width: width, height: height)
+                        // UI-PTR-003: the whole target reacts to the pointer; the tint stays on the bezel.
+                        .hoverHighlight(cornerRadius: geo.size.height / 2, isEnabled: isEnabled, tintSize: geo.size)
                         .position(x: geo.size.width / 2, y: geo.size.height / 2)
                 }
             }
@@ -82,8 +87,8 @@ extension View {
     }
 
     /// UI-PTR-003: the card or row reacts to the pointer before the click.
-    func hoverHighlight(cornerRadius: CGFloat = 8, isEnabled: Bool = true) -> some View {
-        modifier(HoverHighlightModifier(cornerRadius: cornerRadius, isEnabled: isEnabled))
+    func hoverHighlight(cornerRadius: CGFloat = 8, isEnabled: Bool = true, tintSize: CGSize? = nil) -> some View {
+        modifier(HoverHighlightModifier(cornerRadius: cornerRadius, isEnabled: isEnabled, tintSize: tintSize))
     }
 }
 
