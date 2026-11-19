@@ -39,7 +39,7 @@
 | | Emoji & Symbols, AutoFill, Start Dictation | system keys (🌐E, ⌃⌘Space) | system |
 | View | Show/Hide Sidebar | ⌃⌘S | system (`SidebarCommands`) |
 | | Show/Hide Inspector | ⌃⌘I | system (`InspectorCommands`) |
-| | Bridge … Logbook | ⌘1 Bridge, ⌘2 Market, ⌘3 Shipyard, ⌘4 Outfitter, ⌘5 Crew, ⌘6 Bank, ⌘7 Galaxy, ⌘8 Quests, ⌘9 Logbook | `.bridge` … `.logbook` |
+| | Bridge … Logbook | ⌘1 Bridge, ⌘2 Shipyard, ⌘3 Outfitter, ⌘4 Crew, ⌘5 Bank, ⌘6 Commander Status, ⌘7 Quests, ⌘8 Galaxy, ⌘9 Logbook (release 2.0 dock order; the 1.x Market page has no shortcut) | `.bridge` … `.logbook` |
 | | Galaxy Chart | ⇧⌘M | `.galaxyChart` |
 | | Zoom In / Zoom Out / Fit | ⌘+ (alias ⌘=) / ⌘− / ⌘0 | `.zoomIn` / `.zoomOut` / `.zoomFit` (map focused) |
 | | Enter Full Screen | ⌃⌘F (also 🌐F) | system |
@@ -49,6 +49,9 @@
 | | Track "<target>" / Stop Tracking | — | `.track` |
 | | Find System… | ⌥⌘F | `.findSystem` |
 | | Plot Route… | — | `.plotRoute` |
+| | Sell All Cargo | ⌥⌘S | `.sellAllCargo` (release 2.0) |
+| | Price Details… | ⌥⌘I | `.priceDetails` (release 2.0; ⌘I stays free for text) |
+| | Buy Fuel… / Repair… | — | `.buyFuelAmount` / `.repairAmount` (release 2.0) |
 | | Fill Fuel / Repair Hull | ⇧⌘F / ⇧⌘R | `.fillFuel` / `.repair` |
 | | Newspaper | ⇧⌘N | `.newspaper` |
 | | Options… | ⌥⌘O | `.options` |
@@ -105,6 +108,8 @@ Mouse modifiers are accelerators only; each has a visible control that does the 
 | Narrative offer / message | Accept / Continue | Decline / Continue | Esc on a message page added by UI-KEYS-021 |
 | Report sheets (arrival, arrest, escape pod, reactor) | Continue | Continue | Esc added by UI-KEYS-021 |
 | System intel | Done | Done | Esc added by UI-KEYS-021 |
+| Price Details | Done | Done | release 2.0 (UI-BRG-008) |
+| Buy Fuel / Repair amount | Buy | Cancel | release 2.0 |
 | About window | Done | Done (and ⌘W) | |
 | Developer tester (Debug) | Close | Close | |
 | Confirmation dialogs, destructive (ALR "(destructive)", `AppConfirmation` deletes and clears) | Cancel | Cancel | UI-SHELL Conventions |
@@ -130,7 +135,7 @@ Mouse modifiers are accelerators only; each has a visible control that does the 
 
 ## 4. In-view keys
 
-- **UI-KEYS-012** {M12} [M][W][P] Market keyboard trading uses only plain B/S (1 unit) and ⇧B/⇧S (Buy Max / Sell All): `MarketKeyAction.make` returns nil whenever ⌘, ⌥ or ⌃ is held. Reason: menu key equivalents win over `.onKeyPress`, so ⌘S and ⇧⌘S would reach File › Save and Save As instead of "sell 20/100", and ⌥ changes the typed character. Larger keyboard amounts go through the quantity field (↩ buys, ⇧↩ sells). This amends the keyboard half of UI-SHELL-064; the mouse modifiers of UI-SHELL-062 are unchanged. Unit tests: `make("s", [.command])`, `make("b", [.option])` and `make("b", [.control])` are nil; `make("B", [.shift])` is `.buyMax`. (source: MenuCatalog.swift ⌘S/⇧⌘S; MarketModels.swift `MarketKeyAction`; UI-KEYS-006)
+- **UI-KEYS-012** {M12} [M][W][P] Market keyboard trading uses only plain B/S (1 unit) and ⇧B/⇧S (Buy Max / Sell All): `MarketKeyAction.make` returns nil whenever ⌘, ⌥ or ⌃ is held. Reason: menu key equivalents win over `.onKeyPress`, so ⌘S and ⇧⌘S would reach File › Save and Save As instead of "sell 20/100", and ⌥ changes the typed character. Since release 2.0 B and S trade the quantity typed in the selected row (digits edit it, UI-BRG-007). This amends the keyboard half of UI-SHELL-064. Unit tests: `make("s", [.command])`, `make("b", [.option])` and `make("b", [.control])` are nil; `make("B", [.shift])` is `.buyMax`. (source: MenuCatalog.swift ⌘S/⇧⌘S; MarketModels.swift `MarketKeyAction`; UI-KEYS-006)
 - **UI-KEYS-013** {M12} [UI] [M][W][P] Map zoom: ⌘+ and its unshifted alias ⌘= both zoom in, ⌘− zooms out and ⌘0 is Fit Galaxy, only while a map canvas has focus (MAP-015, MENU-022). Because the catalog's `+` key equivalent does not match ⌘= on a US keyboard, the focused canvas adds `MapKeys` bindings for ⌘= (owner `.view(.mapCanvas)`, action `zoomIn`). A UI test focuses the Galaxy section map (Tab or click), presses ⌘=, ⌘−, ⌘+ and ⌘0 and checks `<scope>.zoomIn`/`.zoomOut` enablement and the zoom value change each time; with the map unfocused, ⌘= does nothing. (source: MAP-015 "⌘+ (and ⌘=)"; UX-VISION §10)
 - **UI-KEYS-014** {M12} [UI] [M][W][P] The Encounter menu's plain-letter keys are active only while its items are shown and enabled (phase `.encounter`, `!isModal`, UI-ENC-034). A UI test in `-PMScenario pirateAmbush` reaches the plunder or trade sheet (via the fixture of UI-ENC-094 or an encounter fixture scenario), types "a" and "s" into the sheet's quantity field and checks the field shows them and no encounter action ran (the combat log is unchanged). (source: MENU-006, MENU-037; UX-VISION §10)
 - **UI-KEYS-015** {M12} [M][W][P] The letters shared by the Encounter menu and the Market table (B, S) never coexist: the audit of UI-KEYS-006 finds the Encounter items disabled in every docked fixture context and the Market table context impossible in `.encounter`; the unit test asserts this pair explicitly. (source: UI-KEYS-005, UI-KEYS-006)
@@ -169,7 +174,7 @@ Mouse modifiers are accelerators only; each has a visible control that does the 
 
 ## 7. HIG and Liquid Glass audit
 
-- **UI-KEYS-031** {M12} [UI] [M][W][P] The toolbar holds controls only: in a docked game the main window toolbar contains exactly the system sidebar toggle, `toolbar.target`, `toolbar.warp` and `toolbar.inspector` (no status text, no extra buttons). The UI test reads the toolbar's descendants with identifiers. (source: UX-VISION §3 "Toolbar holds controls only")
+- **UI-KEYS-031** {M12} [UI] [M][W][P] There is no toolbar (UI-NAV-001): in a docked game the main window's toolbar holds no item of the app; navigation is the dock bar and status is the status bar, both at the top of the window. The UI test checks that the toolbar has no identified descendants, that the dock bar is above the status bar, that every page's dock button is in view and that cash is shown in the status bar. (rewritten for release 2.0)
 - **UI-KEYS-032** {M12} [manual] [M][W][P] Liquid Glass on macOS 27: the toolbar, sidebar and inspector use the system glass with no custom backgrounds (`.scrollContentBackground(.hidden)`, opaque fills) layered over it; Warp keeps its place when the window narrows (`visibilityPriority(.high)`); the two custom glass surfaces (map HUD, encounter action bar) do not sit on other glass; content areas (tables, cards) use standard backgrounds. QA-REPORT row with light and dark screenshots of the main window, the Galaxy HUD and the encounter bar. (source: UX-VISION §7 "Liquid Glass")
 - **UI-KEYS-033** {M12} [M][W][P] Menu-title ellipsis: a `MenuCatalog` title ends with "…" iff the item opens a sheet, dialog or window that asks for more input before acting: New Game…, Open Saved Game…, Save As…, Import…, Export…, Find…, Find System…, Plot Route…, Options…, Retire…, Use Singularity…. Unit test over every `MenuItemID` with the expected set. (source: HIG "Menus" ellipsis rule)
 - **UI-KEYS-034** {M12} [M][W][P] `SourceAuditTests` (app test target; reads `SpaceTraderMac/**/*.swift` located from `#filePath`) checks: `.glassEffect(` occurs only in `Map/MapHUDViews.swift`, `Map/HeatmapHUDView.swift` and `Views/Encounter/EncounterActionBar.swift`; `GlassEffectContainer` occurs nowhere else; `.popover(` and `.popoverTip(` occur nowhere (extends UI-SHELL-108); `.focusEffectDisabled()` and `.focusEffectDisabled(true)` occur nowhere; `.keyboardShortcut(.defaultAction)` never follows `role: .destructive` within the same `Button` declaration. Each failure names file and line. (source: UX-VISION §7 "Custom .glassEffect is limited to two floating elements"; PRD §6.5 "Never use .popover")

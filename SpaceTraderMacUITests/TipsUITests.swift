@@ -13,7 +13,7 @@ final class TipsUITests: ParsecUITestCase {
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
         let recorder = AuditRecorder()
 
-        type("2")
+        openPage("bridge")
         let market = waitFor(AXID.A11y.tipMarket)
         XCTAssertTrue(market.buttons["Close Tip"].exists || element("tip.market.close").exists, "the Market tip has its close button")
         recorder.audit(app, surface: "tip-market", types: .all, windowFrame: mainWindow.frame,
@@ -21,7 +21,6 @@ final class TipsUITests: ParsecUITestCase {
         tipButton(market, id: "tip.market.close", label: "Close Tip").click()
         expect("the Market tip closes") { !market.exists }
 
-        type("1")
         click(AXID.Bridge.targetNext)
         waitFor(AXID.A11y.tipWarp)
         recorder.audit(app, surface: "tip-warp", types: .all, windowFrame: mainWindow.frame,
@@ -33,14 +32,14 @@ final class TipsUITests: ParsecUITestCase {
         type("w")
         expect("the Help window closes") { !element(AXID.A11y.helpWindow).exists }
 
-        type("7")
+        openPage("galaxy")
         waitFor(AXID.A11y.tipGalaxy)
         recorder.audit(app, surface: "tip-galaxy", types: .all, windowFrame: mainWindow.frame,
                        scope: AuditScope.make(app: app, root: mainWindow))
         tipButton(element(AXID.A11y.tipGalaxy), id: "tip.galaxy.close", label: "Close Tip").click()
         expect("the Galaxy tip closes") { !element(AXID.A11y.tipGalaxy).exists }
         XCTAssertTrue(recorder.failures.isEmpty, "tip audit failures:\n" + recorder.failures.joined(separator: "\n"))
-        type("1")
+        openPage("bridge")
     }
 
     @MainActor
@@ -49,12 +48,11 @@ final class TipsUITests: ParsecUITestCase {
         relaunch(UITestFixtures.launchArguments + ["-PMTips", "default"])  // TipKit's own rules on a reset store
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
-        type("2")
+        openPage("bridge")
         waitFor(AXID.A11y.tipMarket)
-        let buy = waitFor(AXID.Market.buy("water"))
-        reveal(buy, in: element(AXID.Market.table)).click()
+        click(AXID.Cargo.buy("water"))
         expect("the Market tip is gone after one buy") { !element(AXID.A11y.tipMarket).exists }
-        type("1")
+        openPage("bridge")
     }
 
     /// A tip's control by its identifier, else by its label (TipView may give its subtree the tip's identifier).

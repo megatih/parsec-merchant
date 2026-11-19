@@ -23,9 +23,9 @@ enum UISurfaceCatalog {
     }
 
     static let sections: [(key: String, name: String, root: String)] = [
-        ("1", "bridge", "bridge.root"), ("2", "market", "market.root"), ("3", "shipyard", "shipyard.root"),
-        ("4", "outfitter", "outfitter.root"), ("5", "crew", "crew.root"), ("6", "bank", "bank.root"),
-        ("7", "galaxy", "galaxy.root"), ("8", "quests", "quests.root"), ("9", "logbook", "logbook.root"),
+        ("bridge", "bridge", "bridge.root"), ("shipyard", "shipyard", "shipyard.root"), ("outfitter", "outfitter", "outfitter.root"),
+        ("crew", "crew", "crew.root"), ("bank", "bank", "bank.root"), ("status", "status", "inspector.root"),
+        ("quests", "quests", "quests.root"), ("galaxy", "galaxy", "galaxy.root"), ("logbook", "logbook", "logbook.root"),
     ]
 
     static let entries: [UISurface] = {
@@ -55,7 +55,7 @@ enum UISurfaceCatalog {
         e += [
             UISurface(name: "encounter-before-attack", root: AXID.Encounter.tactical, group: .ambush),
             UISurface(name: "encounter-after-attack", root: AXID.Encounter.logRow(1), group: .ambush),
-            UISurface(name: "arrival-card", root: AXID.Arrival.card, group: .ambush),
+            UISurface(name: "arrival-card", root: AXID.Report.sheet, group: .ambush),
             UISurface(name: "newspaper-sheet", root: AXID.Newspaper.sheet, group: .ambush),
             UISurface(name: "feed-overlay", root: AXID.A11y.feedList, group: .ambush),
             UISurface(name: "game-over-card", root: AXID.GameOver.card, group: .ambush),
@@ -122,9 +122,7 @@ extension ParsecUITestCase {
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { quickStartRuns }
         type("s")  // a saved slot gives the Open sheet a row
-        if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
-        waitFor(AXID.Inspector.root)
-        for s in UISurfaceCatalog.sections {
+                for s in UISurfaceCatalog.sections {
             goToSection(s.key, root: s.root)
             at("section-\(s.name)", element(s.root))
         }
@@ -134,9 +132,9 @@ extension ParsecUITestCase {
         at("logbook-achievements")
         selectLogbookTab("Captain's Log")
 
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext)
-        type("7")
+        openPage("galaxy")
         waitFor(AXID.Galaxy.root)
         let g = AXID.Galaxy.section
         for _ in 0..<2 where !element(g.legend).waitForExistence(timeout: 2) { click(g.legendToggle) }
@@ -221,7 +219,7 @@ extension ParsecUITestCase {
         click(AXID.A11y.findSystemCancel)
         expect("Find System closes") { !element(AXID.A11y.findSystemSheet).exists }
 
-        type("3")
+        openPage("shipyard")
         let buy = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier BEGINSWITH 'shipyard.ship.' AND identifier ENDSWITH '.buy'")).firstMatch
         if buy.waitForExistence(timeout: timeout) { buy.click() }
@@ -244,7 +242,7 @@ extension ParsecUITestCase {
             if page < 6 { click(AXID.NewGame.next) }
         }
         click(AXID.NewGame.cancel)
-        type("1")
+        openPage("bridge")
     }
 
     private func walkAmbush(extra: [String], reach: (String, XCUIElement?, StaticString, UInt) -> Void) {
@@ -271,11 +269,10 @@ extension ParsecUITestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))
         }
         expect("the encounter ends") { !view.exists }
-        // The window restores its last section; the arrival card is on Bridge (UI-ENC-055).
-        goToSection("1", root: "bridge.root")
-        let card = waitFor(AXID.Arrival.card)
-        if !element(AXID.Arrival.encounter(0)).exists { click(AXID.Arrival.toggle) }
-        at("arrival-card", card)
+        // A trip ends on the Bridge with its summary in the status bar (UI-BRG-042); the report opens from it.
+        waitFor(AXID.Arrival.card)
+        at("arrival-card", openArrivalReport())
+        closeArrivalReport()
         type("n", [.command, .shift])
         if element(AXID.Dialog.confirmationConfirm).waitForExistence(timeout: 2) { click(AXID.Dialog.confirmationConfirm) }
         at("newspaper-sheet", waitFor(AXID.Newspaper.sheet))
@@ -309,15 +306,8 @@ extension ParsecUITestCase {
         click(AXID.Report.continueButton)
 
         relaunch(UITestFixtures.specialEventArguments + extra)
-        type("1")
-        // The card is the last on Bridge: scroll it above the status bar first.
-        let card = waitFor(AXID.Narrative.bridgeCard)
-        let shown = { () -> Bool in
-            let w = self.mainWindow.frame
-            return CGRect(x: w.minX, y: w.minY, width: w.width, height: w.height - 40).contains(card.frame)
-        }
-        for _ in 0..<20 where !shown() { element("bridge.root").scroll(byDeltaX: 0, deltaY: -120) }
-        at("narrative-card", card)
+        openPage("bridge")
+        at("narrative-card", waitFor(AXID.Narrative.bridgeCard))
         click(AXID.Narrative.bridgeAccept)
         at("narrative-offer-sheet", waitFor(AXID.Narrative.sheet))
         click(AXID.Narrative.decline)
@@ -356,7 +346,7 @@ extension ParsecUITestCase {
     func goToSection(_ key: String, root: String, file: StaticString = #filePath, line: UInt = #line) {
         for _ in 0..<3 where !element(root).exists {
             app.activate()
-            type(key)
+            openPage(key)
             _ = element(root).waitForExistence(timeout: 4)
         }
         waitFor(root, file: file, line: line)

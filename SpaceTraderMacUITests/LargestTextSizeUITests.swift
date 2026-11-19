@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 import XCTest
 
-/// Flow 7 (A11Y-026): every catalog surface at the largest Text Size (`accessibility3`) in the 1100×720 minimum window.
+/// Flow 7 (A11Y-026): every catalog surface at the largest Text Size (`accessibility3`) in the minimum window of that Text Size (1200×680 times the step that fits the screen, UI-DS-004).
 /// macOS has no `.textClipped` audit type, so the test uses the spec's fallback: every static text outside a scrolling
 /// container has a non-empty frame inside its window, and no label ends in "…" unless its value or title carries the full
 /// text. Each surface attaches `qa-textsize-<surface>` (`.keepAlways`) for the screenshot review (A11Y-027).
@@ -37,7 +37,9 @@ final class LargestTextSizeUITests: ParsecUITestCase {
             if !checkedMinimum, mainWindow.exists {
                 checkedMinimum = true
                 let size = mainWindow.frame.size
-                XCTAssertLessThanOrEqual(size.width, 1101, "-PMWindowSize min opens the main window at 1100 wide (got \(size))")
+                // UI-DS-004: the minimum is 1200 × 680 times the largest Text Size step that fits this screen.
+                XCTAssertTrue([1200.0, 1380, 1560, 1800, 2400].contains { abs(size.width - $0) <= 1 },
+                              "-PMWindowSize min opens the main window at a Text Size minimum (got \(size))")
             }
             let window = windowElement(containing: visited.root)
             parkPointer(settle: 1.2)  // A11Y-027: no help tag over the reviewed screenshot

@@ -22,19 +22,18 @@ enum AXID {
         static let start = "newGame.start"
     }
 
-    enum Sidebar {
-        static let list = "sidebar.list"
-        static let phaseLabel = "sidebar.phaseLabel"
-        static let market = "sidebar.market"
-    }
-
-    enum Toolbar {
-        static let target = "toolbar.target"
-        static let warp = "toolbar.warp"
-        static let inspector = "toolbar.inspector"
+    /// The dock bar (release 2.0; the sidebar's rows moved from `sidebar.` to `dock.`, the toolbar is gone).
+    enum Dock {
+        static let bar = "dock.bar"
+        static let phaseLabel = "dock.phaseLabel"
+        static let market = "dock.market"
+        static let options = "dock.options"
+        static func button(_ page: String) -> String { "dock.\(page)" }
     }
 
     enum Status {
+        static let bar = "status.bar"
+        static let cash = "status.cash"
         static let feed = "status.feed"
         static let feedList = "status.feed.list"
         static let feedClose = "status.feed.close"
@@ -45,21 +44,68 @@ enum AXID {
     }
 
     enum Bridge {
+        static let root = "bridge.root"
+        static let regions = ["bridge.system", "bridge.cargo", "bridge.chart", "bridge.target"]
         static let targetNext = "bridge.target.next"
+        static let targetPrevious = "bridge.target.previous"
         static let targetCard = "bridge.target"
+        static let targetName = "bridge.target.name"
         static let targetWarp = "bridge.target.warp"
+        static let targetTrack = "bridge.target.track"
+        static let targetFind = "bridge.target.find"
+        static let fillTank = "bridge.system.fillTank"
+        static let repairHull = "bridge.system.repairHull"
+        static let news = "bridge.system.news"
+        static let special = "bridge.system.special"
+        static let hire = "bridge.system.hire"
+        static let quest = "bridge.system.quest"
+        static let chartOpen = "bridge.chart.open"
+        static let system = ["bridge.system.planet", "bridge.system.name", "bridge.system.size", "bridge.system.tech", "bridge.system.government",
+                             "bridge.system.resources", "bridge.system.status", "bridge.system.police", "bridge.system.pirates", "bridge.system.fuel",
+                             "bridge.system.hull", fillTank, repairHull, news, special, hire, quest]
+        static let target = [targetName, "bridge.target.distance", "bridge.target.badge", "bridge.target.note", "bridge.target.size",
+                             "bridge.target.tech", "bridge.target.government", "bridge.target.resources", "bridge.target.police", "bridge.target.pirates",
+                             "bridge.target.cost.mercenaries", "bridge.target.cost.insurance", "bridge.target.cost.interest",
+                             "bridge.target.cost.wormholeTax", "bridge.target.cost.total", "bridge.target.fuelAfter", targetWarp, targetPrevious,
+                             targetNext, targetTrack, targetFind]
+        /// UI-BRG-031: every element of the Bridge (a literal copy of `BridgeManifest.all`).
+        static var manifest: [String] {
+            regions + system + [Cargo.bays, Cargo.holdLine, Cargo.sellAll] + Cargo.items.flatMap { Cargo.cells($0) + Cargo.controls($0) }
+                + ["bridge.miniChart.map", chartOpen] + target
+        }
+        /// The elements that take clicks.
+        static var buttons: [String] {
+            [fillTank, repairHull, news, special, hire, quest, Cargo.sellAll, chartOpen, targetWarp, targetPrevious, targetNext, targetTrack, targetFind]
+                + Cargo.items.flatMap { [Cargo.buy($0), Cargo.max($0), Cargo.sell($0), Cargo.all($0)] }
+        }
     }
 
-    enum Market {
-        static let table = "market.table"
+    /// The Bridge's Cargo region (UI-BRG-031): `bridge.cargo.<element>.<good>`.
+    enum Cargo {
+        static let panel = "bridge.cargo"
+        static let rows = "bridge.cargo.rows"
+        static let sellAll = "bridge.cargo.sellAll"
+        static let bays = "bridge.cargo.summary.bays"
+        static let holdLine = "bridge.cargo.summary.hold"
         static let items = ["water", "furs", "food", "ore", "games", "firearms", "medicine", "machines", "narcotics", "robots"]
-        static func row(_ item: String) -> String { "market.row.\(item)" }
-        static func buy(_ item: String) -> String { "market.row.\(item).buy" }
-        static func held(_ item: String) -> String { "market.row.\(item).held" }
-        static func buyPrice(_ item: String) -> String { "market.row.\(item).buyPrice" }
-        static func sell(_ item: String) -> String { "market.row.\(item).sell" }
-        /// UI-PTR-007: the quantity chips ("1", "5", "20", "max").
-        static func chip(_ item: String, _ chip: String) -> String { "market.row.\(item).chip.\(chip)" }
+        static func row(_ item: String) -> String { "bridge.cargo.row.\(item)" }
+        static func good(_ item: String) -> String { "bridge.cargo.good.\(item)" }
+        static func held(_ item: String) -> String { "bridge.cargo.hold.\(item)" }
+        static func paid(_ item: String) -> String { "bridge.cargo.paid.\(item)" }
+        static func sellPrice(_ item: String) -> String { "bridge.cargo.sellPrice.\(item)" }
+        static func buyPrice(_ item: String) -> String { "bridge.cargo.buyPrice.\(item)" }
+        static func stock(_ item: String) -> String { "bridge.cargo.stock.\(item)" }
+        static func target(_ item: String) -> String { "bridge.cargo.target.\(item)" }
+        static func delta(_ item: String) -> String { "bridge.cargo.delta.\(item)" }
+        static func quantity(_ item: String) -> String { "bridge.cargo.quantity.\(item)" }
+        static func buy(_ item: String) -> String { "bridge.cargo.buy.\(item)" }
+        static func max(_ item: String) -> String { "bridge.cargo.max.\(item)" }
+        static func sell(_ item: String) -> String { "bridge.cargo.sell.\(item)" }
+        static func all(_ item: String) -> String { "bridge.cargo.all.\(item)" }
+        static func cells(_ item: String) -> [String] {
+            [row(item), good(item), held(item), paid(item), sellPrice(item), buyPrice(item), stock(item), target(item), delta(item)]
+        }
+        static func controls(_ item: String) -> [String] { [quantity(item), buy(item), max(item), sell(item), all(item)] }
     }
 
     enum Files {
@@ -134,9 +180,8 @@ enum AXID {
 
     /// The arrival card on the Bridge (UI-ENC §17).
     enum Arrival {
+        /// The arrival summary in the status bar's message slot (UI-BRG-042); a click on it opens the report sheet.
         static let card = "arrival.card"
-        static let toggle = "arrival.card.toggle"
-        static let dismiss = "arrival.card.dismiss"
         static func encounter(_ index: Int) -> String { "arrival.encounter.\(index)" }
         static let newsRead = "arrival.news.read"
     }
@@ -144,14 +189,15 @@ enum AXID {
     enum Newspaper {
         static let sheet = "newspaper.sheet"
         static let close = "decision.newspaper.close"
-        static let bridgeRead = "bridge.newspaper.read"
+        static let bridgeRead = "bridge.system.news"
     }
 
     enum Narrative {
         static let sheet = "narrative.sheet"
         static let decline = "narrative.decline"
-        static let bridgeCard = "bridge.special"
-        static let bridgeAccept = "bridge.special.accept"
+        /// The Special notice on the Bridge; a click opens the offer.
+        static let bridgeCard = "bridge.system.special"
+        static let bridgeAccept = "bridge.system.special"
     }
 
     enum GameOver {
@@ -166,8 +212,8 @@ enum AXID {
 
     /// Section roots visited by ⌘1…⌘8.
     static let sections: [(key: String, root: String)] = [
-        ("1", "bridge.root"), ("2", "market.root"), ("3", "shipyard.root"), ("4", "outfitter.root"),
-        ("5", "crew.root"), ("6", "bank.root"), ("7", "galaxy.root"), ("8", "quests.root"),
+        ("1", "bridge.root"), ("2", "shipyard.root"), ("3", "outfitter.root"), ("4", "crew.root"),
+        ("5", "bank.root"), ("6", "inspector.root"), ("7", "quests.root"), ("8", "galaxy.root"),
     ]
 
     /// The galaxy chart (MAP §20), per scope prefix: `galaxy`, `galaxyWindow`, `bridge.miniChart`.
@@ -203,6 +249,6 @@ enum AXID {
         static let section = Map(p: "galaxy")
         static let window = Map(p: "galaxyWindow")
         static let mini = Map(p: "bridge.miniChart")
-        static let sidebarRow = "sidebar.galaxy"
+        static let sidebarRow = "dock.galaxy"
     }
 }

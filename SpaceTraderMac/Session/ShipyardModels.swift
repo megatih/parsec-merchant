@@ -111,57 +111,7 @@ struct ShipyardModel: Equatable, Sendable {
     }
 }
 
-/// Card selection for Compare (UI-SHELL-070): a click selects one card, ⌘-click toggles, Esc clears.
-nonisolated struct ShipSelection: Equatable, Sendable {
-    private(set) var selected: [ShipType] = []
-
-    var isComparing: Bool { selected.count >= 2 }
-
-    func contains(_ t: ShipType) -> Bool { selected.contains(t) }
-
-    mutating func click(_ t: ShipType, command: Bool) {
-        if command {
-            if let i = selected.firstIndex(of: t) { selected.remove(at: i) } else { selected.append(t) }
-        } else {
-            selected = selected == [t] ? [] : [t]
-        }
-    }
-
-    mutating func clear() { selected = [] }
-
-    /// Keeps only ships that still have a card (the list changes after a purchase or a warp).
-    mutating func prune(to available: [ShipType]) {
-        selected.removeAll { !available.contains($0) }
-    }
-}
-
-/// One row of the compare table: the current ship's value and each selected ship's value and delta.
-nonisolated struct ShipCompareRow: Identifiable, Equatable, Sendable {
-    struct Cell: Equatable, Sendable {
-        let type: ShipType
-        let value: Int
-        let delta: Int
-    }
-
-    let field: ShipStatField
-    let current: Int
-    let cells: [Cell]
-    var id: ShipStatField { field }
-}
-
 enum ShipCompare {
-    /// Rows for the selected cards, in card order, with deltas against the current ship.
-    static func rows(_ model: ShipyardModel, selection: ShipSelection) -> [ShipCompareRow] {
-        guard let current = model.cards.first(where: \.isYours) else { return [] }
-        let chosen = model.cards.filter { selection.contains($0.type) }
-        return ShipStatField.allCases.map { f in
-            let base = f.value(current.spec)
-            return ShipCompareRow(field: f, current: base, cells: chosen.map {
-                ShipCompareRow.Cell(type: $0.type, value: f.value($0.spec), delta: f.value($0.spec) - base)
-            })
-        }
-    }
-
     /// The sign-plus-arrow delta label: "+5 ▲", "−3 ▼", "±0".
     static func deltaText(_ d: Int) -> String {
         if d > 0 { return "+\(d.formatted()) ▲" }

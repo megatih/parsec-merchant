@@ -12,16 +12,16 @@ final class M10LogbookUITests: ParsecUITestCase {
         click(AXID.Welcome.quickStart)
         expect("the game starts on day 0") { subtitle.hasPrefix("Day 0") }
         let item = UITestFixtures.achievementItem
-        type("2")
-        click(AXID.Market.buy(item))
-        expect("one \(item) is held") { text(of: element(AXID.Market.held(item))) == "1" }
+        openPage("bridge")
+        click(AXID.Cargo.buy(item))
+        expect("one \(item) is held") { text(of: element(AXID.Cargo.held(item))) == "1" }
         _ = warpToNextTarget()
-        type("2")
-        click(AXID.Market.sell(item))
+        openPage("bridge")
+        click(AXID.Cargo.sell(item))
         let feed = waitFor(AXID.Status.feed)
         expect("the feed shows the unlock (feed: \(text(of: feed)))") { text(of: feed) == "Achievement unlocked: First Profit" }
 
-        type("9")
+        openPage("logbook")
         waitFor(AXID.Logbook.root)
         selectTab("Captain's Log")  // the window may restore another tab (LOG-030)
         waitFor(AXID.Logbook.list)
@@ -39,7 +39,7 @@ final class M10LogbookUITests: ParsecUITestCase {
         expect("First Profit is marked unlocked (label: \(badge.label))") { badge.label.contains("Unlocked") }
         walk(element(AXID.Logbook.root), surface: "Achievements tab")
         selectTab("Captain's Log")
-        type("1")  // leave the window's restored section and tab at their defaults for later tests
+        openPage("bridge")  // leave the window's restored section and tab at their defaults for later tests
     }
 }
 
@@ -62,7 +62,7 @@ final class M10FlavorUITests: ParsecUITestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))
         }
         expect("the encounter ends") { !view.exists }
-        type("9")
+        openPage("logbook")
         selectTab("Captain's Log")
         waitFor(AXID.Logbook.list)
         let rows = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", AXID.Logbook.entryPrefix))
@@ -71,7 +71,7 @@ final class M10FlavorUITests: ParsecUITestCase {
         expect("an encounter row shows its template flavor") {
             rows.allElementsBoundByIndex.contains { row in phrases.contains { row.label.contains($0) } }
         }
-        type("1")
+        openPage("bridge")
     }
 }
 

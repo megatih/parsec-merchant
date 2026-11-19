@@ -254,7 +254,7 @@ struct CrewBankQuestsTests {
 
     // MARK: Quests
 
-    @Test("UI-SHELL-086 quest cards: title, chain steps, deadline gauge, system links that select and show the Bridge")
+    @Test("UI-SHELL-086 quest cards: title, chain steps, deadline gauge, system buttons that select the target and keep the page")
     func questCards() throws {
         let session = try TestSessions.playing()
         try TestSessions.edit(session) { s in
@@ -277,7 +277,7 @@ struct CrewBankQuestsTests {
         let system = try #require(dragonfly.entry.systems.first)
         session.selectedSection = .quests
         session.selectQuestSystem(system)
-        #expect(session.state?.warpSystem == system && session.selectedSection == .bridge)
+        #expect(session.state?.warpSystem == system && session.selectedSection == .quests, "UI-NAV-006: targeting keeps the page")
         #expect(AXID.Quests.system(entry: dragonfly.index, system: system)
             .range(of: AXID.pattern, options: .regularExpression) != nil)
 

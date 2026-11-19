@@ -10,18 +10,16 @@ final class IdentifierWalkUITests: ParsecUITestCase {
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
         type("s")                                         // a saved slot gives the Open sheet a row to walk
 
-        if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
-        waitFor(AXID.Inspector.root)
         for section in AXID.sections {
             type(section.key)
             waitFor(section.root)
-            walk(mainWindow, surface: "section \(section.root) with the inspector")
+            walk(mainWindow, surface: "page \(section.root)")
         }
 
         // MAP-104: the Galaxy section with the legend and a planned route, and the Galaxy Chart window.
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext)
-        type("7")
+        openPage("galaxy")
         waitFor(AXID.Galaxy.root)
         click(AXID.Galaxy.section.legendToggle)
         waitFor(AXID.Galaxy.section.legend)

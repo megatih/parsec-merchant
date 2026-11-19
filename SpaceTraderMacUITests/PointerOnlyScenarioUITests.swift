@@ -9,12 +9,12 @@ final class PointerOnlyScenarioUITests: ParsecUITestCase {
 
     /// The number in a Held cell ("5", or "5, avg 38 cr.").
     private func held(_ item: String) -> Int {
-        let digits = text(of: element(AXID.Market.held(item))).prefix { $0.isNumber }
+        let digits = text(of: element(AXID.Cargo.held(item))).prefix { $0.isNumber }
         return Int(digits) ?? -1
     }
 
     private func clickSidebar(_ id: String, root: String, file: StaticString = #filePath, line: UInt = #line) {
-        element(id).staticTexts.firstMatch.click()
+        element(id).click()
         waitFor(root, file: file, line: line)
     }
 
@@ -26,20 +26,16 @@ final class PointerOnlyScenarioUITests: ParsecUITestCase {
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
         let origin = systemInSubtitle()
 
-        // 2. Buy cargo with chips: 5 units of water in two clicks.
-        clickSidebar(AXID.Sidebar.market, root: AXID.Market.table)
-        click(AXID.Market.chip("water", "5"))
-        click(AXID.Market.buy("water"))
-        expect("5 units of water are held (held: \(held("water")))") { held("water") == 5 }
-        // One more with the 1 chip.
-        click(AXID.Market.chip("water", "1"))
-        click(AXID.Market.buy("water"))
-        expect("6 units of water are held (held: \(held("water")))") { held("water") == 6 }
-        // UI-PTR-007: at the default window size the whole row of actions is on screen, with room after Buy for the
-        // disposal button (36 pt and its gap) that a row shows when its cargo can be jettisoned or dumped.
-        let buy = element(AXID.Market.buy("water")), table = element(AXID.Market.table)
-        expect("Buy and a disposal button fit inside the table (\(buy.frame) in \(table.frame))") {
-            buy.frame.minX >= table.frame.minX && buy.frame.maxX + 40 <= table.frame.maxX
+        // 2. Buy cargo on the Bridge: each click on Buy buys the row's quantity (1 while the field is empty).
+        waitFor(AXID.Cargo.panel)
+        for n in 1...6 {
+            click(AXID.Cargo.buy("water"))
+            expect("\(n) units of water are held (held: \(held("water")))") { held("water") == n }
+        }
+        // UI-PTR-007: the whole row of actions is on screen inside the Cargo panel.
+        let all = element(AXID.Cargo.all("water")), table = element(AXID.Cargo.panel)
+        expect("the row's last button fits inside the panel (\(all.frame) in \(table.frame))") {
+            all.frame.minX >= table.frame.minX && all.frame.maxX <= table.frame.maxX
         }
 
         // 3. Pick a target on the map: a click pins the selection card, whose buttons need no modifier.
@@ -52,8 +48,7 @@ final class PointerOnlyScenarioUITests: ParsecUITestCase {
         waitFor(g.selectionTrack)
         waitFor(g.selectionPlotRoute)
         expect("the click set the target to \(target)") {
-            let t = element(AXID.Toolbar.target)
-            return (t.title.isEmpty ? t.label : t.title).hasPrefix(target)
+            targetName.hasPrefix(target)
         }
         let shot = XCTAttachment(screenshot: mainWindow.screenshot())
         shot.name = "pointer-selection-card"
@@ -65,11 +60,10 @@ final class PointerOnlyScenarioUITests: ParsecUITestCase {
         expect("the warp ends docked at \(target) on day 1 (subtitle: \(subtitle))") { subtitle.hasPrefix("Day 1 · \(target) · ") }
         XCTAssertNotEqual(target, origin)
 
-        // 5. Sell everything: the Max chip, then Sell.
-        clickSidebar(AXID.Sidebar.market, root: AXID.Market.table)
+        // 5. Sell everything with one click on All (the trip ended on the Bridge, UI-NAV-004).
+        waitFor(AXID.Cargo.panel)
         expect("the cargo arrived (held: \(held("water")))") { held("water") == 6 }
-        click(AXID.Market.chip("water", "max"))
-        click(AXID.Market.sell("water"))
+        click(AXID.Cargo.all("water"))
         expect("the hold is empty again (held: \(held("water")))") { held("water") == 0 }
 
         // 6. An encounter, resolved with its buttons alone.

@@ -30,10 +30,11 @@ final class M9IdentifierWalkUITests: ParsecUITestCase {
         expect("the encounter ends") { !view.exists }
 
         waitFor(AXID.Arrival.card)
-        if !element(AXID.Arrival.encounter(0)).exists { click(AXID.Arrival.toggle) }
+        openArrivalReport()
         waitFor(AXID.Arrival.encounter(0))
-        walk(element(AXID.Arrival.card), surface: "expanded arrival card")
-        walk(mainWindow, surface: "Bridge with the arrival card")
+        walk(sheet(), surface: "arrival report sheet")
+        closeArrivalReport()
+        walk(mainWindow, surface: "Bridge with the arrival summary")
 
         type("n", [.command, .shift])
         if element(AXID.Dialog.confirmationConfirm).waitForExistence(timeout: 2) {
@@ -81,7 +82,7 @@ final class M9IdentifierWalkUITests: ParsecUITestCase {
             relaunch(UITestFixtures.playbackArguments + ["-PMSlowTravel", "20"])
             click(AXID.Welcome.quickStart)
             expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
-            type("1")
+            openPage("bridge")
             click(AXID.Bridge.targetNext)
             type("j")
             let view = element(AXID.Transit.view)
@@ -116,8 +117,9 @@ final class M9IdentifierWalkUITests: ParsecUITestCase {
         expect("the report closes") { !element(AXID.Report.sheet).exists }
 
         relaunch(UITestFixtures.specialEventArguments)
-        type("1")
-        walk(waitFor(AXID.Narrative.bridgeCard), surface: "special-event card on the Bridge")
+        openPage("bridge")
+        walk(mainWindow, surface: "Bridge with a special offer")
+        waitFor(AXID.Narrative.bridgeCard)
         click(AXID.Narrative.bridgeAccept)
         waitFor(AXID.Narrative.sheet)
         walk(sheet(), surface: "narrative offer sheet")

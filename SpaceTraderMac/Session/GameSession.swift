@@ -54,6 +54,8 @@ final class GameSession {
     /// Per-map viewports, show-on-map requests and window state.
     let map = MapSessionState()
     @ObservationIgnored var mapSnapshotCache: MapSnapshot?
+    /// UI-BRG-005: the Bridge's intel, built once per state generation and journal revision (GameSession+Bridge).
+    @ObservationIgnored var bridgeIntelCache: BridgeIntelCache?
     @ObservationIgnored var mapSnapshotBuilds = 0
     @ObservationIgnored var routeTask: Task<Void, Never>?
     @ObservationIgnored var routePlanner: RoutePlanning = RoutePlanning.standard

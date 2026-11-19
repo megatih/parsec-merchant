@@ -33,9 +33,8 @@ final class ManualQAUITests: ParsecUITestCase {
         for appearance in ["light", "dark"] {
             relaunch(UITestFixtures.launchArguments + ["-PMAppearance", appearance])
             startQuickStart()
-            if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
-            shoot("qa-manual-glass-main-\(appearance)", mainWindow)
-            type("7")
+                        shoot("qa-manual-glass-main-\(appearance)", mainWindow)
+            openPage("galaxy")
             waitFor(AXID.Galaxy.section.map)
             shoot("qa-manual-glass-galaxy-hud-\(appearance)", mainWindow)
             relaunch(UITestFixtures.ambushLaunchArguments + ["-PMAppearance", appearance])
@@ -46,26 +45,24 @@ final class ManualQAUITests: ParsecUITestCase {
         // The minimum size holds when the window is dragged smaller, and Warp stays in the narrowest toolbar.
         relaunch(UITestFixtures.launchArguments + ["-PMAppearance", "light", "-PMWindowSize", "min"])
         startQuickStart()
-        if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
-        let corner = mainWindow.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 1)).withOffset(CGVector(dx: -3, dy: -3))
+                let corner = mainWindow.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 1)).withOffset(CGVector(dx: -3, dy: -3))
         corner.press(forDuration: 0.3, thenDragTo: corner.withOffset(CGVector(dx: -400, dy: -300)))
         RunLoop.current.run(until: Date().addingTimeInterval(0.5))
         let frame = mainWindow.frame
-        XCTAssertGreaterThanOrEqual(frame.width, 1100, "UI-KEYS-035: the window keeps its 1100 pt minimum width")
-        XCTAssertGreaterThanOrEqual(frame.height, 720, "UI-KEYS-035: the window keeps its 720 pt minimum height")
-        XCTAssertTrue(element(AXID.Toolbar.warp).isHittable, "UI-KEYS-032: Warp stays in the toolbar at the minimum width")
+        XCTAssertGreaterThanOrEqual(frame.width, 1200, "UI-KEYS-035: the window keeps its 1200 pt minimum width")
+        XCTAssertGreaterThanOrEqual(frame.height, 680, "UI-KEYS-035: the window keeps its 680 pt minimum height")
+        XCTAssertTrue(element(AXID.Bridge.targetWarp).isHittable, "UI-KEYS-032: Warp stays in the toolbar at the minimum width")
         shoot("qa-manual-window-minimum", mainWindow)
 
-        // Full Screen keeps the sidebar, the toolbar and the inspector.
+        // Full Screen keeps the dock bar, the status bar and the Bridge.
         // The window's green button (⌃⌘F is not delivered to the app by XCUITest's synthesized keys).
         let fullScreenButton = mainWindow.buttons[XCUIIdentifierFullScreenWindow]
         XCTAssertTrue(fullScreenButton.waitForExistence(timeout: timeout), "the window has a full-screen button")
         fullScreenButton.click()
         expect("the window enters Full Screen") { self.mainWindow.frame.width > frame.width + 50 }
         RunLoop.current.run(until: Date().addingTimeInterval(1.5))
-        XCTAssertTrue(element(AXID.Sidebar.list).exists, "Full Screen keeps the sidebar")
-        XCTAssertTrue(element(AXID.Toolbar.warp).exists, "Full Screen keeps the toolbar")
-        XCTAssertTrue(element(AXID.Inspector.root).exists, "Full Screen keeps the inspector")
+        XCTAssertTrue(element(AXID.Dock.bar).exists, "Full Screen keeps the dock bar")
+        XCTAssertTrue(element(AXID.Status.bar).exists, "Full Screen keeps the status bar")
         shoot("qa-manual-window-fullscreen", nil)
 
         // ⌘W closes the window (still in Full Screen) and the app keeps running (UI-SHELL-015).
@@ -88,16 +85,13 @@ final class ManualQAUITests: ParsecUITestCase {
                 let extra = ["-PMAppearance", appearance, "-PMA11y", mode.list]
                 relaunch(UITestFixtures.launchArguments + extra)
                 startQuickStart()
-                if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
                 let tag = "qa-manual-\(mode.name)-\(appearance)"
-                type("1")
+                openPage("bridge")
                 click(AXID.Bridge.targetNext)
                 shoot("\(tag)-bridge", mainWindow)
-                type("2")
-                waitFor(AXID.Market.table)
-                element(AXID.Market.row("water")).click()
+                click(AXID.Cargo.buy("water"))
                 shoot("\(tag)-market", mainWindow)
-                type("7")
+                openPage("galaxy")
                 let g = AXID.Galaxy.section
                 waitFor(g.map)
                 if !element(g.legend).exists { click(g.legendToggle) }

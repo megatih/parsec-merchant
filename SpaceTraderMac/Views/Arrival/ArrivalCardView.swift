@@ -2,48 +2,6 @@
 import ParsecEngine
 import SwiftUI
 
-/// UI-ENC-055: the non-modal, expanding arrival card at the top of Bridge.
-struct ArrivalCardView: View {
-    @Environment(GameSession.self) private var session
-    let report: ArrivalReport
-    @State private var expanded = false
-    @Environment(\.accessibilityPreferences) private var a11yPrefs
-
-    var body: some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .firstTextBaseline) {
-                    Button {
-                        withAnimation(MotionPolicy.animation(for: .cardTransition, prefs: a11yPrefs)) { expanded.toggle() }
-                    } label: {
-                        Label {
-                            Text(verbatim: report.summary).scaledFont(.headline)
-                        } icon: {
-                            Image(systemName: expanded ? "chevron.down" : "chevron.forward")
-                        }
-                        .pointerTarget()  // UI-PTR-002
-                    }
-                    .buttonStyle(.plain)
-                    .help(expanded ? Text("Hide the arrival report.") : Text("Show the arrival report."))
-                    .accessibilityValue(expanded ? Text("Expanded") : Text("Collapsed"))
-                    .accessibilityIdentifier(AXID.Arrival.toggle)
-                    Spacer()
-                    Button("Dismiss") { session.dismissArrivalCard() }
-                        .help(Text("Hide the arrival report until your next trip."))
-                        .accessibilityIdentifier(AXID.Arrival.dismiss)
-                }
-                if expanded {
-                    ArrivalSectionsView(report: report)
-                }
-            }
-        } label: {
-            Label("Arrival Report", systemImage: "flag.checkered")
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(AXID.Arrival.card)
-    }
-}
-
 /// The arrival sections, shared by the card and the arrival sheet (UI-ENC-054, -057).
 struct ArrivalSectionsView: View {
     @Environment(GameSession.self) private var session

@@ -250,9 +250,7 @@ struct FilesSettingsTests {
         var d = OptionsDraft(options: before, ruleset: .modern)
         d.set(.autoFuel, !before.autoFuel)
         d.setLeaveEmpty(3)
-        s.present(.sheet(.gameOptions))
-        s.dismissPresentation()
-        #expect(s.state?.options == before, "Cancel changes nothing")
+        #expect(s.state?.options == before, "a draft changes nothing until it is sent")
         s.send(d.commit())
         #expect(s.state?.options.autoFuel == !before.autoFuel && s.state?.options.leaveEmpty == 3)
         d.setLeaveEmpty(500)
@@ -305,7 +303,7 @@ struct FilesSettingsTests {
         #expect(AppSettings(defaults: b.defaults).fastTravel && AppSettings(defaults: b.defaults).textSize == .accessibility3)
     }
 
-    @Test("UI-SHELL-098 the options sheet identifiers")
+    @Test("UI-SHELL-098 the Options page identifiers")
     func optionsIdentifiers() {
         let expected = ["options.autoFuel", "options.autoRepair", "options.newsAutoPay", "options.newsAutoShow", "options.showTrackedRange",
                         "options.trackAutoOff", "options.remindLoans", "options.reserveMoney", "options.leaveEmpty",
@@ -313,8 +311,8 @@ struct FilesSettingsTests {
                         "options.alwaysIgnoreTradeInOrbit", "options.continuousAttack", "options.continuousAttackFleeing",
                         "options.disableOpponents"]
         #expect(OptionsDraft.Field.allCases.map(AXID.Options.field) == expected)
-        #expect([AXID.Options.saveDefaults, AXID.Options.loadDefaults, AXID.Options.ok, AXID.Options.cancel]
-            == ["options.saveDefaults", "options.loadDefaults", "options.ok", "options.cancel"])
+        #expect([AXID.Options.saveDefaults, AXID.Options.loadDefaults] == ["options.saveDefaults", "options.loadDefaults"])
+        #expect(AXID.SectionRoot.root(.options) == "options.root" && Section.options.keyCap == "⌥⌘O" && Section.options.shortcutDigit == nil)
     }
 
     @Test("UI-SHELL-099 OptionsDraft isEnabled/isVisible per ruleset and commit() = .setOptions")

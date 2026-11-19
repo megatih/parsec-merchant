@@ -20,16 +20,12 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         shoot("readme-welcome")
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
-        if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext)
-        element("bridge.root").scroll(byDeltaX: 0, deltaY: 2000)  // the click scrolled the page; show it from the top
         shoot("readme-bridge")
-        type("2")
-        waitFor(AXID.Market.table)
-        element(AXID.Market.row("water")).click()
+        click(AXID.Cargo.buy("water"))
         shoot("readme-market")
-        type("7")
+        openPage("galaxy")
         let g = AXID.Galaxy.section
         if !element(g.legend).exists { click(g.legendToggle) }
         chooseMenuItem("Game", "Plot Route…")
@@ -41,7 +37,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
             if water.waitForExistence(timeout: 2) { water.click() } else { type(XCUIKeyboardKey.escape.rawValue, []) }
         }
         shoot("readme-galaxy")
-        type("9")
+        openPage("logbook")
         selectLogbookTab("Statistics")
         shoot("readme-logbook-statistics")
         selectLogbookTab("Achievements")
@@ -53,8 +49,7 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
             relaunch(UITestFixtures.launchArguments(seed: seed) + ["-PMAppearance", "light"])
             click(AXID.Welcome.quickStart)
             expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
-            if !element(AXID.Inspector.root).exists { click(AXID.Toolbar.inspector) }
-            type("3")
+                        openPage("shipyard")
             waitFor("shipyard.root")
             let offers = app.descendants(matching: .any)
                 .matching(NSPredicate(format: "identifier BEGINSWITH 'shipyard.ship.' AND identifier ENDSWITH '.buy'"))
@@ -80,8 +75,9 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))
         }
         waitFor(AXID.Arrival.card)
-        if !element(AXID.Arrival.encounter(0)).exists { click(AXID.Arrival.toggle) }
+        openArrivalReport()
         shoot("readme-arrival")
+        closeArrivalReport()
         type("n", [.command, .shift])
         if element(AXID.Dialog.confirmationConfirm).waitForExistence(timeout: 2) { click(AXID.Dialog.confirmationConfirm) }
         waitFor(AXID.Newspaper.sheet)
@@ -94,9 +90,8 @@ final class ReadmeScreenshotUITests: ParsecUITestCase {
         relaunch(UITestFixtures.launchArguments + ["-PMAppearance", "dark"])
         click(AXID.Welcome.quickStart)
         expect("the Quick Start game runs") { subtitle.hasPrefix("Day 0") }
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext)
-        element("bridge.root").scroll(byDeltaX: 0, deltaY: 2000)  // the click scrolled the page; show it from the top
         shoot("readme-bridge-dark")
     }
 

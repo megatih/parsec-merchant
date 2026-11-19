@@ -55,10 +55,12 @@ struct SourceAuditTests {
         let inlineReason: [String: String] = [
             "Views/Settings/SoundSettingsView.swift": "the Status row says why sound is off for this launch",
             "Views/Settings/IntelligenceSettingsView.swift": "the status line under the toggle gives the availability",
-            "Views/Shell/SidebarView.swift": "the sidebar shows the In transit / In encounter label",
             "Views/NewGame/NewGameWizard.swift": "skill steppers stop at a visible bound; the step names the failing field",
             "Views/Designer/DesignerView.swift": "steppers stop at a visible bound",
             "Views/Encounter/EncounterMenuItems.swift": "a menu item: macOS menus show no help tags",
+            "Views/Bridge/BridgeCargoPanel.swift": "context-menu items show no help tags; the row's buttons carry the reasons (PMButton)",
+            "Views/Pages/EquipmentPage.swift": "context-menu items; the Buy and Sell buttons carry the reasons (PMButton)",
+            "Views/Pages/PersonnelPage.swift": "context-menu items; the Hire and Fire buttons carry the reasons (PMButton)",
         ]
         let lines = try Self.lines()
         var checked = 0
@@ -103,15 +105,15 @@ struct SourceAuditTests {
     func windowKeys() throws {
         let lines = try Self.lines()
         func code(_ file: String) -> [String] { lines.filter { $0.file == file }.map(\.code) }
-        for file in ["Views/Feed/FeedOverlay.swift", "Views/Sections/ShipyardSectionView.swift", "Views/Transit/TransitView.swift",
+        for file in ["Views/Feed/FeedOverlay.swift", "Views/Pages/ShipyardPage.swift", "Views/Transit/TransitView.swift",
                      "Views/Encounter/EncounterView.swift"] {
             let c = code(file)
             #expect(!c.contains { $0.contains(".keyboardShortcut(.cancelAction)") || $0.contains(".onExitCommand") }, "\(file)")
         }
-        let bridge = code("Views/Sections/BridgeSectionView.swift")
-        let warp = try #require(bridge.firstIndex { $0.contains("Button(\"Warp\")") })
+        let bridge = code("Views/Bridge/BridgeTargetPanel.swift")
+        let warp = try #require(bridge.firstIndex { $0.contains("PMButton(title: \"Warp\"") })
         #expect(!bridge[warp...].prefix(5).contains { $0.contains(".defaultAction") })
-        #expect(code("Views/Shell/MainShellView.swift").contains { $0.contains("WindowEscapeRouter") })
+        #expect(code("Views/Shell/GameShellView.swift").contains { $0.contains("WindowEscapeRouter") })
     }
 
     /// The literal parts of a string literal that starts at `start` (interpolations `\(…)` removed), or nil.

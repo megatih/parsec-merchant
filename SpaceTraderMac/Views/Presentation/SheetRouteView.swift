@@ -19,8 +19,6 @@ struct SheetRouteView: View {
             FindSystemSheet()
         case .openSavedGame:
             OpenSavedGameSheet()
-        case .gameOptions:
-            GameOptionsSheet()
         case .cheatConsole:
             CheatConsoleSheet()
         case let .tradeInOrbit(offer):
@@ -35,6 +33,12 @@ struct SheetRouteView: View {
             ReportSheetView(sheet: sheet)
         case .developerTester:
             DeveloperTesterSheet()
+        case let .priceDetails(item):
+            PriceDetailsSheet(item: item)
+        case let .cargoDisposal(disposal):
+            CargoDisposalSheet(disposal: disposal)
+        case let .serviceAmount(kind):
+            ServiceAmountSheet(kind: kind)
         }
     }
 }

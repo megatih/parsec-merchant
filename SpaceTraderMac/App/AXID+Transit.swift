@@ -8,9 +8,8 @@ nonisolated extension AXID {
         static let skip = "transit.skip"
         static let fabricRip = "transit.fabricRip"
         /// `sidebar.phaseLabel`: "In transit" / "In encounter".
-        static let sidebarPhaseLabel = "sidebar.phaseLabel"
 
-        static let all = [view, progress, skip, fabricRip, sidebarPhaseLabel]
+        static let all = [view, progress, skip, fabricRip]
     }
 
     /// The M9 encounter-area lists (UI-ENC-097). Later areas append their own `<Area>.all` here.

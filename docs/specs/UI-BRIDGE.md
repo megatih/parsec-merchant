@@ -29,10 +29,10 @@
   1. every manifest identifier reports a frame (nothing missing);
   2. every frame has width and height > 0 and lies fully inside its region's frame, which lies fully inside the game area;
   3. the four regions, the rows, and the controls within a row do not overlap;
-  4. every text probe's laid-out size is at least its ideal size at unlimited width (nothing truncated, wrapped beyond its line budget or scaled down);
+  4. every text is laid out at its ideal size: the Bridge's texts and buttons are `fixedSize`, and its sources contain no `.lineLimit(` and no `.minimumScaleFactor(` (UI-BRG-030), so nothing can be truncated, wrapped or scaled down; a text that is too long for its place shows up as an overlap or as a frame outside its row or region (assertions 2 and 3, which cover every element of a region and every cell and control of a row);
   5. the hosting view contains no `NSScrollView` in its subview tree;
   6. every control's frame has a short side ≥ 36 × `s`.
-- **UI-BRG-033** {M22} [UI] [M][W][P] **Fit test (XCUITest).** At `-PMWindowSize min` and at 1728 × 1050: every manifest identifier `exists`, is inside the window frame, every button `isHittable`, and `app.windows["main"].scrollViews.count == 0` on the Bridge. Repeated with Text Size Large when the screen allows it.
+- **UI-BRG-033** {M22} [UI] [M][W][P] **Fit test (XCUITest).** At `-PMWindowSize min` and at 1728 × 1050 (`-PMWindowPoints 1728x1050`): every manifest identifier is present in the window's accessibility snapshot with a frame inside the window, every enabled button `isHittable`, and `app.windows["main"].scrollViews.count == 0` on the Bridge. Repeated at the minimum window of a larger Text Size (Extra Extra Large: 1380 × 782).
 - **UI-BRG-034** {M22} [UI] [M][W][P] **Long strings.** The fit test also runs with the longest system name, good name, government name and resource name of each ruleset's tables, and with the pseudo-localization (double-length) variant; assertion 4 must hold.
 - **UI-BRG-035** {M22} [UI] [M][W][P] Resizing never changes the manifest: the set of identifiers found at 1200 × 680 equals the set at 2560 × 1380.
 - **UI-BRG-036** {M22} [UI] [M][W][P] The window cannot be made smaller than the minimum (UI test drags the corner and asserts the size).

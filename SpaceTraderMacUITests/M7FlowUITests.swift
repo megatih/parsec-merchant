@@ -11,14 +11,14 @@ final class M7FlowUITests: ParsecUITestCase {
         XCTAssertTrue(subtitle.contains("Day 0"), subtitle)
         XCTAssertTrue(subtitle.contains("Credits \(1_000.formatted())"), subtitle)
 
-        type("2")
-        waitFor(AXID.Market.table)
-        guard let item = AXID.Market.items.first(where: { element(AXID.Market.buy($0)).exists && element(AXID.Market.buy($0)).isEnabled })
+        openPage("bridge")
+        waitFor(AXID.Cargo.panel)
+        guard let item = AXID.Cargo.items.first(where: { element(AXID.Cargo.buy($0)).exists && element(AXID.Cargo.buy($0)).isEnabled })
         else { return XCTFail("a market row has stock to buy") }
-        let price = try XCTUnwrap(Int(text(of: element(AXID.Market.buyPrice(item))).filter(\.isNumber)), "the buy price of \(item)")
-        XCTAssertEqual(text(of: element(AXID.Market.held(item))), "0")
-        click(AXID.Market.buy(item))
-        expect("Held shows 1 for \(item)") { text(of: element(AXID.Market.held(item))) == "1" }
+        let price = try XCTUnwrap(Int(text(of: element(AXID.Cargo.buyPrice(item))).filter(\.isNumber)), "the buy price of \(item)")
+        XCTAssertEqual(text(of: element(AXID.Cargo.held(item))), "0")
+        click(AXID.Cargo.buy(item))
+        expect("Held shows 1 for \(item)") { text(of: element(AXID.Cargo.held(item))) == "1" }
         expect("the credits drop by the buy price \(price) (subtitle: \(subtitle))") {
             subtitle.contains("Credits \((1_000 - price).formatted()) ")
         }
@@ -26,9 +26,10 @@ final class M7FlowUITests: ParsecUITestCase {
         let target = warpToNextTarget()
         XCTAssertTrue(subtitle.contains("Day 1"), subtitle)
         XCTAssertTrue(subtitle.contains(target), subtitle)
-        let feed = waitFor(AXID.Status.feed)
+        // UI-BRG-042: the message slot holds the arrival summary.
+        let feed = waitFor(AXID.Arrival.card)
         expect("status.feed shows the arrival at \(target) (feed: \(text(of: feed)))") {
-            text(of: feed) == "Arrived at \(target)."
+            text(of: feed).hasPrefix("Arrived at \(target)")
         }
     }
 

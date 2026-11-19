@@ -91,10 +91,10 @@ struct MenuTests {
         #expect(c.focusedMap == nil && !c.galaxyIsKey)
         #expect(MenuContext.make(session: s, focusedMap: .galaxyWindow).focusedMap == .galaxyWindow)
         #expect(c.recentSlots.count == 1, "the creation autosave is listed")
-        s.selectedSection = .market
-        s.present(.sheet(.gameOptions))
+        s.selectedSection = .logbook
+        s.present(.sheet(.findSystem))
         c = MenuContext.make(session: s)
-        #expect(c.isModal && c.searchContext == .market)
+        #expect(c.isModal && c.searchContext == .logbook)
     }
 
     @Test("MENU-003 catalog identifiers follow menu.<menu>.<item> and the AXID scheme; titles are localized resources")
@@ -304,20 +304,20 @@ struct MenuTests {
         #expect(!on(.find, Fx.ctx(nil)) && on(.find, Fx.ctx(Fx.fresh())))
     }
 
-    @Test("MENU-019 MENU-023 the View menu's section items in order with ⌘1–⌘9 (Galaxy ⌘7 from M8, Logbook ⌘9 from M10)")
+    @Test("MENU-019 MENU-023 the View menu's page items in dock order with ⌘1–⌘9; the 1.x Market page has no shortcut")
     func viewOrder() {
         let sections = MenuCatalog.items(in: .view).filter { $0.section != nil }
-        #expect(sections == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .logbook])
+        #expect(sections == [.bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .quests, .galaxy, .logbook])
         #expect(sections.compactMap { MenuCatalog.entry(for: $0).shortcut?.key } == ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
         #expect(MenuCatalog.entry(for: .logbook).identifier == "menu.view.logbook")
-        #expect(sections.compactMap(\.section) == Section.allCases)
+        #expect(sections.compactMap(\.section) == Section.allCases.filter { $0 != .options }, "Options is ⌥⌘O in the Game menu")
     }
 
-    @Test("MENU-020 ⌘1…⌘6, ⌘8 select their sections; during an encounter they are disabled")
+    @Test("MENU-020 ⌘1…⌘9 select their pages (the 1.x Market page has no shortcut); during an encounter they are disabled")
     func sectionShortcuts() throws {
         for s in Section.allCases {
             let id = MenuItemID.item(for: s)
-            #expect(id.section == s && MenuCatalog.entry(for: id).shortcut?.key == String(s.shortcutDigit))
+            #expect(id.section == s && MenuCatalog.entry(for: id).shortcut?.key == (s.shortcutDigit.map { String($0) } ?? "o"))
         }
         let enc = Fx.ctx(try encounter())
         #expect(Section.allCases.filter { $0 != .logbook }.allSatisfy { !on(MenuItemID.item(for: $0), enc) })
@@ -338,8 +338,8 @@ struct MenuTests {
 
     @Test("MENU-024 the Game menu's rows in order (Plot Route… after Find System from M8) with separators")
     func gameOrder() {
-        #expect(MenuCatalog.items(in: .game) == [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .fillFuel,
-                                                 .repair, .newspaper, .options, .retire])
+        #expect(MenuCatalog.items(in: .game) == [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .sellAllCargo,
+                                                 .priceDetails, .buyFuelAmount, .fillFuel, .repairAmount, .repair, .newspaper, .options, .retire])
         #expect(MenuCatalog.items(in: .game, milestone: 7).contains(.plotRoute) == false)
         #expect(MenuCatalog.separatorAfter.isSuperset(of: [.findSystem, .repair, .options]))
         #expect(MenuCatalog.items(in: .game, milestone: 9).contains(.newspaper) && MenuCatalog.items(in: .game, milestone: 8).contains(.plotRoute))
@@ -525,9 +525,9 @@ struct MenuTests {
         }
     }
 
-    @Test("MENU-022 Galaxy ⌘7, Galaxy Chart ⇧⌘M and the zoom items; zoom is enabled only while a map has focus")
+    @Test("MENU-022 Galaxy ⌘8, Galaxy Chart ⇧⌘M and the zoom items; zoom is enabled only while a map has focus")
     func galaxyViewItems() {
-        #expect(MenuCatalog.entry(for: .galaxy).shortcut == MenuShortcut("7"))
+        #expect(MenuCatalog.entry(for: .galaxy).shortcut == MenuShortcut("8"))
         #expect(MenuCatalog.entry(for: .galaxyChart).shortcut == MenuShortcut("m", [.shift, .command]))
         #expect(MenuCatalog.items(in: .view).suffix(4) == [.galaxyChart, .zoomIn, .zoomOut, .zoomFit])
         let unfocused = Fx.ctx(Fx.fresh())
@@ -609,11 +609,11 @@ struct MenuTests {
         #expect(on(.export, c) && on(.closeGame, c) && on(.logbook, c))
     }
 
-    @Test("MENU-044 Help › Keyboard Shortcuts lists ⌘J Warp and ⌥⌘O Options… from the catalog; Credits opens About")
+    @Test("MENU-044 Help › Keyboard Shortcuts lists ⌘J Warp and ⌥⌘O Options from the catalog; Credits opens About")
     func scenarioHelpAbout() {
         let rows = HelpContent.shortcutRows()
         #expect(rows.contains { $0.shortcut == "⌘J" && $0.title == "Warp" })
-        #expect(rows.contains { $0.shortcut == "⌥⌘O" && $0.title == "Options…" })
+        #expect(rows.contains { $0.shortcut == "⌥⌘O" && $0.title == "Options" })
         #expect(HelpContent.text(.keyboardShortcuts).contains("⌘J"))
         #expect(AboutContent.credits.contains { $0.names == "Pieter Spronck" })
         #expect(String(localized: AboutContent.gplNotice).contains("GNU General Public License"))

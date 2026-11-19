@@ -171,7 +171,7 @@
   9. **Quest progress:** quest events of the trip (`gemulonInvaded`, `experimentPerformed`, `wildLeftShip`, `easterEgg`/`easterEggNoShieldSlot` ALR-034, `passengerConcerned`/`passengerImpatient`), plus the `questLog` difference between `before` and `after` (entries added and removed, UI-SHELL-121).
   
   A fabric rip (ALR-165) is the first line of the report. Unit tests check the section order and each event's section. (source: UX-VISION §5.3 list "in order"; ALR §4 "arrival report" rows)
-- **UI-ENC-055** {M9} [UI] [M][W][P] By default the report is a non-modal, expanding card at the top of Bridge (`arrival.card`).
+- **UI-ENC-055** {M9} [UI] [M][W][P] By default the report is one line in the status bar's message slot (`arrival.card`, UI-BRG-042): the summary ("Arrived at Kira · 1 encounter · +200 cr"), shown until a newer event replaces it; a click opens the full report as the arrival sheet (UI-ENC-057). A finished trip always ends on the Bridge (UI-NAV-004). The expanding card of 1.x is gone. (rewritten for release 2.0)
   - **Contents:** a one-line summary ("Arrived at Rhymus · 1 encounter · −120 cr"), expanded to show the sections (`arrival.section.<encounters|news|costs|service|tribbles|reactor|debt|police|quests>`) and the encounter rows (`arrival.encounter.<index>`). Each encounter row expands to its frozen combat log.
   - **Controls:** a disclosure (`arrival.card.toggle`) and Dismiss (`arrival.card.dismiss`).
   - **Lifetime:** the card stays until dismissed or until the next departure.

@@ -12,40 +12,29 @@ struct LogbookView: View {
     private var tab: LogbookTab { session.logbookTab ?? LogbookTab(rawValue: storedTab) ?? .log }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                if session.state.map({ GameSession.isGameOver($0.phase) }) == true {
-                    Button {
-                        session.backToSummary()
-                    } label: {
-                        Label("Back to Summary", systemImage: "chevron.backward")
-                    }
-                    .accessibilityIdentifier(AXID.Logbook.backToSummary)
+        let ended = session.state.map { GameSession.isGameOver($0.phase) } == true
+        // In an ended game the Logbook is reached from the game-over card, so Back returns there (LOG-029).
+        PMPage(title: "Logbook", identifier: "page.logbook", onBack: ended ? nil : { session.selectedSection = .bridge }) {
+            if ended {
+                PMButton(title: "Back to Summary", systemImage: "chevron.backward", help: "Return to the game summary",
+                         identifier: AXID.Logbook.backToSummary) {
+                    session.backToSummary()
                 }
-                Spacer()
-                Picker(selection: tabBinding) {
-                    ForEach(LogbookTab.allCases, id: \.self) { t in
-                        Text(t.title).tag(t).accessibilityIdentifier(AXID.Logbook.tab(t))
-                    }
-                } label: {
-                    Text("Logbook")
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
                 .fixedSize()
-                .accessibilityIdentifier(AXID.Logbook.tab)
-                Spacer()
             }
-            .padding(10)
-            Divider()
-            switch tab {
-            case .log: CaptainsLogView()
-            case .statistics: StatisticsView()
-            case .achievements: AchievementsView()
+            PMSegmented(options: LogbookTab.allCases.map { ($0, $0.title, AXID.Logbook.tab($0)) }, selection: tabBinding, identifier: AXID.Logbook.tab)
+        } content: {
+            Group {
+                switch tab {
+                case .log: CaptainsLogView()
+                case .statistics: StatisticsView()
+                case .achievements: AchievementsView()
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(PMColor.panel, in: RoundedRectangle(cornerRadius: PMRadius.panel))
+            .clipShape(RoundedRectangle(cornerRadius: PMRadius.panel))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AXID.Logbook.root)
     }
 

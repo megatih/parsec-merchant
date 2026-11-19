@@ -25,22 +25,15 @@
 "%lld × %@ (charge %lld)"  a multiplier; no noun follows the number
 "%lld%%"  a percentage
 "%lld%% (max)"  a percentage
-"%lld/%lld"  a count out of a total
 "(−%lld hull)"  'hull' is a mass noun here (hull points lost)
 "Arrived at %@, day %lld."  the number follows its label (no noun follows it)
-"Bays %lld/%lld"  a count out of a total
-"Bays: %lld/%lld, %lld free for buying"  a count out of a total; no noun follows the number
 "Bought %lld %@ for %@ cr."  the goods name that follows is game data
 "Bought %lld %@ in orbit for %@ cr."  the goods name that follows is game data
 "Buy %lld fuel (%lld cr.)"  'fuel' is a mass noun; 'cr.' is an abbreviation
-"Buy Max (%lld)"  the number follows its label in parentheses (no noun follows it)
-"Dump All (%lld)"  the number follows its label in parentheses (no noun follows it)
-"Sell All (%lld)"  the number follows its label in parentheses (no noun follows it)
 "Caught littering. Police record score now %lld."  no noun follows the number
 "Charge %lld"  the number follows its label (no noun follows it)
 "Click %lld of %lld"  a count out of a total
 "Commander %@, day %lld, at %@. %@ credits, debt %@, worth %@."  the number follows its label (no noun follows it)
-"Completed (%lld)"  the number follows its label (no noun follows it)
 "Day %lld · %@"  the number follows its label (no noun follows it)
 "Day %lld · %@ · %lld cr."  the number follows its label (no noun follows it); 'cr.' is an abbreviation
 "Day %lld · %@ · Worth %@ cr. · %@"  the number follows its label (no noun follows it)
@@ -48,19 +41,16 @@
 "Dumped %lld %@ for %@ cr."  the goods name that follows is game data
 "Free bays %lld"  the number follows its label (no noun follows it)
 "Free quarters: %lld"  the number follows its label (no noun follows it)
-"Fuel %lld/%lld"  a count out of a total
 "Full tank %lld"  the number follows its label (no noun follows it)
 "Hull %lld%%"  a percentage
 "Hull repaired, %lld percent."  'percent' does not inflect
 "In range · %lld fuel left after the jump"  'fuel' is a mass noun
 "Jettisoned %lld %@."  the goods name that follows is game data
-"Kills: %lld"  the number follows its label (no noun follows it)
 "Last visit: Day %lld"  the number follows its label (no noun follows it)
 "News on day %lld: %@"  the number follows its label (no noun follows it)
 "No fuel used · tax %lld cr."  'cr.' is an abbreviation
 "Plundered %lld %@."  the goods name that follows is game data
 "Points remaining: %lld"  the number follows its label (no noun follows it)
-"Police record: %@ (%lld)"  the number follows its label (no noun follows it)
 "Quantity: %lld of at most %lld"  the number follows its label (no noun follows it); no noun follows the number
 "Range %lld"  the number follows its label (no noun follows it)
 "Rank %lld, %@, score %@."  the number follows its label (no noun follows it)
@@ -96,3 +86,11 @@
 "route stop %lld"  the number follows its label (no noun follows it)
 "sold %lld %@ for %@ cr."  the goods name that follows is game data
 "won %lld, fled %lld, surrendered %lld"  the number follows its label (no noun follows it)
+"To %@, %lld clicks · Day %lld"  a compact status-bar label: "clicks" is the game's unit and the day is an ordinal
+"Fuel %lld/%lld parsecs · %@ cr. per parsec"  a gauge reading: the numbers follow their labels
+"Hire %lld"  a compact notice label; the count follows its label
+"Hull %lld%% · %@ cr. per point"  a percentage
+"Quest %lld d"  a compact notice label; "d" is the abbreviation of days and has no plural form
+"%lld/%lld parsecs"  a gauge reading: fuel of tank size, the unit follows the pair
+"Bays %lld/%lld · %lld free · Cash to spend %@ cr."  a compact summary line; each number follows its label
+"Power %lld"  a rating; the number follows its label

@@ -27,8 +27,8 @@ final class M9FlowUITests: ParsecUITestCase {
         }
         let tactical = waitFor(AXID.Encounter.tactical)
         XCTAssertTrue(descendantText(of: tactical).contains("Flee"), "the readout shows flee odds: \(descendantText(of: tactical))")
-        expect("sidebar.phaseLabel reads In encounter") { text(of: element(AXID.Sidebar.phaseLabel)) == "In encounter" }
-        XCTAssertFalse(sidebarRow(AXID.Sidebar.market).isEnabled, "the Market row is locked during the encounter")
+        expect("sidebar.phaseLabel reads In encounter") { text(of: element(AXID.Dock.phaseLabel)) == "In encounter" }
+        XCTAssertFalse(sidebarRow(AXID.Dock.button("bank")).isEnabled, "the Bank page is locked during the encounter")
 
         // 3. Encounter › Attack is enabled.
         XCTAssertTrue(isMenuItemEnabled("Encounter", "Attack"), "menu.encounter.attack is enabled")
@@ -53,26 +53,27 @@ final class M9FlowUITests: ParsecUITestCase {
         // 6. Docked at the target with the arrival card.
         expect("encounter.view disappears within \(UITestFixtures.ambushMaxAttacks) attacks") { !view.exists }
         let card = waitFor(AXID.Arrival.card)
-        if !element(AXID.Arrival.encounter(0)).exists { click(AXID.Arrival.toggle) }
+        openArrivalReport()
         let summary = waitFor(AXID.Arrival.encounter(0))
         expect("arrival.encounter.0 says the pirate was destroyed (row: \(descendantText(of: summary)))") {
             descendantText(of: summary).contains("destroyed")
         }
+        closeArrivalReport()
         XCTAssertTrue(card.exists)
         expect("the subtitle shows day 1 (subtitle: \(subtitle))") { subtitle.hasPrefix("Day 1 · ") }
         let target = systemInSubtitle()
         XCTAssertFalse(target.isEmpty, subtitle)
-        type("7")
+        openPage("galaxy")
         let system = waitFor(AXID.Galaxy.section.system(UITestFixtures.ambushTarget))
         expect("system \(UITestFixtures.ambushTarget) is the current system \(target) (label: \(system.label))") {
             system.label.hasPrefix("\(target),") && system.label.contains("current system")
         }
-        type("1")
+        openPage("bridge")
         waitFor(AXID.Arrival.card)
 
         // 7. The encounter commands are gone and the sections unlock.
         XCTAssertFalse(menuItemExistsAndEnabled("Encounter", "Attack"), "menu.encounter.attack is disabled or absent")
-        expect("sidebar.market is enabled again") { sidebarRow(AXID.Sidebar.market).isEnabled }
+        expect("dock.bank is enabled again") { sidebarRow(AXID.Dock.button("bank")).isEnabled }
     }
 
     // MARK: Helpers
@@ -80,7 +81,7 @@ final class M9FlowUITests: ParsecUITestCase {
     /// The title of the sidebar row `id`: SwiftUI reports a disabled row on its text (the identified group and the
     /// AppKit outline row do not follow `.disabled`).
     func sidebarRow(_ id: String) -> XCUIElement {
-        element(id).staticTexts.firstMatch
+        element(id)
     }
 
     /// The label and value text of `e` and everything inside it (a `.contain` group reports none of its own).

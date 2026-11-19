@@ -30,6 +30,8 @@ extension GameSession {
     func showPendingArrival() {
         guard transitPlayback == nil, let arrival = pendingArrival else { return }
         pendingArrival = nil
+        // UI-NAV-004: a trip always ends on the Bridge.
+        if case .gameOver = arrival {} else { selectedSection = .bridge }
         switch arrival {
         case let .card(report):
             arrivalCard = report

@@ -115,7 +115,7 @@ enum TipTriggers {
     /// The calls for a docked game showing `section` after `step` (nil: a visibility change only).
     static func apply(step: StepRecord?, section: Section, docked: Bool, targetInRange: Bool) -> [TipCall] {
         var calls: [TipCall] = []
-        calls.append(section == .market && docked ? .show(.market) : .hide(.market))
+        calls.append(section == .bridge && docked ? .show(.market) : .hide(.market))
         calls.append(section == .galaxy ? .show(.galaxy) : .hide(.galaxy))
         calls.append(section == .bridge && docked && targetInRange ? .show(.warp) : .hide(.warp))
         guard let step else { return calls }

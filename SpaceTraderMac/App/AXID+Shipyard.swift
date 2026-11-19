@@ -6,15 +6,13 @@ nonisolated extension AXID {
     enum Shipyard {
         static func ship(_ t: ShipType) -> String { "shipyard.ship.\(t)" }
         static func buy(_ t: ShipType) -> String { "shipyard.ship.\(t).buy" }
-        static func compareToggle(_ t: ShipType) -> String { "shipyard.ship.\(t).compare" }
         static let ships = "shipyard.ships"
         static let designer = "shipyard.designer"
         static let compare = "shipyard.compare"
-        static let compareClear = "shipyard.compare.clear"
         static let escapePodBuy = "shipyard.escapePod.buy"
         static let insuranceBank = "shipyard.insurance.bank"
-        static let all: [String] = [ships, designer, compare, compareClear, escapePodBuy, insuranceBank]
-            + ShipType.allCases.flatMap { [ship($0), buy($0), compareToggle($0)] }
+        static let all: [String] = [ships, designer, compare, escapePodBuy, insuranceBank]
+            + ShipType.allCases.flatMap { [ship($0), buy($0)] }
     }
 
     enum ShipPurchase {

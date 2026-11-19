@@ -38,7 +38,7 @@ A native macOS 27 remake of Space Trader (Pieter Spronck, GPL). It is built from
 - **Integer math must match the source exactly.** Swift `/` truncates the same way C# and C do. Where the source wraps, use `&+` and `&*`. Cite `File.cs:line` in the spec, not in the code.
 - **Every interactive view** gets an `.accessibilityIdentifier`. **Every user string** goes through `Localizable.xcstrings`.
 - **Commits:** small, conventional (`feat(engine): …`), made only when green. Tag `mN-done` at the end of each milestone, then push.
-- **Debug launch arguments:** `-PMSeed`, `-PMScenario`, `-PMFlavor template`, `-PMFastTravel`, `-PMSlowTravel <n>`, `-PMAudio off`, `-PMResetState`, `-PMA11y`, `-PMTips off|all`, `-PMWindowSize min|default`, `-PMAppearance light|dark`.
+- **Debug launch arguments:** `-PMSeed`, `-PMScenario`, `-PMFlavor template`, `-PMFastTravel`, `-PMSlowTravel <n>`, `-PMAudio off`, `-PMResetState`, `-PMA11y`, `-PMTips off|all`, `-PMWindowSize min|default`, `-PMWindowPoints <w>x<h>`, `-PMAppearance light|dark`.
 - **Requirement IDs:** match `\*\*[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}\*\*` with `/usr/bin/grep -E`. In this shell `grep` is a ugrep wrapper, so scripts must call `/usr/bin/grep`.
 - **Blockers:** follow PRD §11.6. Write them in PROGRESS.md, print `BLOCKED: …`, and carry on with unblocked work.
 

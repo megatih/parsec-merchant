@@ -31,7 +31,7 @@ struct LogbookTests {
     func section() throws {
         let s = try TestSessions.playing()
         #expect(Section.logbook.isAvailable(in: s.sectionContext) && Section.logbook.shortcutDigit == "9")
-        #expect(AXID.SectionRoot.root(.logbook) == "logbook.root" && Section.logbook.axID == "sidebar.logbook")
+        #expect(AXID.SectionRoot.root(.logbook) == "logbook.root" && Section.logbook.axID == "dock.logbook")
         try TestSessions.edit(s) { $0.phase = .gameOver(.retired) }
         #expect(Section.allCases.filter { $0.isAvailable(in: s.sectionContext) } == [.logbook])
         // An ended game shows its card unless the Logbook was chosen; it reopens on the card.
@@ -89,7 +89,7 @@ struct LogbookTests {
     @Test("LOG-036 every Logbook identifier is in AXID.all, unique and scheme-conformant")
     func identifiers() throws {
         let all = AXID.all
-        let ids = AXID.insightsAll + [AXID.SectionRoot.root(.logbook), AXID.Sidebar.row(.logbook)]
+        let ids = AXID.insightsAll + [AXID.SectionRoot.root(.logbook), AXID.Dock.button(.logbook)]
         let regex = try Regex(AXID.pattern)
         #expect(ids.allSatisfy { all.contains($0) && $0.wholeMatch(of: regex) != nil })
         #expect(Set(all).count == all.count)

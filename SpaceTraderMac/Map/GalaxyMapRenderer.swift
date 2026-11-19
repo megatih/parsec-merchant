@@ -28,8 +28,18 @@ struct MapRenderOptions {
     var heatmap: HeatmapResult?
     /// MAP-095: procedural art (nil: the plain M8 drawing).
     var art: MapArt?
+    /// UI-BRG-010: the Short-Range Chart's extra marks (nil on the other charts).
+    var bridge: BridgeChartMarks?
 
     static let dimmedOpacity = 0.4
+}
+
+/// UI-BRG-010: what the Bridge's Short-Range Chart adds: the word under the target's reticle, the tracked system's
+/// name and distance beside its edge arrow, and a brass diamond on the best destinations for the hold.
+struct BridgeChartMarks: Equatable {
+    var targetLabel: String
+    var trackedLabel: String?
+    var bestDestinations: Set<Int> = []
 }
 
 /// The only drawing code of the map, shared by all three scopes (MAP-023).
@@ -75,7 +85,7 @@ enum GalaxyMapRenderer {
         case .route:
             drawRoute(&ctx, s, pm)
         case .trackedBearing:
-            drawBearing(&ctx, s, pm, mini: options.miniChart)
+            drawBearing(&ctx, s, pm, mini: options.miniChart, label: options.bridge?.trackedLabel)
         case .systems:
             let dim = layers.contains(.searchDimming) ? options.dimmed : []
             for i in pm.visible {
@@ -88,7 +98,7 @@ enum GalaxyMapRenderer {
                            radius: pm.metrics.wormholeRadius)
             }
         case .markers:
-            drawMarkers(&ctx, s, pm, dwc: options.style.differentiateWithoutColor)
+            drawMarkers(&ctx, s, pm, dwc: options.style.differentiateWithoutColor, bridge: options.bridge)
         case .labels:
             for label in pm.labels { drawLabel(&ctx, label) }
         }
@@ -187,7 +197,7 @@ enum GalaxyMapRenderer {
         }
     }
 
-    private static func drawBearing(_ ctx: inout GraphicsContext, _ s: MapSnapshot, _ pm: ProjectedMap, mini: Bool) {
+    private static func drawBearing(_ ctx: inout GraphicsContext, _ s: MapSnapshot, _ pm: ProjectedMap, mini: Bool, label: String? = nil) {
         guard let (a, b) = MapGeometry.trackedBearing(s, projection: pm.projection) else { return }
         if mini {
             guard let tri = MapGeometry.bearingTriangle(from: a, toward: b) else { return }
@@ -195,6 +205,14 @@ enum GalaxyMapRenderer {
             p.addLines(tri)
             p.closeSubpath()
             ctx.fill(p, with: .color(MapStyle.tracked))
+            if let label, let tip = tri.first {
+                // The name and distance sit beside the arrow, pulled inside the chart's edges.
+                let text = ctx.resolve(Text(verbatim: label).font(.system(size: 10, weight: .semibold)).foregroundStyle(MapStyle.label))
+                let size = text.measure(in: CGSize(width: 400, height: 40))
+                let x = min(max(tip.x, size.width / 2 + 6), pm.key.width - size.width / 2 - 6)
+                let y = min(max(tip.y + (tip.y < pm.key.height / 2 ? 16 : -16), size.height / 2 + 4), pm.key.height - size.height / 2 - 4)
+                ctx.draw(text, at: CGPoint(x: x, y: y))
+            }
         } else {
             var p = Path()
             p.move(to: a)
@@ -227,7 +245,7 @@ enum GalaxyMapRenderer {
         }
     }
 
-    private static func drawMarkers(_ ctx: inout GraphicsContext, _ s: MapSnapshot, _ pm: ProjectedMap, dwc: Bool) {
+    private static func drawMarkers(_ ctx: inout GraphicsContext, _ s: MapSnapshot, _ pm: ProjectedMap, dwc: Bool, bridge: BridgeChartMarks? = nil) {
         let visible = Set(pm.visible)
         for i in pm.visible {
             let st = MapGlyphStyle.style(for: s.systems[i], in: s, differentiateWithoutColor: dwc, zoom: pm.metrics.zoom)
@@ -236,7 +254,15 @@ enum GalaxyMapRenderer {
                 ctx.stroke(Path(ellipseIn: CGRect(x: c.x - r - 4, y: c.y - r - 4, width: 2 * r + 8, height: 2 * r + 8)),
                            with: .color(MapStyle.brass), lineWidth: 1.5 * strokeScale)
             }
-            if st.markers.contains(.target) { crosshair(&ctx, at: c, radius: r) }
+            if st.markers.contains(.target) {
+                crosshair(&ctx, at: c, radius: r, color: bridge == nil ? MapStyle.target : MapStyle.brass)
+                if let bridge {
+                    // UI-BRG-010: the reticle and the word, never the colour alone.
+                    ctx.draw(Text(verbatim: bridge.targetLabel).font(.system(size: 9, weight: .bold)).foregroundStyle(MapStyle.brass),
+                             at: CGPoint(x: c.x, y: c.y - r - 14))
+                }
+            }
+            if let bridge, bridge.bestDestinations.contains(i) { diamond(&ctx, at: CGPoint(x: c.x + r + 6, y: c.y + r + 4)) }
             if st.markers.contains(.tracked) { pennant(&ctx, at: CGPoint(x: c.x + r * 0.7, y: c.y - r * 0.7)) }
             if st.markers.contains(.quest) { sparkle(&ctx, at: CGPoint(x: c.x - r - 3, y: c.y - r - 3)) }
         }
@@ -249,13 +275,25 @@ enum GalaxyMapRenderer {
         }
     }
 
-    private static func crosshair(_ ctx: inout GraphicsContext, at c: CGPoint, radius r: Double) {
+    /// UI-BRG-010: a brass diamond: a best destination for the hold.
+    private static func diamond(_ ctx: inout GraphicsContext, at c: CGPoint) {
+        var p = Path()
+        p.move(to: CGPoint(x: c.x, y: c.y - 4.5))
+        p.addLine(to: CGPoint(x: c.x + 3.5, y: c.y))
+        p.addLine(to: CGPoint(x: c.x, y: c.y + 4.5))
+        p.addLine(to: CGPoint(x: c.x - 3.5, y: c.y))
+        p.closeSubpath()
+        ctx.fill(p, with: .color(MapStyle.brass))
+        ctx.stroke(p, with: .color(.black.opacity(0.6)), lineWidth: 0.6)
+    }
+
+    private static func crosshair(_ ctx: inout GraphicsContext, at c: CGPoint, radius r: Double, color: Color = MapStyle.target) {
         var p = Path()
         for (dx, dy) in [(1.0, 0.0), (-1, 0), (0, 1), (0, -1)] {
             p.move(to: CGPoint(x: c.x + dx * (r + 3), y: c.y + dy * (r + 3)))
             p.addLine(to: CGPoint(x: c.x + dx * (r + 8), y: c.y + dy * (r + 8)))
         }
-        ctx.stroke(p, with: .color(MapStyle.target), lineWidth: 1.5 * strokeScale)
+        ctx.stroke(p, with: .color(color), lineWidth: 1.5 * strokeScale)
     }
 
     private static func pennant(_ ctx: inout GraphicsContext, at base: CGPoint) {

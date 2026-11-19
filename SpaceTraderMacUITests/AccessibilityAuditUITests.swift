@@ -52,7 +52,7 @@ final class AccessibilityAuditUITests: ParsecUITestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.6))
         }
         for _ in 0..<3 where !element(AXID.Dialog.retireSheet).exists && !element("bridge.root").exists {
-            goToSection("1", root: "bridge.root")
+            goToSection("bridge", root: "bridge.root")
         }
         retireGame()
         waitFor(AXID.GameOver.card)
@@ -169,16 +169,16 @@ final class AccessibilityAuditUITests: ParsecUITestCase {
     // MARK: A11Y-008 column headers
 
     private func checkMarketColumnHeaders() {
-        let table = element(AXID.Market.table)
-        guard let snap = try? table.snapshot() else { return XCTFail("snapshot of the Market table") }
+        let header = element("bridge.cargo.header")
+        guard let snap = try? header.snapshot() else { return XCTFail("snapshot of the Cargo header row") }
         var titles: [String] = []
         func visit(_ e: XCUIElementSnapshot) {
-            if e.elementType == .button, !e.title.isEmpty, e.identifier.isEmpty { titles.append(e.title) }
-            if e.elementType == .tableColumn || e.elementType == .group { e.children.forEach(visit) }
+            if e.elementType == .staticText { titles.append(e.label.isEmpty ? (e.value as? String ?? "") : e.label) }
+            e.children.forEach(visit)
         }
-        snap.children.forEach(visit)
-        for header in ["Item", "Buy", "Sell", "Held", "Target", "History", "Actions"] {
-            XCTAssertTrue(titles.contains(header), "A11Y-008: the Market table exposes the column header \(header) (got \(titles))")
+        visit(snap)
+        for column in ["Good", "Hold", "Paid", "Sell", "Buy", "Stock", "Target", "Quantity"] {
+            XCTAssertTrue(titles.contains(column), "A11Y-008: the Cargo rows have the column header \(column) (got \(titles))")
         }
     }
 }

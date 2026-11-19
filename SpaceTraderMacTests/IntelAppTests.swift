@@ -60,7 +60,7 @@ struct IntelAppTests {
         observed.pressureHint = PressureHint(pressure: .war, day: 9, source: .news)
         #expect(IntelText.help(observed).contains("News on day 9: war"))
         #expect(IntelText.signed(412) == "+412" && IntelText.signed(-12) == "−12" && IntelText.arrow(5) == "▲" && IntelText.arrow(-5) == "▼")
-        #expect(TradeItemType.allCases.map(AXID.MarketIntel.target) == TradeItemType.allCases.map { "market.row.\($0).target" })
+        #expect(TradeItemType.allCases.map(BridgeID.Cargo.target) == TradeItemType.allCases.map { "bridge.cargo.target.\($0)" })
     }
 
     @Test("INT-031 the History sparkline series and its accessibility value; fewer than 2 observations say No history")
@@ -102,15 +102,15 @@ struct IntelAppTests {
         let dest = try #require(st.destinations.first)
         #expect(RecommendationRules.canSelectTarget(dest, state: st, inputLocked: false))
         #expect(!RecommendationRules.canSelectTarget(dest, state: st, inputLocked: true))
-        #expect(AXID.MarketIntel.recommendationBuy(1) == "market.recommendation.buy.1"
-            && AXID.MarketIntel.recommendationDestination(2) == "market.recommendation.destination.2")
+        #expect(BridgeID.Cargo.good(.water) == "bridge.cargo.good.water", "the best buy is the star in the Good cell")
+
     }
 
     @Test("INT-034 the footer projection: Hold at <target>, est. and unsellable items")
     func footer() {
         let h = HoldValue(revenue: 500, costBasis: 300, profit: 200, unsellable: [.firearms, .narcotics], usesEstimates: true)
         #expect(IntelText.holdProjection(h, target: "Rhymus") == "Hold at Rhymus: +200 est. · 2 items not bought there")
-        #expect(AXID.MarketIntel.footerProjected == "market.footer.projected")
+        #expect(BridgeID.Cargo.hold == "bridge.cargo.summary.hold")
     }
 
     @Test("INT-035 the Held cell's sell advice")

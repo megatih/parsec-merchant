@@ -59,36 +59,3 @@ struct NewspaperSheet: View {
         .accessibilityIdentifier(AXID.Newspaper.sheet)
     }
 }
-
-/// UI-ENC-072: the Bridge newspaper card (masthead when paid, else "Local newspaper" and the price).
-struct NewspaperCardView: View {
-    @Environment(GameSession.self) private var session
-    let model: NewspaperCardModel
-
-    var body: some View {
-        GroupBox {
-            HStack {
-                if let masthead = model.masthead {
-                    Text(verbatim: masthead).scaledFont(.headline, design: .serif)
-                } else {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Local newspaper")
-                        Text("Price: \(model.cost.formatted()) cr.").monospacedDigit().foregroundStyle(.readableSecondary)
-                    }
-                }
-                Spacer()
-                Button("Read") { session.readNewspaper() }
-                    .disabled(model.blocker != nil)
-                    .help(model.blocker.map { Text(ReasonText.text(for: $0)) } ?? Text("Read the local newspaper."))
-                    .accessibilityIdentifier(AXID.Bridge.newspaperRead)
-            }
-            if let blocker = model.blocker {
-                Text(ReasonText.text(for: blocker)).scaledFont(.caption).foregroundStyle(.readableSecondary)
-            }
-        } label: {
-            Label("Newspaper", systemImage: "newspaper")
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(AXID.Newspaper.bridgeCard)
-    }
-}

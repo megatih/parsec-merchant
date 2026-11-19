@@ -174,10 +174,10 @@ enum FindSystemModel {
 }
 
 extension GameSession {
-    /// A quest's system link, as the C# hyperlinks did: select the system as target, then show the Bridge (UI-SHELL-086).
+    /// A quest's system button: selects the system as the target. The page stays (UI-NAV-006); the Target System is on
+    /// the Bridge and in the status bar's fuel slot.
     func selectQuestSystem(_ system: Int) {
         send(.selectTarget(system))
-        if lastRejection == nil { selectedSection = .bridge }
     }
 
     /// Find System's Select: performs the outcome (UI-SHELL-085). Returns false when the sheet stays open.

@@ -44,6 +44,8 @@ struct LaunchOptions: Equatable, Sendable {
     /// `-PMWindowSize min|default`: opens the main window at its 1100×720 minimum (A11Y-002) or its 1320×860 default size,
     /// centred, ignoring the restored frame (UI tests use `default` so every run starts from the same frame).
     var windowSize: LaunchWindowSize?
+    /// `-PMWindowPoints <width>x<height>`: opens the main window at this content size (the layout tests, UI-BRG-033).
+    var windowPoints: CGSize?
     var minimumWindow: Bool { windowSize == .minimum }
     /// `-PMAppearance light|dark`: forces the app's appearance (A11Y-002). Nil: follow the system.
     var appearance: LaunchAppearance?
@@ -111,6 +113,12 @@ struct LaunchOptions: Equatable, Sendable {
             case "-PMWindowSize":
                 if let v = value(after: i), !v.hasPrefix("-") {
                     o.windowSize = LaunchWindowSize(rawValue: v)
+                    i += 1
+                }
+            case "-PMWindowPoints":
+                if let v = value(after: i), !v.hasPrefix("-") {
+                    let parts = v.lowercased().split(separator: "x").compactMap { Double($0) }
+                    if parts.count == 2, parts[0] >= 200, parts[1] >= 200 { o.windowPoints = CGSize(width: parts[0], height: parts[1]) }
                     i += 1
                 }
             case "-PMAppearance":

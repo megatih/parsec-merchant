@@ -22,13 +22,10 @@ nonisolated extension AXID {
     }
 
     enum Options {
-        static let sheet = "options.sheet"
         static func field(_ f: OptionsDraft.Field) -> String { "options.\(f.rawValue)" }
         static let saveDefaults = "options.saveDefaults"
         static let loadDefaults = "options.loadDefaults"
-        static let ok = "options.ok"
-        static let cancel = "options.cancel"
-        static let all = [sheet, saveDefaults, loadDefaults, ok, cancel] + OptionsDraft.Field.allCases.map(field)
+        static let all = [saveDefaults, loadDefaults] + OptionsDraft.Field.allCases.map(field)
     }
 
     enum Settings {

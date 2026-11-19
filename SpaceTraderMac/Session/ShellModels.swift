@@ -23,7 +23,7 @@ struct SidebarBadges: Equatable, Sendable {
         case .bridge: bridgeSpecial ? .special : nil
         case .crew: crewForHire > 0 ? .count(crewForHire) : nil
         case .bank: bankDebtWarning ? .debtWarning : nil
-        case .market, .shipyard, .outfitter, .galaxy, .quests, .logbook: nil
+        case .shipyard, .outfitter, .galaxy, .quests, .logbook, .status, .options: nil
         }
     }
 
@@ -75,14 +75,46 @@ struct StatusBarModel: Equatable, Sendable {
     var fuelCapacity: Int
     var hullPercent: Int
     var latestFeed: FeedItem?
+    /// UI-SB-001: the always-visible facts added in release 2.0.
+    var systemName = ""
+    var day = 0
+    /// In transit or in an encounter: the destination and the clicks left; nil while docked.
+    var transit: (destination: String, clicks: Int)?
+    var cash = 0
+    var debt = 0
+    /// nil without shields.
+    var shieldPercent: Int?
+    /// The fuel on board cannot reach the selected target.
+    var fuelShort = false
+
+    static func == (a: StatusBarModel, b: StatusBarModel) -> Bool {
+        a.filledBays == b.filledBays && a.totalBays == b.totalBays && a.fuel == b.fuel && a.fuelCapacity == b.fuelCapacity
+            && a.hullPercent == b.hullPercent && a.latestFeed == b.latestFeed && a.systemName == b.systemName && a.day == b.day
+            && a.transit?.destination == b.transit?.destination && a.transit?.clicks == b.transit?.clicks && a.cash == b.cash && a.debt == b.debt
+            && a.shieldPercent == b.shieldPercent && a.fuelShort == b.fuelShort
+    }
 
     static func make(state: GameState, feed: [FeedItem]) -> StatusBarModel {
         let ship = state.commander.ship
         let r = state.ruleset
         let strength = ship.hullStrength(r)
-        return StatusBarModel(filledBays: state.filledCargoBays, totalBays: ship.cargoBays(r), fuel: ship.fuel,
-                              fuelCapacity: state.fuelCapacity, hullPercent: strength > 0 ? ship.hull * 100 / strength : 0,
-                              latestFeed: feed.last)
+        var model = StatusBarModel(filledBays: state.filledCargoBays, totalBays: ship.cargoBays(r), fuel: ship.fuel,
+                                   fuelCapacity: state.fuelCapacity, hullPercent: strength > 0 ? ship.hull * 100 / strength : 0,
+                                   latestFeed: feed.last)
+        model.systemName = Names.system(state.commander.currentSystem, in: state)
+        model.day = state.commander.days
+        if state.phase != .docked, let t = state.transitPreview {
+            model.transit = (Names.system(t.destination, in: state), t.clicksRemaining)
+        }
+        model.cash = state.commander.cash
+        model.debt = state.commander.debt
+        let power = ship.shieldStrength(r)
+        model.shieldPercent = ship.shields.isEmpty || power <= 0 ? nil : ship.shieldCharge * 100 / power
+        if state.phase == .docked, state.warpSystem != state.commander.currentSystem {
+            let preview = state.warpTargetPreview(state.warpSystem)
+            model.fuelShort = !preview.inRange && !preview.viaWormhole
+        }
+        return model
     }
 
     /// The newest items for the feed overlay, newest first.

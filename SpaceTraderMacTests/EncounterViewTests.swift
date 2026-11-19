@@ -63,10 +63,10 @@ struct EncounterViewTests {
     @Test("UI-ENC-015 the encounter detail is the Encounter view; sidebar, toolbar Warp and game commands are locked")
     func encounterDetail() throws {
         let s = try EncFx.session(.pirateAttack)
-        #expect(DetailMode.derive(state: s.state, playback: nil, selected: .market) == .encounter)
+        #expect(DetailMode.derive(state: s.state, playback: nil, selected: .bank) == .encounter)
         #expect(SidebarLock.make(phase: s.state?.phase) == .inEncounter)
         let ctx = MenuContext.make(session: s)
-        #expect(!MenuRules.warp(ctx).isEnabled && !MenuRules.availability(of: .market, in: ctx).isEnabled)
+        #expect(!MenuRules.warp(ctx).isEnabled && !MenuRules.availability(of: .bank, in: ctx).isEnabled)
         #expect(AXID.all.contains(AXID.Encounter.view))
         // The view renders in a window-less host with the session.
         let host = NSHostingView(rootView: EncounterView().environment(s))

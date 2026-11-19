@@ -113,7 +113,6 @@ enum ShipPurchaseRequest: Equatable, Sendable {
 enum SheetRoute: Equatable, Sendable {
     case newGame
     case openSavedGame
-    case gameOptions
     case findSystem
     case shipPurchase(ShipPurchaseRequest)
     /// The retire confirmation (ALR-104) is a sheet; it carries the pending confirmation to resend.
@@ -131,12 +130,17 @@ enum SheetRoute: Equatable, Sendable {
     case report(ReportSheet)
     /// UI-ENC-092: the Debug developer tester (CHEAT-038).
     case developerTester
+    /// UI-BRG-008: "Why this price?" and the price history of one good.
+    case priceDetails(TradeItemType)
+    /// UI-SHELL-065: the quantity to dump or jettison.
+    case cargoDisposal(CargoDisposal)
+    /// PRD §4.2: a partial fuel or repair purchase (Trade › Buy Fuel…, Repair…).
+    case serviceAmount(DockServiceModel.Kind)
 
     var key: String {
         switch self {
         case .newGame: "newGame"
         case .openSavedGame: "openSavedGame"
-        case .gameOptions: "gameOptions"
         case .findSystem: "findSystem"
         case let .shipPurchase(r): "shipPurchase.\(r.key)"
         case .retire: "retire"
@@ -147,6 +151,9 @@ enum SheetRoute: Equatable, Sendable {
         case let .narrative(page): "narrative.\(page.key)"
         case let .report(r): "report.\(r.kind.rawValue)"
         case .developerTester: "developerTester"
+        case let .priceDetails(item): "priceDetails.\(item)"
+        case let .cargoDisposal(d): "cargoDisposal.\(d.id)"
+        case let .serviceAmount(kind): "serviceAmount.\(kind)"
         }
     }
 }

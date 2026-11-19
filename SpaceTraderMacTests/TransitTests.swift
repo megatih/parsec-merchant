@@ -68,10 +68,10 @@ struct TransitTests {
         let phases: [GamePhase] = [.docked, .inTransit(transit), TransitFixtures.encounterPhase(clicks: 4), .gameOver(.killed)]
         for phase in phases {
             let s = TransitFixtures.state(phase)
-            #expect(DetailMode.derive(state: s, playback: playback, selected: .market) == .transit(playback))
-            let mode = DetailMode.derive(state: s, playback: nil, selected: .market)
+            #expect(DetailMode.derive(state: s, playback: playback, selected: .bank) == .transit(playback))
+            let mode = DetailMode.derive(state: s, playback: nil, selected: .bank)
             switch phase {
-            case .docked: #expect(mode == .section(.market))
+            case .docked: #expect(mode == .section(.bank))
             case .encounter: #expect(mode == .encounter)
             case .gameOver: #expect(mode == .gameOver(.killed))
             case .inTransit: #expect(mode == .transit(.frozen(transit)))

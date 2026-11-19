@@ -38,9 +38,9 @@ nonisolated enum SheetButton: String, Sendable, CaseIterable {
 /// Every surface of §2.3: the `SheetRoute`s plus the Market quantity sheets, the System intel sheet, the About window
 /// and the confirmation dialogs and alerts.
 nonisolated enum SheetSurface: String, Sendable, CaseIterable {
-    case newGame, openSavedGame, gameOptions, findSystem, shipPurchase, retire, cheatConsole, tradeInOrbit, plunder, jettison, dump,
+    case newGame, openSavedGame, findSystem, shipPurchase, retire, cheatConsole, tradeInOrbit, plunder, jettison, dump,
          newspaper, narrativeOffer, narrativeMessage, report, systemIntel, about, developerTester, confirmationDestructive,
-         confirmation, systemAlert
+         confirmation, systemAlert, priceDetails, serviceAmount
 
     var context: KeyContext { self == .systemAlert ? .dialog : .sheet(rawValue) }
 
@@ -48,7 +48,6 @@ nonisolated enum SheetSurface: String, Sendable, CaseIterable {
         switch self {
         case .newGame: "New Game wizard"
         case .openSavedGame: "Open Saved Game"
-        case .gameOptions: "Options"
         case .findSystem: "Find System"
         case .shipPurchase: "Ship purchase review"
         case .retire: "Retire"
@@ -67,6 +66,8 @@ nonisolated enum SheetSurface: String, Sendable, CaseIterable {
         case .confirmationDestructive: "Destructive confirmation"
         case .confirmation: "Confirmation"
         case .systemAlert: "Alert"
+        case .priceDetails: "Price Details"
+        case .serviceAmount: "Buy Fuel and Repair"
         }
     }
 }
@@ -86,7 +87,6 @@ nonisolated enum SheetKeys {
         switch route {
         case .newGame: .newGame
         case .openSavedGame: .openSavedGame
-        case .gameOptions: .gameOptions
         case .findSystem: .findSystem
         case .shipPurchase: .shipPurchase
         case .retire: .retire
@@ -101,6 +101,9 @@ nonisolated enum SheetKeys {
             }
         case .report: .report
         case .developerTester: .developerTester
+        case .priceDetails: .priceDetails
+        case let .cargoDisposal(d): d.kind == .jettison ? .jettison : .dump
+        case .serviceAmount: .serviceAmount
         }
     }
 
@@ -111,7 +114,6 @@ nonisolated enum SheetKeys {
         switch surface {
         case .newGame: SheetKeyRoles(defaultAction: .next, escapeAction: .cancel)
         case .openSavedGame: SheetKeyRoles(defaultAction: .open, escapeAction: .cancel)
-        case .gameOptions: SheetKeyRoles(defaultAction: .ok, escapeAction: .cancel)
         case .findSystem: SheetKeyRoles(defaultAction: .select, escapeAction: .cancel)
         case .shipPurchase: SheetKeyRoles(defaultAction: .buy, escapeAction: .cancel)
         case .retire: SheetKeyRoles(defaultAction: .cancel, escapeAction: .cancel)
@@ -130,6 +132,8 @@ nonisolated enum SheetKeys {
         case .confirmationDestructive: SheetKeyRoles(defaultAction: .cancel, escapeAction: .cancel)
         case .confirmation: SheetKeyRoles(defaultAction: .confirm, escapeAction: .cancel)
         case .systemAlert: SheetKeyRoles(defaultAction: .ok, escapeAction: .ok)
+        case .priceDetails: SheetKeyRoles(defaultAction: .done, escapeAction: .done)
+        case .serviceAmount: SheetKeyRoles(defaultAction: .buy, escapeAction: .cancel)
         }
     }
 

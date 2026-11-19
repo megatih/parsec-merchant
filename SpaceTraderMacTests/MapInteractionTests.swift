@@ -271,6 +271,6 @@ struct MapInteractionTests {
             }
         }
         #expect(AXID.Map(.miniChart).map == AXID.Galaxy.miniChartMap && all.contains(AXID.Galaxy.windowRoot))
-        #expect(all.contains("galaxy.root") && all.contains("sidebar.galaxy") && all.contains(AXID.Galaxy.bridgePlotRoute))
+        #expect(all.contains("galaxy.root") && all.contains("dock.galaxy") && all.contains(AXID.Galaxy.bridgePlotRoute))
     }
 }

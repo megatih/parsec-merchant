@@ -11,12 +11,14 @@ enum KeyFixture {
 
     static let menus: [Row] = [
         ("newGame", "⌘N", "global"), ("open", "⌘O", "global"), ("save", "⌘S", "global"), ("saveAs", "⇧⌘S", "global"),
-        ("export", "⇧⌘E", "global"), ("find", "⌘F", "global"), ("bridge", "⌘1", "global"), ("market", "⌘2", "global"),
-        ("shipyard", "⌘3", "global"), ("outfitter", "⌘4", "global"), ("crew", "⌘5", "global"), ("bank", "⌘6", "global"),
-        ("galaxy", "⌘7", "global"), ("quests", "⌘8", "global"), ("logbook", "⌘9", "global"), ("galaxyChart", "⇧⌘M", "global"),
+        ("export", "⇧⌘E", "global"), ("find", "⌘F", "global"), ("bridge", "⌘1", "global"),
+        ("shipyard", "⌘2", "global"), ("outfitter", "⌘3", "global"), ("crew", "⌘4", "global"), ("bank", "⌘5", "global"),
+        ("commanderStatus", "⌘6", "global"), ("quests", "⌘7", "global"), ("galaxy", "⌘8", "global"), ("logbook", "⌘9", "global"), ("galaxyChart", "⇧⌘M",
+            "global"),
         ("zoomIn", "⌘+", "mapCanvas"), ("zoomOut", "⌘−", "mapCanvas"), ("zoomFit", "⌘0", "mapCanvas"),
         ("warp", "⌘J", "global"), ("previousTarget", "⌘[", "global"), ("nextTarget", "⌘]", "global"),
         ("findSystem", "⌥⌘F", "global"), ("fillFuel", "⇧⌘F", "global"), ("repair", "⇧⌘R", "global"),
+        ("sellAllCargo", "⌥⌘S", "global"), ("priceDetails", "⌥⌘I", "global"),
         ("newspaper", "⇧⌘N", "global"), ("options", "⌥⌘O", "global"), ("help", "⌘?", "global"),
         ("encounterAttack", "A", "encounter"), ("encounterFlee", "F", "encounter"), ("encounterSurrender", "S", "encounter"),
         ("encounterIgnore", "I", "encounter"), ("encounterBribe", "B", "encounter"), ("encounterSubmit", "U", "encounter"),
@@ -51,12 +53,13 @@ enum KeyFixture {
 
     /// §2.3: (surface, Return button, Esc button).
     static let sheets: [(String, String, String)] = [
-        ("newGame", "next", "cancel"), ("openSavedGame", "open", "cancel"), ("gameOptions", "ok", "cancel"),
+        ("newGame", "next", "cancel"), ("openSavedGame", "open", "cancel"),
         ("findSystem", "select", "cancel"), ("shipPurchase", "buy", "cancel"), ("retire", "cancel", "cancel"),
         ("cheatConsole", "run", "close"), ("tradeInOrbit", "trade", "decline"), ("plunder", "done", "done"),
         ("jettison", "jettison", "cancel"), ("dump", "dump", "cancel"), ("newspaper", "close", "close"),
         ("narrativeOffer", "accept", "decline"), ("narrativeMessage", "continue", "continue"), ("report", "continue", "continue"),
         ("systemIntel", "done", "done"), ("about", "done", "done"), ("developerTester", "close", "close"),
+        ("priceDetails", "done", "done"), ("serviceAmount", "buy", "cancel"),
         ("confirmationDestructive", "cancel", "cancel"), ("confirmation", "confirm", "cancel"), ("systemAlert", "ok", "ok"),
     ]
 
@@ -268,8 +271,8 @@ struct KeyBindingTests {
         #expect(MarketKeyAction.make(characters: "b", modifiers: .control) == nil)
         #expect(MarketKeyAction.make(characters: "B", modifiers: .shift) == .buyMax)
         #expect(MarketKeyAction.make(characters: "S", modifiers: .shift) == .sellAll)
-        #expect(MarketKeyAction.make(characters: "b", modifiers: []) == .buy([]))
-        #expect(MarketKeyAction.make(characters: "s", modifiers: .capsLock) == .sell([]))
+        #expect(MarketKeyAction.make(characters: "b", modifiers: []) == .buy)
+        #expect(MarketKeyAction.make(characters: "s", modifiers: .capsLock) == .sell)
     }
 
     @Test("UI-KEYS-015 the Encounter and Market letters B and S never coexist")
@@ -337,7 +340,7 @@ struct KeyBindingTests {
         let state = MenuFixtures.fresh()
         let pending = PendingConfirmation(command: .retire, confirmation: Confirmation(.retire, amounts: [1]), acknowledged: [])
         let routes: [SheetRoute] = [
-            .newGame, .openSavedGame, .gameOptions, .findSystem, .shipPurchase(.ship(.gnat)), .retire(pending), .cheatConsole,
+            .newGame, .openSavedGame, .findSystem, .shipPurchase(.ship(.gnat)), .retire(pending), .cheatConsole,
             .tradeInOrbit(try RouteFixtures.offer()),
             .plunder(PlunderSheetContext(victimCargo: Array(repeating: 0, count: 10), source: .opponent)),
             .newspaper(try RouteFixtures.paper()), .narrative(.offer(.skill)),
@@ -369,8 +372,8 @@ struct KeyBindingTests {
 
     @Test("UI-KEYS-033 a menu title ends with … iff the item asks for more input first")
     func ellipsis() {
-        let expected: Set<MenuItemID> = [.newGame, .open, .saveAs, .importSave, .export, .find, .findSystem, .plotRoute, .options, .retire,
-                                         .jump]
+        let expected: Set<MenuItemID> = [.newGame, .open, .saveAs, .importSave, .export, .find, .findSystem, .plotRoute, .retire,
+                                         .jump, .priceDetails, .buyFuelAmount, .repairAmount]
         for id in MenuItemID.allCases {
             let title = String(localized: MenuCatalog.entry(for: id).titleKey)
             #expect(title.hasSuffix("…") == expected.contains(id), "\(id) \(title)")

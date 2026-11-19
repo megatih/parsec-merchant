@@ -72,12 +72,3 @@ enum GalaxyWindowMetrics {
     static let defaultSize = CGSize(width: 1000, height: 720)
     static let minimumSize = CGSize(width: 640, height: 480)
 }
-
-/// The Bridge mini chart (MAP-074): fixed zoom, no HUD.
-struct MiniChartView: View {
-    var body: some View {
-        GalaxyMapView(scope: .miniChart)
-            .frame(height: 240)
-            .clipShape(.rect(cornerRadius: 8))
-    }
-}

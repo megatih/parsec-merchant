@@ -16,9 +16,11 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
     // Edit
     case find
     // View
-    case bridge, market, shipyard, outfitter, crew, bank, galaxy, quests, logbook, galaxyChart, zoomIn, zoomOut, zoomFit
+    case bridge, shipyard, outfitter, crew, bank, commanderStatus, galaxy, quests, logbook, galaxyChart, zoomIn, zoomOut, zoomFit
     // Game
     case warp, jump, previousTarget, nextTarget, track, findSystem, plotRoute, fillFuel, repair, newspaper, options, retire
+    // Trade (release 2.0; they sit in the Game menu until the menu bar is rebuilt)
+    case sellAllCargo, priceDetails, buyFuelAmount, repairAmount
     // Encounter (UI-ENC-034)
     case encounterAttack, encounterFlee, encounterSurrender, encounterIgnore, encounterBribe, encounterSubmit, encounterTrade
     case encounterPlunder, encounterBoard, encounterDrink, encounterMeet, encounterYield, encounterAutoRepeat, encounterResolve
@@ -32,14 +34,15 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
     var section: Section? {
         switch self {
         case .bridge: .bridge
-        case .market: .market
         case .shipyard: .shipyard
         case .outfitter: .outfitter
         case .crew: .crew
         case .bank: .bank
+        case .commanderStatus: .status
         case .galaxy: .galaxy
         case .quests: .quests
         case .logbook: .logbook
+        case .options: .options
         default: nil
         }
     }
@@ -48,7 +51,6 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
     static func item(for section: Section) -> MenuItemID {
         switch section {
         case .bridge: .bridge
-        case .market: .market
         case .shipyard: .shipyard
         case .outfitter: .outfitter
         case .crew: .crew
@@ -56,6 +58,8 @@ nonisolated enum MenuItemID: String, CaseIterable, Sendable {
         case .galaxy: .galaxy
         case .quests: .quests
         case .logbook: .logbook
+        case .status: .commanderStatus
+        case .options: .options
         }
     }
 }
@@ -112,13 +116,13 @@ nonisolated enum MenuCatalog {
         case .closeGame: return file("Close Game", nil, "closeGame")
         case .find: return MenuEntry(menu: .edit, titleKey: "Find…", shortcut: s("f", [.command]), identifier: "menu.edit.find", milestone: 7)
         case .bridge: return view("Bridge", s("1", [.command]), "bridge")
-        case .market: return view("Market", s("2", [.command]), "market")
-        case .shipyard: return view("Shipyard", s("3", [.command]), "shipyard")
-        case .outfitter: return view("Outfitter", s("4", [.command]), "outfitter")
-        case .crew: return view("Crew", s("5", [.command]), "crew")
-        case .bank: return view("Bank", s("6", [.command]), "bank")
-        case .galaxy: return view("Galaxy", s("7", [.command]), "galaxy", milestone: 8)
-        case .quests: return view("Quests", s("8", [.command]), "quests")
+        case .shipyard: return view("Shipyard", s("2", [.command]), "shipyard")
+        case .outfitter: return view("Equipment", s("3", [.command]), "outfitter")
+        case .crew: return view("Personnel", s("4", [.command]), "crew")
+        case .bank: return view("Bank", s("5", [.command]), "bank")
+        case .commanderStatus: return view("Commander Status", s("6", [.command]), "commanderStatus")
+        case .galaxy: return view("Galactic Chart", s("8", [.command]), "galaxy", milestone: 8)
+        case .quests: return view("Quests", s("7", [.command]), "quests")
         case .logbook: return view("Logbook", s("9", [.command]), "logbook", milestone: 10)
         case .galaxyChart: return view("Galaxy Chart", s("m", [.shift, .command]), "galaxyChart", milestone: 8)
         case .zoomIn: return view("Zoom In", s("+", [.command]), "zoomIn", milestone: 8)
@@ -133,8 +137,12 @@ nonisolated enum MenuCatalog {
         case .plotRoute: return game("Plot Route…", nil, "plotRoute", milestone: 8)
         case .fillFuel: return game("Fill Fuel", s("f", [.shift, .command]), "fillFuel")
         case .repair: return game("Repair Hull", s("r", [.shift, .command]), "repair")
+        case .sellAllCargo: return game("Sell All Cargo", s("s", [.option, .command]), "sellAllCargo")
+        case .priceDetails: return game("Price Details…", s("i", [.option, .command]), "priceDetails")
+        case .buyFuelAmount: return game("Buy Fuel…", nil, "buyFuelAmount")
+        case .repairAmount: return game("Repair…", nil, "repairAmount")
         case .newspaper: return game("Newspaper", s("n", [.shift, .command]), "newspaper", milestone: 9)
-        case .options: return game("Options…", s("o", [.option, .command]), "options")
+        case .options: return game("Options", s("o", [.option, .command]), "options")
         case .retire: return game("Retire…", nil, "retire")
         case .encounterAttack, .encounterFlee, .encounterSurrender, .encounterIgnore, .encounterBribe, .encounterSubmit, .encounterTrade,
              .encounterPlunder, .encounterBoard, .encounterDrink, .encounterMeet, .encounterYield, .encounterAutoRepeat,
@@ -214,10 +222,10 @@ nonisolated enum MenuCatalog {
         case .app: [.about]
         case .file: [.newGame, .quickStart, .open, .openRecent, .save, .saveAs, .revert, .importSave, .export, .closeGame]
         case .edit: [.find]
-        case .view: [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .logbook, .galaxyChart, .zoomIn, .zoomOut,
+        case .view: [.bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .quests, .galaxy, .logbook, .galaxyChart, .zoomIn, .zoomOut,
                      .zoomFit]
-        case .game: [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .fillFuel, .repair, .newspaper,
-                     .options, .retire]
+        case .game: [.warp, .jump, .previousTarget, .nextTarget, .track, .findSystem, .plotRoute, .sellAllCargo, .priceDetails, .buyFuelAmount,
+                     .fillFuel, .repairAmount, .repair, .newspaper, .options, .retire]
         case .encounter: MenuItemID.encounterItems
         case .window: [.mainWindow, .galaxyChartWindow, .highScores]
         case .help: [.help, .prices, .shortcuts, .credits, .github]

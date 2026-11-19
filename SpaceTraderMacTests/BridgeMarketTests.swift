@@ -9,6 +9,9 @@ import Testing
 @MainActor
 @Suite("Bridge and Market")
 struct BridgeMarketTests {
+    static let appRoot = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        .appendingPathComponent("SpaceTraderMac")
+
     private func fresh(_ ruleset: RulesetID = .modern, seed: UInt64 = 1) -> GameState {
         GameState(config: NewGameConfig(commanderName: "Trader", ruleset: ruleset, seed: seed))
     }
@@ -56,7 +59,7 @@ struct BridgeMarketTests {
         for r in SpecialResource.allCases { #expect(!String(localized: SystemText.resource(r)).isEmpty) }
         for a in Activity.allCases { #expect(!String(localized: SystemText.activity(a)).isEmpty) }
         for p in SystemPressure.allCases { #expect(!String(localized: SystemText.pressureDescription(p)).isEmpty) }
-        #expect(AXID.all.contains(AXID.Bridge.systemCard))
+        #expect(AXID.all.contains(BridgeID.system))
     }
 
     @Test("UI-SHELL-055 fuel: Fill Up sends the full-tank cost, partial range 1…min(cost, cash), Tank full, Not enough cash")
@@ -83,7 +86,7 @@ struct BridgeMarketTests {
             #expect(ReasonText.string(for: .insufficientFunds) == "Not enough cash.")
             #expect(rejection(broke.fullCommand, in: s) != nil)
         }
-        #expect([AXID.Bridge.fuelFillUp, AXID.Bridge.fuelAmount, AXID.Bridge.fuelBuy].allSatisfy(AXID.all.contains))
+        #expect([BridgeID.System.fillTank, AXID.Bridge.fuelAmount, AXID.Bridge.fuelBuy].allSatisfy(AXID.all.contains))
     }
 
     @Test("UI-SHELL-056 hull: Repair sends the full repair cost, a partial amount, No repairs needed at full hull")
@@ -104,7 +107,7 @@ struct BridgeMarketTests {
             let partial = try #require(m.partialCommand(credits: m.unitCost))
             #expect(accepted(partial, in: s))
         }
-        #expect([AXID.Bridge.repairFull, AXID.Bridge.repairAmount, AXID.Bridge.repairBuy].allSatisfy(AXID.all.contains))
+        #expect([BridgeID.System.repairHull, AXID.Bridge.repairAmount, AXID.Bridge.repairBuy].allSatisfy(AXID.all.contains))
     }
 
     /// A state offering `event` at the current system, if the event is shown there.
@@ -143,7 +146,7 @@ struct BridgeMarketTests {
         try TestSessions.edit(session) { $0 = offer }
         session.send(.specialEvent)
         #expect(session.lastRejection == nil)
-        #expect([AXID.Bridge.special, AXID.Bridge.specialAccept, AXID.Bridge.specialDecline].allSatisfy(AXID.all.contains))
+        #expect([BridgeID.System.special].allSatisfy(AXID.all.contains))
     }
 
     @Test("UI-SHELL-058 mercenary card: the name for one, the count for several, a button to Crew")
@@ -161,7 +164,7 @@ struct BridgeMarketTests {
         #expect(two.singleName == nil && String(localized: two.text) == "2 mercenaries for hire")
         let session = try TestSessions.playing()
         session.selectedSection = .crew
-        #expect(session.selectedSection == .crew && AXID.all.contains(AXID.Bridge.mercenaries))
+        #expect(session.selectedSection == .crew && AXID.all.contains(BridgeID.System.hire))
     }
 
     @Test("UI-SHELL-059 target card: facts, parsecs, fuel after, costs, Warp as MENU-030, ‹ ›, Track/Untrack, wormhole")
@@ -200,7 +203,7 @@ struct BridgeMarketTests {
         let to = try #require(w.galaxy.wormholeDestination(from: start))
         w.warpSystem = to
         #expect(TargetCardModel.make(state: w, isModal: false)?.viaWormhole == true)
-        #expect([AXID.Bridge.targetWarp, AXID.Bridge.targetPrevious, AXID.Bridge.targetNext, AXID.Bridge.targetTrack]
+        #expect([BridgeID.Target.warp, BridgeID.Target.previous, BridgeID.Target.next, BridgeID.Target.track]
             .allSatisfy(AXID.all.contains))
     }
 
@@ -234,7 +237,6 @@ struct BridgeMarketTests {
         #expect(GalaxyCodeCard.copy(GalaxyCodeCard.code(state: s), to: board))
         #expect(board.string(forType: .string) == GalaxyCodeCard.code(state: s))
         board.releaseGlobally()
-        #expect(AXID.all.contains(AXID.Bridge.galaxyCode) && AXID.all.contains(AXID.Bridge.galaxyCodeCopy))
     }
 
     @Test("UI-SHELL-041 target picker: destinations by distance then name, the wormhole entry, selectTarget")
@@ -302,77 +304,13 @@ struct BridgeMarketTests {
         }
         t.warpSystem = try outOfRange(t)
         #expect(MarketRowModel.rows(state: t).allSatisfy { $0.target == nil })
-        #expect(AXID.all.contains(AXID.Market.table) && TradeItemType.allCases.allSatisfy { AXID.all.contains(AXID.Market.row($0)) })
+        #expect(TradeItemType.allCases.allSatisfy { AXID.all.contains(BridgeID.Cargo.row($0)) })
     }
 
-    @Test("UI-SHELL-062 modifier quantities are clamped to maxBuy/maxSell, so they are never rejected; dump mode; field")
-    func rowActions() throws {
-        let combos: [EventModifiers] = [[], .shift, .command, [.shift, .command], .option, [.option, .shift]]
-        for ruleset in RulesetID.allCases {
-            var s = fresh(ruleset)
-            s.commander.cash = 3_000
-            for r in MarketRowModel.rows(state: s) {
-                if case let .failure(e) = s.marketBuyCheck(r.item) {
-                    #expect(r.buyBlocker == e && r.buyCommand(modifiers: []) == nil && r.buyMaxCommand == nil)
-                }
-                for m in combos {
-                    if let c = r.buyCommand(modifiers: m) {
-                        #expect(accepted(c, in: s), "\(ruleset) \(r.item) \(m)")
-                        guard case let .buyCargo(_, q) = c else { Issue.record("not a buy"); continue }
-                        #expect(q == TradeQuantity.resolve(modifiers: m, maximum: r.row.maxBuy))
-                    }
-                }
-                if let c = r.buyMaxCommand { #expect(c == .buyCargo(r.item, quantity: r.row.maxBuy) && accepted(c, in: s)) }
-            }
-            // Hold some of every item, then sell/dump with each modifier.
-            var held = s
-            held.commander.ship.cargo = Array(repeating: 2, count: TradeItemType.allCases.count)
-            for r in MarketRowModel.rows(state: held) {
-                for m in combos {
-                    guard let c = r.sellCommand(modifiers: m) else { continue }
-                    #expect(accepted(c, in: held), "\(ruleset) \(r.item) \(m)")
-                    if r.isDumpMode {
-                        guard case .dumpCargo = c else { Issue.record("dump mode must dump"); continue }
-                    } else {
-                        guard case .sellCargo = c else { Issue.record("must sell"); continue }
-                    }
-                }
-                if let c = r.sellAllCommand { #expect(accepted(c, in: held)) }
-            }
-        }
-        let s = fresh()
-        let r = try #require(MarketRowModel.rows(state: s).first { $0.row.maxBuy > 2 })
-        #expect(r.fieldCommand(text: "2", sell: false) == .buyCargo(r.item, quantity: 2))
-        #expect(r.fieldCommand(text: "99999", sell: false) == .buyCargo(r.item, quantity: r.row.maxBuy))
-        #expect(r.fieldCommand(text: "x", sell: false) == nil && r.fieldCommand(text: "0", sell: false) == nil)
-        #expect(r.fieldCommand(text: "1", sell: true) == nil)
-        #expect(TradeQuantity.modifiers(from: [.shift, .command]) == [.shift, .command])
-        #expect(TradeItemType.allCases.allSatisfy { i in
-            ([AXID.Market.buy(i), AXID.Market.sell(i), AXID.Market.quantity(i)] + TradeChip.allCases.map { AXID.Market.chip(i, $0) })
-                .allSatisfy(AXID.all.contains)
-        })
-    }
-
-    @Test("UI-SHELL-063 TradeQuantity.resolve: 1, ⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ maximum, clamped to 0…maximum")
-    func tradeQuantity() {
-        #expect(TradeQuantity.resolve(modifiers: [], maximum: 500) == 1)
-        #expect(TradeQuantity.resolve(modifiers: .shift, maximum: 500) == 5)
-        #expect(TradeQuantity.resolve(modifiers: .command, maximum: 500) == 20)
-        #expect(TradeQuantity.resolve(modifiers: [.shift, .command], maximum: 500) == 100)
-        #expect(TradeQuantity.resolve(modifiers: .option, maximum: 500) == 500)
-        #expect(TradeQuantity.resolve(modifiers: [.option, .shift], maximum: 500) == 500)
-        #expect(TradeQuantity.resolve(modifiers: [.option, .command, .shift], maximum: 37) == 37)
-        #expect(TradeQuantity.resolve(modifiers: [.shift, .command], maximum: 37) == 37)
-        #expect(TradeQuantity.resolve(modifiers: .command, maximum: 3) == 3)
-        #expect(TradeQuantity.resolve(modifiers: [], maximum: 0) == 0)
-        #expect(TradeQuantity.resolve(modifiers: .option, maximum: -4) == 0)
-        #expect(TradeQuantity.resolve(modifiers: .control, maximum: 10) == 1)
-    }
-
-    @Test("UI-SHELL-064 keys (amended by UI-KEYS-012): B buys 1, S sells 1, ⇧B Buy Max, ⇧S Sell All; ⌘/⌥/⌃ ignored")
+    @Test("UI-SHELL-064 UI-BRG-007 keys: B buys, S sells, ⇧B Max, ⇧S All on the selected row; ⌘/⌥/⌃ ignored")
     func marketKeys() throws {
-        #expect(MarketKeyAction.make(characters: "b", modifiers: []) == .buy([]))
-        #expect(MarketKeyAction.make(characters: "s", modifiers: []) == .sell([]))
+        #expect(MarketKeyAction.make(characters: "b", modifiers: []) == .buy)
+        #expect(MarketKeyAction.make(characters: "s", modifiers: []) == .sell)
         #expect(MarketKeyAction.make(characters: "B", modifiers: .shift) == .buyMax)
         #expect(MarketKeyAction.make(characters: "S", modifiers: .shift) == .sellAll)
         #expect(MarketKeyAction.make(characters: "b", modifiers: .command) == nil)
@@ -382,14 +320,16 @@ struct BridgeMarketTests {
         #expect(MarketKeyAction.make(characters: "b", modifiers: .control) == nil)
         let s = fresh()
         let r = try #require(MarketRowModel.rows(state: s).first { $0.row.maxBuy > 5 })
-        #expect(MarketKeyAction.buy([]).command(for: r) == .buyCargo(r.item, quantity: 1))
-        #expect(MarketKeyAction.buy(.shift).command(for: r) == .buyCargo(r.item, quantity: 5))
+        #expect(MarketKeyAction.buy.command(for: r) == .buyCargo(r.item, quantity: 1))
         #expect(MarketKeyAction.buyMax.command(for: r) == r.buyMaxCommand)
         #expect(MarketKeyAction.sellAll.command(for: r) == nil)
+        let panel = try String(contentsOf: Self.appRoot.appendingPathComponent("Views/Bridge/BridgeCargoPanel.swift"), encoding: .utf8)
+        #expect(panel.contains("case .upArrow, .downArrow:") && panel.contains("MarketKeyAction.make(characters: press.characters"))
+        #expect(panel.contains("if selected { Rectangle().fill(PMColor.accent).frame(width: 3 * scale) }"), "selection is a fill and an accent bar")
     }
 
-    @Test("UI-SHELL-065 Jettison only where the engine accepts it (littering confirmation); Dump when nobody buys it")
-    func jettisonAndDump() throws {
+    @Test("UI-SHELL-065 Dump when nobody buys the good: the quantity sheet's command, clamped to what the engine allows")
+    func dump() throws {
         var s = fresh()
         s.commander.ship.cargo[TradeItemType.water.rawValue] = 3
         let docked = try #require(MarketRowModel.rows(state: s).first { $0.item == .water })
@@ -402,59 +342,8 @@ struct BridgeMarketTests {
         #expect(dump.maximum == dumpRow.row.maxSell && dump.command(quantity: 99) == .dumpCargo(.water, quantity: dump.maximum))
         #expect(dump.command(quantity: 0) == .dumpCargo(.water, quantity: 1))
         #expect(accepted(try #require(dump.command(quantity: 1)), in: dumpState))
-        // In space (an encounter) jettison is offered and asks the littering warning first (ALR-047).
-        var found = false
-        for seed in UInt64(1)...60 where !found {
-            let session = try TestSessions.playing(seed: seed)
-            session.send(.selectNextTarget(forward: true))
-            session.send(.warp)
-            guard case .encounter = session.state?.phase else { continue }
-            try TestSessions.edit(session) { $0.commander.ship.cargo[TradeItemType.water.rawValue] = 2 }
-            let state = try #require(session.state)
-            let row = try #require(MarketRowModel.rows(state: state).first { $0.item == .water })
-            let j = try #require(CargoDisposal.jettison(row))
-            #expect(j.maximum == 2)
-            session.send(try #require(j.command(quantity: 1)))
-            if case let .confirmation(pending) = session.presentation {
-                #expect(pending.confirmation.warning == .litteringWarning || pending.confirmation.warning == .jettisonAll)
-                session.confirm(pending)
-            }
-            TestSessions.resolvePresentation(session)
-            #expect((session.state?.commander.ship.cargo[TradeItemType.water.rawValue] ?? 2) < 2)
-            found = true
-        }
-        #expect(found)
-        #expect(TradeItemType.allCases.allSatisfy { AXID.all.contains(AXID.Market.jettison($0)) && AXID.all.contains(AXID.Market.dump($0)) })
-    }
-
-    @Test("UI-SHELL-066 footer: bays used/total, free for buying honours Leave Empty, cash honours Reserve Money")
-    func footer() throws {
-        var s = fresh()
-        let f = MarketFooterModel.make(state: s)
-        #expect(f.usedBays == s.filledCargoBays && f.totalBays == s.commander.ship.cargoBays(s.ruleset))
-        #expect(f.freeForBuying == s.marketFreeBays && f.cashAvailable == s.commander.cash)
-        s.options.leaveEmpty = 3
-        #expect(MarketFooterModel.make(state: s).freeForBuying == f.freeForBuying - 3)
-        s.options.reserveMoney = true
-        s.commander.debt = 10_000
-        #expect(MarketFooterModel.make(state: s).cashAvailable == s.cashToSpend)
-        #expect(s.cashToSpend < s.commander.cash)
-        #expect(AXID.all.contains(AXID.Market.footer))
-    }
-
-    @Test("UI-SHELL-067 the filter hides rows whose localized name lacks the text, case- and diacritic-insensitive")
-    func filter() {
-        #expect(MarketFilter.matches(name: "Narcotics", filter: "narc"))
-        #expect(MarketFilter.matches(name: "Machines", filter: "MACH"))
-        #expect(MarketFilter.matches(name: "Médecine", filter: "medec"))
-        #expect(!MarketFilter.matches(name: "Water", filter: "ore"))
-        #expect(MarketFilter.matches(name: "Water", filter: "  "))
-        let rows = MarketRowModel.rows(state: fresh())
-        #expect(MarketFilter.filtered(rows, filter: "").count == 10)
-        #expect(MarketFilter.filtered(rows, filter: "ROB").map(\.item) == [.robots])
-        let o = MarketFilter.filtered(rows, filter: "o").map(\.item)
-        #expect(o.contains(.robots) && o.contains(.food) && !o.contains(.water))
-        #expect(AXID.all.contains(AXID.Market.filter))
+        #expect(SheetKeys.surface(for: .cargoDisposal(dump)) == .dump)
+        #expect([AXID.Market.disposalSheet, AXID.Market.disposalConfirm, AXID.Market.disposalCancel].allSatisfy(AXID.all.contains))
     }
 
     // MARK: Interim decision sheets (UI-SHELL-011)

@@ -85,7 +85,7 @@ extension AXID {
         static let windowRoot = "galaxyWindow.root"
         static let windowPlaceholder = "galaxyWindow.placeholder"
         static let miniChartMap = "bridge.miniChart.map"
-        static let miniChartOpen = "bridge.miniChart.open"
+        static let miniChartOpen = BridgeID.Chart.open
         static let bridgePlotRoute = "bridge.target.plotRoute"
         static let bridgeShowOnMap = "bridge.target.showOnMap"
         static func questShowOnMap(_ entry: Int) -> String { "quests.entry.\(entry).showOnMap" }

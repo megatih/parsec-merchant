@@ -17,8 +17,8 @@ struct PointerTests {
         // Modifier clicks are accelerators of visible controls; the key table itself is pinned by UI-KEYS-003.
         #expect(MarketKeyAction.make(characters: "B", modifiers: []) != nil && MarketKeyAction.make(characters: "S", modifiers: .shift) == .sellAll)
         #expect(EncounterKeys.keyCap(for: .resolve) == "R")
-        // Key hints are not in primary UI: no ⌘-digit in sidebar rows, no key cap in encounter button labels.
-        #expect(!(try Self.source("Views/Shell/SidebarView.swift")).contains("shortcutDigit)\")"))
+        // Since release 2.0 the dock buttons show their key caps (UI-NAV-002); encounter buttons get theirs in M25.
+        #expect((try Self.source("Views/Shell/DockBarView.swift")).contains("key: section.keyCap"))
         let bar = try Self.source("Views/Encounter/EncounterActionBar.swift")
         #expect(!bar.contains("button.keyCap") && bar.contains("Text(verbatim: button.label).pointerTarget()"))
     }
@@ -62,10 +62,7 @@ struct PointerTests {
             }
         }
         // Every place that reads the held modifiers sits beside a visible control that does the same without them.
-        let twins = ["Views/Sections/MarketSectionView.swift": "AXID.Market.chip(",        // chips choose what ⇧/⌘/⌥ accelerate
-                     "Views/Sections/ShipyardSectionView.swift": "AXID.Shipyard.compareToggle(",  // Compare toggle for ⌘-click
-                     "Map/GalaxyMapView.swift": "ids.selection(item.kind)",                // card buttons for ⌥-click and ⌘-scroll
-                     "Session/MarketModels.swift": "enum TradeChip"]
+        let twins = ["Map/GalaxyMapView.swift": "ids.selection(item.kind)"]                // card buttons for ⌥-click and ⌘-scroll
         for f in files where f.text.contains("NSEvent.modifierFlags") || f.text.contains("event.modifierFlags") {
             let twin = try #require(twins[f.name], "\(f.name) reads modifier keys but is not in the accelerator table")
             #expect(f.text.contains(twin), "\(f.name)")
@@ -75,61 +72,44 @@ struct PointerTests {
         #expect(map.contains("if scope.hasHUD { ui.pinnedHit = hit }") && map.contains(".allowsHitTesting(pinned)"))
     }
 
-    @Test("UI-PTR-007 UI-PTR-008 quantity chips: 1, 5, 20, Max; a modifier is an accelerator that overrides the chip")
-    func chips() throws {
-        #expect(TradeChip.allCases == [.one, .five, .twenty, .max])
-        #expect(TradeChip.allCases.map(\.idSuffix) == ["1", "5", "20", "max"])
-        #expect(TradeChip.allCases.map { $0.quantity(maximum: 50) } == [1, 5, 20, 50])
-        #expect(TradeChip.allCases.map { $0.quantity(maximum: 3) } == [1, 3, 3, 3])
-        #expect(TradeChip.allCases.map { $0.quantity(maximum: 0) } == [0, 0, 0, 0] && TradeChip.max.quantity(maximum: -5) == 0)
-        let mods: [EventModifiers] = [[], .shift, .command, [.shift, .command], .option, .control]
-        for chip in TradeChip.allCases {
-            for m in mods {
-                let expected = m.isEmpty || m == .control ? chip.quantity(maximum: 500) : TradeQuantity.resolve(modifiers: m, maximum: 500)
-                #expect(TradeQuantity.resolve(chip: chip, modifiers: m, maximum: 500) == expected, "\(chip) \(m)")
-            }
-        }
-        let s = MapFx.state(.modern, seed: 11)
-        let r = try #require(MarketRowModel.rows(state: s).first { $0.row.maxBuy > 6 })
-        #expect(r.buyCommand(chip: .one) == .buyCargo(r.item, quantity: 1))
-        #expect(r.buyCommand(chip: .five) == .buyCargo(r.item, quantity: 5))
-        #expect(r.buyCommand(chip: .max) == r.buyMaxCommand, "Max then Buy is Buy Max: no more clicks than before")
-        #expect(r.buyCommand(chip: .one, modifiers: .shift) == .buyCargo(r.item, quantity: 5))
-        #expect(r.sellCommand(chip: .five) == nil, "nothing held: nothing to sell")
-        #expect(AXID.Market.chip(.water, .twenty) == "market.row.water.chip.20" && AXID.all.contains(AXID.Market.chip(.robots, .max)))
-        // The row shows chips, Buy, Sell, the typed amount with the same buttons as its submit, and a visible disposal button.
-        let view = try Self.source("Views/Sections/MarketSectionView.swift")
-        for needle in ["AXID.Market.chip(r.item, c)", "trade(r, sell: true, chip: chip, typed: typed)", "trade(r, sell: false, chip: chip, typed: typed)",
-                       "if !typed.isEmpty {", "CargoDisposal.jettison(r) ?? CargoDisposal.dump(r)", ".contextMenu { rowMenu(r) }"] {
+    @Test("UI-PTR-007 the Cargo row trades by its quantity field (empty means 1) with visible Buy, Max, Sell and All; no modifier is needed")
+    func rowQuantity() throws {
+        #expect(BridgeCargoModel.Row.quantity("") == 1 && BridgeCargoModel.Row.quantity(" 12 ") == 12)
+        #expect(BridgeCargoModel.Row.quantity("0") == nil && BridgeCargoModel.Row.quantity("x") == nil && BridgeCargoModel.Row.quantity("-3") == nil)
+        let session = try TestSessions.playing(seed: 11)
+        let cargo = try #require(session.bridgeCargo)
+        let r = try #require(cargo.rows.first { $0.market.row.maxBuy > 6 })
+        #expect(r.buyCommand(text: "") == .buyCargo(r.item, quantity: 1) && r.buyCommand(text: "5") == .buyCargo(r.item, quantity: 5))
+        #expect(r.maxCommand == .buyCargo(r.item, quantity: r.market.row.maxBuy), "Max is the engine's maximum")
+        #expect(r.sellCommand(text: "5") == nil && r.allCommand == nil, "nothing held: nothing to sell")
+        // The row shows the field and the four buttons, and its context menu repeats them.
+        let view = try Self.source("Views/Bridge/BridgeCargoPanel.swift")
+        for needle in ["BridgeID.Cargo.quantity(item)", "BridgeID.Cargo.buy(item)", "BridgeID.Cargo.max(item)", "BridgeID.Cargo.sell(item)",
+                       "BridgeID.Cargo.all(item)", ".contextMenu { menu }"] {
             #expect(view.contains(needle), "\(needle)")
         }
-        #expect(MarketText.menuBuy(.max, maximum: 12) == "Buy Max (12)" && MarketText.menuSell(.max, maximum: 7, dump: true) == "Dump All (7)")
+        #expect(!view.contains("modifierFlags"), "no trade needs a held modifier")
     }
 
-    @Test("UI-PTR-005 UI-PTR-006 UI-PTR-009 context menus mirror the visible actions; double-click is a card's primary action; Compare is a toggle")
+    @Test("UI-PTR-005 UI-PTR-006 UI-PTR-009 context menus mirror the visible actions; double-click is a primary action; ships are always compared")
     func menusAndCards() throws {
         for (file, needles) in [
-            ("Views/Sections/MarketSectionView.swift", ["Button(\"Why This Price?\")", "Button(\"Jettison…\")"]),
-            ("Views/Sections/ShipyardSectionView.swift", [".contextMenu {", "\"Remove from Compare\"",
-                                                          ".simultaneousGesture(TapGesture(count: 2).onEnded { if card.canOpenPurchase { onBuy() } })",
-                                                          "AXID.Shipyard.compareToggle(card.type)", ".toggleStyle(.button)"]),
-            ("Views/Sections/OutfitterSectionView.swift", [".contextMenu {",
-                                                           ".simultaneousGesture(TapGesture(count: 2).onEnded { if o.buyBlocker == nil {"]),
-            ("Views/Sections/CrewSectionView.swift", [".contextMenu {", "Button(\"Hire\", action: hire)"]),
-            ("Views/Sections/QuestsSectionView.swift", [".contextMenu {"]),
-            ("Views/Sections/BridgeSectionView.swift", [".contextMenu {", "Button(\"Plot Route…\") { session.plotRouteToTarget() }"]),
+            ("Views/Bridge/BridgeCargoPanel.swift", ["Button(\"Price Details…\")", "Button(\"Dump…\")", "Button(\"Buy Maximum\")", "Button(\"Sell All\")"]),
+            ("Views/Pages/ShipyardPage.swift", [".contextMenu {", "Button(\"Buy Ship…\", action: onBuy)",
+                                                ".simultaneousGesture(TapGesture(count: 2).onEnded { onBuy() })", "AXID.Shipyard.compare"]),
+            ("Views/Pages/EquipmentPage.swift", [".contextMenu {",
+                                                 ".simultaneousGesture(TapGesture(count: 2).onEnded { if o.buyBlocker == nil {"]),
+            ("Views/Pages/PersonnelPage.swift", [".contextMenu {", "Button(\"Hire\", action: hire)"]),
+            ("Views/Pages/QuestsPage.swift", [".contextMenu {"]),
             ("Map/GalaxyMapView.swift", [".contextMenu { contextMenuItems(snapshot) }"])
         ] {
             let text = try Self.source(file)
             for n in needles { #expect(text.contains(n), "\(file): \(n)") }
         }
-        #expect(AXID.Shipyard.compareToggle(.gnat) == "shipyard.ship.gnat.compare" && AXID.all.contains(AXID.Shipyard.compareToggle(.wasp)))
-        var selection = ShipSelection()
-        selection.click(.gnat, command: true)
-        selection.click(.wasp, command: true)
-        #expect(selection.isComparing && selection.contains(.gnat))
-        selection.click(.gnat, command: true)
-        #expect(!selection.contains(.gnat))
+        // UI-PTR-009, UI-PG-010: the comparison with the current ship is always shown; no toggle and no modifier is needed.
+        #expect(AXID.all.contains(AXID.Shipyard.compare) && !AXID.all.contains("shipyard.ship.gnat.compare"))
+        #expect(!(try Self.source("Views/Pages/ShipyardPage.swift")).contains("modifierFlags"))
+        #expect(ShipCompare.deltaText(3) == "+3 ▲" && ShipCompare.deltaText(-2) == "−2 ▼" && ShipCompare.deltaText(0) == "±0")
     }
 
     @Test("UI-PTR-010 Outfitter drops: an offer on a free slot of its kind buys; an installed item on the sell well sells; the rest does nothing")
@@ -148,7 +128,7 @@ struct PointerTests {
         // The payload survives the pasteboard.
         let data = try JSONEncoder().encode(installed)
         #expect(try JSONDecoder().decode(OutfitterDragItem.self, from: data) == installed)
-        let view = try Self.source("Views/Sections/OutfitterSectionView.swift")
+        let view = try Self.source("Views/Pages/EquipmentPage.swift")
         #expect(view.contains(".draggable(OutfitterDragItem(item: o.item, source: .offer))") && view.contains(".dropDestination(for: OutfitterDragItem.self)"))
         #expect(view.contains("AXID.Outfitter.sellWell") && AXID.all.contains(AXID.Outfitter.sellWell))
         // The buttons remain the tap path.
@@ -180,7 +160,8 @@ struct PointerTests {
         #expect(items.contains { $0.kind == .setTarget } && items.contains { $0.kind == .track } && items.contains { $0.kind == .plotRoute })
         let view = try Self.source("Map/GalaxyMapView.swift")
         #expect(view.contains("MapContextMenu.items(for: hit, snapshot: snapshot, isModal: session.isInputLocked) : []"))
-        #expect(view.contains("if scope == .miniChart { session.selectedSection = .galaxy }") && view.contains("AXID.Galaxy.miniChartOpen"))
+        // The Short-Range Chart: one click targets (UI-BRG-011); its button opens the Galactic Chart (UI-BRG-012).
+        #expect((try Self.source("Views/Bridge/BridgeChartPanel.swift")).contains("session.openGalacticChartAtTarget()"))
     }
 
     @Test("UI-PTR-014 UI-PTR-015 sheet chips 1 / 5 / All and the money slider's step")
@@ -191,13 +172,13 @@ struct PointerTests {
         #expect(AXID.quantityChip("decision.trade.quantity", .all) == "decision.trade.quantity.chip.all")
         let sheets = try Self.source("Views/Encounter/EncounterSheets.swift")
         #expect(sheets.components(separatedBy: "QuantityChips(").count - 1 == 3, "plunder, trade in orbit and make room")
-        #expect((try Self.source("Views/Sections/MarketSectionView.swift")).contains("QuantityChips(value: $quantity"))
+        #expect((try Self.source("Views/Market/BridgeSheets.swift")).contains("QuantityChips(value: $quantity"))
         #expect([0, 50, 100, 101, 1000, 1001, 25000, 100_000, 1_000_000].map(BankSlider.step(limit:)) == [1, 1, 1, 10, 10, 10, 1000, 1000, 10000])
         for limit in [7, 480, 12_345, 987_654] {
             let step = BankSlider.step(limit: limit)
             #expect(limit / step <= 100 && (step == 1 || limit / (step / 10) > 100))
         }
-        #expect((try Self.source("Views/Sections/BankSectionView.swift")).contains("step: Double(BankSlider.step(limit: limit))"))
+        #expect((try Self.source("Views/Pages/BankPage.swift")).contains("step: Double(BankSlider.step(limit: limit))"))
         // Small custom targets carry the modifier.
         for (file, needle) in [("Views/Encounter/EncounterView.swift", ".pointerTarget()  // UI-PTR-015"),
                                ("Map/MapHUDViews.swift", ".pointerTarget()  // UI-PTR-013"),
@@ -223,18 +204,7 @@ struct PointerTests {
         // overrides the system's touch gestures.
         #expect(gestures == ["DragGesture(", "MagnifyGesture("], "\(gestures)")
         // A disabled control's reason is in its help tag (hover) and in its accessibility hint or on-screen text (tap, VoiceOver).
-        let crew = try Self.source("Views/Sections/CrewSectionView.swift")
-        #expect(crew.contains("Text(ReasonText.text(for: blocker)).scaledFont(.caption)"))
-    }
-}
-
-extension PointerTests {
-    @Test("UI-PTR-007 the chip store: 1 until chosen, per item, observable")
-    func chipStore() {
-        let store = TradeChipStore()
-        #expect(store.chip(for: .water) == .one)
-        store.select(.twenty, for: .water)
-        store.select(.max, for: .ore)
-        #expect(store.chip(for: .water) == .twenty && store.chip(for: .ore) == .max && store.chip(for: .furs) == .one)
+        let crew = try Self.source("Views/Pages/PersonnelPage.swift")
+        #expect(crew.contains("if let blocker = card.blocker { PMNote(text: ReasonText.text(for: blocker)) }"))
     }
 }

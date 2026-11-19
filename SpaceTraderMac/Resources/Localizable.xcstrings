@@ -7,6 +7,16 @@
     "%@" : {
 
     },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
     "%@ %@ cr. (%@)" : {
       "localizations" : {
         "en" : {
@@ -204,7 +214,7 @@
     "%@ cr." : {
 
     },
-    "%@ cr. daily" : {
+    "%@ cr. per day" : {
 
     },
     "%@ cr./day" : {
@@ -225,9 +235,6 @@
           }
         }
       }
-    },
-    "%@ in stock" : {
-
     },
     "%@ is getting concerned." : {
 
@@ -304,38 +311,6 @@
                     "stringUnit" : {
                       "state" : "translated",
                       "value" : "%arg bays"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%@ · %lld parsecs" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ · %#@arg2@"
-          },
-          "substitutions" : {
-            "arg2" : {
-              "argNum" : 2,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg parsec"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg parsecs"
                     }
                   }
                 }
@@ -498,7 +473,7 @@
         }
       }
     },
-    "%@/bay" : {
+    "%@. Click to read the arrival report" : {
 
     },
     "%@: %@" : {
@@ -1182,12 +1157,12 @@
     "%lld%% (max)" : {
 
     },
-    "%lld/%lld" : {
+    "%lld/%lld parsecs" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld/%2$lld"
+            "value" : "%1$lld/%2$lld parsecs"
           }
         }
       }
@@ -1211,6 +1186,9 @@
 
     },
     ", disabled" : {
+
+    },
+    "0" : {
 
     },
     "1" : {
@@ -1241,9 +1219,6 @@
 
     },
     "120 systems, as on the Palm." : {
-
-    },
-    "20" : {
 
     },
     "5" : {
@@ -1277,6 +1252,12 @@
 
     },
     "A fracture in the space-time fabric pulls you to %@!" : {
+
+    },
+    "A free slot: buy an item of this kind to fill it" : {
+
+    },
+    "A friend who enters this code plays the same galaxy." : {
 
     },
     "A hacker conveys to you that he has cracked the passwords to the galaxy-wide police computer network, and that he can erase your police record for the sum of 5000 credits. Do you want him to do that?" : {
@@ -1378,9 +1359,6 @@
     "Accept the offer." : {
 
     },
-    "Accept…" : {
-
-    },
     "Accessibility 1" : {
 
     },
@@ -1402,13 +1380,7 @@
     "Achievements are disabled for this game because cheats were used." : {
 
     },
-    "Actions" : {
-
-    },
     "Active Quests" : {
-
-    },
-    "Add this ship to the comparison." : {
 
     },
     "Additional coding (Palm OS)" : {
@@ -1514,6 +1486,9 @@
 
     },
     "An eccentric alien billionaire wants to buy your collection of tribbles and offers half a credit for each of them. Do you accept his offer?" : {
+
+    },
+    "An empty crew quarter." : {
 
     },
     "An estimate from public information: the opponent's class, visible equipment and your flee odds." : {
@@ -1879,6 +1854,9 @@
     "Average" : {
 
     },
+    "Average price at the target. Estimates carry no guarantee" : {
+
+    },
     "Back" : {
 
     },
@@ -1903,22 +1881,15 @@
     "Based on Space Trader by Pieter Spronck." : {
 
     },
-    "Bays %lld/%lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bays %1$lld/%2$lld"
-          }
-        }
-      }
+    "Bays" : {
+
     },
-    "Bays: %lld/%lld, %lld free for buying" : {
+    "Bays %lld/%lld · %lld free · Cash to spend %@ cr." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bays: %1$lld/%2$lld, %3$lld free for buying"
+            "value" : "Bays %1$lld/%2$lld · %3$lld free · Cash to spend %4$@ cr."
           }
         }
       }
@@ -1936,6 +1907,12 @@
 
     },
     "Beloved Royal Returns Home!" : {
+
+    },
+    "Best buy" : {
+
+    },
+    "Best buy for the target" : {
 
     },
     "Best buy here for %@: %@ %@/bay (%lld bays, %@)" : {
@@ -2225,16 +2202,19 @@
     "Buy 1" : {
 
     },
-    "Buy 20" : {
-
-    },
-    "Buy 5" : {
-
-    },
     "Buy Equipment?" : {
 
     },
-    "Buy Escape Pod (%@ cr.)" : {
+    "Buy Escape Pod %@ cr." : {
+
+    },
+    "Buy Fuel" : {
+
+    },
+    "Buy Fuel and Repair" : {
+
+    },
+    "Buy Fuel…" : {
 
     },
     "Buy Insurance" : {
@@ -2243,10 +2223,13 @@
     "Buy Max" : {
 
     },
-    "Buy Max (%lld)" : {
+    "Buy Maximum" : {
 
     },
     "Buy Ship" : {
+
+    },
+    "Buy Ship…" : {
 
     },
     "Buy This Ship?" : {
@@ -2258,9 +2241,6 @@
     "Buy a Newspaper?" : {
 
     },
-    "Buy a full tank." : {
-
-    },
     "Buy a moon and retire there." : {
 
     },
@@ -2270,10 +2250,16 @@
     "Buy an escape pod at the Shipyard" : {
 
     },
+    "Buy as many as you can afford and carry" : {
+
+    },
+    "Buy as much fuel as you can afford" : {
+
+    },
     "Buy for %@ cr." : {
 
     },
-    "Buy fuel for this many credits." : {
+    "Buy fuel for this many credits" : {
 
     },
     "Buy markup (trader skill)" : {
@@ -2282,19 +2268,13 @@
     "Buy or sell every commodity." : {
 
     },
-    "Buy price" : {
+    "Buy the quantity" : {
 
     },
-    "Buy the selected amount (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ max)" : {
-
-    },
-    "Buy this item." : {
+    "Buy this item" : {
 
     },
     "Buys as much as you can afford" : {
-
-    },
-    "Buy…" : {
 
     },
     "CEO: Corporate Rebranding Progressing." : {
@@ -2354,10 +2334,13 @@
     "Cargo For Sale" : {
 
     },
+    "Cargo and Special Cargo" : {
+
+    },
     "Cargo bays" : {
 
     },
-    "Cargo bays in use / total." : {
+    "Cargo bays in use. Trade on the Bridge" : {
 
     },
     "Cargo bays to leave empty when buying goods in-system" : {
@@ -2375,22 +2358,10 @@
     "Cash after the trade" : {
 
     },
-    "Cash available: %@ cr." : {
-
-    },
     "Caught littering." : {
 
     },
     "Caught littering. Police record score now %lld." : {
-
-    },
-    "Centre the galaxy chart on %@." : {
-
-    },
-    "Centre the galaxy chart on this system." : {
-
-    },
-    "Charge" : {
 
     },
     "Charge %lld" : {
@@ -2441,9 +2412,6 @@
     "Check the %@ step." : {
 
     },
-    "Choose Target" : {
-
-    },
     "Choose a difficulty" : {
 
     },
@@ -2456,16 +2424,10 @@
     "Choose an alert or a special event" : {
 
     },
-    "Choose an item for sale or one of your slots." : {
-
-    },
     "Choose another system to jump to." : {
 
     },
     "Choose the rules" : {
-
-    },
-    "Choose the system to warp to." : {
 
     },
     "Church Tidings" : {
@@ -2502,9 +2464,6 @@
 
     },
     "Clear High Scores?" : {
-
-    },
-    "Clear Selection" : {
 
     },
     "Clear filters" : {
@@ -2571,9 +2530,6 @@
     "Cold Weather" : {
 
     },
-    "Collapsed" : {
-
-    },
     "Collect 10 bounties." : {
 
     },
@@ -2635,9 +2591,6 @@
     "Completed" : {
 
     },
-    "Completed (%lld)" : {
-
-    },
     "Confederacy" : {
 
     },
@@ -2668,7 +2621,7 @@
     "Copy" : {
 
     },
-    "Copy the galaxy code so a friend can play the same galaxy." : {
+    "Copy the galaxy code so a friend can play the same galaxy" : {
 
     },
     "Corporate Profits Up!" : {
@@ -2705,6 +2658,9 @@
     "Costs of the Next Warp" : {
 
     },
+    "Costs of the warp: %@ cr." : {
+
+    },
     "Couldn't afford all the transfers." : {
 
     },
@@ -2735,13 +2691,16 @@
     "Credits on hand." : {
 
     },
+    "Credits on hand. Borrow or repay at the Bank" : {
+
+    },
     "Crew" : {
 
     },
-    "Crew & Passengers" : {
+    "Crew Quarters" : {
 
     },
-    "Crew Quarters" : {
+    "Crew and Passengers" : {
 
     },
     "Crew quarters" : {
@@ -2771,9 +2730,6 @@
     "Crowding penalty" : {
 
     },
-    "Current System" : {
-
-    },
     "Current events" : {
 
     },
@@ -2784,6 +2740,9 @@
 
     },
     "Current system" : {
+
+    },
+    "Current: %@" : {
 
     },
     "Custom Ship" : {
@@ -2799,9 +2758,6 @@
 
     },
     "Cycle Through Windows" : {
-
-    },
-    "Daily Costs" : {
 
     },
     "Daily premium" : {
@@ -3068,13 +3024,7 @@
     "Disease Antidotes Arrive! Health Officials Optimistic." : {
 
     },
-    "Dismiss" : {
-
-    },
-    "Dismiss this crew member." : {
-
-    },
-    "Distance" : {
+    "Dismiss this crew member" : {
 
     },
     "Distribute all points." : {
@@ -3140,27 +3090,6 @@
     "Dump %@" : {
 
     },
-    "Dump %@ cr." : {
-
-    },
-    "Dump 1" : {
-
-    },
-    "Dump 20" : {
-
-    },
-    "Dump 5" : {
-
-    },
-    "Dump All (%lld)" : {
-
-    },
-    "Dump cargo…" : {
-
-    },
-    "Dump the selected amount (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)" : {
-
-    },
     "Dumped %lld %@ for %@ cr." : {
       "localizations" : {
         "en" : {
@@ -3177,7 +3106,7 @@
     "Dump…" : {
 
     },
-    "Each day without a claim adds 1% discount, up to 90%." : {
+    "Each day without a claim adds 1% discount, up to 90%" : {
 
     },
     "Each skill is the best value in your crew, plus gadget and haggling bonuses, adjusted for difficulty." : {
@@ -3219,13 +3148,16 @@
     "Effects volume" : {
 
     },
-    "Ejects you safely when your ship is destroyed." : {
+    "Ejects you safely when your ship is destroyed" : {
 
     },
     "Elite" : {
 
     },
     "Empty" : {
+
+    },
+    "Empty slot" : {
 
     },
     "En route to %@" : {
@@ -3294,9 +3226,6 @@
     "Erase Record" : {
 
     },
-    "Esc clears the selection." : {
-
-    },
     "Escape Artist" : {
 
     },
@@ -3327,9 +3256,6 @@
           }
         }
       }
-    },
-    "Expanded" : {
-
     },
     "Experiment Failed" : {
 
@@ -3409,16 +3335,16 @@
     "Fill Fuel" : {
 
     },
-    "Fill Up (%@ cr.)" : {
+    "Fill Tank" : {
+
+    },
+    "Fill Tank %@ cr." : {
 
     },
     "Filter" : {
 
     },
     "Filter (on)" : {
-
-    },
-    "Filter items" : {
 
     },
     "Final cost" : {
@@ -3443,6 +3369,9 @@
 
     },
     "Find a system" : {
+
+    },
+    "Find a system by name (⌥⌘F)" : {
 
     },
     "Find and destroy the Scarab (which is hiding at the exit to a wormhole)." : {
@@ -3565,10 +3494,10 @@
     "Free bays %lld" : {
 
     },
-    "Free quarters: %lld" : {
+    "Free bays and cash after the amounts you chose to keep in reserve" : {
 
     },
-    "Free slot" : {
+    "Free quarters: %lld" : {
 
     },
     "From rookie trader to moon owner. Not bad at all." : {
@@ -3577,44 +3506,12 @@
     "Fuel" : {
 
     },
-    "Fuel %lld/%lld" : {
+    "Fuel %lld/%lld parsecs · %@ cr. per parsec" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fuel %1$lld/%2$lld"
-          }
-        }
-      }
-    },
-    "Fuel %lld/%lld parsecs" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fuel %1$lld/%#@arg2@"
-          },
-          "substitutions" : {
-            "arg2" : {
-              "argNum" : 2,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg parsec"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg parsecs"
-                    }
-                  }
-                }
-              }
-            }
+            "value" : "Fuel %1$lld/%2$lld parsecs · %3$@ cr. per parsec"
           }
         }
       }
@@ -3622,7 +3519,7 @@
     "Fuel Compactor" : {
 
     },
-    "Fuel after the jump" : {
+    "Fuel after warp" : {
 
     },
     "Fuel amount in credits" : {
@@ -3631,7 +3528,7 @@
     "Fuel compactor" : {
 
     },
-    "Fuel in parsecs / tank size." : {
+    "Fuel in parsecs and tank size. Fill the tank on the Bridge" : {
 
     },
     "Fuel range" : {
@@ -3664,10 +3561,10 @@
     "Gadgets" : {
 
     },
-    "Galactic criminal Henry Morgan wants this illegal ion reactor delivered to Nix. It's a very dangerous mission! The reactor and its fuel are bulky, taking up 15 bays. Worse, it's not stable -- its resonant energy will weaken your shields and hull strength while it's aboard your ship. Are you willing to deliver it?" : {
+    "Galactic Chart" : {
 
     },
-    "Galaxy" : {
+    "Galactic criminal Henry Morgan wants this illegal ion reactor delivered to Nix. It's a very dangerous mission! The reactor and its fuel are bulky, taking up 15 bays. Worse, it's not stable -- its resonant energy will weaken your shields and hull strength while it's aboard your ship. Are you willing to deliver it?" : {
 
     },
     "Galaxy & Extras" : {
@@ -3781,9 +3678,6 @@
     "Gnat" : {
 
     },
-    "Go to Crew" : {
-
-    },
     "Go to the next step." : {
 
     },
@@ -3841,9 +3735,6 @@
     "Heatmap commodity" : {
 
     },
-    "Held" : {
-
-    },
     "Hello, Commander. This is Colonel Jackson again. On behalf of the Space Corps, I thank you for your valuable assistance in destroying the Dragonfly. As a reward, we will install one of the experimental shields on your ship. Return here for that when you're ready." : {
 
     },
@@ -3883,15 +3774,6 @@
     "Hide Parsec Merchant" : {
 
     },
-    "Hide the arrival report until your next trip." : {
-
-    },
-    "Hide the arrival report." : {
-
-    },
-    "Hide this offer until your next arrival." : {
-
-    },
     "Hide unchanged" : {
 
     },
@@ -3904,7 +3786,10 @@
     "Hire" : {
 
     },
-    "Hire this mercenary." : {
+    "Hire %lld" : {
+
+    },
+    "Hire this mercenary" : {
 
     },
     "Hired %@." : {
@@ -3922,6 +3807,9 @@
     "Hoarder Lynched by Angry Mob!" : {
 
     },
+    "Hold" : {
+
+    },
     "Hold at %@: %@" : {
       "localizations" : {
         "en" : {
@@ -3931,6 +3819,19 @@
           }
         }
       }
+    },
+    "Hold: here %@ cr. · at %@ %@ cr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold: here %1$@ cr. · at %2$@ %3$@ cr."
+          }
+        }
+      }
+    },
+    "Hold: here %@ cr. · no target selected" : {
+
     },
     "Homeland Report" : {
 
@@ -3962,6 +3863,16 @@
     "Hull %lld%%" : {
 
     },
+    "Hull %lld%% · %@ cr. per point" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hull %1$lld%% · %2$@ cr. per point"
+          }
+        }
+      }
+    },
     "Hull Upgraded" : {
 
     },
@@ -3974,7 +3885,7 @@
     "Hull strength as a percentage of the maximum." : {
 
     },
-    "Hull strength." : {
+    "Hull strength. Repair on the Bridge" : {
 
     },
     "Ignore" : {
@@ -3989,9 +3900,6 @@
     "Illegal Goods Impounded" : {
 
     },
-    "Illegal. %@" : {
-
-    },
     "Illustration" : {
 
     },
@@ -4004,7 +3912,7 @@
     "Impossible Odds" : {
 
     },
-    "Improves" : {
+    "Improves %@" : {
 
     },
     "Improves your fighter skill." : {
@@ -4068,13 +3976,13 @@
     "Inline reason" : {
 
     },
-    "Inspector" : {
-
-    },
     "Install Hidden Compartments" : {
 
     },
     "Install Morgan's Laser" : {
+
+    },
+    "Installed" : {
 
     },
     "Insurance" : {
@@ -4089,7 +3997,7 @@
     "Insurance paid %@ cr." : {
 
     },
-    "Insurance pays out your ship's value if you escape in your pod." : {
+    "Insurance pays out your ship's value if you escape in your pod" : {
 
     },
     "Insurance: %@ cr." : {
@@ -4167,9 +4075,6 @@
     "Jettison Everything?" : {
 
     },
-    "Jettison cargo…" : {
-
-    },
     "Jettisoned %lld %@." : {
       "localizations" : {
         "en" : {
@@ -4179,9 +4084,6 @@
           }
         }
       }
-    },
-    "Jettison…" : {
-
     },
     "Jobless Rate at All-Time Low!" : {
 
@@ -4213,10 +4115,10 @@
     "Jump to %@" : {
 
     },
-    "Jump to %@ with the portable singularity." : {
+    "Jump to %@. The singularity is used up." : {
 
     },
-    "Jump to %@. The singularity is used up." : {
+    "Jump with the portable singularity" : {
 
     },
     "Jump with the portable singularity." : {
@@ -4253,9 +4155,6 @@
 
     },
     "Kills of" : {
-
-    },
-    "Kills: %lld" : {
 
     },
     "King Commissions New Artworks." : {
@@ -4342,10 +4241,10 @@
     "Load" : {
 
     },
-    "Load a Saved Game?" : {
+    "Load Defaults" : {
 
     },
-    "Load from Defaults" : {
+    "Load a Saved Game?" : {
 
     },
     "Load the Imported Game Now?" : {
@@ -4363,13 +4262,13 @@
     "Local Elections on Schedule!" : {
 
     },
-    "Local newspaper" : {
-
-    },
     "Locals Rally to Deny Spaceport Access to %@!" : {
 
     },
     "Locals Welcome Visiting Hero %@!" : {
+
+    },
+    "Location" : {
 
     },
     "Locked" : {
@@ -4383,28 +4282,6 @@
     },
     "Lord of the Moon" : {
 
-    },
-    "Loss %lld credits per unit" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Loss %lld credit per unit"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Loss %lld credits per unit"
-                }
-              }
-            }
-          }
-        }
-      }
     },
     "Lottery Winner" : {
 
@@ -4757,6 +4634,9 @@
     "News" : {
 
     },
+    "News %@ cr." : {
+
+    },
     "News From The Board" : {
 
     },
@@ -4795,10 +4675,7 @@
     "Next Target" : {
 
     },
-    "Next system in range" : {
-
-    },
-    "Next target" : {
+    "Next system in range (⌘])" : {
 
     },
     "No More Tribbles" : {
@@ -4820,6 +4697,12 @@
 
     },
     "No data yet" : {
+
+    },
+    "No deadlines" : {
+
+    },
+    "No difference" : {
 
     },
     "No empty cargo bays." : {
@@ -4864,19 +4747,19 @@
     "No history" : {
 
     },
+    "No mercenary is looking for work in this system" : {
+
+    },
+    "No mercenary is looking for work in this system." : {
+
+    },
     "No more entries will be written in this log." : {
 
     },
-    "No one for hire" : {
-
-    },
-    "No profitable trade known" : {
+    "No pressure" : {
 
     },
     "No quarters for: %@" : {
-
-    },
-    "No repairs needed" : {
 
     },
     "No repairs needed." : {
@@ -4903,13 +4786,16 @@
     "No slot: lost" : {
 
     },
-    "No slots" : {
-
-    },
     "No special items." : {
 
     },
+    "No special offer" : {
+
+    },
     "No system found." : {
+
+    },
+    "No system is in range" : {
 
     },
     "No system is in range." : {
@@ -4921,10 +4807,13 @@
     "No target selected" : {
 
     },
-    "No target selected. Use ‹ › or the toolbar to choose one." : {
+    "No-claim discount" : {
 
     },
-    "No-claim discount" : {
+    "Nobody for hire" : {
+
+    },
+    "Nobody has a special offer for you in this system" : {
 
     },
     "Nobody here buys this." : {
@@ -4936,10 +4825,10 @@
     "None available here." : {
 
     },
-    "None for sale here." : {
+    "None installed" : {
 
     },
-    "None installed" : {
+    "None of your quests has a deadline" : {
 
     },
     "None yet" : {
@@ -4952,9 +4841,6 @@
 
     },
     "Not applicable" : {
-
-    },
-    "Not available" : {
 
     },
     "Not available in an Ironman game." : {
@@ -4987,6 +4873,9 @@
     "Not for hire." : {
 
     },
+    "Not held" : {
+
+    },
     "Not in your crew." : {
 
     },
@@ -5002,9 +4891,6 @@
     "Not possible right now." : {
 
     },
-    "Not sold here" : {
-
-    },
     "Not sold here." : {
 
     },
@@ -5015,6 +4901,9 @@
 
     },
     "Nothing Special" : {
+
+    },
+    "Nothing of this kind is sold here." : {
 
     },
     "Nothing special here." : {
@@ -5034,9 +4923,6 @@
       }
     },
     "Notify the authorities at %@ that the Scarab has been destroyed." : {
-
-    },
-    "Notoriety" : {
 
     },
     "Notorious Criminal %@ Sighted in %@!" : {
@@ -5088,9 +4974,6 @@
     "Open" : {
 
     },
-    "Open Galaxy Chart" : {
-
-    },
     "Open Recent" : {
 
     },
@@ -5100,10 +4983,22 @@
     "Open Saved Game…" : {
 
     },
-    "Open the Galaxy chart" : {
+    "Open the Bank page" : {
 
     },
-    "Open the full story." : {
+    "Open the Galactic Chart on %@" : {
+
+    },
+    "Open the Galactic Chart on the target system" : {
+
+    },
+    "Open the Logbook's statistics" : {
+
+    },
+    "Open the Quests page" : {
+
+    },
+    "Open the Shipyard page" : {
 
     },
     "Opens Parsec Merchant and continues your latest game." : {
@@ -5116,9 +5011,6 @@
 
     },
     "Options changed." : {
-
-    },
-    "Options…" : {
 
     },
     "Ore" : {
@@ -5145,10 +5037,10 @@
     "Over 100% of the maximum units." : {
 
     },
-    "P/L" : {
+    "Pacifist State" : {
 
     },
-    "Pacifist State" : {
+    "Paid" : {
 
     },
     "Parsec Merchant" : {
@@ -5206,7 +5098,7 @@
     "Pay %@ cr." : {
 
     },
-    "Pay back as much of the debt as you can." : {
+    "Pay back as much of the debt as you can" : {
 
     },
     "Pay off a bank loan completely." : {
@@ -5215,7 +5107,13 @@
     "Pay off your debt first." : {
 
     },
+    "Pay to have this good taken away" : {
+
+    },
     "Peak net worth" : {
+
+    },
+    "Personnel" : {
 
     },
     "Pet a tribble" : {
@@ -5277,9 +5175,6 @@
 
     },
     "Plague Spreads! Outlook Grim." : {
-
-    },
-    "Plan a multi-jump route to this system on the galaxy chart." : {
 
     },
     "Plan on the Chart" : {
@@ -5372,16 +5267,6 @@
     "Police record is negative" : {
 
     },
-    "Police record: %@ (%lld)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Police record: %1$@ (%2$lld)"
-          }
-        }
-      }
-    },
     "Police record: %@ → %@" : {
       "localizations" : {
         "en" : {
@@ -5433,7 +5318,7 @@
     "Post-Industrial" : {
 
     },
-    "Power" : {
+    "Power %lld" : {
 
     },
     "Pre-Agricultural" : {
@@ -5445,22 +5330,31 @@
     "Previews only: the game is not changed." : {
 
     },
+    "Previous" : {
+
+    },
     "Previous Target" : {
 
     },
-    "Previous system in range" : {
-
-    },
-    "Previous target" : {
+    "Previous system in range (⌘[)" : {
 
     },
     "Price" : {
 
     },
-    "Price per unit" : {
+    "Price Details" : {
 
     },
-    "Price: %@ cr." : {
+    "Price Details: %@" : {
+
+    },
+    "Price Details…" : {
+
+    },
+    "Price after trade-in" : {
+
+    },
+    "Price per unit" : {
 
     },
     "Priceless collector's item stolen from home of Geurge Locas!" : {
@@ -5480,28 +5374,6 @@
     },
     "Profit" : {
 
-    },
-    "Profit %lld credits per unit" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Profit %lld credit per unit"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Profit %lld credits per unit"
-                }
-              }
-            }
-          }
-        }
-      }
     },
     "Profit by commodity" : {
 
@@ -5530,9 +5402,6 @@
     "Purchase sheet option" : {
 
     },
-    "Qty" : {
-
-    },
     "Quantity" : {
 
     },
@@ -5559,6 +5428,9 @@
 
     },
     "Quest" : {
+
+    },
+    "Quest %lld d" : {
 
     },
     "Quest Locations" : {
@@ -5643,6 +5515,9 @@
     "Read the Target Column" : {
 
     },
+    "Read the local newspaper" : {
+
+    },
     "Read the local newspaper." : {
 
     },
@@ -5660,9 +5535,6 @@
 
     },
     "Ready to launch" : {
-
-    },
-    "Read…" : {
 
     },
     "Really Attack?" : {
@@ -5711,12 +5583,6 @@
     "Reminder: you owe the bank %@ cr." : {
 
     },
-    "Remove from Compare" : {
-
-    },
-    "Remove this ship from the comparison." : {
-
-    },
     "Removed" : {
 
     },
@@ -5739,19 +5605,22 @@
         }
       }
     },
-    "Repair (%@ cr.)" : {
+    "Repair" : {
 
     },
     "Repair Hull" : {
 
     },
+    "Repair Hull %@ cr." : {
+
+    },
     "Repair amount in credits" : {
 
     },
-    "Repair the hull completely." : {
+    "Repair as much of the hull as you can afford" : {
 
     },
-    "Repair the hull for this many credits." : {
+    "Repair the hull for this many credits" : {
 
     },
     "Repaired %lld hull points for %@ cr." : {
@@ -5792,13 +5661,19 @@
     "Repairs the hull during flight and improves your engineer skill." : {
 
     },
+    "Repair…" : {
+
+    },
     "Repay" : {
 
     },
-    "Repay All (%@ cr.)" : {
+    "Repay All %@ cr." : {
 
     },
     "Repeat the last action every 0.6 seconds (⌥A)" : {
+
+    },
+    "Replace these options with your saved defaults" : {
 
     },
     "Report: Kingdoms Near Flashpoint!" : {
@@ -5818,9 +5693,6 @@
       }
     },
     "Reputation" : {
-
-    },
-    "Reputation: %@" : {
 
     },
     "Reputation: %@ → %@" : {
@@ -5867,7 +5739,7 @@
     "Resolve" : {
 
     },
-    "Resource" : {
+    "Resources" : {
 
     },
     "Restores some Palm behaviour the Windows port lost." : {
@@ -5900,6 +5772,12 @@
     "Return %@ to Galvon.\nShe is becoming anxious to arrive at home, and is no longer of any help in engineering functions." : {
 
     },
+    "Return to the Bridge (Esc)" : {
+
+    },
+    "Return to the game summary" : {
+
+    },
     "Revert" : {
 
     },
@@ -5912,7 +5790,7 @@
     "Review and build this ship." : {
 
     },
-    "Review the purchase." : {
+    "Review the purchase: trade-in, transfers and what is lost" : {
 
     },
     "Rich Fauna" : {
@@ -6067,7 +5945,7 @@
     "Select" : {
 
     },
-    "Select %@ as your target." : {
+    "Select %@ as your target" : {
 
     },
     "Select All" : {
@@ -6076,31 +5954,37 @@
     "Select a commodity to see how its price is made" : {
 
     },
+    "Select a good on the Bridge first." : {
+
+    },
     "Select a saved game." : {
 
     },
-    "Select an item" : {
+    "Select a target system on the chart" : {
 
     },
     "Select the galaxy chart first." : {
 
     },
+    "Selected: %@" : {
+
+    },
     "Sell" : {
+
+    },
+    "Sell %@ cr." : {
 
     },
     "Sell 1" : {
 
     },
-    "Sell 20" : {
-
-    },
-    "Sell 5" : {
-
-    },
     "Sell All" : {
 
     },
-    "Sell All (%lld)" : {
+    "Sell All Cargo" : {
+
+    },
+    "Sell All Cargo %@ cr." : {
 
     },
     "Sell Equipment?" : {
@@ -6109,13 +5993,16 @@
     "Sell cargo for more than you paid." : {
 
     },
+    "Sell every good in the hold that this system buys" : {
+
+    },
+    "Sell every unit you hold" : {
+
+    },
     "Sell for %@ cr." : {
 
     },
     "Sell here: %@/unit" : {
-
-    },
-    "Sell price" : {
 
     },
     "Sell price over %lld visits: from %lld to %lld credits" : {
@@ -6170,10 +6057,13 @@
         }
       }
     },
-    "Sell the selected amount (⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all)" : {
+    "Sell prices on your visits here" : {
 
     },
-    "Sell this item." : {
+    "Sell the quantity" : {
+
+    },
+    "Sell this item" : {
 
     },
     "Seller in %@ System has Utopian Moon available." : {
@@ -6192,6 +6082,9 @@
 
     },
     "Serious Crop Failure! Must We Ration?" : {
+
+    },
+    "Services" : {
 
     },
     "Set Target" : {
@@ -6219,6 +6112,9 @@
 
     },
     "Shield" : {
+
+    },
+    "Shield charge. Buy shields on the Equipment page" : {
 
     },
     "Shield slots" : {
@@ -6270,6 +6166,9 @@
     "Ships" : {
 
     },
+    "Ships for Sale" : {
+
+    },
     "Shipwright" : {
 
     },
@@ -6300,10 +6199,7 @@
     "Show newspaper on arrival" : {
 
     },
-    "Show on Map" : {
-
-    },
-    "Show only items whose name contains this text. Esc clears it." : {
+    "Show on Galactic Chart" : {
 
     },
     "Show or Hide Inspector" : {
@@ -6315,25 +6211,13 @@
     "Show or hide the legend" : {
 
     },
-    "Show or hide the ship status." : {
-
-    },
     "Show range to tracked system" : {
 
     },
-    "Show recent events." : {
-
-    },
-    "Show the arrival report on Bridge." : {
-
-    },
-    "Show the arrival report." : {
+    "Show recent events" : {
 
     },
     "Show the best buys and destinations above the Market table." : {
-
-    },
-    "Show the mercenaries in Crew." : {
 
     },
     "Show the systems in range" : {
@@ -6355,9 +6239,6 @@
 
     },
     "Singularity" : {
-
-    },
-    "Singularity destination: %@" : {
 
     },
     "Sir! Are you taking me home or merely taking the place of my previous captors?!" : {
@@ -6385,9 +6266,6 @@
 
     },
     "Slot" : {
-
-    },
-    "Slots" : {
 
     },
     "Small" : {
@@ -6735,13 +6613,13 @@
     "Stop tracking on arrival" : {
 
     },
-    "Stop tracking this system." : {
+    "Stop tracking this system" : {
 
     },
     "Stopped insurance." : {
 
     },
-    "Stopping resets your no-claim discount." : {
+    "Stopping resets your no-claim discount" : {
 
     },
     "Storage Banks to be Upgraded!" : {
@@ -6837,13 +6715,13 @@
     "Take the chosen amount." : {
 
     },
-    "Tank full" : {
-
-    },
     "Tank full." : {
 
     },
     "Target" : {
+
+    },
+    "Target %@" : {
 
     },
     "Target %@, %@" : {
@@ -7224,6 +7102,9 @@
     "The police also impound all of the illegal goods you have on board." : {
 
     },
+    "The police confiscate this good and fine you when they find it" : {
+
+    },
     "The police confiscated the reactor." : {
 
     },
@@ -7266,19 +7147,19 @@
     "The sculpture was taken." : {
 
     },
+    "The sell price here less the price you paid" : {
+
+    },
     "The ship was sold, the stories kept." : {
 
     },
     "The singularity was used up, but you couldn't leave." : {
 
     },
-    "The singularity will be used up, but you can't leave: %@" : {
-
-    },
     "The strongest laser on the open market." : {
 
     },
-    "The target is this system." : {
+    "The target's price less the price here" : {
 
     },
     "The template couldn't be saved." : {
@@ -7406,6 +7287,9 @@
     "This ship can't be built here." : {
 
     },
+    "This ship has no slots of this kind." : {
+
+    },
     "This system is currently at war." : {
 
     },
@@ -7457,10 +7341,20 @@
     "Tips will appear again the next time you open Parsec Merchant." : {
 
     },
+    "To %@, %lld clicks · Day %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To %1$@, %2$lld clicks · Day %3$lld"
+          }
+        }
+      }
+    },
     "Total" : {
 
     },
-    "Total costs" : {
+    "Total costs of the next warp" : {
 
     },
     "Total shield charge over total shield power." : {
@@ -7487,9 +7381,6 @@
     "Track this system" : {
 
     },
-    "Track this system on the way." : {
-
-    },
     "Track “%@”" : {
 
     },
@@ -7505,15 +7396,6 @@
     "Trade" : {
 
     },
-    "Trade 1 unit at a time" : {
-
-    },
-    "Trade 20 units at a time" : {
-
-    },
-    "Trade 5 units at a time" : {
-
-    },
     "Trade Intelligence" : {
 
     },
@@ -7521,9 +7403,6 @@
 
     },
     "Trade Shield" : {
-
-    },
-    "Trade as many as possible" : {
 
     },
     "Trade in orbit" : {
@@ -7551,9 +7430,6 @@
 
     },
     "Trades" : {
-
-    },
-    "Trading this is illegal; police may confiscate it." : {
 
     },
     "Transfer equipment to the new ship" : {
@@ -7587,6 +7463,9 @@
 
     },
     "Travelers Report Timespace Damage, Warp Problems!" : {
+
+    },
+    "Travels with you until the quest ends." : {
 
     },
     "Tribble" : {
@@ -7632,9 +7511,6 @@
     "Type a system name; Return selects it." : {
 
     },
-    "Type an amount, then choose Buy or Sell." : {
-
-    },
     "Type the name of a system." : {
 
     },
@@ -7645,6 +7521,15 @@
 
     },
     "Unavailable" : {
+
+    },
+    "Unavailable after the game has ended" : {
+
+    },
+    "Unavailable during an encounter" : {
+
+    },
+    "Unavailable in transit" : {
 
     },
     "Undo" : {
@@ -7681,9 +7566,6 @@
     "Unstable reactor" : {
 
     },
-    "Untrack" : {
-
-    },
     "Unvisited" : {
 
     },
@@ -7705,9 +7587,6 @@
     "Usable only from %@" : {
 
     },
-    "Use Compare on two or more ships to see them side by side. Double-click a ship to review its purchase." : {
-
-    },
     "Use Singularity" : {
 
     },
@@ -7718,6 +7597,9 @@
 
     },
     "Use the Singularity?" : {
+
+    },
+    "Use these options for new games" : {
 
     },
     "Vacant" : {
@@ -7735,6 +7617,9 @@
           }
         }
       }
+    },
+    "Via wormhole" : {
+
     },
     "Via wormhole · tax %lld cr." : {
 
@@ -7891,10 +7776,19 @@
     "What changes" : {
 
     },
+    "What the hold sells for here and at the target. Estimates carry no guarantee" : {
+
+    },
+    "What the next warp to your target will cost" : {
+
+    },
     "What the next warp to your target will cost." : {
 
     },
     "What you owe the bank. Each warp adds 10% interest." : {
+
+    },
+    "What you owe. Interest is charged on every warp" : {
 
     },
     "What your current ship, its equipment and its cargo are worth." : {
@@ -7909,13 +7803,13 @@
     "When your ship is impounded, the police go over it with a fine-toothed comb. You hidden compartments are found and removed." : {
 
     },
+    "Where you are and the day of your voyage" : {
+
+    },
     "While reviewing the plans for Dr. Fehler's new space-warping drive, Dr. Lowenstam discovered a critical error. If you don't go to Daled and stop the experiment within ten days, the time-space continuum itself could be damaged!" : {
 
     },
     "Why This Price" : {
-
-    },
-    "Why This Price?" : {
 
     },
     "Why this price? %@" : {
@@ -8043,9 +7937,6 @@
 
     },
     "You bought the sealed canisters and put them in your cargo bays." : {
-
-    },
-    "You can choose a target only while docked and within range." : {
 
     },
     "You can't afford it." : {
@@ -8269,7 +8160,7 @@
         }
       }
     },
-    "Your current ship" : {
+    "Your Ship" : {
 
     },
     "Your custom ship has been built." : {
@@ -8294,6 +8185,9 @@
 
     },
     "Your insurance stays active." : {
+
+    },
+    "Your nearest quest deadline: %@" : {
 
     },
     "Your no-claim discount will be lost." : {
@@ -8362,9 +8256,6 @@
     "Your ship, cargo and cash, minus your debt." : {
 
     },
-    "Your slots" : {
-
-    },
     "Your tribbles all died in the explosion." : {
 
     },
@@ -8411,9 +8302,6 @@
           }
         }
       }
-    },
-    "Yours" : {
-
     },
     "Zoom In" : {
 
@@ -8484,9 +8372,6 @@
     "arrested" : {
 
     },
-    "avg %@ cr." : {
-
-    },
     "boredom" : {
 
     },
@@ -8504,6 +8389,9 @@
 
     },
     "cold weather" : {
+
+    },
+    "cr." : {
 
     },
     "crop failure" : {
@@ -8640,10 +8528,19 @@
     "no incident" : {
 
     },
+    "no trade" : {
+
+    },
     "no unusual events" : {
 
     },
     "nobody" : {
+
+    },
+    "none" : {
+
+    },
+    "not sold" : {
 
     },
     "not visited" : {
@@ -8957,9 +8854,6 @@
     "visited" : {
 
     },
-    "vs. current" : {
-
-    },
     "war" : {
 
     },
@@ -8989,6 +8883,9 @@
 
     },
     "your ship was destroyed" : {
+
+    },
+    "±" : {
 
     },
     "±0 cr" : {

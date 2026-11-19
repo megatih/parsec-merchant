@@ -43,20 +43,16 @@ nonisolated enum AXID {
             + SkillType.allCases.flatMap { [skillIncrement($0), skillDecrement($0), skillValue($0)] }
     }
 
-    enum Sidebar {
-        static let list = "sidebar.list"
-        static func row(_ s: Section) -> String { "sidebar.\(s.rawValue)" }
-        static let bridgeBadge = "sidebar.bridge.badge"
-        static let crewBadge = "sidebar.crew.badge"
-        static let bankBadge = "sidebar.bank.badge"
-        static let all = [list, bridgeBadge, crewBadge, bankBadge] + Section.allCases.map(row)
-    }
-
-    enum Toolbar {
-        static let target = "toolbar.target"
-        static let warp = "toolbar.warp"
-        static let inspector = "toolbar.inspector"
-        static let all = [target, warp, inspector]
+    /// UI-NAV-002: the dock bar (the sidebar's successor; its rows' identifiers moved from `sidebar.` to `dock.`).
+    enum Dock {
+        static let bar = "dock.bar"
+        static func button(_ s: Section) -> String { "dock.\(s.rawValue)" }
+        static let options = "dock.options"
+        static let phaseLabel = "dock.phaseLabel"
+        static let bridgeBadge = "dock.bridge.badge"
+        static let crewBadge = "dock.crew.badge"
+        static let bankBadge = "dock.bank.badge"
+        static let all = [bar, phaseLabel, bridgeBadge, crewBadge, bankBadge] + Section.allCases.map(button)
     }
 
     enum Status {
@@ -67,7 +63,12 @@ nonisolated enum AXID {
         static let feedList = "status.feed.list"
         static let feedClose = "status.feed.close"
         static let reason = "status.reason"
-        static let all = [bays, fuel, hull, feed, feedList, feedClose, reason]
+        static let bar = "status.bar"
+        static let location = "status.location"
+        static let cash = "status.cash"
+        static let debt = "status.debt"
+        static let shields = "status.shields"
+        static let all = [bar, location, cash, debt, bays, fuel, hull, shields, feed, feedList, feedClose, reason]
     }
 
     enum Inspector {
@@ -79,7 +80,9 @@ nonisolated enum AXID {
         static let worth = "inspector.worth"
         static func skill(_ s: SkillType) -> String { "inspector.skill.\(s)" }
         static func quest(_ index: Int) -> String { "inspector.quest.\(index)" }
-        static let all = [root, hull, shields, cash, debt, worth] + SkillType.allCases.map(skill)
+        static let galaxyCode = "inspector.galaxyCode"
+        static let galaxyCodeCopy = "inspector.galaxyCode.copy"
+        static let all = [root, hull, shields, cash, debt, worth, galaxyCode, galaxyCodeCopy] + SkillType.allCases.map(skill)
     }
 
     /// Section roots; the section agents add their own element identifiers below these scopes.
@@ -104,7 +107,7 @@ nonisolated enum AXID {
 
     /// Every fixed identifier plus the parameterised ones expanded over their engine enums (UI-SHELL-128).
     static var all: [String] {
-        Welcome.all + NewGame.all + Sidebar.all + Toolbar.all + Status.all + Inspector.all + SectionRoot.all
+        Welcome.all + NewGame.all + Dock.all + Status.all + Inspector.all + SectionRoot.all
             + Dialog.all + gameOverArea + encounterAreaAll + shipyardArea + crewBankQuestsAll
             + Bridge.all + Market.all + menusFilesSettingsAll + mapAll + insightsAll + Sound.all + Tips.all
     }

@@ -53,6 +53,10 @@ nonisolated struct MenuContext: Sendable, Equatable {
     /// The current target's name, for the Track item's title (MENU-034).
     var targetName = ""
     var canBuyFuel = false
+    /// UI-BRG-004: why Sell All Cargo cannot act; nil when it can.
+    var sellAllBlocker: CommandError? = .cargoNoneToSell
+    /// UI-BRG-008: a good is selected in the Bridge's Cargo region.
+    var hasCargoSelection = false
     var canRepair = false
     var fuelFull = true
     var hullFull = true
@@ -79,7 +83,7 @@ nonisolated struct MenuContext: Sendable, Equatable {
         c.focusedMap = focusedMap
         c.galaxyIsKey = galaxyIsKey
         c.searchContext = galaxyIsKey || selectedSection == .galaxy ? .galaxy
-            : selectedSection == .market ? .market : selectedSection == .logbook ? .logbook : .other
+            : selectedSection == .logbook ? .logbook : .other
         c.currentSlotID = currentSlotID
         c.canRevertToAutosave = canRevertToAutosave
         c.recentSlots = recentSlots
@@ -103,6 +107,7 @@ nonisolated struct MenuContext: Sendable, Equatable {
         c.hullFull = ship.hull >= ship.hullStrength(state.ruleset)
         c.canBuyFuel = !c.fuelFull && state.commander.cash >= spec.fuelCost
         c.canRepair = !c.hullFull && state.commander.cash >= spec.repairCost
+        c.sellAllBlocker = SellAllCargo.make(state: state).blocker
         if case .encounter = state.phase { c.encounter = EncounterMenuState.make(engine: GameEngine(state: state), autoRepeatOn: autoRepeatOn) }
         c.newspaperBlocker = NewspaperCardModel.blocker(state: state)
         return c
@@ -115,10 +120,12 @@ nonisolated struct MenuContext: Sendable, Equatable {
         let recent = session.recentSlots().map { slot in
             RecentSlot(id: slot.id, title: SlotText.recentTitle(slot), isCurrentIronmanSlot: slot.id == ironmanSlot)
         }
-        return make(state: session.state, isModal: session.isModal, selectedSection: session.selectedSection,
-                    currentSlotID: session.currentSlotID, canRevertToAutosave: session.canRevertToAutosave, recentSlots: recent,
-                    focusedMap: focusedMap, galaxyIsKey: session.galaxyWindowIsKey,
-                    transitPlaying: session.transitPlayback != nil, autoRepeatOn: session.encounterUI.autoRepeatEnabled)
+        var c = make(state: session.state, isModal: session.isModal, selectedSection: session.selectedSection,
+                     currentSlotID: session.currentSlotID, canRevertToAutosave: session.canRevertToAutosave, recentSlots: recent,
+                     focusedMap: focusedMap, galaxyIsKey: session.galaxyWindowIsKey,
+                     transitPlaying: session.transitPlayback != nil, autoRepeatOn: session.encounterUI.autoRepeatEnabled)
+        c.hasCargoSelection = session.marketSelection != nil && session.selectedSection == .bridge
+        return c
     }
 }
 
@@ -135,6 +142,7 @@ nonisolated enum DisabledReason: Sendable, Equatable {
     case tankFull
     case hullIntact
     case cannotAfford
+    case noCargoSelection
     case noMapFocus
     case currentIronmanSlot
     case notInEncounter
@@ -155,6 +163,7 @@ nonisolated enum DisabledReason: Sendable, Equatable {
         case .tankFull: String(localized: "The fuel tanks are full.")
         case .hullIntact: String(localized: "The hull needs no repairs.")
         case .cannotAfford: String(localized: "You can't afford it.")
+        case .noCargoSelection: String(localized: "Select a good on the Bridge first.")
         case .noMapFocus: String(localized: "Select the galaxy chart first.")
         case .currentIronmanSlot: String(localized: "This Ironman game is already loaded.")
         case .notInEncounter: String(localized: "Only during an encounter.")
@@ -229,7 +238,7 @@ nonisolated enum MenuRules {
             return c.canRevertToAutosave ? .enabled : .disabled(.noAutosave)
         case .export, .closeGame:
             return anyGame(c)
-        case .find, .bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .findSystem, .options, .retire:
+        case .find, .bridge, .shipyard, .outfitter, .crew, .bank, .commanderStatus, .galaxy, .quests, .findSystem, .options, .retire:
             return gameCommand(c)
         case .newspaper:
             return gameCommand(c, and: c.newspaperBlocker == nil, else: .engine(c.newspaperBlocker ?? .insufficientFunds))
@@ -248,10 +257,14 @@ nonisolated enum MenuRules {
             return gameCommand(c, and: c.hasDestinations, else: .noDestinations)
         case .track:
             return gameCommand(c, and: !c.targetIsCurrentSystem, else: .targetIsCurrentSystem)
-        case .fillFuel:
+        case .fillFuel, .buyFuelAmount:
             return gameCommand(c, and: c.canBuyFuel, else: c.fuelFull ? .tankFull : .cannotAfford)
-        case .repair:
+        case .repair, .repairAmount:
             return gameCommand(c, and: c.canRepair, else: c.hullFull ? .hullIntact : .cannotAfford)
+        case .sellAllCargo:
+            return gameCommand(c, and: c.sellAllBlocker == nil, else: .engine(c.sellAllBlocker ?? .cargoNoneToSell))
+        case .priceDetails:
+            return gameCommand(c, and: c.hasCargoSelection, else: .noCargoSelection)
         case .encounterAttack, .encounterFlee, .encounterSurrender, .encounterIgnore, .encounterBribe, .encounterSubmit, .encounterTrade,
              .encounterPlunder, .encounterBoard, .encounterDrink, .encounterMeet, .encounterYield, .encounterAutoRepeat,
              .encounterResolve, .encounterStop:

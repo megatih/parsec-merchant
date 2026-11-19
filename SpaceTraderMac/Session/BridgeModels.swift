@@ -16,7 +16,7 @@ struct SystemCardModel: Equatable, Sendable {
     var resource: SpecialResource?
     var police: Activity
     var pirates: Activity
-    /// The pressure tag; nil when there is none.
+    /// The pressure tag; nil when there is none, and always nil for a system other than the current one.
     var pressure: SystemPressure?
 
     static func make(state: GameState, system index: Int) -> SystemCardModel {
@@ -25,7 +25,8 @@ struct SystemCardModel: Equatable, Sendable {
         return SystemCardModel(index: index, name: Names.system(index, in: state), size: s.size, techLevel: s.techLevel,
                                government: s.politics, resource: s.visited ? s.specialResource : nil,
                                police: politics.activityPolice, pirates: politics.activityPirates,
-                               pressure: s.pressure == .none ? nil : s.pressure)
+                               // UI-BRG-023: the pressure is known only where the player is.
+                               pressure: index == state.commander.currentSystem && s.pressure != .none ? s.pressure : nil)
     }
 
     /// 0…7 filled dots for an activity level.

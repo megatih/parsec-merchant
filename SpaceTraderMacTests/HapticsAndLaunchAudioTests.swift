@@ -33,7 +33,6 @@ struct HapticsTests {
         for kind in others { #expect(HapticMap.pattern(for: kind.fixture) == nil, "\(kind)") }
         #expect(HapticMap.quantitySnaps(requested: 20, maximum: 12) && HapticMap.quantitySnaps(requested: 12, maximum: 12))
         #expect(!HapticMap.quantitySnaps(requested: 5, maximum: 12) && !HapticMap.quantitySnaps(requested: 5, maximum: 0))
-        #expect(TradeQuantity.snaps(modifiers: .option, maximum: 7) && !TradeQuantity.snaps(modifiers: [], maximum: 7))
         #expect(SystemHapticPerformer.feedback(.levelChange) == .levelChange)
         #expect(SystemHapticPerformer.feedback(.alignment) == .alignment && SystemHapticPerformer.feedback(.generic) == .generic)
     }

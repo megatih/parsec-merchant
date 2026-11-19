@@ -70,10 +70,10 @@ struct ShellTests {
         #expect(s.mode == .welcome && s.slotStore.root == root)
     }
 
-    @Test("UI-SHELL-014 the main window: 1320×860 default, 1100×720 minimum, id main")
+    @Test("UI-SHELL-014 UI-DS-001 the main window: 1440×860 default, 1200×680 minimum, id main")
     func sceneMetrics() {
-        #expect(SceneMetrics.mainDefaultSize == CGSize(width: 1320, height: 860))
-        #expect(SceneMetrics.mainMinimumSize == CGSize(width: 1100, height: 720))
+        #expect(SceneMetrics.mainDefaultSize == CGSize(width: 1440, height: 860))
+        #expect(SceneMetrics.mainMinimumSize == CGSize(width: 1200, height: 680))
         #expect(SceneMetrics.mainWindowID == "main")
     }
 
@@ -131,12 +131,13 @@ struct ShellTests {
         #expect(s.mode == .playing && s.isDocked)
     }
 
-    @Test("UI-SHELL-035 LOG-029 sidebar rows in order with ⌘1…⌘9 (Galaxy ⌘7 from M8, Logbook ⌘9 from M10) and identifiers")
+    @Test("UI-SHELL-035 UI-NAV-002 LOG-029 dock buttons in order with ⌘1…⌘9 and identifiers")
     func sidebarRows() {
-        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .logbook])
-        #expect(Section.allCases.map(\.shortcutDigit) == ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
-        #expect(Section.allCases.map(\.axID) == ["sidebar.bridge", "sidebar.market", "sidebar.shipyard", "sidebar.outfitter",
-                                                  "sidebar.crew", "sidebar.bank", "sidebar.galaxy", "sidebar.quests", "sidebar.logbook"])
+        #expect(Section.allCases == [.bridge, .shipyard, .outfitter, .crew, .bank, .status, .quests, .galaxy, .logbook, .options])
+        #expect(Section.allCases.map(\.shortcutDigit) == ["1", "2", "3", "4", "5", "6", "7", "8", "9", nil])
+        #expect(Section.allCases.map(\.axID) == ["dock.bridge", "dock.shipyard", "dock.outfitter", "dock.crew", "dock.bank", "dock.status",
+                                                  "dock.quests", "dock.galaxy", "dock.logbook", "dock.options"])
+        #expect(Section.bridge.keyCap == "⌘1" && Section.logbook.keyCap == "⌘9" && Section.options.keyCap == "⌥⌘O")
         #expect(AXID.SectionRoot.root(.logbook) == "logbook.root")
     }
 
@@ -181,9 +182,8 @@ struct ShellTests {
         #expect(!SectionContext(hasGame: true, ended: false, hasShipyards: false, currentSystemHasShipyard: true).designerAvailable)
     }
 
-    @Test("UI-SHELL-040 toolbar identifiers; Warp is disabled without a target and shows costs or the reason")
+    @Test("UI-SHELL-040 Warp is disabled without a target and shows costs or the reason")
     func toolbar() throws {
-        #expect(AXID.Toolbar.all == ["toolbar.target", "toolbar.warp", "toolbar.inspector"])
         var st = fresh()
         #expect(!WarpButtonModel.make(state: st, isModal: false).isEnabled)
         st.warpSystem = try #require(st.destinations.first)

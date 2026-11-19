@@ -14,6 +14,8 @@ nonisolated struct EscapeContext: Equatable, Sendable {
     var transitPlaying = false
     var feedOpen = false
     var compareSelection = false
+    /// UI-NAV-003: a secondary page is shown while docked.
+    var onSecondaryPage = false
 }
 
 /// UI-KEYS-017: what Esc does.
@@ -26,9 +28,11 @@ nonisolated enum EscapeTarget: Equatable, Sendable {
     case skipTransit
     case closeFeed
     case clearCompare
+    /// UI-NAV-003: back to the Bridge, when nothing closer is open.
+    case backToBridge
 }
 
-/// UI-KEYS-017: the Esc priority. Esc never closes a window or a game: with nothing to cancel it does nothing.
+/// UI-KEYS-017: the Esc priority. Esc never closes a window or a game: with nothing to cancel it does nothing (on the Bridge).
 nonisolated enum EscapeRouter {
     static func target(in c: EscapeContext) -> EscapeTarget? {
         if c.dialogShown { return .dialogCancel }
@@ -39,6 +43,7 @@ nonisolated enum EscapeRouter {
         if c.transitPlaying { return .skipTransit }
         if c.feedOpen { return .closeFeed }
         if c.compareSelection { return .clearCompare }
+        if c.onSecondaryPage { return .backToBridge }
         return nil
     }
 }
@@ -78,6 +83,7 @@ final class EscapeRegistry {
         c.transitPlaying = session.transitPlayback != nil
         c.feedOpen = isActive(.closeFeed)
         c.compareSelection = isActive(.clearCompare)
+        c.onSecondaryPage = session.selectedSection != .bridge && session.state?.phase == .docked && !session.isInputLocked
         return c
     }
 
@@ -91,6 +97,7 @@ final class EscapeRegistry {
         case .skipTransit?: session.skipPlayback()
         case .closeFeed?: entries[.closeFeed]?.action()
         case .clearCompare?: entries[.clearCompare]?.action()
+        case .backToBridge?: session.selectedSection = .bridge
         case .dialogCancel?, .sheet?, nil: return false
         }
         return true

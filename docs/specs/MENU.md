@@ -73,10 +73,10 @@
 | Zoom In / Zoom Out / Fit {M8} | ⌘+ / ⌘− / ⌘0 | `menu.view.zoomIn`, `.zoomOut`, `.zoomFit` | a map has focus | MAP |
 | Enter Full Screen | ⌃⌘F | (system) | system | system |
 
-- **MENU-019** {M7} [UI] [M][W][P] The View menu contains, in order: the sidebar and inspector toggles, a separator, the section items present at the current milestone (M7: Bridge, Market, Shipyard, Outfitter, Crew, Bank, Quests with ⌘1–⌘6 and ⌘8), a separator, and Enter Full Screen. The current section's item shows a checkmark. (source: UX-VISION §10, §10.1 "View")
-- **MENU-020** {M7} [UI] [M][W][P] ⌘1…⌘6 and ⌘8 select Bridge, Market, Shipyard, Outfitter, Crew, Bank and Quests; a UI test presses each in a Quick Start game and checks the sidebar selection and the section's root identifier. During an encounter (interim panel) the items are disabled and pressing the keys does nothing. (source: UX-VISION §9 "Encounter lock", §10)
+- **MENU-019** {M7} [UI] [M][W][P] The View menu contains, in order: the page items in dock order (Bridge ⌘1, Shipyard ⌘2, Outfitter ⌘3, Crew ⌘4, Bank ⌘5, Commander Status ⌘6, Quests ⌘7, Galaxy ⌘8, Logbook ⌘9, and the 1.x Market page without a shortcut until M22), a separator, the galaxy chart and zoom items (MENU-022), and Enter Full Screen. There are no sidebar or inspector toggles. The current page's item is checked. (rewritten for release 2.0)
+- **MENU-020** {M7} [UI] [M][W][P] ⌘1…⌘9 select the pages in dock order (MENU-019); a UI test presses them in a Quick Start game and checks the page's root identifier. During an encounter the items are disabled and pressing the keys changes nothing. (rewritten for release 2.0)
 - **MENU-021** {M7} [M][W][P] Section items are enabled iff game command (MENU-009); a unit test checks them disabled in the contexts no game, in transit, encounter, ended and modal. (source: UX-VISION §9)
-- **MENU-022** {M8} [UI] [M][W][P] Galaxy ⌘7, Galaxy Chart ⇧⌘M and the map zoom items are added with the galaxy chart; zoom items are enabled only while a map view has focus. (source: UX-VISION §10.1 "View"; MAP)
+- **MENU-022** {M8} [UI] [M][W][P] Galaxy ⌘8, Galaxy Chart ⇧⌘M and the map zoom items are added with the galaxy chart; zoom items are enabled only while a map view has focus. (rewritten for release 2.0: ⌘8, was ⌘7)
 - **MENU-023** {M10} [UI] [M][W][P] Logbook ⌘9 is added with the Logbook; it stays enabled after the game has ended, so the log of an ended game can be read. (source: UX-VISION §4.9, §10.1)
 
 ### 3.5 Game (`CommandMenu("Game")`)
@@ -96,7 +96,7 @@
 | Options… | ⌥⌘O | `menu.game.options` | game command | options sheet (OPT-025) |
 | Retire… | — | `menu.game.retire` | game command | `send(.retire)` → UI-SHELL-096 |
 
-- **MENU-024** {M7} [UI] [M][W][P] The Game menu sits between View and Window and contains the M7 rows above in this order, with separators after Find System…, after Repair Hull and after Options…. Plot Route… is added in {M8} after Find System… and Newspaper in {M9} after Repair Hull. (source: UX-VISION §10.1 "Game"; Form_SpaceTrader.cs:739, :827)
+- **MENU-024** {M7} [UI] [M][W][P] The Game menu sits between View and Window and contains the M7 rows above in this order, with separators after Find System…, after Repair Hull and after Options…. Plot Route… is added in {M8} after Find System… and Newspaper in {M9} after Repair Hull. Release 2.0 adds the trade commands after Plot Route…: Sell All Cargo (⌥⌘S), Price Details… (⌥⌘I, for the good selected on the Bridge), Buy Fuel… before Fill Fuel and Repair… before Repair Hull; the final Trade menu is UI-NAV-011. (source: UX-VISION §10.1 "Game"; Form_SpaceTrader.cs:739, :827)
 - **MENU-025** {M7} [UI] [M][W][P] Retire… has no shortcut ("menu only", UX-VISION §10) and always goes through the `.retire` confirmation sheet with Cancel as the default (ALR-104, UI-SHELL-096). (source: UX-VISION §5.6, §10; Form_SpaceTrader.cs:3752-3760)
 - **MENU-026** {M7} [UI] [M][W][P] Options… ⌥⌘O is disabled with no game, after the game has ended and outside `.docked` (OPT-025); flow 4 (UI-SHELL-126) checks the no-game case and the round trip. (source: OPT-025; Form_SpaceTrader.cs:3742-3749)
 - **MENU-027** {M7} [UI] [M][W][P] ⇧⌘F and ⇧⌘R buy the full tank and the full repair as the Bridge Fill Up and Repair buttons do (UI-SHELL-055/056); the engine clamps the amount to cash (SHP-051, SHP-053). A UI test checks that ⇧⌘F is disabled at full tank in a new game and enabled after the flow-1 warp has used fuel. (source: UX-VISION §10 "Fill fuel / Repair hull ⇧⌘F / ⇧⌘R"; Form_SpaceTrader.cs:3531-3541, :3603-3613)

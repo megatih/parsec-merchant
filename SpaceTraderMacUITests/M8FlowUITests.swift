@@ -11,7 +11,7 @@ final class M8FlowUITests: ParsecUITestCase {
     private func openGalaxy(file: StaticString = #filePath, line: UInt = #line) {
         click(AXID.Welcome.quickStart, file: file, line: line)
         expect("the Quick Start game runs", file: file, line: line) { subtitle.hasPrefix("Day 0") }
-        type("7")
+        openPage("galaxy")
         waitFor(AXID.Galaxy.root, file: file, line: line)
         waitFor(g.map, file: file, line: line)
     }
@@ -22,11 +22,6 @@ final class M8FlowUITests: ParsecUITestCase {
     }
 
     private func value(_ e: XCUIElement) -> String { (e.value as? String) ?? "" }
-
-    private var toolbarTarget: String {
-        let t = element(AXID.Toolbar.target)
-        return t.title.isEmpty ? t.label : t.title
-    }
 
     /// Flow 5, Galaxy: hover, select, set target, warp with ⌘J.
     @MainActor
@@ -53,7 +48,7 @@ final class M8FlowUITests: ParsecUITestCase {
         }
 
         system.click()
-        expect("the toolbar target shows \(target) (toolbar: \(toolbarTarget))") { toolbarTarget.hasPrefix(target) }
+        expect("the toolbar target shows \(target) (toolbar: \(targetName))") { targetName.hasPrefix(target) }
         expect("the system's value says target and in range (value: \(value(system)))") {
             value(system).contains("target") && value(system).contains("in range")
         }
@@ -65,11 +60,9 @@ final class M8FlowUITests: ParsecUITestCase {
         expect("the system is now the current system") {
             element(g.system(UITestFixtures.mapFlowTarget)).label.contains("current system")
         }
-        // UI-ENC-095: the arrival keeps the Galaxy section selected; its arrival card waits on the Bridge.
+        // UI-NAV-004: a trip always ends on the Bridge, with its summary in the status bar (UI-BRG-042).
         XCTAssertFalse(element(AXID.Transit.view).exists, "no transit playback with -PMFastTravel")
-        XCTAssertTrue(element(AXID.Galaxy.root).exists, "the Galaxy section stays selected after ⌘J")
-        XCTAssertFalse(element(AXID.Arrival.card).exists, "the arrival card is on the Bridge, not the Galaxy section")
-        type("1")
+        waitFor(AXID.Bridge.root)
         waitFor(AXID.Arrival.card)
     }
 
@@ -95,15 +88,15 @@ final class M8FlowUITests: ParsecUITestCase {
         expect("the route has at least two hops") { element(g.routeHop(2)).exists }
         let hop1 = text(of: element(g.routeHop(1)))
         let hop1Destination = destination(ofHopRow: hop1)
-        expect("the toolbar target is hop 1's destination \(hop1Destination) (toolbar: \(toolbarTarget))") {
-            !hop1Destination.isEmpty && toolbarTarget.hasPrefix(hop1Destination)
+        expect("the toolbar target is hop 1's destination \(hop1Destination) (toolbar: \(targetName))") {
+            !hop1Destination.isEmpty && targetName.hasPrefix(hop1Destination)
         }
         let hop2Destination = destination(ofHopRow: text(of: element(g.routeHop(2))))
 
         type("j")
         expect("arrived at \(hop1Destination) (subtitle: \(subtitle))") { subtitle.contains(" \(hop1Destination) ") }
-        expect("the toolbar target is hop 2's destination \(hop2Destination) (toolbar: \(toolbarTarget))") {
-            toolbarTarget.hasPrefix(hop2Destination)
+        expect("the toolbar target is hop 2's destination \(hop2Destination) (toolbar: \(targetName))") {
+            targetName.hasPrefix(hop2Destination)
         }
         click(g.routeClear)
         expect("the route panel disappears") { !element(g.routePanel).exists }
@@ -134,8 +127,8 @@ final class M8FlowUITests: ParsecUITestCase {
         expect("⌘F focuses the window's search field") { (field.value(forKey: "hasKeyboardFocus") as? Bool) == true }
         field.typeText(prefix)
         field.typeText("\r")
-        expect("the main window's target is a system matching \(prefix) (toolbar: \(toolbarTarget))") {
-            let t = toolbarTarget.lowercased()
+        expect("the main window's target is a system matching \(prefix) (toolbar: \(targetName))") {
+            let t = targetName.lowercased()
             return t != "choose target" && (t.components(separatedBy: " · ").first ?? "").contains(prefix.lowercased())
         }
 

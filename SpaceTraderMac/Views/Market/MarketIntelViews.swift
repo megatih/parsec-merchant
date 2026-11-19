@@ -4,43 +4,6 @@ import ParsecEngine
 import ParsecInsights
 import SwiftUI
 
-/// INT-030: the Target column: the target's sell quote or "—", its age or "est.", dimmed when old, Δ vs the buy price
-/// here with ▲/▼, and the profit per bay.
-struct IntelTargetCell: View {
-    let item: TradeItemType
-    let quote: PriceQuote?
-    let buyHere: Int?
-    let profitPerBay: Int?
-
-    var body: some View {
-        Group {
-            if let quote, let sell = quote.sell {
-                HStack(spacing: 6) {
-                    Text(verbatim: sell.formatted()).monospacedDigit()
-                    Text(verbatim: IntelText.age(quote)).scaledFont(.caption2).foregroundStyle(.readableSecondary)
-                    if let buyHere {
-                        let diff = sell - buyHere
-                        Text(verbatim: "\(IntelText.arrow(diff)) \(IntelText.signed(diff))")
-                            .scaledFont(.caption)
-                            .monospacedDigit()
-                            .foregroundStyle(diff > 0 ? Color.signalGreen : diff < 0 ? Color.signalRed : Color.secondary)
-                    }
-                    if let profitPerBay {
-                        Text("\(IntelText.signed(profitPerBay))/bay").scaledFont(.caption2).monospacedDigit()
-                    }
-                }
-                .opacity(quote.staleness == .old ? 0.55 : 1)
-                .help(IntelText.help(quote))
-            } else {
-                Image(systemName: "minus").accessibilityLabel(Text("No target price"))
-                    .help(quote.map(IntelText.help) ?? String(localized: "The target is this system."))
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier(AXID.MarketIntel.target(item))
-    }
-}
-
 /// INT-031: a Swift Charts sparkline of the remembered sell prices at this system.
 struct PriceSparkline: View {
     let item: TradeItemType
@@ -64,54 +27,6 @@ struct PriceSparkline: View {
         .accessibilityAddTraits(.isImage)
         .accessibilityValue(Text(verbatim: IntelText.historyValue(series)))
         .accessibilityIdentifier(AXID.MarketIntel.history(item))
-    }
-}
-
-/// INT-033: the recommendations strip above the trade table.
-struct RecommendationStripView: View {
-    @Environment(GameSession.self) private var session
-    let intel: MarketIntelModel
-    let state: GameState
-    let select: (TradeItemType) -> Void
-
-    var body: some View {
-        let targetName = Names.system(intel.target, in: state)
-        VStack(alignment: .leading, spacing: 4) {
-            if intel.bestBuys.isEmpty && intel.bestDestinations.isEmpty {
-                Text("No profitable trade known").foregroundStyle(.readableSecondary)
-            }
-            ForEach(Array(intel.bestBuys.enumerated()), id: \.offset) { n, r in
-                Button {
-                    select(r.item)
-                } label: {
-                    Label { Text(verbatim: IntelText.buyRecommendation(r, target: targetName)) } icon: { Image(systemName: "cart.badge.plus") }
-                }
-                .buttonStyle(.link)
-                .accessibilityIdentifier(AXID.MarketIntel.recommendationBuy(n + 1))
-            }
-            ForEach(Array(intel.bestDestinations.enumerated()), id: \.offset) { n, d in
-                let canTarget = RecommendationRules.canSelectTarget(d.system, state: state, inputLocked: session.isInputLocked)
-                Button {
-                    session.send(.selectTarget(d.system))
-                } label: {
-                    Label {
-                        Text(verbatim: IntelText.destinationRecommendation(d, system: Names.system(d.system, in: state)))
-                    } icon: {
-                        Image(systemName: "scope")
-                    }
-                }
-                .buttonStyle(.link)
-                .disabled(!canTarget)
-                .help(canTarget ? Text(verbatim: "") : Text("You can choose a target only while docked and within range."))  // UI-KEYS-035
-                .accessibilityIdentifier(AXID.MarketIntel.recommendationDestination(n + 1))
-            }
-        }
-        .scaledFont(.callout)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(AXID.MarketIntel.recommendations)
     }
 }
 

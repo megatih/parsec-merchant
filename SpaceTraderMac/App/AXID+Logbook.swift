@@ -36,17 +36,10 @@ nonisolated extension AXID {
     }
 
     enum MarketIntel {
-        static func target(_ item: TradeItemType) -> String { "market.row.\(item).target" }
         static func history(_ item: TradeItemType) -> String { "market.row.\(item).history" }
         static let why = "market.why"
         static let whyShowAll = "market.why.showAll"
-        static let recommendations = "market.recommendations"
-        static func recommendationBuy(_ n: Int) -> String { "market.recommendation.buy.\(n)" }
-        static func recommendationDestination(_ n: Int) -> String { "market.recommendation.destination.\(n)" }
-        static let footerProjected = "market.footer.projected"
-        static let all: [String] = [why, whyShowAll, recommendations, footerProjected]
-            + TradeItemType.allCases.flatMap { [target($0), history($0)] }
-            + (1...3).flatMap { [recommendationBuy($0), recommendationDestination($0)] }
+        static let all: [String] = [why, whyShowAll] + TradeItemType.allCases.map(history)
     }
 
     enum SystemIntel {

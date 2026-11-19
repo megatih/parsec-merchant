@@ -17,17 +17,12 @@ final class M12KeysUITests: ParsecUITestCase {
     /// "Day 3" of the subtitle.
     private var day: String { subtitle.components(separatedBy: " · ").first ?? "" }
 
-    private var toolbarTarget: String {
-        let t = element(AXID.Toolbar.target)
-        return t.title.isEmpty ? t.label : t.title
-    }
-
     private func pause(_ seconds: TimeInterval = 0.6) { RunLoop.current.run(until: Date().addingTimeInterval(seconds)) }
 
     /// The identifier of the element with keyboard focus ("" when none reports it).
     /// Text fields whose focus is checked directly: while one is being edited, the focus query finds the enclosing section
     /// container (the field editor inside has no identifier), so the field itself is asked first.
-    private let textFieldIDs = ["market.filter", "logbook.search"]
+    private let textFieldIDs = ["logbook.search"]
 
     private func focusedIdentifier() -> String {
         if let field = textFieldIDs.first(where: { hasFocus($0) }) { return field }
@@ -72,24 +67,20 @@ final class M12KeysUITests: ParsecUITestCase {
 
     private func heldValues() -> [String: String] {
         var out: [String: String] = [:]
-        for item in AXID.Market.items {
-            let e = element(AXID.Market.held(item))
+        for item in AXID.Cargo.items {
+            let e = element(AXID.Cargo.held(item))
             if e.exists { out[item] = text(of: e) }
         }
         return out
     }
 
-    /// ⌘F focuses the Market filter, ⇥ moves to the table (text fields and tables are in the key-view loop even without
-    /// Full Keyboard Access) and ↓ selects the first row.
+    /// The Bridge opens with its Cargo rows focused (UI-BRG-007), so ↓ selects the first row with no click.
     private func focusMarketTableByKeyboard(file: StaticString = #filePath, line: UInt = #line) {
-        waitFor(AXID.Market.table, file: file, line: line)
+        waitFor(AXID.Cargo.panel, file: file, line: line)
         pause()
-        type("f")
-        expect("⌘F focuses market.filter", file: file, line: line) { hasFocus("market.filter") }
-        type(tab, [])
-        pause(0.3)
         type(XCUIKeyboardKey.downArrow.rawValue, [])
         pause(0.3)
+        expect("↓ selects the first Cargo row", file: file, line: line) { self.element(AXID.Cargo.row("water")).isSelected }
     }
 
     private func frame(_ id: String) -> CGRect { element(id).frame }
@@ -121,7 +112,7 @@ final class M12KeysUITests: ParsecUITestCase {
         type(esc, [])
         XCTAssertEqual(items, ["Find…"], "the Find submenu holds only Find… (found \(items))")
         type("]")
-        expect("a target is selected") { !toolbarTarget.isEmpty && !toolbarTarget.hasPrefix("Choose") }
+        expect("a target is selected") { !targetName.isEmpty && !targetName.hasPrefix("Choose") }
         type("j")
         expect("⌘J warps: the day advances (subtitle: \(subtitle))") { day == "Day 1" }
     }
@@ -133,7 +124,7 @@ final class M12KeysUITests: ParsecUITestCase {
     func testMapZoomKeysIncludingTheCommandEqualsAlias() throws {
         // covers: UI-KEYS-013, MAP-015
         quickStart()
-        type("7")
+        openPage("galaxy")
         let g = AXID.Galaxy.section
         waitFor(g.map)
         let probe = g.system(UITestFixtures.mapFlowTarget)
@@ -190,7 +181,7 @@ final class M12KeysUITests: ParsecUITestCase {
         for seed in [UITestFixtures.flowSeed, UITestFixtures.mapFlowSeed, 1, 2, 3, 4, 5, 6] {
             if seed != UITestFixtures.flowSeed { relaunch(UITestFixtures.launchArguments(seed: seed)) }
             quickStart()
-            type("3")
+            openPage("shipyard")
             waitFor("shipyard.root")
             pause()
             cards = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'shipyard.ship.'"))
@@ -218,7 +209,7 @@ final class M12KeysUITests: ParsecUITestCase {
     func testReturnOnTheBridgeNeverWarps() throws {
         // covers: UI-KEYS-019
         quickStart()
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext)
         waitFor("bridge.target.warp")
         type(ret, [])
@@ -249,7 +240,7 @@ final class M12KeysUITests: ParsecUITestCase {
         expect("Esc cancels Retire") { !retire.exists }
         XCTAssertTrue(day.hasPrefix("Day 0"))
         // Newspaper after a warp (Close).
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext)
         type("j")
         expect("warped") { day == "Day 1" }
@@ -280,7 +271,7 @@ final class M12KeysUITests: ParsecUITestCase {
         expect("Esc continues past the arrest report") { !report.exists }
         // Narrative offer (Decline: the offer stays on the Bridge).
         relaunch(UITestFixtures.specialEventArguments)
-        type("1")
+        openPage("bridge")
         waitFor(AXID.Narrative.bridgeCard)
         pause()
         click(AXID.Narrative.bridgeAccept)
@@ -295,17 +286,15 @@ final class M12KeysUITests: ParsecUITestCase {
     func testReturnInTheQuantityFieldBuysTheTypedQuantity() throws {
         // covers: UI-KEYS-022, UI-SHELL-062, UI-PTR-020
         quickStart()
-        type("2")
-        waitFor(AXID.Market.table)
-        let item = try XCTUnwrap(AXID.Market.items.first { element(AXID.Market.buy($0)).exists && element(AXID.Market.buy($0)).isEnabled })
-        let field = waitFor("market.row.\(item).quantity")
+        openPage("bridge")
+        waitFor(AXID.Cargo.panel)
+        let item = try XCTUnwrap(AXID.Cargo.items.first { element(AXID.Cargo.buy($0)).exists && element(AXID.Cargo.buy($0)).isEnabled })
+        let field = waitFor(AXID.Cargo.quantity(item))
         field.click()
-        // An AppKit table takes the first click in an unselected row to select the row; the second edits the field.
-        if (field.value(forKey: "hasKeyboardFocus") as? Bool) != true { field.click() }
         field.typeText("2")
         type(ret, [])
-        expect("Held of \(item) is 2 (held: \(text(of: element(AXID.Market.held(item)))))") {
-            text(of: element(AXID.Market.held(item))) == "2"
+        expect("Held of \(item) is 2 (held: \(text(of: element(AXID.Cargo.held(item)))))") {
+            text(of: element(AXID.Cargo.held(item))) == "2"
         }
         XCTAssertEqual(day, "Day 0", "no other default action ran")
     }
@@ -317,11 +306,11 @@ final class M12KeysUITests: ParsecUITestCase {
     func testDefaultFocusLetsMarketAndMapKeysWorkWithoutAClick() throws {
         // covers: UI-KEYS-027, UI-SHELL-064, MAP-015
         quickStart()
-        type("2")
+        openPage("bridge")
         focusMarketTableByKeyboard()
         type("b", [])
         expect("B bought one unit of the selected row (held: \(heldValues()))") { heldValues().values.contains("1") }
-        type("7")
+        openPage("galaxy")
         let probe = AXID.Galaxy.section.system(UITestFixtures.mapFlowTarget)
         waitFor(probe)
         pause()
@@ -341,7 +330,7 @@ final class M12KeysUITests: ParsecUITestCase {
         // covers: UI-KEYS-025, UI-KEYS-026, UI-KEYS-028
         try withFullKeyboardAccess(UITestFixtures.launchArguments)
         quickStart()
-        type("1")
+        openPage("bridge")
         waitFor(AXID.Bridge.targetCard)
         // Choose a target so the card's Warp button is enabled (a disabled control is rightly outside the key loop).
         type("]")
@@ -355,7 +344,7 @@ final class M12KeysUITests: ParsecUITestCase {
         attachment.name = "bridge-tab-order"
         attachment.lifetime = .keepAlways
         add(attachment)
-        let card = ["bridge.target.previous", "bridge.target.next", "bridge.target.warp"]
+        let card = ["bridge.target.warp", "bridge.target.previous", "bridge.target.next"]
         let positions = card.compactMap { bridgeOrder.firstIndex(of: $0) }
         XCTAssertEqual(positions.count, card.count, "Tab reaches every target-card control (order: \(bridgeOrder))")
         XCTAssertEqual(positions, positions.sorted(), "the target-card controls follow their visual order")
@@ -364,17 +353,17 @@ final class M12KeysUITests: ParsecUITestCase {
         for e in element(AXID.Bridge.targetCard).buttons.allElementsBoundByIndex where e.isEnabled && !e.identifier.isEmpty {
             XCTAssertTrue(reachable.contains(e.identifier), "\(e.identifier) is reachable with Tab")
         }
-        type("2")
-        waitFor(AXID.Market.table)
+        openPage("bridge")
+        waitFor(AXID.Cargo.panel)
         let marketOrder = tabCycle()
         let m = XCTAttachment(string: marketOrder.joined(separator: "\n"))
         m.name = "market-tab-order"
         m.lifetime = .keepAlways
         add(m)
-        let filter = marketOrder.firstIndex(of: "market.filter"), table = marketOrder.firstIndex(of: AXID.Market.table)
-        XCTAssertNotNil(filter, "Tab reaches market.filter (order: \(marketOrder))")
-        XCTAssertNotNil(table, "Tab reaches market.table (order: \(marketOrder))")
-        if let filter, let table { XCTAssertLessThan(filter, table, "the filter comes before the table") }
+        let field = marketOrder.firstIndex(of: AXID.Cargo.quantity("water")), buy = marketOrder.firstIndex(of: AXID.Cargo.buy("water"))
+        XCTAssertNotNil(field, "Tab reaches the first row's quantity field (order: \(marketOrder))")
+        XCTAssertNotNil(buy, "Tab reaches the first row's Buy button (order: \(marketOrder))")
+        if let field, let buy { XCTAssertLessThan(field, buy, "the quantity field comes before Buy") }
         screenshot("market-focus-ring")
     }
 
@@ -398,18 +387,18 @@ final class M12KeysUITests: ParsecUITestCase {
         waitFor(AXID.Welcome.quickStart)
         type(ret, [])
         expect("Return is Quick Start") { subtitle.hasPrefix("Day 0") }
-        type("2")
+        openPage("bridge")
         focusMarketTableByKeyboard()
         type("b", [])
         expect("B bought one unit") { heldValues().values.contains("1") }
-        type("1")
+        openPage("bridge")
         waitFor(AXID.Bridge.targetCard)
-        let before = toolbarTarget
+        let before = targetName
         type("]")
-        expect("⌘] changed the target (\(before) → \(toolbarTarget))") { toolbarTarget != before && !toolbarTarget.hasPrefix("Choose") }
+        expect("⌘] changed the target (\(before) → \(targetName))") { targetName != before && !targetName.hasPrefix("Choose") }
         type("j")
         expect("⌘J warped to day 1") { day == "Day 1" }
-        type("9")
+        openPage("logbook")
         waitFor("logbook.root")
         type("f")
         expect("⌘F focuses the Logbook search") { hasFocus("logbook.search") }
@@ -443,17 +432,22 @@ final class M12KeysUITests: ParsecUITestCase {
 
     // MARK: §7 HIG
 
-    /// The toolbar holds controls only.
+    /// There is no toolbar: navigation is the dock bar and status is the status bar.
     @MainActor
-    func testToolbarHoldsControlsOnly() throws {
-        // covers: UI-KEYS-031
+    func testNoToolbarDockAndStatusBars() throws {
+        // covers: UI-KEYS-031, UI-NAV-001, UI-SB-001
         quickStart()
-        let toolbar = mainWindow.toolbars.firstMatch
-        XCTAssertTrue(toolbar.waitForExistence(timeout: timeout))
-        let ids = Set(toolbar.descendants(matching: .any).allElementsBoundByIndex.map(\.identifier).filter { $0.contains(".") && !$0.hasPrefix("_") })
-        XCTAssertEqual(ids, [AXID.Toolbar.target, AXID.Toolbar.warp, AXID.Toolbar.inspector], "toolbar identifiers: \(ids)")
-        XCTAssertTrue(toolbar.staticTexts.allElementsBoundByIndex.allSatisfy { $0.identifier.isEmpty || ids.contains($0.identifier) },
-                      "no status text in the toolbar")
+        waitFor(AXID.Dock.bar)
+        let toolbarIDs = mainWindow.toolbars.descendants(matching: .any).allElementsBoundByIndex.map(\.identifier)
+            .filter { $0.contains(".") && !$0.hasPrefix("_") }
+        XCTAssertEqual(toolbarIDs, [], "the window has no toolbar items of its own: \(toolbarIDs)")
+        let dock = element(AXID.Dock.bar).frame, status = element(AXID.Status.bar).frame, window = mainWindow.frame
+        XCTAssertLessThan(dock.minY, status.minY + 1, "the dock bar is above the status bar")
+        XCTAssertLessThan(status.maxY, window.minY + window.height * 0.25, "both bars are at the top of the window")
+        for page in ["bridge", "shipyard", "outfitter", "crew", "bank", "status", "quests", "galaxy", "logbook"] {
+            XCTAssertTrue(element(AXID.Dock.button(page)).isHittable, "dock.\(page) is in view")
+        }
+        XCTAssertTrue(element(AXID.Status.cash).exists, "cash is always visible in the status bar")
     }
 
     // MARK: §8 sweeps
@@ -468,42 +462,36 @@ final class M12KeysUITests: ParsecUITestCase {
             type(key)
             waitFor(root)
         }
-        type("1")
-        let inspector = element(AXID.Inspector.root)
-        let shownBefore = inspector.exists
-        type("i", [.command, .control])
-        expect("⌃⌘I toggles the inspector") { inspector.exists != shownBefore }
-        type("i", [.command, .control])
-        expect("⌃⌘I toggles it back") { inspector.exists == shownBefore }
-        let sidebar = element(AXID.Sidebar.list)
-        let sidebarBefore = sidebar.isHittable
-        type("s", [.command, .control])
-        expect("⌃⌘S toggles the sidebar") { sidebar.isHittable != sidebarBefore }
-        type("s", [.command, .control])
-        expect("⌃⌘S toggles it back") { sidebar.isHittable == sidebarBefore }
+        openPage("bridge")
+        // Commander Status is a page (⌘6); Esc returns to the Bridge (UI-NAV-003).
+        openPage("status")
+        waitFor(AXID.Inspector.root)
+        type(esc, [])
+        waitFor("bridge.root")
         type("]")
-        expect("⌘] selects a target") { !toolbarTarget.isEmpty && !toolbarTarget.hasPrefix("Choose") }
-        let target = toolbarTarget
+        expect("⌘] selects a target") { !targetName.isEmpty && !targetName.hasPrefix("Choose") }
+        let target = targetName
         type("]")
-        expect("⌘] changes the target") { toolbarTarget != target }
+        expect("⌘] changes the target") { targetName != target }
         type("[")
-        expect("⌘[ restores it") { toolbarTarget == target }
+        expect("⌘[ restores it") { targetName == target }
         type("f", [.command, .option])
         let find = waitFor("findSystem.sheet")
         type(esc, [])
         expect("Esc closes Find System") { !find.exists }
-        type("2")
-        waitFor(AXID.Market.table)
+        openPage("bridge")
+        waitFor(AXID.Cargo.panel)
         pause()
         type("f")
-        expect("⌘F on Market focuses market.filter") { hasFocus("market.filter") }
+        let bridgeFind = waitFor("findSystem.sheet")  // ⌘F on the Bridge finds a system (the Target panel's Find…)
         type(esc, [])
-        type("7")
+        expect("Esc closes Find System") { !bridgeFind.exists }
+        openPage("galaxy")
         waitFor(AXID.Galaxy.root)
         type("f")
         expect("⌘F on Galaxy focuses the map search") { hasFocus(AXID.Galaxy.section.searchField) }
         type(esc, [])
-        type("9")
+        openPage("logbook")
         waitFor("logbook.root")
         type("f")
         expect("⌘F on Logbook focuses logbook.search") { hasFocus("logbook.search") }
@@ -519,7 +507,7 @@ final class M12KeysUITests: ParsecUITestCase {
         pause()
         type(esc, [])
         expect("Esc closes Options") { !options.exists }
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext)
         type("j")
         expect("warped (subtitle: \(subtitle))") { day == "Day 1" }

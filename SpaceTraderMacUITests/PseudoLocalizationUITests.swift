@@ -130,8 +130,8 @@ final class PseudoLocalizationUITests: ParsecUITestCase {
         case "welcome":
             expectMarked(AXID.Welcome.quickStart)
         case "section-bridge":
-            expectMarked(AXID.Toolbar.warp)
-            for s in UISurfaceCatalog.sections { expectMarked("sidebar.\(s.name)") }
+            expectMarked(AXID.Bridge.targetWarp)
+            for s in UISurfaceCatalog.sections { expectMarked("dock.\(s.name)") }
         case let name where name.hasPrefix("settings-"):
             let tab = String(name.dropFirst("settings-".count))
             let byID = element(AXID.A11y.settingsTab(tab))

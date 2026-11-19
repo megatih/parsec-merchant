@@ -114,6 +114,7 @@ nonisolated struct ShowCommanderStatusIntent: AppIntent {
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let text = await MainActor.run {
             guard let session = IntentSessionBridge.session else { return CommanderStatus.noSaveText }
+            session.showCommanderStatusPage()
             return CommanderStatusQuery.current(store: session.slotStore, session: session)?.dialogText ?? CommanderStatus.noSaveText
         }
         return .result(dialog: "\(text)")

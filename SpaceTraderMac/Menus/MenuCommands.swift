@@ -24,9 +24,8 @@ struct MenuCommands: Commands {
         CommandGroup(replacing: .textEditing) {
             FindMenuItems(session: session)
         }
-        SidebarCommands()
-        InspectorCommands()
-        CommandGroup(after: .sidebar) {
+        // UI-NAV-001: no sidebar and no inspector; the pages are View menu items.
+        CommandGroup(before: .toolbar) {
             SectionMenuItems(session: session)
         }
         CommandMenu("Game") {
@@ -255,9 +254,15 @@ struct GameMenuItems: View {
         MenuItemButton(id: .findSystem, availability: a(.findSystem)) { session.present(.sheet(.findSystem)) }
         MenuItemButton(id: .plotRoute, availability: a(.plotRoute)) { session.plotRouteToTarget() }
         Divider()
+        MenuItemButton(id: .sellAllCargo, availability: a(.sellAllCargo)) { session.sellAllCargo() }
+        MenuItemButton(id: .priceDetails, availability: a(.priceDetails)) {
+            if let item = session.marketSelection { session.showPriceDetails(item) }
+        }
+        MenuItemButton(id: .buyFuelAmount, availability: a(.buyFuelAmount)) { session.showServiceAmount(.fuel) }
         MenuItemButton(id: .fillFuel, availability: a(.fillFuel)) {
             if let state = session.state { session.send(.buyFuel(credits: state.fullTankCost)) }
         }
+        MenuItemButton(id: .repairAmount, availability: a(.repairAmount)) { session.showServiceAmount(.hull) }
         MenuItemButton(id: .repair, availability: a(.repair)) {
             if let state = session.state { session.send(.repairHull(credits: state.fullRepairCost)) }
         }
@@ -267,7 +272,7 @@ struct GameMenuItems: View {
             MenuItemButton(id: .newspaper, availability: a(.newspaper)) { session.readNewspaper() }
             Divider()
         }
-        MenuItemButton(id: .options, availability: a(.options)) { session.present(.sheet(.gameOptions)) }
+        MenuItemButton(id: .options, availability: a(.options)) { session.selectedSection = .options }
         Divider()
         MenuItemButton(id: .retire, availability: a(.retire)) { session.send(.retire) }
     }

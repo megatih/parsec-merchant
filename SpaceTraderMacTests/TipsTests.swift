@@ -46,9 +46,9 @@ struct TipsTests {
 
     @Test("A11Y-044 TipTriggers: show on visit, invalidate after the first trade, map target and warp")
     func triggers() throws {
-        let market = TipTriggers.apply(step: nil, section: .market, docked: true, targetInRange: false)
+        let market = TipTriggers.apply(step: nil, section: .bridge, docked: true, targetInRange: false)
         #expect(market == [.show(.market), .hide(.galaxy), .hide(.warp)])
-        #expect(TipTriggers.apply(step: nil, section: .market, docked: false, targetInRange: false).first == .hide(.market))
+        #expect(TipTriggers.apply(step: nil, section: .bridge, docked: false, targetInRange: false).first == .hide(.market))
         #expect(TipTriggers.apply(step: nil, section: .galaxy, docked: true, targetInRange: false)[1] == .show(.galaxy))
         #expect(TipTriggers.apply(step: nil, section: .bridge, docked: true, targetInRange: true)[2] == .show(.warp))
         #expect(TipTriggers.apply(step: nil, section: .bridge, docked: true, targetInRange: false)[2] == .hide(.warp))
@@ -56,7 +56,7 @@ struct TipsTests {
         let s = try TestSessions.playing(seed: 11)
         let center = RecordingTipCenter()
         s.tipCenter = center
-        s.selectedSection = .market
+        s.selectedSection = .bridge
         s.updateTips()
         #expect(center.calls.contains(.show(.market)))
         s.send(.buyCargo(.water, quantity: 1))

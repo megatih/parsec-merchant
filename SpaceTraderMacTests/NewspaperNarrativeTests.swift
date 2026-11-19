@@ -202,7 +202,7 @@ struct NewspaperNarrativeTests {
             return
         }
         #expect(pending.confirmation.warning == .buyNewspaper && pending.command == .readNewspaper)
-        #expect([AXID.Newspaper.bridgeCard, AXID.Bridge.newspaperRead].allSatisfy(AXID.all.contains))
+        #expect([BridgeID.System.news].allSatisfy(AXID.all.contains))
     }
 
     // MARK: UI-ENC-073 … 080

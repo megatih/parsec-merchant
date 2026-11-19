@@ -216,11 +216,11 @@ struct MapSessionTests {
         var focused = false
         ContextSearch.perform(.galaxy, focused: ContextSearchAction { focused = true }, session: s)
         #expect(focused && s.presentation == nil)
-        s.selectedSection = .market
+        s.selectedSection = .bank
         s.map.galaxyWindowIsKey = true
         #expect(MenuContext.make(session: s).searchContext == .galaxy)
         s.map.galaxyWindowIsKey = false
-        #expect(MenuContext.make(session: s).searchContext == .market)
+        #expect(MenuContext.make(session: s).searchContext == .other)
         s.selectedSection = .bridge
         ContextSearch.perform(MenuContext.make(session: s).searchContext, focused: nil, session: s)
         #expect(s.presentation == .sheet(.findSystem))
@@ -260,10 +260,10 @@ struct MapSessionTests {
         #expect(ProjectedMap.make(snapshot: snap, viewport: v, viewSize: size, labelAll: true).labels.count > 3)
     }
 
-    @Test("MAP-075 the Galaxy section sits between Bank and Quests with ⌘7")
+    @Test("MAP-075 the Galaxy page sits between Quests and Logbook in the dock with ⌘8")
     func section() {
-        #expect(Section.allCases == [.bridge, .market, .shipyard, .outfitter, .crew, .bank, .galaxy, .quests, .logbook])
-        #expect(Section.galaxy.shortcutDigit == "7" && Section.galaxy.systemImage == "map" && Section.galaxy.axID == "sidebar.galaxy")
+        #expect(Section.allCases == [.bridge, .shipyard, .outfitter, .crew, .bank, .status, .quests, .galaxy, .logbook, .options])
+        #expect(Section.galaxy.shortcutDigit == "8" && Section.galaxy.systemImage == "map" && Section.galaxy.axID == "dock.galaxy")
         #expect(AXID.SectionRoot.root(.galaxy) == "galaxy.root")
         #expect(Section.galaxy.isAvailable(in: SectionContext.make(state: MapFx.state())))
         #expect(!Section.galaxy.isAvailable(in: .noGame))

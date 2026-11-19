@@ -58,6 +58,8 @@ struct AccessibilityTests {
         #expect(LaunchOptions.parse(["app", "-PMAppearance", "dark"], isDebug: false).appearance == nil)
         #expect(LaunchOptions.parse(["app", "-PMWindowSize", "max"], isDebug: true).windowSize == nil)
         #expect(LaunchOptions.parse(["app", "-PMWindowSize", "default"], isDebug: true).windowSize == .standard)
+        #expect(LaunchOptions.parse(["app", "-PMWindowPoints", "1728x1050"], isDebug: true).windowPoints == CGSize(width: 1728, height: 1050))
+        #expect(LaunchOptions.parse(["app", "-PMWindowPoints", "big"], isDebug: true).windowPoints == nil)
         let release = LaunchOptions.parse(["app", "-PMA11y", "reduceMotion", "-PMTips", "off", "-PMWindowSize", "min"], isDebug: false)
         #expect(release == LaunchOptions())
     }

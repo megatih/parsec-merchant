@@ -272,7 +272,7 @@ No text is smaller than 11 pt at `s = 1`. The newspaper keeps its serif (New Yor
 - **UI-DS-021** {M27} Source audit: under `APP/Views/` and `APP/Map/` (except `MapStyle.swift`) there is no `Color(red:`, `Color(.s`, `Color.red|green|blue|orange|yellow|purple|pink`, `.foregroundStyle(.red|.green|.orange|.yellow|.blue)`, no `.font(.system(size:`, and no `cornerRadius:` literal other than through `PMRadius`.
 - **UI-DS-022** {M27} Source audit: no `.padding(` with a numeric literal under `APP/Views/`; padding uses `PMSpace`.
 - **UI-DS-023** {M27} Source audit: `GroupBox`, `Form`, `NavigationSplitView`, `.inspector(` and `.toolbar` do not appear under `APP/Views/` except in `Views/Settings/`, `Views/About/` and `Views/Developer/`.
-- **UI-DS-024** {M21} Source audit: `.glassEffect(` and `GlassEffectContainer` appear nowhere in the app target; `.popover(` stays banned.
+- **UI-DS-024** {M25} Source audit: `.glassEffect(` and `GlassEffectContainer` appear nowhere in the app target; `.popover(` stays banned.
 
 ### 3.5 Components
 
@@ -372,12 +372,12 @@ Three layers, and only three:
 |---|---|---|---|---|---|---|---|---|---|
 | Bridge | Shipyard | Equipment | Personnel | Bank | Commander Status | Quests | Galactic Chart | Logbook | Options |
 
-- **UI-NAV-001** {M21} The shell is `dock bar / status bar / game area` in a plain `VStack`; nothing is pinned to the bottom edge of the window. `NavigationSplitView`, the sidebar, the inspector and the toolbar are removed. `Section` gets the cases `bridge, shipyard, equipment, personnel, bank, status, quests, chart, logbook, options` with raw values kept for the surviving cases; stored values of renamed cases are mapped when read (`outfitter` → `equipment`, `crew` → `personnel`, `galaxy` → `chart`, `market` → `bridge`), and anything unknown maps to `bridge`.
+- **UI-NAV-001** {M21} The shell is `dock bar / status bar / game area` in a plain `VStack`; nothing is pinned to the bottom edge of the window. `NavigationSplitView`, the sidebar, the inspector and the toolbar are removed. `Section` has the cases `bridge, shipyard, outfitter, crew, bank, status, quests, galaxy, logbook` in dock order: the 1.x case names and raw values are kept (they are stored in scene state and are part of the accessibility identifiers), and the page titles carry the game's vocabulary (Equipment, Personnel, Galactic Chart; UI-PG). Options is the dock bar's last button and opens the options (it is not a `Section`). A stored `market`, or anything unknown, restores to `bridge`.
 - **UI-NAV-002** {M21} The dock bar shows all ten buttons at every window size, each with symbol, label and key cap on one line; the current page's button is marked by `accent` underline **and** a filled symbol (not colour alone). Badges: Personnel shows the number of mercenaries for hire here; Quests shows the number of open quests with a deadline of 5 days or less.
 - **UI-NAV-003** {M21} Esc on a secondary page returns to the Bridge (after the existing Esc router levels: clear a field, close an overlay). Every secondary page has a visible "Bridge" back button at the left of its title row with help tag "Return to the Bridge (Esc)".
 - **UI-NAV-004** {M21} After a warp ends (arrival), after a game loads and after New Game, the page is the Bridge. This replaces UI-ENC-055.
 - **UI-NAV-005** {M21} During transit and encounters every dock button is disabled with the help tag "Unavailable in transit" / "Unavailable during an encounter"; the status bar stays live.
-- **UI-NAV-006** {M21} A page never opens another page except through: the dock bar, a menu command, Back, or a link whose label names the destination page (for example "Open Personnel"). A link changes the page; it never also changes the target or other game state, except "Show on Galactic Chart", which selects that system on the chart.
+- **UI-NAV-006** {M21} A page never opens another page except through: the dock bar, a menu command, Back, or a control whose label or help tag names the destination page (for example "Insurance in Bank…", or the Bridge's Hire notice, which opens the Crew page). A link changes the page; it never also changes the target or other game state, except "Show on Galactic Chart", which selects that system on the chart.
 - **UI-NAV-007** {M23} The window title is "Cmdr. ‹name›" and the subtitle is the page name (the HIG says not to title a window with the app name). Cash, day and system are no longer in the subtitle (they are in the status bar).
 - **UI-NAV-008** {M24} The separate Galactic Chart window (⇧⌘M) stays, with the same content as the page.
 - **UI-NAV-009** {M21} With no game loaded the window shows the Welcome view with no status bar or dock bar.
@@ -428,14 +428,14 @@ Wireframe at the minimum size, 1200 × 680 pt (`s` = 1). Measures in points.
 |---|---|---|---|---|---|
 | Dock bar | 0 | 0 | 1200 | 44 | width |
 | Status bar | 0 | 44 | 1200 | 36 | width |
-| A · System Information | 8 | 88 | 776 | 144 | width, height |
-| B · Cargo | 8 | 240 | 776 | 432 | width and height (rows 36 → 44 max, × `s`) |
+| A · System Information | 8 | 88 | 776 | 148 | width, height |
+| B · Cargo | 8 | 244 | 776 | 428 | width and height (rows 36 → 44 max, × `s`) |
 | C · Short-Range Chart | 792 | 88 | 400 | 280 | **width and height (takes most leftover)** |
 | D · Target System | 792 | 376 | 400 | 296 | width |
 
-- Cargo panel: 2 summary lines × 20 + header row 24 + 10 rows × 36 + padding 8 = 432. The summary and Sell All Cargo are **above** the rows, and Warp is at the top of the Target panel, so the most important controls are never at the window's bottom edge.
-- Cargo columns (inner width 760): Good 104, Hold 40, Paid 52, Sell 60, Buy 56, Stock 40, Target 72, ± 56, actions 232 (quantity field 40, Buy 46, Max 46, Sell 46, All 42, gaps 12), column gaps 48.
-- System Information (inner 760 × 128): the planet in a 112 × 112 square (it grows with the panel; `PlanetHero` fills any frame it is given), a facts column about 260 wide (name, five fact lines, one activity line), and a services column about 360 wide: the Fuel line and the Hull line (gauge with its text, then its button) and the four notice buttons in a 2 × 2 grid or one row, whichever passes the fit test.
+- Cargo panel: 2 summary lines × 20 + header row 20 + 10 rows × 36 + padding 8 = 428 (as built: 4 pt moved to System Information, whose three lines of facts, the fuel and hull line and the notices line need 132 pt inside 8 pt padding). The summary and Sell All Cargo are **above** the rows, and Warp is at the top of the Target panel, so the most important controls are never at the window's bottom edge.
+- Cargo columns (inner width 760, as built): row leading 8, Good takes the rest (about 156), Hold 32, Paid 44, Sell 52, Buy 44, Stock 36, Target 52, ± 56, actions 232 (quantity field 40, Buy 42, Max 44, Sell or Dump 50, All 40, gaps 4), column gaps 6. Sell shows its gain or loss against Paid under the price, and Target shows its tag ("est." or the age) under the price, so the columns stay narrow.
+- System Information (inner 760 × 132, as built): the planet in a 112 × 112 square at the left (it grows with the panel's height but never takes the 636 pt the rest needs; `PlanetHero` fills any frame it is given); to its right three lines: the facts in three columns (name, Police, Pirates · Size, Tech level, Government · Resources, Status), the Fuel gauge with Fill Tank and the Hull gauge with Repair Hull on one 36 pt line, and the four notice buttons on one 36 pt line.
 
 These numbers are the starting budget. The implementer may move up to 24 pt between neighbouring regions or columns to make the layout tests pass, but MUST NOT remove, merge, abbreviate beyond the listed labels, or relocate an element.
 
@@ -463,7 +463,7 @@ Ten rows, one per `TradeItemType`, always in table order, always all ten.
 
 | Column | Shows | Rule |
 |---|---|---|
-| Good | name; "⚠ Illegal" badge where the current system's politics forbid it; "★" with the word "Best buy" in the help tag and label when `TradeIntel.bestBuys` names it | names from `Text/GameNames` |
+| Good | name; "⚠ Illegal" badge on the two contraband goods (firearms and narcotics: the police confiscate them in every system); "★" with the word "Best buy" in the help tag and label when `TradeIntel.bestBuys` names it | names from `Text/GameNames` |
 | Hold | units held | `MarketRow.held` |
 | Paid | average price paid per unit, or "—" | `MarketRow.costBasisPerUnit` |
 | Sell | sell price here, or "no trade"; when held, ▲/▼ and the difference to Paid | `MarketRow` |
@@ -524,10 +524,10 @@ The existing `GalaxyMapView(scope: .miniChart)`, restyled through `MapStyle` onl
   1. every manifest identifier reports a frame (nothing missing);
   2. every frame has width and height > 0 and lies fully inside its region's frame, which lies fully inside the game area;
   3. the four regions, the rows, and the controls within a row do not overlap;
-  4. every text probe's laid-out size is at least its ideal size at unlimited width (nothing truncated, wrapped beyond its line budget or scaled down);
+  4. every text is laid out at its ideal size: the Bridge's texts and buttons are `fixedSize`, and its sources contain no `.lineLimit(` and no `.minimumScaleFactor(` (UI-BRG-030), so nothing can be truncated, wrapped or scaled down; a text that is too long for its place shows up as an overlap or as a frame outside its row or region (assertions 2 and 3, which cover every element of a region and every cell and control of a row);
   5. the hosting view contains no `NSScrollView` in its subview tree;
   6. every control's frame has a short side ≥ 36 × `s`.
-- **UI-BRG-033** {M22} **Fit test (XCUITest).** At `-PMWindowSize min` and at 1728 × 1050: every manifest identifier `exists`, is inside the window frame, every button `isHittable`, and `app.windows["main"].scrollViews.count == 0` on the Bridge. Repeated with Text Size Large when the screen allows it.
+- **UI-BRG-033** {M22} **Fit test (XCUITest).** At `-PMWindowSize min` and at 1728 × 1050 (`-PMWindowPoints 1728x1050`): every manifest identifier is present in the window's accessibility snapshot with a frame inside the window, every enabled button `isHittable`, and `app.windows["main"].scrollViews.count == 0` on the Bridge. Repeated at the minimum window of a larger Text Size (Extra Extra Large: 1380 × 782).
 - **UI-BRG-034** {M22} **Long strings.** The fit test also runs with the longest system name, good name, government name and resource name of each ruleset's tables, and with the pseudo-localization (double-length) variant; assertion 4 must hold.
 - **UI-BRG-035** {M22} Resizing never changes the manifest: the set of identifiers found at 1200 × 680 equals the set at 2560 × 1380.
 - **UI-BRG-036** {M22} The window cannot be made smaller than the minimum (UI test drags the corner and asserts the size).
@@ -691,7 +691,7 @@ Full game area: the transit scene, "En route to ‹target›", the 20-segment cl
 | File | New Game… (⌘N), Quick Start, Open Saved Game… (⌘O), Open Recent ▸, Save (⌘S), Save As… (⇧⌘S), Revert to Autosave, Import…, Export… (⇧⌘E), Close Game |
 | Edit | Undo/Redo/Cut/Copy/Paste/Select All (system), Find System… (⌘F) |
 | View | Bridge (⌘1) … Logbook (⌘9), Options (⌥⌘O), Galactic Chart Window (⇧⌘M), Zoom In (⌘+), Zoom Out (⌘−), Fit Range (⌘0), Recent Events (⌘E), Enter Full Screen (system) |
-| Trade | Buy (B), Buy Maximum (⇧B), Sell (S), Sell All (⇧S), Sell All Cargo (⌥⌘S), Dump…, Price Details… (⌘I), Buy Fuel…, Fill Tank (⇧⌘F), Repair…, Repair Hull (⇧⌘R) |
+| Trade | Buy (B), Buy Maximum (⇧B), Sell (S), Sell All (⇧S), Sell All Cargo (⌥⌘S), Dump…, Price Details… (⌥⌘I), Buy Fuel…, Fill Tank (⇧⌘F), Repair…, Repair Hull (⇧⌘R) |
 | Game | Warp (⌘J), Previous Target (⌘[), Next Target (⌘]), Track Target / Stop Tracking (⌘T), Plot Route…, Jump… (singularity), Read Newspaper (⇧⌘N), Retire… |
 | Encounter | the existing items and keys |
 | Window | Minimize (⌘M), Zoom, Parsec Merchant, Galactic Chart, High Scores |
@@ -970,7 +970,7 @@ Order and dependencies: M18 → M19 → M20 → M21 → M22 → M23 → M24 → 
 
 **Code.** Tokens and components (§3.3–3.5); `GameShellView` with the new status bar and dock bar; sidebar, toolbar and inspector removed; **old section views hosted unchanged as pages**, with temporary dock buttons "Market" (old market) and a temporary Commander Status page that wraps the old inspector form; Options stays a sheet for now. Window sizes and scale environment (UI-DS-001…003). UI tests and `UISurfaceCatalog` re-pointed from sidebar to dock bar in the same commits.
 
-**Exit checks.** UI-DS-001…003, 010…012, 020, 024, 030, 031; UI-NAV-001…005, 009; UI-SB-001…005; UI-HIG-007 green. `scripts/verify.sh --ui` → `ALL GATES PASSED`. Screenshots of every page at the minimum size exported and read.
+**Exit checks.** UI-DS-001…003, 010…012, 020, 030, 031; UI-NAV-001…005, 009; UI-SB-001…005; UI-HIG-007 green. (UI-DS-024, no glass anywhere, is due at M25, when the map HUD and the encounter action bar, its last users, are rebuilt.) `scripts/verify.sh --ui` → `ALL GATES PASSED`. Screenshots of every page at the minimum size exported and read.
 
 ### M22 · Bridge
 

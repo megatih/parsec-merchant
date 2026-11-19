@@ -39,7 +39,7 @@ final class FoundationModelsFlavorUITests: ParsecUITestCase {
         }
         expect("the encounter ends") { !view.exists }
 
-        type("9")
+        openPage("logbook")
         selectTab("Captain's Log")
         waitFor(AXID.Logbook.list)
         var generated: [String] = []
@@ -60,7 +60,7 @@ final class FoundationModelsFlavorUITests: ParsecUITestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: timeout), "the app quits")
         relaunch(Self.common)
         click("welcome.continue")
-        type("9")
+        openPage("logbook")
         selectTab("Captain's Log")
         waitFor(AXID.Logbook.list)
         var reloaded: [String] = []
@@ -74,7 +74,7 @@ final class FoundationModelsFlavorUITests: ParsecUITestCase {
         for row in generated { print("LLM-031 generated: \(row)") }
         for row in reloaded { print("LLM-031 reloaded: \(row)") }
         XCTAssertTrue(Set(generated).isSubset(of: Set(reloaded)), "LLM-031: the generated prose survives a save and reload")
-        type("1")
+        openPage("bridge")
     }
 
     /// The labels of the log rows marked "Apple Intelligence" (the row combines its texts and the symbol's label).

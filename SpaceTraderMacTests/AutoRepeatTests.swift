@@ -233,7 +233,7 @@ struct AutoRepeatTests {
         s.encounterUI.driver.clock = TestClock()
         s.performEncounterAction(.resolve)
         #expect(s.encounterUI.driver.isScheduled)
-        s.present(.sheet(.gameOptions))
+        s.present(.sheet(.findSystem))
         #expect(s.encounterUI.driver.state.mode == .suspended)
         s.dismissPresentation()
         #expect(s.encounterUI.driver.isScheduled)

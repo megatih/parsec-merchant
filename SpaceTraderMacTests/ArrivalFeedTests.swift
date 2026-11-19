@@ -223,7 +223,7 @@ struct ArrivalFeedTests {
         var found: GameSession?
         for seed in UInt64(1)...80 where found == nil {
             let s = try TransitFixtures.session(seed: seed)
-            s.selectedSection = .market
+            s.selectedSection = .bank
             s.send(.selectNextTarget(forward: true))
             s.send(.warp)
             if s.state?.phase == .docked, s.transitPlayback != nil, s.presentation == nil { found = s }
@@ -234,12 +234,12 @@ struct ArrivalFeedTests {
         TransitFixtures.play(s)
         let card = try #require(s.arrivalCard)
         #expect(card.summary.hasPrefix("Arrived at") && card.section(.encounters) != nil && card.section(.news) != nil)
-        #expect(s.selectedSection == .market)
-        // The chip shows off Bridge; Dismiss clears the card.
-        #expect(s.arrivalCard != nil && s.selectedSection != .bridge && !s.isInputLocked)
+        // UI-NAV-004: a trip always ends on the Bridge, where the card is. Dismiss clears the card.
+        #expect(s.selectedSection == .bridge)
+        #expect(s.arrivalCard != nil && !s.isInputLocked)
         s.dismissArrivalCard()
         #expect(s.arrivalCard == nil)
-        let ids = [AXID.Arrival.card, AXID.Arrival.toggle, AXID.Arrival.dismiss, AXID.Arrival.statusChip, AXID.Arrival.encounter(0)]
+        let ids = [AXID.Arrival.card, AXID.Arrival.toggle, AXID.Arrival.dismiss, AXID.Arrival.encounter(0)]
             + ArrivalSectionKind.allCases.map(AXID.Arrival.section)
         #expect(ids.allSatisfy(AXID.all.contains))
         // The next departure clears a card that was not dismissed.

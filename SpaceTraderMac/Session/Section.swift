@@ -22,9 +22,16 @@ struct SectionContext: Equatable, Sendable {
     var designerAvailable: Bool { hasGame && !ended && hasShipyards && currentSystemHasShipyard }
 }
 
-/// The sidebar sections of the playing window, in display order (UI-SHELL-035; Logbook ⌘9 from M10, LOG-029).
+/// The pages of the playing window, in dock order (UI-NAV-001). Raw values are stored (scene state) and are part of
+/// the accessibility identifiers, so the cases keep their 1.x names; the titles carry the game's vocabulary.
+/// The 1.x Market page is gone: trading is the Bridge's Cargo region (a stored "market" restores to the Bridge).
 nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
-    case bridge, market, shipyard, outfitter, crew, bank, galaxy, quests, logbook
+    case bridge, shipyard, outfitter, crew, bank
+    /// Commander Status (the former inspector), a page since release 2.0.
+    case status
+    case quests, galaxy, logbook
+    /// The per-game options, a page since release 2.0 (⌥⌘O; it has no ⌘-digit).
+    case options
 
     var id: String { rawValue }
 
@@ -42,39 +49,43 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         return s
     }
 
-    /// The ⌘-digit shortcut.
-    var shortcutDigit: Character {
+    /// The ⌘-digit shortcut; nil for Options.
+    var shortcutDigit: Character? {
         switch self {
         case .bridge: "1"
-        case .market: "2"
-        case .shipyard: "3"
-        case .outfitter: "4"
-        case .crew: "5"
-        case .bank: "6"
-        case .galaxy: "7"
-        case .quests: "8"
+        case .shipyard: "2"
+        case .outfitter: "3"
+        case .crew: "4"
+        case .bank: "5"
+        case .status: "6"
+        case .quests: "7"
+        case .galaxy: "8"
         case .logbook: "9"
+        case .options: nil
         }
     }
+
+    /// The key cap shown on the page's dock button.
+    var keyCap: String? { shortcutDigit.map { "⌘\($0)" } ?? (self == .options ? "⌥⌘O" : nil) }
 
     var title: LocalizedStringResource {
         switch self {
         case .bridge: "Bridge"
-        case .market: "Market"
         case .shipyard: "Shipyard"
-        case .outfitter: "Outfitter"
-        case .crew: "Crew"
+        case .outfitter: "Equipment"
+        case .crew: "Personnel"
         case .bank: "Bank"
-        case .galaxy: "Galaxy"
+        case .galaxy: "Galactic Chart"
         case .quests: "Quests"
         case .logbook: "Logbook"
+        case .status: "Commander Status"
+        case .options: "Options"
         }
     }
 
     var systemImage: String {
         switch self {
         case .bridge: "scope"
-        case .market: "cart"
         case .shipyard: "airplane"
         case .outfitter: "wrench.and.screwdriver"
         case .crew: "person.3"
@@ -82,8 +93,10 @@ nonisolated enum Section: String, CaseIterable, Identifiable, Sendable {
         case .galaxy: "map"
         case .quests: "list.star"
         case .logbook: "book.closed"
+        case .status: "person.text.rectangle"
+        case .options: "gearshape"
         }
     }
 
-    var axID: String { AXID.Sidebar.row(self) }
+    var axID: String { AXID.Dock.button(self) }
 }

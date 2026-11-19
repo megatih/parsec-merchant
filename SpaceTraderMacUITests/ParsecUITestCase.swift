@@ -113,6 +113,32 @@ class ParsecUITestCase: XCTestCase {
         app.typeKey(key, modifierFlags: modifiers)
     }
 
+    /// The ⌘-digit of each page in dock order (release 2.0). The 1.x Market page has no shortcut until the Bridge's
+    /// Cargo region replaces it.
+    static let pageKeys = ["bridge": "1", "shipyard": "2", "outfitter": "3", "crew": "4", "bank": "5", "status": "6", "quests": "7", "galaxy": "8",
+                           "logbook": "9"]
+
+    /// Opens a page by its shortcut, or by its dock button when it has none.
+    func openPage(_ name: String) {
+        if let key = Self.pageKeys[name] {
+            type(key)
+        } else {
+            element(AXID.Dock.button(name)).click()
+        }
+    }
+
+    /// The selected target's name: from the Galaxy page's target strip ("Target: Rhymus · 8 parsecs") or from the
+    /// Bridge's target card; empty when there is none or neither is on screen.
+    var targetName: String {
+        let strip = element("galaxy.target")
+        if strip.exists {
+            let t = text(of: strip)
+            return t.hasPrefix("Target: ") ? String(t.dropFirst(8)) : ""
+        }
+        let name = element(AXID.Bridge.targetName)
+        return name.exists ? text(of: name) : ""
+    }
+
     // MARK: Menus (MENU-008: SwiftUI menu items expose no identifier on macOS, so items are found by English title)
 
     /// A11Y-040: set while a pseudolanguage runs. English titles then also match their pseudo forms (doubled
@@ -194,24 +220,35 @@ class ParsecUITestCase: XCTestCase {
 
     /// Selects the next target on the Bridge and warps with ⌘J; returns the target's name.
     func warpToNextTarget(file: StaticString = #filePath, line: UInt = #line) -> String {
-        type("1")
+        openPage("bridge")
         click(AXID.Bridge.targetNext, file: file, line: line)
-        let target = waitFor(AXID.Toolbar.target, file: file, line: line)
         var name = ""
         expect("a target is selected", file: file, line: line) {
-            name = target.title.components(separatedBy: " · ").first ?? ""
-            return !name.isEmpty && name != "Choose Target"
+            name = targetName
+            return !name.isEmpty
         }
         type("j")
         expect("the warp ends docked at \(name) on day 1 (subtitle: \(subtitle))", file: file, line: line) {
             subtitle.hasPrefix("Day 1 · \(name) · ")
         }
-        // UI-ENC-095: the playback is instant with -PMFastTravel, and the uneventful arrival shows the arrival card on
-        // the Bridge, which stays the selected section.
+        // UI-ENC-095: the playback is instant with -PMFastTravel, and the uneventful arrival shows its summary in the
+        // status bar; a trip always ends on the Bridge (UI-NAV-004).
         XCTAssertFalse(element(AXID.Transit.view).exists, "no transit playback with -PMFastTravel", file: file, line: line)
         waitFor(AXID.Arrival.card, file: file, line: line)
         XCTAssertTrue(element("bridge.root").exists, "the arrival keeps the Bridge selected", file: file, line: line)
         return name
+    }
+
+    /// UI-BRG-042: opens the arrival report from the summary in the status bar's message slot.
+    @discardableResult
+    func openArrivalReport(file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
+        if !element(AXID.Report.sheet).exists { click(AXID.Arrival.card, file: file, line: line) }
+        return waitFor(AXID.Report.sheet, file: file, line: line)
+    }
+
+    func closeArrivalReport(file: StaticString = #filePath, line: UInt = #line) {
+        click(AXID.Report.continueButton, file: file, line: line)
+        expect("the report closes", file: file, line: line) { !self.element(AXID.Report.sheet).exists }
     }
 
     /// "Day 0 · Castor · Credits 1,000 · Debt 0" → "Castor".

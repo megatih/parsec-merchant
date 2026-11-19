@@ -5,88 +5,6 @@ import ParsecEngine
 import ParsecInsights
 import SwiftUI
 
-/// The quantity a modifier-click or B/S key trades (UI-SHELL-062, -063): plain 1, ⇧ 5, ⌘ 20, ⇧⌘ 100, ⌥ all.
-enum TradeQuantity {
-    static func resolve(modifiers: EventModifiers, maximum: Int) -> Int {
-        let maximum = max(0, maximum)
-        let requested: Int = if modifiers.contains(.option) {
-            maximum
-        } else if modifiers.contains(.shift), modifiers.contains(.command) {
-            100
-        } else if modifiers.contains(.command) {
-            20
-        } else if modifiers.contains(.shift) {
-            5
-        } else {
-            1
-        }
-        return min(max(0, requested), maximum)
-    }
-
-    /// AUD-040 / UI-SHELL-067: the request reaches the cap (most affordable, free bays or stock): the snap haptic.
-    static func snaps(modifiers: EventModifiers, maximum: Int) -> Bool {
-        HapticMap.quantitySnaps(requested: resolve(modifiers: modifiers, maximum: .max), maximum: maximum)
-    }
-
-    /// The SwiftUI modifiers of an AppKit event's flags (button actions read `NSEvent.modifierFlags`).
-    static func modifiers(from flags: NSEvent.ModifierFlags) -> EventModifiers {
-        var m: EventModifiers = []
-        if flags.contains(.shift) { m.insert(.shift) }
-        if flags.contains(.command) { m.insert(.command) }
-        if flags.contains(.option) { m.insert(.option) }
-        if flags.contains(.control) { m.insert(.control) }
-        return m
-    }
-
-    /// The modifiers held right now (for button clicks).
-    static var current: EventModifiers { modifiers(from: NSEvent.modifierFlags) }
-}
-
-/// UI-PTR-008: a row's quantity chip: how much the Buy and Sell buttons trade.
-nonisolated enum TradeChip: Int, CaseIterable, Sendable, Hashable {
-    case one, five, twenty, max
-
-    /// 1, 5, 20 or `maximum`, clamped to `0...maximum`.
-    func quantity(maximum: Int) -> Int {
-        let maximum = Swift.max(0, maximum)
-        let requested: Int = switch self {
-        case .one: 1
-        case .five: 5
-        case .twenty: 20
-        case .max: maximum
-        }
-        return min(requested, maximum)
-    }
-
-    /// The identifier suffix (`market.row.<item>.chip.<suffix>`).
-    var idSuffix: String {
-        switch self {
-        case .one: "1"
-        case .five: "5"
-        case .twenty: "20"
-        case .max: "max"
-        }
-    }
-}
-
-/// UI-PTR-007: each row's selected chip (1 until chosen). Observable, so a table cell redraws when its chip changes.
-@Observable
-final class TradeChipStore {
-    private var chips: [TradeItemType: TradeChip] = [:]
-
-    func chip(for item: TradeItemType) -> TradeChip { chips[item] ?? .one }
-
-    func select(_ chip: TradeChip, for item: TradeItemType) { chips[item] = chip }
-}
-
-extension TradeQuantity {
-    /// UI-PTR-008: a held modifier is an accelerator and overrides the chip; without one the chip decides.
-    static func resolve(chip: TradeChip, modifiers: EventModifiers, maximum: Int) -> Int {
-        let accelerators: EventModifiers = [.shift, .command, .option]
-        return modifiers.isDisjoint(with: accelerators) ? chip.quantity(maximum: maximum) : resolve(modifiers: modifiers, maximum: maximum)
-    }
-}
-
 /// The C# target-price columns for one item (Form_SpaceTrader.cs UpdateCargo): the target's standard price from
 /// what the player knows (the resource only once visited), and the difference to the buy price here.
 struct TargetQuote: Equatable, Sendable {
@@ -166,37 +84,15 @@ struct MarketRowModel: Identifiable, Equatable, Sendable {
         return isDumpMode ? .dumpCargo(item, quantity: q) : .sellCargo(item, quantity: q)
     }
 
-    func buyCommand(modifiers: EventModifiers) -> Command? {
-        buyCommand(requested: TradeQuantity.resolve(modifiers: modifiers, maximum: row.maxBuy))
-    }
-
-    func sellCommand(modifiers: EventModifiers) -> Command? {
-        sellCommand(requested: TradeQuantity.resolve(modifiers: modifiers, maximum: row.maxSell))
-    }
-
-    /// UI-PTR-007: the Buy and Sell buttons trade the row's chip quantity (a modifier is an accelerator).
-    func buyCommand(chip: TradeChip, modifiers: EventModifiers = []) -> Command? {
-        buyCommand(requested: TradeQuantity.resolve(chip: chip, modifiers: modifiers, maximum: row.maxBuy))
-    }
-
-    func sellCommand(chip: TradeChip, modifiers: EventModifiers = []) -> Command? {
-        sellCommand(requested: TradeQuantity.resolve(chip: chip, modifiers: modifiers, maximum: row.maxSell))
-    }
-
     var buyMaxCommand: Command? { buyCommand(requested: row.maxBuy) }
     var sellAllCommand: Command? { sellCommand(requested: row.maxSell) }
 
-    /// The quantity field: Return buys its value, ⇧Return sells it, clamped the same way.
-    func fieldCommand(text: String, sell: Bool) -> Command? {
-        guard let n = Int(text.trimmingCharacters(in: .whitespaces)), n > 0 else { return nil }
-        return sell ? sellCommand(requested: n) : buyCommand(requested: n)
-    }
 }
 
 /// The B / S keys of the focused trade table (UI-SHELL-064, amended by UI-KEYS-012).
 enum MarketKeyAction: Equatable, Sendable {
-    case buy(EventModifiers)
-    case sell(EventModifiers)
+    case buy
+    case sell
     case buyMax
     case sellAll
 
@@ -206,8 +102,8 @@ enum MarketKeyAction: Equatable, Sendable {
         let pressed = NormalizedShortcut(physical: MenuShortcut(characters.lowercased(), MenuShortcut.modifiers(modifiers)))
         let binding = bindings.first { $0.context == .marketTable && NormalizedShortcut(physical: $0.shortcut) == pressed }
         switch binding?.action {
-        case .marketBuyOne?: return .buy([])
-        case .marketSellOne?: return .sell([])
+        case .marketBuyOne?: return .buy
+        case .marketSellOne?: return .sell
         case .marketBuyMax?: return .buyMax
         case .marketSellAll?: return .sellAll
         default: return nil
@@ -234,39 +130,11 @@ enum MarketKeyAction: Equatable, Sendable {
 
     func command(for row: MarketRowModel) -> Command? {
         switch self {
-        case let .buy(m): row.buyCommand(modifiers: m)
-        case let .sell(m): row.sellCommand(modifiers: m)
+        case .buy: row.buyCommand(requested: 1)
+        case .sell: row.sellCommand(requested: 1)
         case .buyMax: row.buyMaxCommand
         case .sellAll: row.sellAllCommand
         }
-    }
-}
-
-/// The trade table's footer (UI-SHELL-066).
-struct MarketFooterModel: Equatable, Sendable {
-    var usedBays: Int
-    var totalBays: Int
-    /// Free bays for buying, honouring "leave N bays empty" (ECO-046).
-    var freeForBuying: Int
-    /// Cash available, honouring "reserve money" (ECO-042).
-    var cashAvailable: Int
-
-    static func make(state: GameState) -> MarketFooterModel {
-        MarketFooterModel(usedBays: state.filledCargoBays, totalBays: state.commander.ship.cargoBays(state.ruleset),
-                          freeForBuying: state.marketFreeBays, cashAvailable: state.cashToSpend)
-    }
-}
-
-/// The item filter (UI-SHELL-067): case- and diacritic-insensitive "contains" on the localized name.
-enum MarketFilter {
-    static func matches(name: String, filter: String) -> Bool {
-        let f = filter.trimmingCharacters(in: .whitespaces)
-        guard !f.isEmpty else { return true }
-        return name.range(of: f, options: [.caseInsensitive, .diacriticInsensitive]) != nil
-    }
-
-    static func filtered(_ rows: [MarketRowModel], filter: String) -> [MarketRowModel] {
-        rows.filter { matches(name: String(localized: Names.item($0.item)), filter: filter) }
     }
 }
 

@@ -66,7 +66,6 @@ struct GalaxyMapView: View {
                 } else if let hit = ui.cardHit {
                     hoverCard(hit, snapshot: snapshot, projected: projected, size: size, pinned: false)
                 }
-                if scope == .miniChart { miniChartOpenButton }
                 if scope.hasHUD {
                     hud(snapshot, size: size)
                         .environment(\.layoutDirection, layoutDirection)
@@ -107,6 +106,17 @@ struct GalaxyMapView: View {
 
     // MARK: Canvas
 
+    /// UI-BRG-010: the Short-Range Chart's extra marks.
+    private func bridgeMarks(_ snapshot: MapSnapshot) -> BridgeChartMarks {
+        var marks = BridgeChartMarks(targetLabel: String(localized: "target"))
+        if let tracked = snapshot.trackedSystem, tracked != snapshot.currentSystem {
+            let system = snapshot.systems[tracked]
+            marks.trackedLabel = "\(system.name) · \(MapText.parsecs(system.distance))"
+        }
+        marks.bestDestinations = Set(session.bridgeIntel?.intel.bestDestinations.map(\.system) ?? [])
+        return marks
+    }
+
     private func mapCanvas(_ snapshot: MapSnapshot, projected: ProjectedMap) -> some View {
         var options = MapRenderOptions(style: MapStyle(strokeScale: ContrastStyle.make(prefs: a11yPrefs).mapStrokeScale,
                                                                  differentiateWithoutColor: differentiateWithoutColor),
@@ -114,6 +124,7 @@ struct GalaxyMapView: View {
                                        miniChart: scope == .miniChart)
         options.heatmap = scope.hasHUD ? session.heatmap(ui.heatmapChoice.mode(item: ui.heatmapItem)) : nil
         options.art = mapArt
+        if scope == .miniChart { options.bridge = bridgeMarks(snapshot) }
         return Canvas { ctx, _ in
             GalaxyMapRenderer.draw(in: &ctx, snapshot: snapshot, projected: projected, layers: MapLayer.m10, options: options)
         }
@@ -141,7 +152,7 @@ struct GalaxyMapView: View {
         .focusedValue(\.mapControl, scope.hasHUD ? mapControl(snapshot) : nil)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("Galaxy chart"))
-        .accessibilityIdentifier(ids.map)
+        .probed(ids.map)
         .accessibilityChildren { accessibilityChildren(snapshot, projected: projected) }
         .modifier(MapRotors(snapshot: snapshot, namespace: rotorNamespace))
         .onChange(of: axFocus) { _, focus in
@@ -263,8 +274,6 @@ struct GalaxyMapView: View {
         if scope.hasHUD { canvasFocused = true }
         guard let hit = hit(at: location, snapshot: snapshot, projected: projected) else {
             ui.lastClick = nil
-            // UI-PTR-011: a tap on the mini chart's empty space opens the Galaxy section.
-            if scope == .miniChart { session.selectedSection = .galaxy }
             return
         }
         if scope.hasHUD { ui.pinnedHit = hit }
@@ -518,22 +527,6 @@ struct GalaxyMapView: View {
         .allowsHitTesting(pinned)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(pinned ? ids.selectionCard : ids.hoverCard + ".container")
-    }
-
-    /// UI-PTR-011: the Bridge mini chart opens the Galaxy section.
-    private var miniChartOpenButton: some View {
-        Button {
-            session.selectedSection = .galaxy
-        } label: {
-            Label("Open Galaxy Chart", systemImage: "arrow.up.left.and.arrow.down.right").labelStyle(.iconOnly).pointerTarget()
-        }
-        .buttonStyle(.borderless)
-        .background(.regularMaterial, in: Circle())
-        .help(Text("Open the Galaxy chart"))
-        .accessibilityLabel(Text("Open Galaxy Chart"))
-        .accessibilityIdentifier(AXID.Galaxy.miniChartOpen)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-        .padding(6)
     }
 
     // MARK: HUD (MAP-016, MAP-027)

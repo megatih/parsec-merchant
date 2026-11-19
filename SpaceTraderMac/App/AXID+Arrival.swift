@@ -11,9 +11,8 @@ nonisolated extension AXID {
         static let news = "arrival.news"
         static let newsRead = "arrival.news.read"
         /// `status.arrivalReport`: the status-bar chip that selects Bridge (UI-ENC-055).
-        static let statusChip = "status.arrivalReport"
 
-        static let all: [String] = [card, toggle, dismiss, news, newsRead, statusChip]
+        static let all: [String] = [card, toggle, dismiss, news, newsRead]
             + ArrivalSectionKind.allCases.map(section) + (0..<4).map(encounter)
     }
 
